@@ -1,0 +1,46 @@
+shell_grid: 113x32
+uptime_s: 25.003
+frames: 1549
+dirty_frames: 26
+bytes_in: 130571
+bytes_out_answers: 11
+first_byte_after_start_s: 0.642
+last_byte_after_start_s: 3.845
+last_byte_after_input_s: 1.334
+resize_event: t=0.643s -> 113x32
+=== grid_text_begin ===
+19970
+19971
+19972
+19973
+19974
+19975
+19976
+19977
+19978
+19979
+19980
+19981
+19982
+19983
+19984
+19985
+19986
+19987
+19988
+19989
+19990
+19991
+19992
+19993
+19994
+19995
+19996
+19997
+19998
+19999
+20000
+PS C:\Users\zhaop>
+=== grid_text_end ===
+cells_nondefault_fg: 0
+cells_nondefault_bg: 0
