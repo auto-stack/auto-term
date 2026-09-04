@@ -14,7 +14,7 @@
 //! - resize 语义:`Term::resize(Dimensions)`,自实现 Dimensions 即可。
 
 pub use alacritty_terminal;
-pub use alacritty_terminal::vte::ansi::{Color, Rgb};
+pub use alacritty_terminal::vte::ansi::{Color, NamedColor, Rgb};
 
 use std::sync::mpsc::{Receiver, Sender, channel};
 
