@@ -33,3 +33,12 @@ cargo run -q -p pty-probe -- --duration 3          # PTY 字节流 + 字节率
 cargo test -p term-probe                            # 真 PTY → 网格断言
 cargo run -q -p render-probe -- --shell pwsh        # 可交互窗口
 ```
+
+## 下一步
+
+- **渲染路线已拍板:方案 A(iced 一等应用)**——判据核对与证据数字见
+  `docs/designs/000-render-route.md`;
+- **Phase 1 另立计划**:单窗口 MVP(正式 crate 结构 + 仿真正确性回归
+  种子化 + 损伤重绘/字形图集/事件驱动清偿,清单见 `DEBTS.md`);
+- Unix 基座(macOS/Linux)适配后续计划验证,portable-pty 已承诺路径。
+
