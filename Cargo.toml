@@ -1,0 +1,10 @@
+[workspace]
+resolver = "2"
+members = []
+
+# spike 期约定:T2 起每个 probe crate 追加进 members。
+# 版本一律取最新稳定,不预锁(见 docs/plans/001)。
+
+[workspace.package]
+edition = "2024"
+license = "Apache-2.0"
