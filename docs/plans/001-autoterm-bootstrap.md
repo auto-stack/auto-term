@@ -1,15 +1,21 @@
 ---
 plan_id: PLAN-001
-status: execution_done
+status: reviewed
 feature_name: AutoTerm 建仓与全链路 spike(PTY→仿真核心→渲染)
 author: [zhaopuming]
 created_at: 2026-09-05T00:14:01+08:00
-updated_at: 2026-09-05T03:10:00+08:00
+updated_at: 2026-09-05T03:40:00+08:00
 
 # Leave these EMPTY here — /auto-plan:review fills them:
 supersedes_spec_components: []
-new_spec_components: []
-touched_goals: []
+new_spec_components:
+  - "docs/designs/000-render-route.md: 新增"
+touched_goals:
+  - "goal-1: 宿主 PTY(ConPTY)可申请可读写,VT 字节流实证(9.0 B/s+ESC 序列)"
+  - "goal-2: alacritty_terminal 0.26 库嵌入可行(真 PTY 集成测试绿)"
+  - "goal-3: iced 渲染最小闭环(echo 回显 0.154s,resize 不崩)"
+  - "goal-4: ash 冒烟四项全过(补全/流式不糊/表格对齐/真彩)"
+  - "goal-5: 大输出数字(≈100KB/s,ConPTY 瓶颈)+ 渲染路线 A 拍板"
 
 current_step: 9
 total_steps: 9
@@ -257,7 +263,49 @@ spike 三 probe 的数据流(单向,渲染帧驱动):
 
 ## 复审记录
 
-(待 /auto-plan:review 填写)
+**复审人**:auto-plan:review(ZCode 会话)· **时间**:2026-09-05 03:40 +08:00
+**复审场所**:worktree `D:/autostack/.wt/auto-term-001/auto-term`(分支
+`plan-001-dev`,9 提交,工作区干净;diff 26 文件 +6136 行)
+
+### 验收标准逐条复验(全部重跑,未采信打勾)
+
+| # | 标准 | 结论 | 证据 |
+| --- | --- | --- | --- |
+| 1 | 仓骨架(README/.gitignore/workspace/DEBTS/docs) | **PASS** | 六项俱在;README 含定位+"零构建依赖"+"非正式架构"声明 |
+| 2 | 依赖树无 ash-core/auto-shell | **PASS** | `cargo tree --workspace` grep 双零;注:wgpu 的 Vulkan `ash` crate 同名无关,已在 T9 证据注明 |
+| 3 | pty-probe 非零字节率 + ESC 序列 | **PASS** | 复跑:9.0 B/s,`esc_seq_1b5b_found: true`,hexdump 首行 `1b 5b 31 74` |
+| 4 | term-probe 集成测试通过 | **PASS** | full-suite `cargo test --workspace` 全绿,`live_pty_output_reaches_grid ok` |
+| 5 | render-probe 可交互(echo 回显+resize 不崩) | **PASS** | 复跑:网格含 `PS> echo hi` 与 `hi`,两次 resize(113x32/86x25),373 帧无崩 |
+| 6 | ash 冒烟清单全勾 | **PASS** | 复跑:提示符/状态行/`find` 表格(type/path 对齐)重现;四项执行期证据在 evidence/001-smoke(截图+快照+转储)完整 |
+| 7 | 000 决策文档含 A/B 结论与数字 | **PASS** | `结论`×1,方案 A/B 表述×3,对照数字(130,571B/1.334s vs 129,603B/1.271s)在表 |
+| 8 | spike 代码标注可整体重写 | **PASS** | "非正式架构,允许整体重写"×5(README+四个源文件头注) |
+
+**Full-suite 门**(唯一一次,在本复审):`cargo test --workspace` 全绿。
+
+### 遗漏 / 延后 / workaround 猎查
+
+- **遗漏**:未发现。详细设计逐项对上 diff:pty-probe 三参数(含
+  pwsh→powershell 回退代码)、term-probe lib 封装+bin 定时打印
+  (--interval-ms)、render-probe `--shell` 必填、键盘/resize 链路、
+  证据归档,全部在。
+- **延后**:无未经批准的延后。Phase 1 清单(损伤重绘/字形图集/事件
+  驱动/回滚 UI/Unix 基座)属计划内"非目标"+T9 DEBTS 明示。
+- **Workaround(均已备案,不阻塞)**:
+  1. 固定 Consolas advance + 窗口拟合替代实测字形度量(000 缺口#1、
+     DEBTS#3);
+  2. 16ms 轮询 tick 替代事件驱动(DEBTS#4);
+  3. NamedColor 部分映射(Dim/Cursor/selection 落默认色,DEBTS#10);
+  4. 手动 GUI 验收以 auto-input/--exit-after/--dump + PrintWindow 截图
+    的等价取证替代人工键入(计划 T5/T6 证据条已注明)。
+- **观察项(Phase 1 回归候选,非债务)**:备用屏幕(alt-screen)语义
+  未被任何 probe 显式行使(如 `less` 全屏应用);pwsh→powershell
+  回退分支为守护代码未实测;键盘非按键事件映射为 Tick 空操作(小瑕疵)。
+
+### 结论
+
+**通过 → `status: reviewed`**。8/8 标准全过,无阻塞债务;所有
+workaround 均有备案且有 Phase 1 清偿路径。渲染路线 A(iced)结论
+可信:判据四项均有重跑或像素级证据。可进入 `/auto-plan:merge`。
 
 ## 待澄清事项
 
