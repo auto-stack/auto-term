@@ -1,0 +1,46 @@
+shell_grid: 113x32
+uptime_s: 18.003
+frames: 1124
+dirty_frames: 88
+bytes_in: 1028
+bytes_out_answers: 11
+first_byte_after_start_s: 0.633
+last_byte_after_start_s: 12.929
+last_byte_after_input_s: 10.414
+resize_event: t=0.635s -> 113x32
+=== grid_text_begin ===
+51
+52
+53
+54
+55
+56
+57
+58
+59
+60
+61
+62
+63
+64
+65
+66
+67
+68
+69
+70
+71
+72
+73
+74
+75
+76
+77
+78
+79
+80
+~                                                                                                        [02:12]
+❯
+=== grid_text_end ===
+cells_nondefault_fg: 12
+cells_nondefault_bg: 0

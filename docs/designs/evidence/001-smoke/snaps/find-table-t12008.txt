@@ -1,0 +1,31 @@
+AutoShell v0.1.0
+Type 'exit' or press Ctrl+D to exit
+
+~                                                                                                        [02:09]
+❯ echosmoke-ok
+echosmoke-ok : The term 'echosmoke-ok' is not recognized as the name of a cmdlet, function, script file, or oper
+able program. Check the spelling of the name, or if a path was included, verify that the path is correct and try
+ again.
+At line:1 char:1
++ echosmoke-ok
++ ~~~~~~~~~~~~
+    + CategoryInfo          : ObjectNotFound: (echosmoke-ok:String) [], CommandNotFoundException
+    + FullyQualifiedErrorId : CommandNotFoundException
+
+Error: program not found
+~                                                                                                        [02:09]
+❯ ls D:/autostack/auto-term
+╭───────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
+│   name   type   size   modified                                                                               │
+│  docs   dir    0      2026-09-04 16:14:01                                                                    │
+╰───────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+~                                                                                                        [02:09]
+❯ find D:/autostack/auto-term --name "*.md"
+╭───────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
+│ type   path                                                                                                   │
+│ file   D:/autostack/auto-term/docs/plans/001-autoterm-bootstrap.md                                            │
+╰───────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+~                                                                                                        [02:09]
+❯
+
+

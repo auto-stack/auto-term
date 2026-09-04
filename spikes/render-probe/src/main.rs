@@ -37,8 +37,9 @@ use term_probe::{Color as TermColor, NamedColor, StyledChar, TermSession};
 /// Consolas 等宽 advance 宽度(em)。spike 用固定字形度量,不做字形图集;
 /// 走 Font::MONOSPACE(Windows 上解析到 Consolas)。
 const CELL_ADVANCE_EM: f32 = 1126.0 / 2048.0;
-const LINE_HEIGHT_EM: f32 = 1.25;
+/// resize 换算用的基准字号(与 draw 侧拟合独立;draw 按窗口反解)。
 const FONT_PX: f32 = 16.0;
+const LINE_HEIGHT_EM: f32 = 1.25;
 
 #[derive(Parser, Debug)]
 #[command(name = "render-probe", about = "iced 终端网格渲染探针(路线 A,spike)")]
@@ -66,6 +67,14 @@ struct Flags {
     /// 中途程序化 resize 一次,验证不崩
     #[arg(long)]
     auto_resize: bool,
+
+    /// 每 N 毫秒落一份网格文本快照到 --snapshot-dir(动态重绘证据)
+    #[arg(long, default_value = "500")]
+    snapshot_every_ms: u64,
+
+    /// 网格快照目录
+    #[arg(long = "snapshot-dir")]
+    snapshot_dir: Option<PathBuf>,
 }
 
 enum Message {
@@ -98,6 +107,9 @@ struct Probe {
     exit_at: Option<Instant>,
     dump: Option<PathBuf>,
     window_id: Option<iced::window::Id>,
+    snapshot_dir: Option<PathBuf>,
+    snapshot_every_ms: u64,
+    next_snapshot_at: Instant,
 }
 
 impl Probe {
@@ -111,6 +123,7 @@ impl Probe {
         let mut cmd = CommandBuilder::new(&flags.shell);
         cmd.env_remove("TERM"); // 让子进程用 ConPTY 翻译层的默认,而不是继承宿主终端
         cmd.env("TERM", "alacritty");
+        cmd.env("COLORTERM", "truecolor");
         let child = pair
             .slave
             .spawn_command(cmd)
@@ -145,8 +158,11 @@ impl Probe {
         let queued_input = flags
             .auto_input
             .iter()
-            .map(|s| (now + auto_delay, unescape(s)))
+            .map(|s| parse_input(s, auto_delay, now))
             .collect();
+        if let Some(dir) = &flags.snapshot_dir {
+            std::fs::create_dir_all(dir).ok();
+        }
 
         Ok(Self {
             session: TermSession::new(cols, rows),
@@ -170,6 +186,9 @@ impl Probe {
                 .then(|| now + Duration::from_secs(flags.exit_after)),
             dump: flags.dump.clone(),
             window_id: None,
+            snapshot_dir: flags.snapshot_dir.clone(),
+            snapshot_every_ms: flags.snapshot_every_ms,
+            next_snapshot_at: now + Duration::from_millis(flags.snapshot_every_ms.max(50)),
         })
     }
 
@@ -274,6 +293,20 @@ impl Probe {
                 self.dump_state();
                 let _ = self.child.kill();
                 return iced::exit();
+            }
+        }
+
+        if let Some(dir) = &self.snapshot_dir {
+            if now >= self.next_snapshot_at {
+                let ms = (now - self.started).as_millis();
+                let text =
+                    self.session.visible_lines().join("\n");
+                let _ = std::fs::write(
+                    dir.join(format!("snap-{ms:05}.txt")),
+                    text,
+                );
+                self.next_snapshot_at +=
+                    Duration::from_millis(self.snapshot_every_ms.max(50));
             }
         }
 
@@ -402,8 +435,14 @@ impl<Message> Widget<Message, Theme, iced::Renderer> for TermGrid {
         viewport: &Rectangle,
     ) {
         let bounds = layout.bounds();
-        let cell_px = FONT_PX * CELL_ADVANCE_EM;
-        let line_px = FONT_PX * LINE_HEIGHT_EM;
+        // 网格拟合窗口:按可见区实际宽高反解 cell/font 尺寸,消除
+        // 硬编码 advance 估计误差导致的右/下缘裁剪(spike 期近似,
+        // Phase 1 应改为实测字形 advance)。
+        let cols = self.lines.first().map_or(1, |l| l.len().max(1)) as f32;
+        let rows = self.lines.len().max(1) as f32;
+        let cell_px = bounds.width / cols;
+        let line_px = bounds.height / rows;
+        let font_px = cell_px / CELL_ADVANCE_EM;
 
         // 底色
         renderer.fill_quad(
@@ -450,7 +489,7 @@ impl<Message> Widget<Message, Theme, iced::Renderer> for TermGrid {
                     iced::advanced::text::Text {
                         content,
                         bounds: Size::new((idx - start) as f32 * cell_px + cell_px, line_px),
-                        size: FONT_PX.into(),
+                        size: font_px.into(),
                         line_height: LineHeight::Absolute(line_px.into()),
                         font: Font::MONOSPACE,
                         align_x: iced::Alignment::Start.into(),
@@ -546,8 +585,17 @@ fn xterm256(i: u8) -> [u8; 3] {
     }
 }
 
-fn unescape(s: &str) -> Vec<u8> {
-    let mut out = Vec::new();
+/// auto-input 支持 "延迟毫秒:文本" 分段语法;无前缀则用默认延迟。
+fn parse_input(s: &str, default_delay: Duration, start: Instant) -> (Instant, Vec<u8>) {
+    if let Some((n, rest)) = s.split_once(':') {
+        if let Ok(ms) = n.parse::<u64>() {
+            return (start + Duration::from_millis(ms), unescape(rest));
+        }
+    }
+    (start + default_delay, unescape(s))
+}
+
+fn unescape(s: &str) -> Vec<u8> {    let mut out = Vec::new();
     let mut chars = s.chars().peekable();
     while let Some(c) = chars.next() {
         if c == '\\' {

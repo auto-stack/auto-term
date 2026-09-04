@@ -1,0 +1,46 @@
+shell_grid: 113x32
+uptime_s: 30.004
+frames: 1873
+dirty_frames: 16
+bytes_in: 28720
+bytes_out_answers: 11
+first_byte_after_start_s: 0.623
+last_byte_after_start_s: 13.372
+last_byte_after_input_s: 11.359
+resize_event: t=0.624s -> 113x32
+=== grid_text_begin ===
+1971
+1972
+1973
+1974
+1975
+1976
+1977
+1978
+1979
+1980
+1981
+1982
+1983
+1984
+1985
+1986
+1987
+1988
+1989
+1990
+1991
+1992
+1993
+1994
+1995
+1996
+1997
+1998
+1999
+2000
+~                                                                                                        [02:09]
+❯
+=== grid_text_end ===
+cells_nondefault_fg: 12
+cells_nondefault_bg: 0
