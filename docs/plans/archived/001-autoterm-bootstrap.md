@@ -1,6 +1,6 @@
 ---
 plan_id: PLAN-001
-status: reviewed
+status: archived
 feature_name: AutoTerm 建仓与全链路 spike(PTY→仿真核心→渲染)
 author: [zhaopuming]
 created_at: 2026-09-05T00:14:01+08:00

@@ -1,0 +1,82 @@
+{
+ "sections": {
+  "reports": [
+   {
+    "id": "P001-1",
+    "section": "reports",
+    "title": "AutoTerm 建仓与全链路 spike(PTY→仿真核心→渲染) — 变更摘要",
+    "content": "新建独立工程 `D:\\autostack\\auto-term`(产品名 **AutoTerm**),作为 AutoOS\n虚拟桌面的**通用终端**基础设施。本计划只做两件事:\n\n1. **建仓骨架**——README(定位声明:与 auto-shell 零构建依赖)、Cargo\n   workspace、DEBTS.md;\n2. **三个 spike 打通全链路**——`pty-probe`(宿主 PTY 申请 + VT 字节流)、\n   `term-probe`(alacritty_terminal 仿真核心嵌入,headless)、\n   `render-probe`(最小 iced 窗口渲染网格 + 键盘回写),外加 ash 冒烟与\n   大输出粗测,最终产出**渲染路线决策文档**(方案 A:iced 一等应用\n   vs 方案 B:winit/wgpu 独立原生)。\n\n不修改 auto-shell 仓任何代码。ash 只作为**运行时配置**(默认 shell 路径),\n不进依赖树。",
+    "file": "docs/plans/archived/001-autoterm-bootstrap.md",
+    "related": [
+     "PLAN-001"
+    ],
+    "status": "published"
+   }
+  ],
+  "goals": [
+   {
+    "id": "P001-2",
+    "section": "goals",
+    "title": "AutoTerm 建仓与全链路 spike(PTY→仿真核心→渲染) — 目标",
+    "content": "1. 验证硬前提:宿主基座(Windows ConPTY / Unix PTY)经 `portable-pty`\n   可申请、可读写字节流——在 Windows 基座上当天可证;\n2. 验证 `alacritty_terminal` 作为库嵌入的可行性(VT 状态机 + 网格读取 +\n   回滚),不写 GUI 即可测;\n3. 验证渲染最小闭环:iced 窗口里网格→字形、键盘→PTY 回写,能交互跑\n   `echo` 级命令;\n4. 用 ash 这个\"苛刻 VT 客户端\"冒烟:tail 动态重绘不糊、find 表格不错位、\n   真彩色正确;\n5. 大输出压测取得第一手数字(ConPTY 吞吐 + 渲染帧行为),支撑渲染路线\n   A/B 拍板,结论沉淀为 `docs/designs/000-render-route.md`。\n\n非目标(明确排除):tabs / splits / tmux 式持久会话(Phase 2+ 另立计划);\n`.at`/auto-lang VM 集成(AutoUI 一等应用形态是路线 A 拍板**之后**的事);\nmacOS/Linux 基座适配(spike 仅 Windows,Unix 路径由 portable-pty 承诺,\n后续计划验证)。",
+    "file": "docs/plans/archived/001-autoterm-bootstrap.md",
+    "related": [
+     "PLAN-001"
+    ],
+    "status": "proposed"
+   }
+  ],
+  "architecture": [
+   {
+    "id": "P001-3",
+    "section": "architecture",
+    "title": "AutoTerm 建仓与全链路 spike(PTY→仿真核心→渲染) — 架构方案",
+    "content": "四层结构,层间单向依赖:\n\n```\n应用层   tabs / splits / 会话(Phase 2+,不在本计划)\n渲染层   候选 A:iced 自定义 widget 承载终端网格 ← 本计划拍板\n         候选 B:winit + wgpu 字形图集自绘(逃生口)\n仿真层   alacritty_terminal(Apache-2.0):VT 状态机、回滚缓冲、\n         resize/真彩色/备用屏幕语义 —— 直接复用,不自写\nPTY 层   portable-pty:Windows=CreatePseudoConsole(ConPTY),\n         Unix=openpty —— 基座 OS 服务,本仓只消费\n```\n\n与外部系统的关系:\n\n- **ash**(`D:\\autostack\\auto-shell`):仅运行时配置耦合(spawn 的默认\n  shell 路径,经 `ASH_BIN`/配置传入)。验收含\"依赖树无 ash-core\"断言;\n- **auto-ui / auto-lang VM**:路线 A 成立时,后续以 iced/`.at` 生态一等\n  应用形态集成,由后续计划处理;本计划 spike 阶段直接依赖上游 iced;\n- **AutoOS 虚拟桌面**:本仓产出的可执行文件是宿主普通进程,窗口长在\n  桌面里,无 OS 层依赖(PTY 由基座内核/console 服务提供)。\n\nspike 三 probe 的数据流(单向,渲染帧驱动):\n\n```\n子进程(bash/pwsh/ash) ─ConPTY─▶ 字节流 ─feed─▶ alacritty_terminal 网格\n     ▲                                              │\n     └── 写主端 ◀── 键盘事件 ◀── iced 窗口(每帧读网格渲染)◀─┘\n```",
+    "file": "docs/plans/archived/001-autoterm-bootstrap.md",
+    "related": [
+     "PLAN-001"
+    ],
+    "status": "stable"
+   }
+  ],
+  "designs": [
+   {
+    "id": "P001-4",
+    "section": "designs",
+    "title": "AutoTerm 建仓与全链路 spike(PTY→仿真核心→渲染) — 详细设计",
+    "content": "### spikes/pty-probe(bin)\n\n- `--shell <exe>`(默认 `pwsh`,回退 `powershell`)、`--duration <秒>`\n  (默认 3)、`--hexdump`;\n- 流程:`portable-pty` 申请 PTY → spawn 子进程 → 主端读到超时为止,\n  字节原样落 stderr(hexdump 可读形态)+ 统计字节率;\n- 预期证据:输出含 `1b 5b`(ESC [)序列、字节率非零。\n\n### spikes/term-probe(lib + bin + 集成测试)\n\n- 封装 `Term::new` + 自定义 `EventListener`,`feed()` 喂字节流,定时\n  快照网格可见文本(`renderable_content` 或等价 API)打印;\n- 集成测试(真 PTY,非录制流):spawn `cmd /c echo hello_term_probe`\n  (或 pwsh 等价),读到 EOF→feed→断言网格含 `hello_term_probe`;\n- 这是仿真核心嵌入体验的第一手记录:API 是否顺手、resize 语义如何\n  触发,写入决策文档附录。\n\n### spikes/render-probe(bin,路线 A 探针)\n\n- iced `Application`/新 API 等价物,自定义 widget:每帧从 term-probe\n  封装读网格 → 按行列拼 monospace 文本渲染(spike 允许整帧重拼,不做\n  字形图集——链路正确性优先,性能留给决策后的正式实现);\n- 键盘:可打印字符/Enter/Backspace → 写 PTY 主端;resize → 通知仿真\n  核心(观察 ConPTY resize 怪癖);\n- `--shell <exe>` 必填,ash 冒烟经此入口:`--shell %ASH_BIN%`。\n\n### 渲染路线判据(决策标准,写入 000 决策文档)\n\n- **A 判据**:iced 下能以可接受代价实现——网格整帧渲染的延迟肉眼可\n  接受、resize 无可感知撕裂、输入回显无粘滞;且自定义 widget API 无\n  结构性障碍(能拿到每帧绘制权);\n- **B 触发**:上述任一不成立,或 iced 帧调度/文本管线与终端需求冲突\n  到需要 fork 上游才能解决;\n- 决策文档记录:三 probe 证据、大输出数字(字节率、帧表现)、A/B 结论\n  与理由、对 auto-ui 的反哺清单(等宽字形、损伤重绘、低延迟输入)。\n\n### ash 冒烟清单(手动,render-probe 里完成)\n\n- [x] `ash` 交互启动,提示符/补全正常;\n- [x] 跑产生 tail 动态渲染的命令(如长输出外部命令),重绘不糊屏;\n- [x] `find` 渐进表格不错位、冻结表格完整;\n- [x] 真彩色/256 色样本正确(如 ash 内置着色输出)。\n\n> 证据:`docs/designs/evidence/001-smoke/`(终态转储 + 流式快照序列 +\n> PrintWindow 截图)。四项全部通过:提示符 `❯`+状态行正常;Tab 补全触发\n> (补出历史命令);2000 行 0.37s 流式输出干净无糊屏、长输出摘要冻结生效\n> (61–63+80 折叠);find 表格三行对齐、边框连续;截图验证 256 色/真彩\n> run 渲染正确(find 绿/-name 蓝/*.md 琥珀/边框 240 灰/提示符绿),\n> 修复右缘裁剪后边框与时钟完整。",
+    "file": "docs/plans/archived/001-autoterm-bootstrap.md",
+    "related": [
+     "PLAN-001"
+    ],
+    "status": "stable"
+   }
+  ],
+  "tests": [
+   {
+    "id": "P001-5",
+    "section": "tests",
+    "title": "AutoTerm 建仓与全链路 spike(PTY→仿真核心→渲染) — 测试设计",
+    "content": "- 自动:term-probe 集成测试(真 PTY→仿真核心→网格断言)是本计划唯一\n  自动断言,也是后续正式工程的回归种子;\n- 半自动:pty-probe 字节率统计(人工核对非零 + ESC 序列存在);\n- 手动:render-probe 交互冒烟 + ash 冒烟清单 + 大输出粗测记录数字;\n- 明确不做:性能自动化基准(Phase 1+ 另立)、跨平台矩阵(仅 Windows)。",
+    "file": "docs/plans/archived/001-autoterm-bootstrap.md",
+    "related": [
+     "PLAN-001"
+    ],
+    "status": "verified"
+   }
+  ],
+  "reviews": [
+   {
+    "id": "P001-6",
+    "section": "reviews",
+    "title": "AutoTerm 建仓与全链路 spike(PTY→仿真核心→渲染) — 验收标准",
+    "content": "1. 仓骨架存在:README(含定位与\"零构建依赖\"声明)、.gitignore、\n   Cargo workspace、DEBTS.md、docs/plans、docs/designs;\n2. `cargo tree --workspace` 无 `ash-core`/`auto-shell` 任何路径依赖;\n3. pty-probe 在 Windows 基座读到非零字节率且含 ESC 序列;\n4. term-probe 集成测试通过(网格中出现子进程输出);\n5. render-probe 可交互:键入 `echo hi` 得到回显;resize 不崩;\n6. ash 冒烟清单全勾;\n7. `docs/designs/000-render-route.md` 存在且含 A/B 结论与证据数字;\n8. spike 代码明确标注\"非正式架构,允许整体重写\"(README 或代码头注)。",
+    "file": "docs/plans/archived/001-autoterm-bootstrap.md",
+    "related": [
+     "PLAN-001"
+    ],
+    "status": "published"
+   }
+  ]
+ }
+}
