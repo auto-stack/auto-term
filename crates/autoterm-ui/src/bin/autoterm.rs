@@ -20,6 +20,12 @@ struct Args {
     #[cfg(feature = "dev-tools")]
     dev_autotype: Vec<String>,
 
+    /// [dev 取证] 到时注入拖选("<ms>:<r1>:<c1>-<r2>:<c2>",
+    /// 可选类型前缀 simple/semantic/lines)
+    #[arg(long = "dev-select")]
+    #[cfg(feature = "dev-tools")]
+    dev_select: Option<String>,
+
     /// [dev 取证] 到时转储并退出的秒数(0 = 不自动退出)
     #[arg(long, default_value = "0")]
     #[cfg(feature = "dev-tools")]
@@ -44,6 +50,8 @@ fn main() -> Result<()> {
         shell: args.shell.clone(),
         #[cfg(feature = "dev-tools")]
         dev_autotype: args.dev_autotype,
+        #[cfg(feature = "dev-tools")]
+        dev_select: args.dev_select,
         #[cfg(feature = "dev-tools")]
         dev_exit_after: args.dev_exit_after,
         #[cfg(feature = "dev-tools")]

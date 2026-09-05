@@ -21,11 +21,13 @@ use iced::advanced::{
     Renderer as _, Widget, renderer, widget::Tree,
 };
 use iced::{
-    Element, Font, Length, Point, Rectangle, Size, Theme,
+    Color, Element, Font, Length, Point, Rectangle, Size, Theme,
     alignment, mouse,
 };
 
-use autoterm_core::{Color as TermColor, Damage, NamedColor, StyledChar, SelectionType, Side};
+use autoterm_core::{
+    Color as TermColor, Damage, NamedColor, SelectionRange, SelectionType, Side, StyledChar,
+};
 
 use crate::metrics::GridMetrics;
 use crate::palette::to_iced_color;
@@ -81,6 +83,9 @@ pub struct TermGrid {
     pub scroll_offset: usize,
     /// 光标(视口相对;Hidden=None)→ 反色块。
     pub cursor: Option<(usize, usize)>,
+    /// 选中区间(绝对网格行;配合 `scroll_offset` 回视口)→ 高亮
+    /// overlay quad(文本层之下,每帧 emit,不进行缓存 digest)。
+    pub selection: Option<SelectionRange>,
 }
 
 /// 鼠标交互持久状态(经 `Tree` 跨帧存活;PLAN-004 T2)。
@@ -253,6 +258,48 @@ impl Widget<Message, Theme, iced::Renderer> for TermGrid {
                     },
                     to_iced_color(bg, false),
                 );
+            }
+        }
+
+        // 选中高亮层(T3):overlay quad 每帧 emit——不进行缓存 digest,
+        // 避开损伤门控盲区(core 的 damage 不感知 selection 变化);
+        // 区间为绝对网格行,+scroll_offset 回视口行,视口外行自然裁掉。
+        if let Some(sel) = self.selection {
+            let offset = self.scroll_offset as i32;
+            let start_row = sel.start.line.0 + offset;
+            let end_row = sel.end.line.0 + offset;
+            let last_visible = self.lines.len() as i32 - 1;
+            if end_row >= 0 && start_row <= last_visible {
+                let cols = self.lines.first().map_or(0, |l| l.len());
+                let highlight = Color { a: 0.25, ..DEFAULT_FG };
+                for row in start_row.max(0)..=end_row.min(last_visible) {
+                    let col_begin = if row == start_row {
+                        sel.start.column.0
+                    } else {
+                        0
+                    };
+                    let col_last = if row == end_row {
+                        sel.end.column.0
+                    } else {
+                        cols.saturating_sub(1)
+                    };
+                    renderer.fill_quad(
+                        renderer::Quad {
+                            bounds: Rectangle::new(
+                                Point::new(
+                                    bounds.x + col_begin as f32 * cell_px,
+                                    bounds.y + row as f32 * line_px,
+                                ),
+                                Size::new(
+                                    (col_last - col_begin + 1) as f32 * cell_px,
+                                    line_px,
+                                ),
+                            ),
+                            ..Default::default()
+                        },
+                        highlight,
+                    );
+                }
             }
         }
 

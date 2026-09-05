@@ -32,6 +32,10 @@ pub struct AppConfig {
     /// dev 取证:自动键入(可多段,"ms:text" 语法同 spike)。
     #[cfg(feature = "dev-tools")]
     pub dev_autotype: Vec<String>,
+    /// dev 取证:到时注入拖选序列("<ms>:<r1>:<c1>-<r2>:<c2>",
+    /// 视口相对格;PLAN-004 T5 起支持可选类型前缀)。
+    #[cfg(feature = "dev-tools")]
+    pub dev_select: Option<String>,
     /// dev 取证:到时转储并退出(秒;0=不退出)。
     #[cfg(feature = "dev-tools")]
     pub dev_exit_after: u64,
@@ -121,7 +125,18 @@ pub struct App {
     #[cfg(feature = "dev-tools")]
     queued_input: Vec<(Instant, Vec<u8>)>,
     #[cfg(feature = "dev-tools")]
+    queued_select: Option<(Instant, DevSelectSpec)>,
+    #[cfg(feature = "dev-tools")]
     exit_at: Option<Instant>,
+}
+
+/// dev-select 注入规格(视口相对格;经 handle_select 走真实消息路径)。
+#[cfg(feature = "dev-tools")]
+#[derive(Debug, Clone, Copy)]
+struct DevSelectSpec {
+    ty: SelectionType,
+    start: (usize, usize),
+    end: (usize, usize),
 }
 
 impl App {
@@ -137,6 +152,11 @@ impl App {
             .iter()
             .map(|s| parse_input(s, now))
             .collect();
+        #[cfg(feature = "dev-tools")]
+        let queued_select = config
+            .dev_select
+            .as_deref()
+            .and_then(|s| parse_dev_select(s, now));
         #[cfg(feature = "dev-tools")]
         let exit_at = (config.dev_exit_after > 0)
             .then(|| now + Duration::from_secs(config.dev_exit_after));
@@ -159,6 +179,8 @@ impl App {
             selection_range: None,
             #[cfg(feature = "dev-tools")]
             queued_input,
+            #[cfg(feature = "dev-tools")]
+            queued_select,
             #[cfg(feature = "dev-tools")]
             exit_at,
         }
@@ -232,7 +254,10 @@ impl App {
         ];
         #[cfg(feature = "dev-tools")]
         {
-            if !self.config.dev_autotype.is_empty() || self.exit_at.is_some() {
+            if !self.config.dev_autotype.is_empty()
+                || self.exit_at.is_some()
+                || self.queued_select.is_some()
+            {
                 subs.push(
                     time::every(Duration::from_millis(50))
                         .map(|_| Message::DevTick),
@@ -263,6 +288,34 @@ impl App {
                         true
                     }
                 });
+                if let Some((at, spec)) = self.queued_select {
+                    // 自愈注入:到点后若选中缺失(窗口首显 resize 风暴会
+                    // 清选——pwsh 冷启动慢时风暴晚于注入)即重注入,
+                    // 选中在手则保持(幂等,dev 专用)
+                    if now >= at && self.selection_range.is_none() {
+                        log::info!(
+                            "dev-select inject: ty={:?} start={:?} end={:?}",
+                            spec.ty,
+                            spec.start,
+                            spec.end
+                        );
+                        let _ = self.handle_select(SelectMsg::Begin {
+                            ty: spec.ty,
+                            cell: spec.start,
+                            side: Side::Left,
+                        });
+                        let _ = self.handle_select(SelectMsg::Extend {
+                            cell: spec.end,
+                            side: Side::Right,
+                        });
+                        let _ = self.handle_select(SelectMsg::Finish);
+                        log::info!(
+                            "dev-select injected: range={:?} text={:?}",
+                            self.selection_range,
+                            self.session.term.selection_text()
+                        );
+                    }
+                }
                 if let Some(at) = self.exit_at {
                     if now >= at {
                         if let Some(delta) = self.config.dev_scroll {
@@ -393,7 +446,15 @@ impl App {
             self.snapshot_rebuilds += 1;
         }
         // 选中锚定网格内容:滚动/新增行使绝对行漂移,区间随之重取
+        let prev_selection = self.selection_range;
         self.selection_range = self.session.term.selection_range();
+        if prev_selection.is_some() && self.selection_range.is_none() {
+            log::info!(
+                "selection cleared by refresh (damage={:?}, prev={:?})",
+                self.damage,
+                prev_selection
+            );
+        }
     }
 
     pub fn view(&self) -> Element<'_, Message> {
@@ -403,7 +464,29 @@ impl App {
             damage: self.damage.clone(),
             scroll_offset: self.session.term.display_offset(),
             cursor: self.cursor,
+            selection: self.selection_range,
         })
+    }
+
+    /// 选中区间覆盖的格子数(非块选:行段求和;取证 `selection_cells`)。
+    fn selection_cell_count(&self) -> usize {
+        let Some(r) = self.selection_range else { return 0 };
+        let cols = self.session.term.size().0;
+        (r.start.line.0..=r.end.line.0)
+            .map(|line| {
+                let begin = if line == r.start.line.0 {
+                    r.start.column.0
+                } else {
+                    0
+                };
+                let last = if line == r.end.line.0 {
+                    r.end.column.0
+                } else {
+                    cols.saturating_sub(1)
+                };
+                last.saturating_sub(begin) + 1
+            })
+            .sum()
     }
 
     /// dev 转储:网格文本 + 计数(取证;仅 dev-tools 构建)。
@@ -464,6 +547,20 @@ impl App {
                 "scroll_offset: {}\n",
                 self.session.term.display_offset()
             ),
+        );
+        match self.session.term.selection_text() {
+            Some(t) => {
+                let flat = t.replace('\r', "\\r").replace('\n', "\\n");
+                let _ = std::fmt::Write::write_fmt(
+                    &mut out,
+                    format_args!("selection_text: \"{flat}\"\n"),
+                );
+            }
+            None => out.push_str("selection_text: none\n"),
+        }
+        let _ = std::fmt::Write::write_fmt(
+            &mut out,
+            format_args!("selection_cells: {}\n", self.selection_cell_count()),
         );
         let (rb_prev, rb_last) = widget::paragraph_rebuilds();
         let _ = std::fmt::Write::write_fmt(
@@ -526,6 +623,31 @@ fn parse_input(s: &str, start: Instant) -> (Instant, Vec<u8>) {
         }
     }
     (start, unescape(s))
+}
+
+/// dev-select 语法(T3):"<ms>:<r1>:<c1>-<r2>:<c2>"(视口相对格)。
+/// T5 起支持可选类型前缀:"<ms>:<simple|semantic|lines>:<r1>:<c1>-..."。
+#[cfg(feature = "dev-tools")]
+fn parse_dev_select(s: &str, start: Instant) -> Option<(Instant, DevSelectSpec)> {
+    let (ms, rest) = s.split_once(':')?;
+    let at = start + Duration::from_millis(ms.parse::<u64>().ok()?);
+    let (ty, rest) = match rest.split_once(':') {
+        Some(("simple", r)) => (SelectionType::Simple, r),
+        Some(("semantic", r)) => (SelectionType::Semantic, r),
+        Some(("lines", r)) => (SelectionType::Lines, r),
+        _ => (SelectionType::Simple, rest),
+    };
+    let (a, b) = rest.split_once('-')?;
+    let (r1, c1) = a.split_once(':')?;
+    let (r2, c2) = b.split_once(':')?;
+    Some((
+        at,
+        DevSelectSpec {
+            ty,
+            start: (r1.parse().ok()?, c1.parse().ok()?),
+            end: (r2.parse().ok()?, c2.parse().ok()?),
+        },
+    ))
 }
 
 fn unescape(s: &str) -> Vec<u8> {

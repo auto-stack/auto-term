@@ -1,0 +1,54 @@
+shell: pwsh
+grid: 106x32
+metrics: font_px=16.000 cell_w=9.3750 line_h=20.000 (cell_em=0.5859)
+viewport: 1000.0x650.0
+fit_ok: true (cols*cell_w=993.8 <= viewport_w=1000.0)
+uptime_s: 20.003
+frames: 94
+dirty_updates: 14
+snapshot_rebuilds: 17
+damage_last: lines=1
+scroll_offset: 0
+selection_text: "SELECT_MARKER_LINE\nPS C:\Users\zhaop>\n\n"
+selection_cells: 484
+paragraph_rebuilds_prev: 0
+paragraph_rebuilds_last: 0
+cursor_drawn_at: (3,19) inverted=true
+last_byte_after_start_s: 2.541
+input_sent_after_start_s: 1.502
+last_byte_after_input_s: 1.039
+bytes_fed: 1377
+=== grid_text_begin ===
+PowerShell 7.6.5
+PS C:\Users\zhaop> echo SELECT_MARKER_LINE
+SELECT_MARKER_LINE
+PS C:\Users\zhaop>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+=== grid_text_end ===
