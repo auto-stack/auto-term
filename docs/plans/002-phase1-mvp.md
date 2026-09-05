@@ -216,11 +216,12 @@ iced 升级沿 0.14(与 auto-ui 同栈,集成路径见待澄清 #2)。
       exited() 真 → kill 后 wait() 返回。
       验证:`cargo test -p autoterm-core --test pty_lifecycle`
       [✅ 已完成] 测试绿(0.05s)。**语义修正(平台事实)**:ConPTY 持活期间主端读流永不 EOF(conhost 等输入端关闭),exited() 改走 try_wait 而非 EOF 门控;测试同时断言"无 EOF"防平台行为变化;live_pty 顺带修掉被静默掩盖的 15s 超时(全测试 15s→0.1s)。EOF→exited 的计划原文与 Windows 现实不符,已记入 pty.rs 模块头
-- [ ] **T3** 写 `crates/autoterm-core/tests/sim_regression.rs`:
+- [x] **T3** 写 `crates/autoterm-core/tests/sim_regression.rs`:
       六类用例(光标定位/SGR 真彩+256/备用屏 1049/CJK 双格/
       scroll_display 回滚/DSR 应答 pump 匹配 `\x1b[...R`)。
       验证:`cargo test -p autoterm-core --test sim_regression`
       (≥6 用例绿)
+      [✅ 已完成] 7 用例绿后随 T6 增至 8 用例(含损伤用例);执行中发现并修正:Scroll::Delta 符号(正=上翻)、display_iter 绝对行需 +display_offset 映射视口;marker 补勾于复审终扫(原簿记遗漏,工作与验证均在 d28622c/a95c209 完成)
 - [x] **T4** 建 `crates/autoterm-ui`(lib+bin `autoterm`):迁移
       render-probe 的 app 骨架(boot/update/view/keyboard listen/
       window resize/oldest Id);**事件驱动**:reader 线程 → iced
@@ -308,6 +309,9 @@ run 不等式受 iced 即时模式架构约束(每帧全量重建场景),实现�
 
 ### 遗漏 / 延后 / workaround 猎查
 
+- **遗漏(簿记 1 处,已补勾)**:终扫发现 T3 marker 漏勾——工作与
+  验证均早已完成(sim_regression 8 用例在 full-suite 复验绿),
+  属执行期簿记笔误,非工作缺失,已补记;
 - **遗漏(1 处,轻微,非阻塞)**:技术栈节写了"log + env_logger
   (替换 eprintln)"但未实施——dump/错误路径仍用 eprintln;无执行
   步骤或验收条覆盖此项。记为债务候选(Phase 2 顺手清);
