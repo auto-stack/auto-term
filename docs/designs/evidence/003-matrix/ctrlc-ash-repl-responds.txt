@@ -1,0 +1,52 @@
+shell: D:/autostack/auto-shell/ash/target/release/ash.exe
+grid: 106x32
+metrics: font_px=16.000 cell_w=9.3750 line_h=20.000 (cell_em=0.5859)
+viewport: 1000.0x650.0
+fit_ok: true (cols*cell_w=993.8 <= viewport_w=1000.0)
+uptime_s: 12.004
+frames: 17
+dirty_updates: 8
+snapshot_rebuilds: 11
+damage_last: full
+scroll_offset: 0
+paragraph_rebuilds_prev: 0
+paragraph_rebuilds_last: 0
+cursor_drawn_at: (9,2) inverted=true
+last_byte_after_start_s: 6.519
+input_sent_after_start_s: 3.014
+last_byte_after_input_s: 3.505
+bytes_fed: 737
+=== grid_text_begin ===
+AutoShell v0.1.0
+Type 'exit' or press Ctrl+D to exit
+
+~                                                                                                 [14:08]
+❯ echo type-c
+type-c
+~                                                                                                 [14:08]
+❯
+~                                                                                                 [14:08]
+❯
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+=== grid_text_end ===

@@ -116,3 +116,104 @@ dev 钩子激活时才有 50ms DevTick(不触发重绘)。
 - 残留(Phase 2+):字形图集/保留式画布(含绘制级损伤剪裁)、
   IME/选中、Ctrl+C/Break 语义矩阵、Unix 基座、光标闪烁与形状
   (Underline/Beam 已取 shape 未分形状渲染)。
+
+### 附录补注(PLAN-003 T1 PoC,2026-09-05)
+
+保留式画布前提验证通过:`iced::advanced::text::paragraph::Plain<P>`
+公面可用——构造走 iced_graphics 全局字体系统(OnceLock 惰性,
+headless 测试无需 application);`update()` 内建 content 比对 +
+`compare`(注意:compare 只看版式参数不看文本,content 由 Plain
+先比)+ Bounds 差异走 resize;同内容反复 update 零重建。
+T2-T4 按 `Plain<Paragraph>` 落地行缓存。
+
+### 附录补注:Ctrl+C / Ctrl+Break 语义矩阵(PLAN-003 T6/T7,2026-09-05)
+
+**矩阵实测**(证据 evidence/003-matrix/):
+
+| 客户端 | Ctrl+C(裸 0x03 字节) | 普通键中断 |
+| --- | --- | --- |
+| ash REPL(raw mode 直读字节) | ✓ 响应(行编辑重置/回提示符) | ✓ |
+| pwsh `Start-Sleep`(控制台 API) | ✗ 无 ^C 回显、不中断 | ✓ |
+| cmd `timeout`(控制台 API) | ✗ 不中断 | ✓('x' 即退) |
+
+**平台结论**:ConPTY 输入管道的裸 0x03 字节**不会被翻译为
+CTRL_C_EVENT**——经典控制台 API 程序(ReadConsole 系)收不到
+中断;VT/raw-mode 客户端(自读字节,如 ash)不受影响。
+
+**Ctrl+Break 双重阻断**(T7):①iced 0.14 `key::Named` 无
+Break/Cancel 变体,事件层不可分辨;②即使可分辨,CTRL_BREAK_EVENT
+与真实 Ctrl+C 事件同走 win32 `GenerateConsoleCtrlEvent(pid, event)`
+——portable-pty 不暴露子进程组句柄。
+
+**路由**:真 Ctrl+C/Ctrl+Break 需本仓引入 win32 直调模块
+(经 child pid 发 GenerateConsoleCtrlEvent;BREAK 常数 0,
+CTRL_C 常数 1 取决于句柄语义)——待用户裁定(计划 003
+待澄清#3),批准后约 30 行 win32 代码可闭环。
+
+### 附录补注:IME 可行性(PLAN-003 T8,2026-09-05)
+
+**结论:管线公开可用,落地路由 Phase 3。**
+
+- iced 0.14 公面完备:`Event::InputMethod(Opened/Preedit/Commit/
+  Closed)`、`Shell::request_input_method(cursor_rect, purpose)`、
+  `InputMethod::Enabled { preedit }` 支持 **over-the-spot** 模式
+  (运行时代为叠加显示预编辑串,widget 无需自绘);
+- 落地成本:TermGrid 需补 `Widget::update` 事件处理(当前仅
+  size/layout/draw)以在聚焦时请求 IME、经 Shell 发布 Preedit/
+  Commit 到 App 消息;预编辑期间需挂起键盘直写(避免双写);
+- **验证约束(路由主因)**:IME 组合输入无法经 `--dev-autotype`
+  无人值守触发——取证强依赖真人中文输入法交互;按本仓"程序化
+  证据为主"的政策,列入 Phase 3(或用户点名时以手动清单验收)。
+
+## 002→003 决策链(PLAN-003,2026-09-05)
+
+1. **保留式画布落地**(兑现 002 验收#4 的路由):每行
+   `Para::with_spans` 缓存 + 行 digest(字符+前后景色)判异 +
+   `Damage::Lines` 脏行门控;`compare` 只看版式参数不含文本,故
+   digest 由我们自持;span 前景色烘焙进 buffer,cryoglyph 逐字形
+   color_opt 优先渲染(源码级+338 彩色像素证据);背景与光标仍走
+   quad。**绘制级剪裁至此闭环**:末帧脏行内容未变时重建数为 0。
+2. **健壮性修复(20000 行首现)**:唤醒转发线程遇 iced 通道 Full
+   即退出的 bug——尾部字节无人 drain;改为 is_full 重试后 3 连跑
+   bytes_fed 恒定、输出完整。
+3. **Ctrl+C/Ctrl+Break 矩阵结论**:ConPTY 不把裸 0x03 翻译为
+   CTRL_C_EVENT(经典控制台 API 程序收不到中断;raw-mode 客户端
+   如 ash 正常);Ctrl+Break 被 iced 键层与 win32 双重阻断——
+   真事件需 `GenerateConsoleCtrlEvent` win32 直调(待用户裁定)。
+4. **IME**:管线公面完备(over-the-spot 叠加),落地需 Widget::
+   update;验证强依赖真人输入法交互,路由 Phase 3。
+5. **dev-tools feature**:`--dev-*`/DevTick/转储/取证静态量全部
+   cfg 门控,默认构建零 dev 面;log+env_logger 替换 eprintln;
+   Message::NoOp 清偿空唤醒复用。
+
+残留缺口(Phase 3+):真 Ctrl+C/Break(win32 裁定后 ~30 行)、
+IME 落地、Unix 基座、光标形状/闪烁、选中。
+
+### 附录补注:WT/Alacritty 的 Ctrl+C 机制与本机实测(复审期补充调查)
+
+**上游源码事实**(microsoft/terminal,src/terminal/parser/
+InputStateMachineEngine.cpp + src/host/input.cpp):
+- **无人调用 GenerateConsoleCtrlEvent**。两条公道:
+  ①裸 0x03:输入状态机 `_DoControlCharacter` 把 ETX 特判,合成为
+  VK'C'+LEFT_CTRL_PRESSED 按键事件(down+up)→ `WriteCtrlKey` →
+  `HandleGenericKeyEvent` → 行输入模式下 `HandleCtrlEvent
+  (CTRL_C_EVENT)`;
+  ②win32-input 编码(`ESC[vk;sc;uc;kd;cs;rc_`,DECSET 9001 握手后
+  WT 用之):同样经 `WriteCtrlKey`,源码注释明言"即使非控制键也走
+  此路,以确保 Ctrl+C/Ctrl+Break 被正确处理";
+- ConPTY 信号管道(PtySignalInputThread)只承载 Resize/ShowHide/
+  ClearBuffer/SetParent,**无 Ctrl 信号**;
+- Alacritty 即裸 0x03 路径(其 input 映射 Ctrl+C→字节 3)。
+
+**本机实测矩阵**(Win11 26200):
+| 通道 | 结果 |
+| --- | --- |
+| 最小 ConPTY 管道(portable-pty 直连)+ 裸 0x03 → cmd/ping | 不中断 |
+| 最小 ConPTY 管道 + win32 编码按键事件 → cmd/ping | 不中断 |
+| **真 Windows Terminal + 真实 ^C 键**(SendKeys 实测) | **同样不中断** |
+
+**结论**:上游机制在源码层完备,但本机(26200 内部版)conhost 的
+0x03/编码→CTRL_C_EVENT 翻译未生效,WT 与 AutoTerm 同病——是
+机器/版本级行为,非本仓实现缺口。Phase 3 首任务修正为:先在稳定
+OS 版本上复测(若正常则本机为内部版回归,无需任何代码;若复现,
+再评估 AttachConsole+GenerateConsoleCtrlEvent 的 win32 直调)。

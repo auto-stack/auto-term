@@ -29,12 +29,16 @@ use metrics::GridMetrics;
 pub struct AppConfig {
     pub shell: String,
     /// dev 取证:自动键入(可多段,"ms:text" 语法同 spike)。
+    #[cfg(feature = "dev-tools")]
     pub dev_autotype: Vec<String>,
     /// dev 取证:到时转储并退出(秒;0=不退出)。
+    #[cfg(feature = "dev-tools")]
     pub dev_exit_after: u64,
     /// dev 取证:退出前回滚的行数(正=上翻;转储回滚后视图)。
+    #[cfg(feature = "dev-tools")]
     pub dev_scroll: Option<i32>,
     /// dev 取证:退出时转储目标文件。
+    #[cfg(feature = "dev-tools")]
     pub dev_dump: Option<PathBuf>,
 }
 
@@ -49,8 +53,12 @@ pub enum Message {
     Scrolled(i32),
     /// 窗口关闭:同步杀子进程再退出(T8)。
     Closed(iced::window::Id),
-    /// dev 钩子的粗定时(仅 dev 参数激活时订阅;常态不存在)。
+    /// dev 钩子的粗定时(仅 dev-tools 构建存在;常态不存在)。
+    #[cfg(feature = "dev-tools")]
     DevTick,
+    /// 显式空操作:订阅里非键盘/非滚轮事件的归宿(替代 PtyBytes
+    /// 空唤醒复用,002 复审瑕疵清偿)。
+    NoOp,
 }
 
 /// 订阅数据源:唤醒接收端的"一次性槽"(run_with 需 Hash,恒等即可)。
@@ -84,7 +92,9 @@ pub struct App {
     /// 光标(视口相对;Hidden=None)。随快照一并刷新。
     pub cursor: Option<(usize, usize)>,
 
+    #[cfg(feature = "dev-tools")]
     queued_input: Vec<(Instant, Vec<u8>)>,
+    #[cfg(feature = "dev-tools")]
     exit_at: Option<Instant>,
 }
 
@@ -95,11 +105,13 @@ impl App {
         let notify_slot = Arc::new(Mutex::new(session.take_notify_receiver()));
         let metrics = metrics::measure();
         let now = Instant::now();
+        #[cfg(feature = "dev-tools")]
         let queued_input = config
             .dev_autotype
             .iter()
             .map(|s| parse_input(s, now))
             .collect();
+        #[cfg(feature = "dev-tools")]
         let exit_at = (config.dev_exit_after > 0)
             .then(|| now + Duration::from_secs(config.dev_exit_after));
         Ok(Self {
@@ -118,7 +130,9 @@ impl App {
             snapshot: Vec::new(),
             snapshot_rebuilds: 0,
             cursor: None,
+            #[cfg(feature = "dev-tools")]
             queued_input,
+            #[cfg(feature = "dev-tools")]
             exit_at,
         }
         .initialized())
@@ -148,12 +162,21 @@ impl App {
                             std::thread::spawn(move || {
                                 loop {
                                     match rx.recv() {
-                                        Ok(()) => {
-                                            if sender.try_send(Message::PtyBytes).is_err() {
-                                                break;
+                                        Ok(()) => loop {
+                                            // 通道满 = UI 忙:重试而非退出
+                                            // (退出会永久丢唤醒,20000 行
+                                            // 突发实测暴露过)
+                                            match sender.try_send(Message::PtyBytes) {
+                                                Ok(()) => break,
+                                                Err(e) if e.is_full() => {
+                                                    std::thread::sleep(
+                                                        std::time::Duration::from_millis(4),
+                                                    );
+                                                }
+                                                Err(_) => return, // 通道关闭:app 退出
                                             }
-                                        }
-                                        Err(_) => break,
+                                        },
+                                        Err(_) => return,
                                     }
                                 }
                             });
@@ -166,7 +189,7 @@ impl App {
                 iced::keyboard::Event::KeyPressed { key, modifiers, .. } => {
                     Message::Key(key, modifiers)
                 }
-                _ => Message::PtyBytes,
+                _ => Message::NoOp,
             }),
             iced::window::resize_events()
                 .map(|(_id, size)| Message::Resized(size)),
@@ -175,18 +198,21 @@ impl App {
                 iced::Event::Mouse(iced::mouse::Event::WheelScrolled {
                     delta: iced::mouse::ScrollDelta::Lines { y, .. },
                 }) => Message::Scrolled((y * 3.0) as i32),
-                _ => Message::PtyBytes,
+                _ => Message::NoOp,
             }),
             // 窗口关闭:同步清理子进程(T8)
             iced::window::close_events().map(Message::Closed),
         ];
-        if self.config.dev_autotype.is_empty() && self.exit_at.is_none() {
-            // 常态:无任何定时器,空闲零唤醒(验收标准 3)
-        } else {
-            subs.push(
-                time::every(Duration::from_millis(50)).map(|_| Message::DevTick),
-            );
+        #[cfg(feature = "dev-tools")]
+        {
+            if !self.config.dev_autotype.is_empty() || self.exit_at.is_some() {
+                subs.push(
+                    time::every(Duration::from_millis(50))
+                        .map(|_| Message::DevTick),
+                );
+            }
         }
+        // 默认构建:无任何定时器,空闲零唤醒
         Subscription::batch(subs)
     }
 
@@ -197,6 +223,8 @@ impl App {
                 self.pump();
                 Task::none()
             }
+            Message::NoOp => Task::none(),
+            #[cfg(feature = "dev-tools")]
             Message::DevTick => {
                 let now = Instant::now();
                 self.queued_input.retain(|(at, bytes)| {
@@ -314,8 +342,8 @@ impl App {
         })
     }
 
-    /// dev 转储:网格文本 + 计数(T5 起追加 metrics/fit、T6 runs、
-    /// T7 偏移、T8 光标)。
+    /// dev 转储:网格文本 + 计数(取证;仅 dev-tools 构建)。
+    #[cfg(feature = "dev-tools")]
     pub fn dump_state(&mut self) {
         let Some(path) = self.config.dev_dump.clone() else { return };
         let mut out = String::new();
@@ -373,10 +401,12 @@ impl App {
                 self.session.term.display_offset()
             ),
         );
-        let (runs_prev, runs_last) = widget::draw_runs();
+        let (rb_prev, rb_last) = widget::paragraph_rebuilds();
         let _ = std::fmt::Write::write_fmt(
             &mut out,
-            format_args!("draw_runs_prev: {runs_prev}\ndraw_runs_last: {runs_last}\n"),
+            format_args!(
+                "paragraph_rebuilds_prev: {rb_prev}\nparagraph_rebuilds_last: {rb_last}\n"
+            ),
         );
         match widget::cursor_drawn() {
             Some((row, col)) => {
@@ -408,18 +438,23 @@ impl App {
                 );
             }
         }
+        let _ = std::fmt::Write::write_fmt(
+            &mut out,
+            format_args!("bytes_fed: {}\n", self.session.bytes_fed()),
+        );
         out.push_str("=== grid_text_begin ===\n");
         for line in self.session.term.visible_lines() {
             let _ = std::fmt::Write::write_fmt(&mut out, format_args!("{line}\n"));
         }
         out.push_str("=== grid_text_end ===\n");
         let _ = std::fs::write(&path, out);
-        eprintln!("dumped: {}", path.display());
+        log::info!("dumped: {}", path.display());
     }
 }
 
 /// dev-autotype 语法:"<延迟毫秒>:<文本>";无前缀即立即。转义
-/// \r \n \t(同 spike)。
+/// \r \n \t \xHH(仅 dev-tools 构建)。
+#[cfg(feature = "dev-tools")]
 fn parse_input(s: &str, start: Instant) -> (Instant, Vec<u8>) {
     if let Some((n, rest)) = s.split_once(':') {
         if let Ok(ms) = n.parse::<u64>() {
@@ -434,7 +469,7 @@ fn unescape(s: &str) -> Vec<u8> {
     let mut chars = s.chars().peekable();
     while let Some(c) = chars.next() {
         if c == '\\' {
-            match chars.peek() {
+            match chars.peek().copied() {
                 Some('r') | Some('n') => {
                     chars.next();
                     out.push(b'\r');
@@ -443,8 +478,32 @@ fn unescape(s: &str) -> Vec<u8> {
                     chars.next();
                     out.push(b'\t');
                 }
+                // \xHH:两位十六进制字节(T5,Ctrl+C=\x03 等注入用)
+                Some('x') => {
+                    chars.next();
+                    let c1 = chars.next();
+                    let c2 = chars.next();
+                    match (
+                        c1.and_then(|c| c.to_digit(16)),
+                        c2.and_then(|c| c.to_digit(16)),
+                    ) {
+                        (Some(h), Some(l)) => {
+                            out.push((h * 16 + l) as u8);
+                        }
+                        _ => {
+                            // 无效十六进制:原样保留(回吐已消费字符)
+                            out.extend_from_slice(b"\\x");
+                            for c in [c1, c2].into_iter().flatten() {
+                                let mut buf = [0u8; 4];
+                                out.extend_from_slice(
+                                    c.encode_utf8(&mut buf).as_bytes(),
+                                );
+                            }
+                        }
+                    }
+                }
                 Some(other) => {
-                    out.push(*other as u8);
+                    out.push(other as u8);
                     chars.next();
                 }
                 None => out.push(b'\\'),
@@ -514,3 +573,21 @@ pub const DEFAULT_BG: Color = Color::from_rgb8(0x10, 0x14, 0x18);
 pub const CELL_ADVANCE_EM: f32 = 1126.0 / 2048.0;
 pub const LINE_HEIGHT_EM: f32 = 1.25;
 pub const FONT_PX: f32 = 16.0;
+
+#[cfg(test)]
+mod unescape_tests {
+    use super::unescape;
+
+    #[test]
+    fn hex_escape() {
+        assert_eq!(unescape(r"\x41"), b"A");
+        assert_eq!(unescape(r"\x03"), &[0x03]);
+        assert_eq!(unescape(r"\x1b[A"), &[0x1b, b'[', b'A']);
+        // 大小写十六进制
+        assert_eq!(unescape(r"\x0D"), &[0x0d]);
+        // 无效十六进制:原样保留反斜杠与 x
+        assert_eq!(unescape(r"\xzz"), br"\xzz");
+        // 与既有转义混用
+        assert_eq!(unescape(r"a\x09b\r"), b"a\tb\r");
+    }
+}

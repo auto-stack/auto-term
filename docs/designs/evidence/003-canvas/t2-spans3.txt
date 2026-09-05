@@ -1,0 +1,51 @@
+shell: pwsh
+grid: 106x32
+metrics: font_px=16.000 cell_w=9.3750 line_h=20.000 (cell_em=0.5859)
+viewport: 1000.0x650.0
+fit_ok: true (cols*cell_w=993.8 <= viewport_w=1000.0)
+uptime_s: 8.005
+frames: 93
+dirty_updates: 13
+snapshot_rebuilds: 16
+damage_last: lines=2
+scroll_offset: 0
+paragraph_rebuilds_prev: 0
+paragraph_rebuilds_last: 0
+cursor_drawn_at: (10,19) inverted=true
+last_byte_after_start_s: 3.728
+input_sent_after_start_s: 3.513
+last_byte_after_input_s: 0.215
+=== grid_text_begin ===
+PowerShell 7.6.5
+PS C:\Users\zhaop> echo `e[38;2;0;255;0mGREEN`e[0m ok
+
+
+
+
+0mGREEN: The term '0mGREEN' is not recognized as a name of a cmdlet, function, script file, or executable
+program.
+Check the spelling of the name, or if a path was included, verify that the path is correct and try again.
+The specified wildcard character pattern is not valid: 0mGREEN
+PS C:\Users\zhaop>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+=== grid_text_end ===

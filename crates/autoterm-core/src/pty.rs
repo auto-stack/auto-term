@@ -32,6 +32,8 @@ pub struct PtySession {
     rx: Receiver<Vec<u8>>,
     writer: Box<dyn Write + Send>,
     eof: bool,
+    /// 累计喂入仿真核心的字节数(取证/诊断)。
+    bytes_fed: u64,
     /// reader 唤醒通道接收端(UI 事件驱动订阅用;取走后由订阅持有)。
     notify_rx: Option<Receiver<()>>,
 }
@@ -104,6 +106,7 @@ impl PtySession {
             rx,
             writer,
             eof: false,
+            bytes_fed: 0,
             notify_rx: Some(notify_rx),
         })
     }
@@ -124,6 +127,7 @@ impl PtySession {
                     break;
                 }
                 Ok(chunk) => {
+                    self.bytes_fed += chunk.len() as u64;
                     self.term.feed(&chunk);
                     fed = true;
                 }
@@ -135,6 +139,11 @@ impl PtySession {
             let _ = self.writer.write_all(&answers);
         }
         fed
+    }
+
+    /// 累计喂入仿真核心的字节数。
+    pub fn bytes_fed(&self) -> u64 {
+        self.bytes_fed
     }
 
     /// 键盘输入等宿主→子进程字节。
