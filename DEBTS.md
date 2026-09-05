@@ -39,8 +39,16 @@
 5. Ctrl+C 稳定版复测(#7 待环境后关账或立项 win32);
 6. Unix 基座适配;
 7. iced↔auto-ui 生态对齐(`.at` 组件模型承载原生 widget 调查);
-8. **Auto 复刻**(用户裁定 2026-09-05:AutoLang 可直调 Rust 库,
-   当前 Rust 实现有效;届时将应用层[autoterm-core 封装 +
-   autoterm-ui App/TermGrid,约 2k 行]以 Auto 代码复刻,引擎
-   crate[alacritty_terminal/iced/portable-pty]经绑定复用——
-   前置依赖 #7 的组件模型调查)。
+8. **Auto 化——必须项**(用户裁定 2026-09-05,升级自"候选"):
+   虚拟桌面当前**只支持以 AutoUI 代码加载 app**(auto-ui = Auto
+   描述层 + iced/gpui 后端),AutoTerm 入驻虚拟桌面的唯一路径就是
+   Auto 化;AutoLang 经 a2r(auto-lang)转回 Rust,且**转出的 Rust
+   应与本仓手写 Rust 基本一致**——即:
+   - 本仓 Rust = **参考实现/验收 oracle**(a2r 产物与之 diff);
+   - 复刻范围 = 应用层(autoterm-core 封装 + autoterm-ui App/
+     TermGrid,约 2k 行),引擎 crate[alacritty_terminal/iced/
+     portable-pty]经绑定复用;
+   - **对后续 Rust 侧开发的约束**:新代码保持 a2r 可表达形态
+     (idiomatic、避免 Rust 特有奇技),维持往返一致性;
+   - 前置依赖 #7:TermGrid 自定义 Widget trait 能否被 AutoUI
+     组件模型表达是 Auto 化的突破口。
