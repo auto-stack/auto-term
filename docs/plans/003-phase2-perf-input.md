@@ -179,7 +179,7 @@ eprintln、`Message::NoOp` 替换空唤醒复用。
       验证:`cargo test -p autoterm-ui` + 冒烟:echo 单行帧
       rebuilds < rows(转储断言)
       [✅ 已完成] 冒烟:末帧 `damage_last: lines=2` + `paragraph_rebuilds_last: 0`(脏行内容未变连重建都免,0 < 32 强于不等式);全程 snapshot_rebuilds 16-18 / frames 93(门控生效);行缓存经全局 OnceLock 持有(跨 view 存活)
-- [ ] **T4** 回归对照:20000 行流式冒烟(rebuilds 合理,无错位/
+- [x] **T4** 回归对照:20000 行流式冒烟(rebuilds 合理,无错位/
       残影;网格终态完整)。
       验证:冒烟转储含 20000 且 `fit_ok: true`
       [✅ 已完成] 首跑暴露真 bug:唤醒转发线程遇 iced 通道 Full 即 break 永久死亡,尾部字节无人 drain(19996-20000 丢失)——T4-002 起潜伏,突发首现;修复=is_full 重试。3 连跑稳定:bytes_fed 恒 129721、20000 每次都在、fit_ok true;bytes_fed 计数器入 PtySession/转储;证据 evidence/003-canvas/bench-20000-fixed.txt
