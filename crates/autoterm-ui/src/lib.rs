@@ -36,6 +36,10 @@ pub struct AppConfig {
     /// 视口相对格;PLAN-004 T5 起支持可选类型前缀)。
     #[cfg(feature = "dev-tools")]
     pub dev_select: Option<String>,
+    /// dev 取证:到时注入粘贴("<ms>:<文本>",走 Pasted 真实路径;
+    /// 不依赖系统剪贴板状态)。
+    #[cfg(feature = "dev-tools")]
+    pub dev_paste: Option<String>,
     /// dev 取证:到时转储并退出(秒;0=不退出)。
     #[cfg(feature = "dev-tools")]
     pub dev_exit_after: u64,
@@ -62,6 +66,8 @@ pub enum Message {
     Select(SelectMsg),
     /// 粘贴(Ctrl+Shift+V / 右键;PLAN-004 T4)。
     Paste,
+    /// 剪贴板读取完成(粘贴流第二拍;PLAN-004 T4)。
+    Pasted(String),
     /// dev 钩子的粗定时(仅 dev-tools 构建存在;常态不存在)。
     #[cfg(feature = "dev-tools")]
     DevTick,
@@ -127,6 +133,8 @@ pub struct App {
     #[cfg(feature = "dev-tools")]
     queued_select: Option<(Instant, DevSelectSpec)>,
     #[cfg(feature = "dev-tools")]
+    queued_paste: Option<(Instant, String)>,
+    #[cfg(feature = "dev-tools")]
     exit_at: Option<Instant>,
 }
 
@@ -158,6 +166,11 @@ impl App {
             .as_deref()
             .and_then(|s| parse_dev_select(s, now));
         #[cfg(feature = "dev-tools")]
+        let queued_paste = config
+            .dev_paste
+            .as_deref()
+            .and_then(|s| parse_dev_paste(s, now));
+        #[cfg(feature = "dev-tools")]
         let exit_at = (config.dev_exit_after > 0)
             .then(|| now + Duration::from_secs(config.dev_exit_after));
         Ok(Self {
@@ -181,6 +194,8 @@ impl App {
             queued_input,
             #[cfg(feature = "dev-tools")]
             queued_select,
+            #[cfg(feature = "dev-tools")]
+            queued_paste,
             #[cfg(feature = "dev-tools")]
             exit_at,
         }
@@ -257,6 +272,7 @@ impl App {
             if !self.config.dev_autotype.is_empty()
                 || self.exit_at.is_some()
                 || self.queued_select.is_some()
+                || self.queued_paste.is_some()
             {
                 subs.push(
                     time::every(Duration::from_millis(50))
@@ -288,6 +304,9 @@ impl App {
                         true
                     }
                 });
+                // 注入产生的 Task(如 Finish 的 copy-on-select 剪贴板写)
+                // 必须返回给 runtime 执行——丢弃即静默失效(T4 实证)
+                let mut tasks: Vec<Task<Message>> = Vec::new();
                 if let Some((at, spec)) = self.queued_select {
                     // 自愈注入:到点后若选中缺失(窗口首显 resize 风暴会
                     // 清选——pwsh 冷启动慢时风暴晚于注入)即重注入,
@@ -299,22 +318,33 @@ impl App {
                             spec.start,
                             spec.end
                         );
-                        let _ = self.handle_select(SelectMsg::Begin {
+                        tasks.push(self.handle_select(SelectMsg::Begin {
                             ty: spec.ty,
                             cell: spec.start,
                             side: Side::Left,
-                        });
-                        let _ = self.handle_select(SelectMsg::Extend {
+                        }));
+                        tasks.push(self.handle_select(SelectMsg::Extend {
                             cell: spec.end,
                             side: Side::Right,
-                        });
-                        let _ = self.handle_select(SelectMsg::Finish);
+                        }));
+                        tasks.push(self.handle_select(SelectMsg::Finish));
                         log::info!(
                             "dev-select injected: range={:?} text={:?}",
                             self.selection_range,
                             self.session.term.selection_text()
                         );
                     }
+                }
+                if let Some((at, text)) = self.queued_paste.clone() {
+                    if now >= at {
+                        self.queued_paste = None;
+                        log::info!("dev-paste inject: {text:?}");
+                        // 与真实粘贴(Ctrl+Shift+V/右键)同第二拍路径
+                        tasks.push(self.update(Message::Pasted(text)));
+                    }
+                }
+                if !tasks.is_empty() {
+                    return Task::batch(tasks);
                 }
                 if let Some(at) = self.exit_at {
                     if now >= at {
@@ -351,6 +381,13 @@ impl App {
                     }
                     _ => {}
                 }
+                // Ctrl+Shift+C/V(复制/粘贴)在 key_to_bytes 前拦截
+                // (否则 ctrl+c 会落 0x03 字节直写 PTY)
+                match clipboard_shortcut(&key, &mods) {
+                    Some(ClipboardShortcut::Copy) => return self.copy_selection(),
+                    Some(ClipboardShortcut::Paste) => return self.paste_from_clipboard(),
+                    None => {}
+                }
                 if let Some(bytes) = key_to_bytes(&key, &mods) {
                     self.session.write_input(&bytes);
                 }
@@ -373,8 +410,13 @@ impl App {
                 Task::none()
             }
             Message::Select(msg) => self.handle_select(msg),
-            Message::Paste => {
-                // 粘贴落地在 T4(剪贴板读取 + \n 规整 + write_input)
+            Message::Paste => self.paste_from_clipboard(),
+            Message::Pasted(text) => {
+                // \r\n / \n → \r 规整(终端行提交约定),再写 PTY
+                let normalized = text.replace("\r\n", "\r").replace('\n', "\r");
+                if !normalized.is_empty() {
+                    self.session.write_input(normalized.as_bytes());
+                }
                 Task::none()
             }
             Message::Resized(size) => {
@@ -402,6 +444,7 @@ impl App {
 
     /// 选中消息族处理(T2):视口格 → 绝对网格点 → 驱动 core;
     /// 高亮区间随之刷新(渲染为 overlay,不进快照/damage)。
+    /// Finish = copy-on-select(用户裁定默认开;空选清除)。
     fn handle_select(&mut self, msg: SelectMsg) -> Task<Message> {
         match msg {
             SelectMsg::Begin { ty, cell, side } => {
@@ -411,14 +454,34 @@ impl App {
                 self.session.term.update_selection(self.cell_to_point(cell), side);
             }
             SelectMsg::Finish => {
-                // 空选清除(copy-on-select 在 T4 落地)
-                if self.session.term.selection_range().is_none() {
-                    self.session.term.clear_selection();
+                if let Some(text) = self
+                    .session
+                    .term
+                    .selection_text()
+                    .filter(|t| !t.is_empty())
+                {
+                    self.selection_range = self.session.term.selection_range();
+                    return iced::clipboard::write(text);
                 }
+                self.session.term.clear_selection();
             }
         }
         self.selection_range = self.session.term.selection_range();
         Task::none()
+    }
+
+    /// 显式复制(Ctrl+Shift+C):有选中复制选中,否则不动。
+    fn copy_selection(&self) -> Task<Message> {
+        match self.session.term.selection_text() {
+            Some(t) if !t.is_empty() => iced::clipboard::write(t),
+            _ => Task::none(),
+        }
+    }
+
+    /// 粘贴两拍之一:发起剪贴板读取(结果走 [`Message::Pasted`])。
+    fn paste_from_clipboard(&self) -> Task<Message> {
+        iced::clipboard::read()
+            .then(|opt| Task::done(Message::Pasted(opt.unwrap_or_default())))
     }
 
     /// 视口格 (row, col) → core 绝对网格点(历史区为负)。
@@ -650,6 +713,14 @@ fn parse_dev_select(s: &str, start: Instant) -> Option<(Instant, DevSelectSpec)>
     ))
 }
 
+/// dev-paste 语法:"<ms>:<文本>"(原样;粘贴内部自会做换行规整)。
+#[cfg(feature = "dev-tools")]
+fn parse_dev_paste(s: &str, start: Instant) -> Option<(Instant, String)> {
+    let (ms, rest) = s.split_once(':')?;
+    let at = start + Duration::from_millis(ms.parse::<u64>().ok()?);
+    Some((at, rest.to_string()))
+}
+
 fn unescape(s: &str) -> Vec<u8> {
     let mut out = Vec::new();
     let mut chars = s.chars().peekable();
@@ -700,6 +771,32 @@ fn unescape(s: &str) -> Vec<u8> {
         }
     }
     out
+}
+
+/// 剪贴板快捷键决策(纯函数,可单测;PLAN-004 T4)。
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum ClipboardShortcut {
+    Copy,
+    Paste,
+}
+
+/// Ctrl+Shift+C/V → 复制/粘贴;其余组合(含 Ctrl+字母裸控制字节路径)
+/// 返回 None 交回 key_to_bytes。
+pub fn clipboard_shortcut(key: &Key, mods: &Modifiers) -> Option<ClipboardShortcut> {
+    if !(mods.control() && mods.shift()) {
+        return None;
+    }
+    let Key::Character(s) = key else { return None };
+    let mut chars = s.chars();
+    let c = chars.next()?;
+    if chars.next().is_some() {
+        return None;
+    }
+    match c.to_ascii_lowercase() {
+        'c' => Some(ClipboardShortcut::Copy),
+        'v' => Some(ClipboardShortcut::Paste),
+        _ => None,
+    }
 }
 
 /// 键盘 → PTY 字节(承 spike:可打印/Enter/Backspace/Tab/方向键/
@@ -775,5 +872,70 @@ mod unescape_tests {
         assert_eq!(unescape(r"\xzz"), br"\xzz");
         // 与既有转义混用
         assert_eq!(unescape(r"a\x09b\r"), b"a\tb\r");
+    }
+}
+
+#[cfg(test)]
+mod clipboard_shortcut_tests {
+    use super::{ClipboardShortcut, clipboard_shortcut};
+    use iced::keyboard::{Key, Modifiers};
+
+    fn key(s: &str) -> Key {
+        Key::Character(s.into())
+    }
+
+    #[test]
+    fn ctrl_shift_c_and_v_intercepted() {
+        let mods = Modifiers::CTRL.union(Modifiers::SHIFT);
+        assert_eq!(
+            clipboard_shortcut(&key("c"), &mods),
+            Some(ClipboardShortcut::Copy)
+        );
+        // Shift 产生的大写形态同样命中
+        assert_eq!(
+            clipboard_shortcut(&key("C"), &mods),
+            Some(ClipboardShortcut::Copy)
+        );
+        assert_eq!(
+            clipboard_shortcut(&key("v"), &mods),
+            Some(ClipboardShortcut::Paste)
+        );
+        assert_eq!(
+            clipboard_shortcut(&key("V"), &mods),
+            Some(ClipboardShortcut::Paste)
+        );
+    }
+
+    #[test]
+    fn other_combinations_fall_through() {
+        // 裸 Ctrl+C:不拦截(SIGINT 0x03 字节路径,key_to_bytes 负责)
+        assert_eq!(
+            clipboard_shortcut(&key("c"), &Modifiers::CTRL),
+            None,
+            "Ctrl+C 必须落 0x03(中断语义),不得被剪贴板劫持"
+        );
+        // 无修饰 / 仅 Shift / Ctrl+Shift+其他键:均不拦截
+        assert_eq!(clipboard_shortcut(&key("c"), &Modifiers::empty()), None);
+        assert_eq!(clipboard_shortcut(&key("c"), &Modifiers::SHIFT), None);
+        assert_eq!(
+            clipboard_shortcut(&key("x"), &Modifiers::CTRL.union(Modifiers::SHIFT)),
+            None
+        );
+        // 多字符输入(死键组合等)不拦截
+        assert_eq!(
+            clipboard_shortcut(
+                &Key::Character("ae".into()),
+                &Modifiers::CTRL.union(Modifiers::SHIFT)
+            ),
+            None
+        );
+        // 非字符键不拦截
+        assert_eq!(
+            clipboard_shortcut(
+                &Key::Named(iced::keyboard::key::Named::Enter),
+                &Modifiers::CTRL.union(Modifiers::SHIFT)
+            ),
+            None
+        );
     }
 }

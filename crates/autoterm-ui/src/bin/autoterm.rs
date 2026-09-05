@@ -26,6 +26,11 @@ struct Args {
     #[cfg(feature = "dev-tools")]
     dev_select: Option<String>,
 
+    /// [dev 取证] 到时注入粘贴("<ms>:<文本>",走 Pasted 真实路径)
+    #[arg(long = "dev-paste")]
+    #[cfg(feature = "dev-tools")]
+    dev_paste: Option<String>,
+
     /// [dev 取证] 到时转储并退出的秒数(0 = 不自动退出)
     #[arg(long, default_value = "0")]
     #[cfg(feature = "dev-tools")]
@@ -52,6 +57,8 @@ fn main() -> Result<()> {
         dev_autotype: args.dev_autotype,
         #[cfg(feature = "dev-tools")]
         dev_select: args.dev_select,
+        #[cfg(feature = "dev-tools")]
+        dev_paste: args.dev_paste,
         #[cfg(feature = "dev-tools")]
         dev_exit_after: args.dev_exit_after,
         #[cfg(feature = "dev-tools")]
