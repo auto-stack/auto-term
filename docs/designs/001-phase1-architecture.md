@@ -215,7 +215,8 @@ IME 落地、Unix 基座、光标形状/闪烁、选中。
    与 Task 必须返回(丢弃即副作用静默失效)。
 
 残留缺口(Phase 4+):拖选自动滚动、块选/右键菜单、选中色配置、
-光标形状/闪烁、Ctrl+C 待环境复测、Unix 基座、auto-ui 对齐。
+光标形状/闪烁、Ctrl+C 待环境复测、Unix 基座、Auto 化(原"auto-ui
+对齐";006 前提调查已毕 → `docs/designs/002-autoize-feasibility.md`)。
 
 ### 附录补注:WT/Alacritty 的 Ctrl+C 机制与本机实测(复审期补充调查)
 

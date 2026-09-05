@@ -28,7 +28,8 @@ crates/autoterm-ui    单窗口终端(iced):事件驱动、实测字形度量、
                       bin = autoterm
 spikes/               PLAN-001 归档(一次性探针,保留作证据,不再演进)
 docs/plans/           实施计划(auto-plan 流)
-docs/designs/         设计决策(000:渲染路线;001:Phase 1 架构与决策链)
+docs/designs/         设计决策(000:渲染路线;001:Phase 1 架构与决策链;
+                      002:Auto 化前提调查)
 ```
 
 ## 运行
@@ -62,4 +63,6 @@ Phase 4 方向:`DEBTS.md`。
 
 - 拖选到边缘自动滚动、块选、右键上下文菜单、选中色配置;
 - Ctrl+C 稳定版复测(待环境,见 DEBTS #7);光标形状/闪烁;
-- Unix 基座适配;iced↔auto-ui 生态对齐(`.at` 组件模型调查)。
+- Unix 基座适配;Auto 化(DEBTS 候选 #8——前提调查已毕:TermGrid 须
+  以 auto-lang 内原生组件落地,rust-mode 示例存在存量编译问题,见
+  `docs/designs/002-autoize-feasibility.md`)。
