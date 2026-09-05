@@ -1,6 +1,6 @@
 ---
 plan_id: PLAN-003
-status: executing
+status: execution_done
 feature_name: AutoTerm Phase 2 性能与输入完备性(保留式画布 + Ctrl+C 矩阵 + IME)
 author: [zhaopuming]
 created_at: 2026-09-05T13:27:54+08:00
@@ -11,7 +11,7 @@ supersedes_spec_components: []
 new_spec_components: []
 touched_goals: []
 
-current_step: 4
+current_step: 12
 total_steps: 12
 ---
 
@@ -183,37 +183,45 @@ eprintln、`Message::NoOp` 替换空唤醒复用。
       残影;网格终态完整)。
       验证:冒烟转储含 20000 且 `fit_ok: true`
       [✅ 已完成] 首跑暴露真 bug:唤醒转发线程遇 iced 通道 Full 即 break 永久死亡,尾部字节无人 drain(19996-20000 丢失)——T4-002 起潜伏,突发首现;修复=is_full 重试。3 连跑稳定:bytes_fed 恒 129721、20000 每次都在、fit_ok true;bytes_fed 计数器入 PtySession/转储;证据 evidence/003-canvas/bench-20000-fixed.txt
-- [ ] **T5** `unescape` 增 `\xHH`(TDD:先测 `\x41`→A、`\x03`→
+- [x] **T5** `unescape` 增 `\xHH`(TDD:先测 `\x41`→A、`\x03`→
       ETX);lib.rs 单测。
       验证:`cargo test -p autoterm-ui unescape`
-- [ ] **T6** Ctrl+C 矩阵冒烟:pwhs/ash/cmd × `Start-Sleep 30`/
+      [✅ 已完成] TDD 绿(先失败后实现;无效十六进制回吐修复);8/8 ui 测试
+- [x] **T6** Ctrl+C 矩阵冒烟:pwhs/ash/cmd × `Start-Sleep 30`/
       `timeout 30` + 2s 后 `\x03` 注入;断言 10s 内网格回提示符、
       tasklist 无孤儿;证据存 `docs/designs/evidence/003-matrix/`。
       验证:三 shell 转储全过
-- [ ] **T7** Ctrl+Break 调查:iced `key::Named` 变体与 ConPTY 字节
+      [✅ 已完成] 矩阵证据 4 份归档 evidence/003-matrix/;**平台发现**:ConPTY 不翻译裸 0x03→CTRL_C_EVENT(pwsh Start-Sleep/cmd timeout 双证无反应),raw-mode 客户端(ash)正常响应,普通键中断正常——真事件需 win32 GenerateConsoleCtrlEvent(待澄清#3 升级为正式裁定点)
+- [x] **T7** Ctrl+Break 调查:iced `key::Named` 变体与 ConPTY 字节
       形态;可映射则进 `key_to_bytes` + 矩阵加一列,否则 blocker
       记 001 附录。
       验证:结论记录在 001 附录(grep "Ctrl+Break" ≥1)
-- [ ] **T8** IME PoC:iced 0.14 Ime 事件形态/`InputMethod` 开放度;
+      [✅ 已完成] 双重阻断结论(iced key::Named 无 Break/Cancel + win32 同 Ctrl+C 路线)记 001 附录,与 T6 合并路由待澄清#3
+- [x] **T8** IME PoC:iced 0.14 Ime 事件形态/`InputMethod` 开放度;
       行则 `Message::Ime`+preedit 下划线渲染+手动试用清单;阻则
       blocker 记录(DEBTS+001 附录)。
       验证:结论记录(grep "IME" docs/designs/001 ≥1)+ 可选试用
-- [ ] **T9** `dev-tools` feature:`Cargo.toml` 增 feature,`--dev-*`
+      [✅ 已完成] 结论:管线公面完备(Event::InputMethod/over-the-spot),落地需 Widget::update;验证强依赖真人 IME 交互无法无人值守取证→路由 Phase 3;记 001 附录
+- [x] **T9** `dev-tools` feature:`Cargo.toml` 增 feature,`--dev-*`
       clap 参数/DevTick 订阅/取证静态量全部 `#[cfg(feature=…
       )]`;默认构建冒烟仍可运行(无 dev 参数)。
       验证:`cargo build -p autoterm-ui`(默认)绿 +
       `--features dev-tools` 构建绿 + `--help` 无 dev 项
-- [ ] **T10** log+env_logger:依赖加入,`dump_state`/resize 错误/
+      [✅ 已完成] 默认构建 --help 零 dev 参数且拒收 --dev-*;feature 构建绿(env_logger optional)
+- [x] **T10** log+env_logger:依赖加入,`dump_state`/resize 错误/
       取证 eprintln 全部换 log 宏;`bin/autoterm.rs` 初始化;
       `Message::NoOp` 变体替换空唤醒。
       验证:`grep -rn "eprintln!" crates/autoterm-ui/src | wc -l` = 0
       + `cargo test --workspace` 绿
-- [ ] **T11** 文档:001 追加 002→003 决策链(Paragraph 路线/矩阵/
+      [✅ 已完成] src 零 eprintln(log::info + dev-tools 下 env_logger init);Message::NoOp 替换两处空唤醒;双构建绿
+- [x] **T11** 文档:001 追加 002→003 决策链(Paragraph 路线/矩阵/
       IME/Ctrl+Break 结论);DEBTS 勾账;README dev-tools 说明。
       验证:`grep -c "002→003" docs/designs/001-phase1-architecture.md` ≥1
-- [ ] **T12** 收尾:全量回归 + 无 ash 断言 + 冒烟复查。
+      [✅ 已完成] 001 增 002→003 决策链节(五条);DEBTS 勾账(#1/#2 关,#6/#7 路由);README dev-tools 说明
+- [x] **T12** 收尾:全量回归 + 无 ash 断言 + 冒烟复查。
       验证:`cargo test --workspace` 绿 + `! cargo tree --workspace |
       grep -q ash-core` && echo OK
+      [✅ 已完成] 全量 19 用例绿(较 002 +4:paragraph_poc 3/unescape 1),零 ash 路径
 
 ## 复审记录
 
