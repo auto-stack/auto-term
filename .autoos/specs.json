@@ -22,6 +22,17 @@
      "PLAN-002"
     ],
     "status": "published"
+   },
+   {
+    "id": "P003-1",
+    "section": "reports",
+    "title": "AutoTerm Phase 2 性能与输入完备性 — 变更摘要",
+    "content": "兑现 PLAN-002 路由到 Phase 2 的三件事:①**保留式画布**——widget\n每行缓存 iced `Paragraph`,`Paragraph::compare` 判异、仅脏行重建\n形状、`fill_paragraph` 绘制,达成计划002 验收#4 的绘制级 run 不等式;\n②**Ctrl+C/Ctrl+Break/关闭语义矩阵**——三 shell × 中断路径的自动化\n冒烟;③**IME 最小调查与落地**——iced `input_method` 模块可用性\nPoC,行则做光标处 preedit 下划线显示,阻则 blocker 记录。顺带清偿\n三尾巴:`--dev-*` 收进 `dev-tools` feature、log+env_logger 替换\neprintln、`Message::NoOp` 替换空唤醒复用。",
+    "file": "docs/plans/archived/003-phase2-perf-input.md",
+    "related": [
+     "PLAN-003"
+    ],
+    "status": "published"
    }
   ],
   "goals": [
@@ -44,6 +55,17 @@
     "file": "docs/plans/archived/002-phase1-mvp.md",
     "related": [
      "PLAN-002"
+    ],
+    "status": "proposed"
+   },
+   {
+    "id": "P003-2",
+    "section": "goals",
+    "title": "AutoTerm Phase 2 性能与输入完备性 — 目标",
+    "content": "1. **绘制级损伤剪裁**(计划002 验收#4 兑现):单行改动帧的\n   Paragraph 重建数 < 全网格行数(dev 转储计数断言),Full 损伤退化为\n   全量重建;\n2. **语义矩阵自动化**:pwsh/ash/cmd × {Ctrl+C 字节, 窗口关闭}\n   中断运行中命令 → 提示符回归/无孤儿断言;Ctrl+Break 调查并给出\n   映射或平台结论;\n3. **IME**:PoC iced 0.14 `input_method`/Ime 事件管道;可用则\n   preedit 在光标处下划线渲染(最小),不可用则 blocker 记入 DEBTS\n   与 001 附录;\n4. **三尾巴清偿**:dev-tools feature flag(002 待澄清#5)、\n   log+env_logger(002 复审债务候选)、Message::NoOp(002 复审瑕疵);\n5. **决策链沉淀**:001 设计文档追加 002→003 节(Paragraph 路线/\n   矩阵结论/IME 结论),DEBTS 勾账。\n\n非目标(Phase 3+):Unix 基座;iced↔auto-ui 对齐;选中/主题;光标\n闪烁与形状(IME 顺手才带);列级损伤剪裁(行级已够)。",
+    "file": "docs/plans/archived/003-phase2-perf-input.md",
+    "related": [
+     "PLAN-003"
     ],
     "status": "proposed"
    }
@@ -73,6 +95,17 @@
      "PLAN-002"
     ],
     "status": "stable"
+   },
+   {
+    "id": "P003-3",
+    "section": "architecture",
+    "title": "AutoTerm Phase 2 性能与输入完备性 — 架构方案",
+    "content": "```\n保留式画布(在现有 TermGrid 内演进,不新增 crate):\n  Vec<Option<RowPara>>  ── compare(snapshot 行文本) ──▶\n    未变:复用 Paragraph(fill_paragraph 直接绘制)\n    变化/缺失:重建(with_text+load)→ 计数 paragraph_rebuilds\n  damage: Lines(脏行集)→ 只对脏行做 compare;Full → 全部 compare\n  (iced 即时模式限制就此绕开:形状/布局缓存归我们,场景 emit 仍全量)\n```\n\n语义矩阵与 IME 均为 autoterm-ui 侧增量,core 不动(除 unescape\n转义扩展在 ui lib)。",
+    "file": "docs/plans/archived/003-phase2-perf-input.md",
+    "related": [
+     "PLAN-003"
+    ],
+    "status": "stable"
    }
   ],
   "designs": [
@@ -98,6 +131,20 @@
     "file": "docs/plans/archived/002-phase1-mvp.md",
     "related": [
      "PLAN-002"
+    ],
+    "status": "stable",
+    "superseded_by": [
+     "P003-4"
+    ]
+   },
+   {
+    "id": "P003-4",
+    "section": "designs",
+    "title": "AutoTerm Phase 2 性能与输入完备性 — 详细设计",
+    "content": "### 保留式画布(T1-T4)\n\n- `widget.rs`:`RowPara` 封装 `<iced::Renderer as text::Renderer>::\n  Paragraph`,TermGrid 增 `rows: Vec<Option<RowPara>>`(与快照行\n  等长,damage 剪裁后惰性补齐);\n- 绘制协议:底 quad 全量;每行——`compare(Text{当前行内容})` 为\n  `Difference::None` → 直接 `fill_paragraph`;否则 `with_text` 重建\n  +`load` 后绘制并 `paragraph_rebuilds += 1`;行内背景色块仍按 run\n  画(颜色变化经 compare 的 Shape 差异覆盖);\n- 光标行:上游 damage 恒含光标行,自然走重建路径,反色块绘制不变;\n- dev 转储增 `paragraph_rebuilds_last/prev`;\n- **T1 PoC 前置**:独立测试构造 Paragraph(shaping 'HELLO' →\n  `min_bounds().width > 0`)证明公面构造可行;若构造受阻,记\n  blocker 于待澄清并停 T2-T4(计划其余部分不受影响)。\n\n### 语义矩阵(T5-T7)\n\n- `unescape` 增 `\\xHH` 转义(TDD 单测),Ctrl+C 注入即\n  `--dev-autotype \"N:...\\x03\"`;\n- 冒烟脚本(手工执行,证据存档):三 shell 各跑长命令\n  (pwsh `Start-Sleep 30` / ash 内 pwsh / cmd `timeout 30`),+2s 注入\n  \\x03,断言:网格 10s 内回提示符、无孤儿进程(tasklist 计数);\n- Ctrl+Break:查 iced `key::Named` 是否有 Break 变体与 ConPTY 下\n  的字节/事件形态,结论记 001 附录,能映射则并入 key_to_bytes。\n\n### IME(T8)\n\n- PoC:iced 0.14 Ime 事件(Event 枚举形态)与 `InputMethod` 是否\n  对自定义 widget 开放;可用 → 光标处 preedit 下划线渲染(内容\n  经 Message::Ime(String) 进状态);受阻 → blocker 记录(DEBTS\n  +001 附录),不阻塞计划。\n\n### 三尾巴(T9-T10)\n\n- `dev-tools` feature:`--dev-*` 参数与 DevTick 订阅/取证静态量\n  统一进 `#[cfg(feature = \"dev-tools\")]`;默认构建零 dev 面;\n- log+env_logger:`dump_state`/resize 错误路径换 `log::info!/\n  warn!`,bin 入口 `env_logger::init()`;\n- `Message::NoOp` 变体:键盘非按键/鼠标非滚轮事件改映射 NoOp\n  (update 显式忽略)。",
+    "file": "docs/plans/archived/003-phase2-perf-input.md",
+    "related": [
+     "PLAN-003"
     ],
     "status": "stable"
    }
@@ -127,6 +174,17 @@
      "PLAN-002"
     ],
     "status": "verified"
+   },
+   {
+    "id": "P003-5",
+    "section": "tests",
+    "title": "AutoTerm Phase 2 性能与输入完备性 — 测试设计",
+    "content": "- 自动:unescape \\xHH 单测;RowCache compare 语义单测(同行内容\n  None/变行 Shape/尺寸变 Bounds);矩阵断言脚本化进 dev 冒烟;\n  全量 `cargo test --workspace`;\n- 半自动:保留式画布性能取证(20000 行流式期间 rebuilds 曲线 +\n  单行改动帧 rebuilds < rows)、三 shell Ctrl+C 冒烟转储;\n- 手动:IME 中文输入试用(pwsh/ash 各 5 分钟,若 T8 落地);\n- 不做:性能基准自动化、列级损伤、Unix。",
+    "file": "docs/plans/archived/003-phase2-perf-input.md",
+    "related": [
+     "PLAN-003"
+    ],
+    "status": "verified"
    }
   ],
   "reviews": [
@@ -149,6 +207,17 @@
     "file": "docs/plans/archived/002-phase1-mvp.md",
     "related": [
      "PLAN-002"
+    ],
+    "status": "published"
+   },
+   {
+    "id": "P003-6",
+    "section": "reviews",
+    "title": "AutoTerm Phase 2 性能与输入完备性 — 验收标准",
+    "content": "1. `cargo test --workspace` 全绿,无 ash-core/auto-shell 路径;\n2. **绘制级不等式达成**(002 验收#4 兑现):单行改动帧\n   `paragraph_rebuilds < rows`(dev 转储计数断言),Full 帧仍全量;\n3. Ctrl+C 矩阵:pwhs/ash/cmd 三 shell 中断断言全过(提示符回归+\n   无孤儿),证据存档;\n4. Ctrl+Break 有明确结论(映射落地或平台 blocker 记录);\n5. IME 有明确结论(最小 preedit 落地或 blocker 记录);\n6. `--dev-*` 收进 `dev-tools` feature:默认构建 `--help` 无 dev\n   参数(或 cargo tree 无 env_logger 差异断言);\n7. 001 设计文档含 002→003 决策链节;DEBTS 勾账(#1/#2/#7 关闭\n   或降级,#6 部分推进);\n8. log 替换完成:源内无面向用户的 eprintln(grep 断言,panic 除外)。",
+    "file": "docs/plans/archived/003-phase2-perf-input.md",
+    "related": [
+     "PLAN-003"
     ],
     "status": "published"
    }

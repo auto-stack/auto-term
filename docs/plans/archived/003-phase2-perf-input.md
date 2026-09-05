@@ -1,6 +1,6 @@
 ---
 plan_id: PLAN-003
-status: reviewed
+status: archived
 feature_name: AutoTerm Phase 2 性能与输入完备性(保留式画布 + Ctrl+C 矩阵 + IME)
 author: [zhaopuming]
 created_at: 2026-09-05T13:27:54+08:00
