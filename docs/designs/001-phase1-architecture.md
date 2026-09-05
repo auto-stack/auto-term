@@ -217,3 +217,17 @@ InputStateMachineEngine.cpp + src/host/input.cpp):
 机器/版本级行为,非本仓实现缺口。Phase 3 首任务修正为:先在稳定
 OS 版本上复测(若正常则本机为内部版回归,无需任何代码;若复现,
 再评估 AttachConsole+GenerateConsoleCtrlEvent 的 win32 直调)。
+
+### 附录补注:稳定版复测裁定(PLAN-004 T7,2026-09-05)
+
+**用户裁定(2026-09-05)**:当前无稳定版 Windows 环境可执行复测。
+T7 按"待环境"执行:
+
+- **矩阵就绪**:三通道复测脚本与证据骨架沿用 evidence/003-matrix/
+  (裸 0x03 / win32 编码 / 真 WT+真实 ^C),在稳定版机器上重跑即得数;
+- **结果栏:待环境**——26200 内部版的矩阵结论维持上文(三通道全不
+  中断),稳定版数据到位之日补测即关账;
+- **挂账**:DEBTS #7 持有该项(不阻塞 Phase 3 其余交付);
+- **决策树不变**:稳定版正常 → 内部版回归关账(零代码);复现 →
+  win32 直调(AttachConsole+GenerateConsoleCtrlEvent,未文档化路径)
+  立项。
