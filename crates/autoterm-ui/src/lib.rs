@@ -56,6 +56,9 @@ pub enum Message {
     /// dev 钩子的粗定时(仅 dev-tools 构建存在;常态不存在)。
     #[cfg(feature = "dev-tools")]
     DevTick,
+    /// 显式空操作:订阅里非键盘/非滚轮事件的归宿(替代 PtyBytes
+    /// 空唤醒复用,002 复审瑕疵清偿)。
+    NoOp,
 }
 
 /// 订阅数据源:唤醒接收端的"一次性槽"(run_with 需 Hash,恒等即可)。
@@ -186,7 +189,7 @@ impl App {
                 iced::keyboard::Event::KeyPressed { key, modifiers, .. } => {
                     Message::Key(key, modifiers)
                 }
-                _ => Message::PtyBytes,
+                _ => Message::NoOp,
             }),
             iced::window::resize_events()
                 .map(|(_id, size)| Message::Resized(size)),
@@ -195,7 +198,7 @@ impl App {
                 iced::Event::Mouse(iced::mouse::Event::WheelScrolled {
                     delta: iced::mouse::ScrollDelta::Lines { y, .. },
                 }) => Message::Scrolled((y * 3.0) as i32),
-                _ => Message::PtyBytes,
+                _ => Message::NoOp,
             }),
             // 窗口关闭:同步清理子进程(T8)
             iced::window::close_events().map(Message::Closed),
@@ -220,6 +223,7 @@ impl App {
                 self.pump();
                 Task::none()
             }
+            Message::NoOp => Task::none(),
             #[cfg(feature = "dev-tools")]
             Message::DevTick => {
                 let now = Instant::now();
@@ -444,7 +448,7 @@ impl App {
         }
         out.push_str("=== grid_text_end ===\n");
         let _ = std::fs::write(&path, out);
-        eprintln!("dumped: {}", path.display());
+        log::info!("dumped: {}", path.display());
     }
 }
 
