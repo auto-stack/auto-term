@@ -1,27 +1,35 @@
 # DEBTS.md — 已知债务
 
-> PLAN-001(建仓 + spike)收尾盘点 · 2026-09-05。
-> spike 代码非正式架构,允许整体重写;以下是重写时必须还清的账。
+> PLAN-001(建仓 + spike)盘点 · PLAN-002(Phase 1 MVP)勾账 · 2026-09-05。
 
-## spike 已知债务(Phase 1 清偿)
+## 债务账本(PLAN-002 后状态)
 
-| # | 债务 | 现状 | 清偿方向 |
-| --- | --- | --- | --- |
-| 1 | 整帧重拼渲染 | 每帧全网格重画,同色 run 合并 | `Term::damage()` 损伤重绘 |
-| 2 | 无字形图集 | 每 run 独立 `fill_text` | glyph cache / cosmic-text 图集 |
-| 3 | 固定字形度量 | Consolas advance 硬编码 + 窗口拟合;CJK 双宽未处理 | 实测字形 advance,宽字符占两格 |
-| 4 | 16ms 轮询驱动 | `time::every` tick 轮询 PTY channel | reader 线程唤醒 + `Event::Wakeup` 事件驱动 |
-| 5 | 无滚动回滚 UI | 回滚缓冲在仿真核心里,无 UI | `scroll_display` + 滚动条/滚轮 |
-| 6 | 无光标块/选中/IME | 键盘只回写,无输入法 | 正式输入管线 |
-| 7 | Ctrl+C / 关闭语义未系统验证 | spike 仅跑通 Ctrl+字母回写 | 关闭时子进程清理树、SIGINT 语义矩阵 |
-| 8 | 仅 Windows 基座 | ConPTY 验证;Unix 由 portable-pty 承诺未验 | Linux/macOS 基座计划 |
-| 9 | 三 probe 无统一 workspace 文档 | spike 即代码 | Phase 1 正式 crate 结构另立计划 |
-| 10 | 颜色表硬编码 | 16 色/xterm256 表/默认前后景内置 | 主题系统 + NamedColor 全枚举映射(含 Dim/Bright 前景) |
+| # | 债务 | PLAN-001 现状 | PLAN-002 后 | 清偿方向 |
+| --- | --- | --- | --- | --- |
+| 1 | 整帧重拼渲染 | 每帧全网格重画 | **部分清偿**:damage API + 快照重建门控(damage_last: lines=1 实证);绘制级剪裁受 iced 即时模式约束 | 保留式画布(每行 Paragraph 缓存)或 wgpu 自管层,Phase 2 |
+| 2 | 无字形图集 | 每 run 独立 fill_text | 未动(shaping 缓存由 iced/cosmic 内部承担) | 与 #1 合并为 Phase 2 性能专项 |
+| 3 | 固定字形度量 | Consolas 硬编码 + 拟合 | **已清偿**:cosmic-text 实测 cell_w(9.375px@16px),fit_ok 数值断言;宽字符 unicode-width(实测证伪 advance 法) | — |
+| 4 | 16ms 轮询驱动 | time::every tick | **已清偿**:唤醒通道事件驱动(6s 59 次更新 vs 372 轮询),常态零定时器 | — |
+| 5 | 无滚动回滚 UI | — | **已清偿**:滚轮/PgUp/PgDn/键入回正/↑N(offset=171 回顶实证) | 滚动条可选 |
+| 6 | 无光标块/选中/IME | 键盘只回写 | 光标块已清偿(反色,cursor_drawn_at 实证);**选中/IME 留账** | 正式输入管线,Phase 2 |
+| 7 | Ctrl+C / 关闭语义 | 未验证 | 关闭已清偿(kill+wait,无孤儿实证);**Ctrl+C/Break 矩阵留账** | 语义矩阵,Phase 2 |
+| 8 | 仅 Windows 基座 | 同 | 未动 | Linux/macOS 计划 |
+| 9 | spike 无统一文档 | 同 | **已清偿**:crates/* 正式结构 + 001 设计文档 | — |
+| 10 | 颜色表硬编码 | 16 色/xterm256 内置 | **已清偿**:palette.rs 全 NamedColor 映射(Dim×8/Bright/Dim 前景,TDD) | 主题系统可选 |
 
-## 观察(not debt,Phase 1 设计输入)
+## 新增观察(PLAN-002 实测,设计输入)
 
-- pwsh/cmd 启动即发 DSR/DA 查询并等应答——嵌入方必须回写
-  `Event::PtyWrite`(否则无提示符);
-- ConPTY 翻译层吞吐 ≈100KB/s(20000 行实测),是链路瓶颈;
-- ash 命令行 `$_`/`;` 触发其解析怪癖("program not found"),
-  脚本走 `-File` 正常——ash 侧问题,另行反馈 auto-shell。
+- **ConPTY 无自然 EOF**:会话持活期间主端读流不结束(conhost 等
+  输入端关闭)——退出检测必须走 try_wait(001 设计文档专节);
+- `Scroll::Delta` 正=上翻历史(alacritty 上游符号约定);
+- 字体 advance 不承载终端双格语义(本机 '中' 与 'M' advance 相等)
+  ——宽字符判定用 unicode-width,勿再走字体度量;
+- cosmic-text 需与 iced 同版 pin(0.15),否则双份字体系统。
+
+## Phase 2 候选清单(优先级未定)
+
+1. 字形图集 + 保留式画布(连带 #1/#2 的绘制级剪裁);
+2. Ctrl+C/Ctrl+Break/关闭语义矩阵;IME/选中;
+3. 光标形状(Underline/Beam)与闪烁;
+4. Unix 基座适配;
+5. iced↔auto-ui 生态对齐(`.at` 组件模型承载原生 widget 调查)。
