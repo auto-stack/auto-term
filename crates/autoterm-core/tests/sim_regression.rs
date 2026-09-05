@@ -1,7 +1,9 @@
 //! 仿真回归矩阵:纯 VT 字节(不经 PTY)→ 网格/事件断言。
 //! (PLAN-002 T3;PLAN-001 留下的"回归种子"兑现——六类语义各至少一例)
 
-use autoterm_core::{Color, Damage, NamedColor, Rgb, TermSession};
+use autoterm_core::{
+    Color, Column, Damage, Line, NamedColor, Point, Rgb, SelectionType, Side, TermSession,
+};
 
 fn lines(session: &TermSession) -> Vec<String> {
     session.visible_lines()
@@ -154,4 +156,68 @@ fn damage_tracking_partial_and_full() {
     // 清屏(ED 2)→ 全损伤
     s.feed(b"\x1b[2J");
     assert_eq!(s.take_damage(), Damage::Full);
+}
+
+// ---- PLAN-004 T1:选中封装(Simple/Semantic/Lines)----
+
+/// 视口行 → 绝对网格行(UI 侧换算契约:绝对行 = 视口行 - display_offset)。
+fn abs_point(s: &TermSession, row: i32, col: usize) -> Point {
+    Point::new(Line(row - s.display_offset() as i32), Column(col))
+}
+
+#[test]
+fn selection_simple_range_and_text() {
+    let mut s = TermSession::new(20, 5);
+    s.feed(b"HELLO WORLD");
+    // 拖选 HELLO:锚 (0,0)Left → (0,4)Right(右缘含 0..=4 列)
+    s.begin_selection(SelectionType::Simple, abs_point(&s, 0, 0), Side::Left);
+    s.update_selection(abs_point(&s, 0, 4), Side::Right);
+    let range = s.selection_range().expect("非空 Simple 选中应有 range");
+    assert_eq!((range.start.line.0, range.start.column.0), (0, 0));
+    assert_eq!((range.end.line.0, range.end.column.0), (0, 4));
+    assert_eq!(s.selection_text().as_deref(), Some("HELLO"));
+
+    // 空选(同点同侧)→ range/文本均 None
+    s.begin_selection(SelectionType::Simple, abs_point(&s, 0, 2), Side::Left);
+    assert!(s.selection_range().is_none(), "空选 range 应为 None");
+
+    // 清除后无任何选中
+    s.clear_selection();
+    assert!(s.selection_text().is_none(), "清除后无选中文本");
+}
+
+#[test]
+fn selection_semantic_word_expansion() {
+    let mut s = TermSession::new(20, 5);
+    s.feed(b"foo bar baz");
+    // 双击语义选词:点在 bar 的 'a'(列 5),无需拖动即扩到整词
+    s.begin_selection(SelectionType::Semantic, abs_point(&s, 0, 5), Side::Left);
+    let range = s.selection_range().expect("语义选词应有 range");
+    assert_eq!(
+        (range.start.column.0, range.end.column.0),
+        (4, 6),
+        "应扩到整词 bar(列 4..=6,空格为默认语义边界)"
+    );
+    assert_eq!(s.selection_text().as_deref(), Some("bar"));
+}
+
+#[test]
+fn selection_lines_full_rows_with_scrollback() {
+    let mut s = TermSession::new(20, 5);
+    let payload: String = (1..=10).map(|i| format!("L{i}\r\n")).collect();
+    s.feed(payload.as_bytes());
+    s.scroll(i32::MAX); // 顶到头:视口行 0 = L1(既有 scrollback 用例语义)
+    let view = lines(&s);
+    assert_eq!(view[0].trim_end(), "L1", "前置:回滚到顶行 0 应是 L1");
+
+    // 三击行选视口行 1..=2(L2/L3):换算契约经 abs_point(-display_offset)
+    s.begin_selection(SelectionType::Lines, abs_point(&s, 1, 1), Side::Left);
+    s.update_selection(abs_point(&s, 2, 0), Side::Left);
+    let range = s.selection_range().expect("行选应有 range");
+    let d = s.display_offset() as i32;
+    assert_eq!(range.start.line.0, 1 - d, "range 行坐标为绝对网格行(历史区为负)");
+    assert_eq!(range.end.line.0, 2 - d);
+    assert_eq!(range.start.column.0, 0, "行选应扩满整行(起始列 0)");
+    assert_eq!(range.end.column.0, 19, "行选应扩满整行(终止列 19=last_column)");
+    assert_eq!(s.selection_text().as_deref(), Some("L2\nL3\n"), "行选文本带换行尾");
 }
