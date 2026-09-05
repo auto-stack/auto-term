@@ -5,6 +5,8 @@
 //! `pty`:PTY 会话(spawn/reader 线程/答案回写/resize/kill)。
 //! 由 PLAN-001 spikes/term-probe 升格而来(spikes/ 保留归档)。
 
+pub mod pty;
 pub mod term;
 
+pub use pty::*;
 pub use term::*;
