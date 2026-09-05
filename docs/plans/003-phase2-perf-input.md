@@ -11,7 +11,7 @@ supersedes_spec_components: []
 new_spec_components: []
 touched_goals: []
 
-current_step: 3
+current_step: 4
 total_steps: 12
 ---
 
@@ -182,6 +182,7 @@ eprintln、`Message::NoOp` 替换空唤醒复用。
 - [ ] **T4** 回归对照:20000 行流式冒烟(rebuilds 合理,无错位/
       残影;网格终态完整)。
       验证:冒烟转储含 20000 且 `fit_ok: true`
+      [✅ 已完成] 首跑暴露真 bug:唤醒转发线程遇 iced 通道 Full 即 break 永久死亡,尾部字节无人 drain(19996-20000 丢失)——T4-002 起潜伏,突发首现;修复=is_full 重试。3 连跑稳定:bytes_fed 恒 129721、20000 每次都在、fit_ok true;bytes_fed 计数器入 PtySession/转储;证据 evidence/003-canvas/bench-20000-fixed.txt
 - [ ] **T5** `unescape` 增 `\xHH`(TDD:先测 `\x41`→A、`\x03`→
       ETX);lib.rs 单测。
       验证:`cargo test -p autoterm-ui unescape`
