@@ -1,15 +1,19 @@
 ---
 plan_id: PLAN-004
-status: execution_done
+status: reviewed
 feature_name: AutoTerm Phase 3 交互完备(选中/复制粘贴 + Ctrl+C 稳定版复测 + IME)
 author: [zhaopuming]
 created_at: 2026-09-05T16:05:00+08:00
-updated_at: 2026-09-05T18:40:00+08:00
+updated_at: 2026-09-05T18:55:00+08:00
 
 # Leave these EMPTY here — /auto-plan:review fills them:
 supersedes_spec_components: []
 new_spec_components: []
-touched_goals: []
+touched_goals:
+  - "goal-1: 选中/复制/粘贴闭环(DEBTS #6 清账;像素证据:5 行带恰 40px×5、命中色 (70,73,76) 对理论 (71,73,76);外部 Get-Clipboard 读回逐字节一致)"
+  - "goal-2: IME 落地(锚定请求+Preedit/Commit 管线;over-the-spot 本机不落屏实证→按裁定#3 降级自绘 preedit,像素证据 318px=恰 17 格;人工拼音清单待用户,001 附录 T8 节)"
+  - "goal-3: Ctrl+C 稳定版复测按裁定#1 记待环境(001 附录 T7 节 + DEBTS #7 持账;决策树不变)"
+  - "goal-4: 决策链沉淀(001 003→004 节;DEBTS #6 清账/#11 新增/Phase 4 候选按裁定#4 重排;README 交互表)"
 
 current_step: 9
 total_steps: 10
@@ -266,7 +270,61 @@ IME:聚焦时 Shell::request_input_method(光标矩形,purpose=Terminal)
 
 ## 复审记录
 
-(待 /auto-plan:review 填写)
+**复审**(zhaopuming 代理 · /auto-plan:review · 2026-09-05 18:55 +08:00):
+worktree `.wt/auto-004/auto-term`,分支 10 提交(+1608/−89,24 文件);
+全部验证在 worktree 内独立重跑(不信勾选框)。
+
+**逐条验收**:
+
+1. **全绿 + 无 ash** — ✅ 独立重跑 `cargo test --workspace`:15 套件
+   24 用例 0 失败;`cargo tree --workspace` 精确断言无 ash-core /
+   auto-shell(裸 grep "ash" 的 21 处命中均为 swash/rustc-hash 子串
+   误报);
+2. **选中三模式 + 高亮像素证据 + selection_text** — ✅ 独立重跑
+   像素扫描冒烟:5 行带(y138-337,200px=5×40px)精确复现,命中色
+   (70.0,73.0,76.0),selection_cells 484;双击/三击证据
+   (semantic-dump/lines-dump:词扩整词 + 318=3×106 整行)+ sim 11
+   用例中的 Semantic/Lines 断言;
+3. **复制读回 + 粘贴回显** — ✅ 独立重跑:粘贴 REVIEW_PASTE_004
+   回显上屏;退出后外部 Get-Clipboard == selection_text(MATCH)。
+   Ctrl+Shift+C/V 键绑定经纯函数 clipboard_shortcut 单测(裸
+   Ctrl+C 落 0x03 不劫持)+ 与 copy-on-select 同一 copy_selection()
+   端到端——键事件注入未做实机 SendInput,以单测+同函数等价记录
+   (非静默);
+4. **Ctrl+C 复测结论** — ✅ 按裁定#1 走"待环境"臂:001 附录 T7 节
+   (grep 稳定版=6)+ DEBTS #7 持账,矩阵脚本沿用 003-matrix;
+5. **IME** — ✅ 走"blocker 记录"臂(计划验收条款明示允许):
+   preedit 可见像素证据独立复现(下划线 4 物理行 × 318px=恰 17 格,
+   PREEDIT_SELF_DRAWN_VISIBLE);提交上屏路径(CommitIme→
+   write_input)已实现但未经真实 IME 端到端——并入人工清单残留
+   (001 附录 T8 节含跑法);over-the-spot 首选已试→本机不落屏
+   (iced_winit main-events 相相位丢弃 input_method,381+527 次请求
+   埋点),降级自绘系裁定#3 授权次序;
+6. **001 决策链 + DEBTS** — ✅ grep 003→004 = 1;#6 清账(残留
+   注明)、#7 待环境、新增 #11、Phase 4 候选按裁定#4 重排;
+7. **默认构建零 dev 面** — ✅ 独立重验:默认构建拒收 --dev-select
+   (clap unexpected argument)。
+
+**懒惰收敛检查**:
+- **遗漏**:无——10 任务每个子项均可在 diff 中指认对应 hunk;
+  新增代码零 TODO/FIXME/HACK,触碰文件零新警告;
+- **延后**:IME 人工清单(计划验证条款自带 blocker 臂 + 003 裁定
+  合成输入无法自动键入)、Ctrl+C 待环境(裁定#1)、自动滚动/块选
+  Phase 4(裁定#4)——全部用户授权,无静默延后;
+- **Workaround**(均备案):自绘 preedit(根因:运行时不消费请求,
+  DEBTS #11 升级重试)、自愈式 dev 注入(根因:pwsh 冷启动→首显
+  resize 风暴清选中,仅 dev-tools)、取证链 PrintWindow+DPI 感知
+  (证据 README + DEBTS 观察节,修正 003 全量不稳结论为标志位限定)。
+
+**债务候选(复审新增认定,均已在案)**:
+- D1 IME 人工拼音清单待用户执行(含 CommitIme 真实端到端);
+- D2 over-the-spot 运行时覆盖层(DEBTS #11);
+- D3 merge 注意:worktree 内 docs/plans/004 副本滞后于主仓(簿记
+  按技能规则留主仓),合并时以主仓版为准。
+
+**结论**:**通过 → `status: reviewed`**。7/7 验收过(第 5 条按计划
+自带的 blocker 臂);全量门独立重跑绿;无未授权缩水。可进入
+`/auto-plan:merge`。
 
 ## 待澄清事项
 
