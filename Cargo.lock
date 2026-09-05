@@ -350,7 +350,9 @@ dependencies = [
  "anyhow",
  "autoterm-core",
  "clap",
+ "cosmic-text",
  "iced",
+ "unicode-width",
 ]
 
 [[package]]

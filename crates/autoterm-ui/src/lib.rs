@@ -5,6 +5,7 @@
 //! 无轮询定时器(PLAN-001 spike 的 16ms tick 已移除;dev 钩子激活时
 //! 才有粗粒度 dev timer)。
 
+pub mod metrics;
 pub mod widget;
 
 use std::path::PathBuf;
@@ -14,13 +15,12 @@ use std::time::{Duration, Instant};
 
 use iced::keyboard::{Key, Modifiers};
 use iced::stream;
-use iced::{
-    Color, Element, Size, Subscription, Task, time,
-};
+use iced::{Color, Element, Size, Subscription, Task, time};
 use std::hash::{Hash, Hasher};
 
 use autoterm_core::PtySession;
 pub use widget::TermGrid;
+use metrics::GridMetrics;
 
 /// 运行配置(bin 解析后传入)。
 #[derive(Clone, Debug)]
@@ -58,13 +58,14 @@ impl Hash for NotifySlot {
 pub struct App {
     pub session: PtySession,
     pub config: AppConfig,
+    pub metrics: GridMetrics,
     notify_slot: Arc<Mutex<Option<Receiver<()>>>>,
     window_id: Option<iced::window::Id>,
+    /// 最近一次窗口视口尺寸(dev 转储 fit_ok 用)。
+    pub last_viewport: Option<Size>,
 
     pub frames: u64,
     pub dirty_updates: u64,
-    pub bytes_in: u64,
-    pub bytes_out: u64,
     pub started: Instant,
     pub last_byte_at: Option<Instant>,
     input_sent_at: Option<Instant>,
@@ -78,6 +79,7 @@ impl App {
         let mut session =
             PtySession::spawn(&config.shell, std::iter::empty::<&str>(), cols, rows)?;
         let notify_slot = Arc::new(Mutex::new(session.take_notify_receiver()));
+        let metrics = metrics::measure();
         let now = Instant::now();
         let queued_input = config
             .dev_autotype
@@ -88,13 +90,13 @@ impl App {
             .then(|| now + Duration::from_secs(config.dev_exit_after));
         Ok(Self {
             session,
+            config,
+            metrics,
             notify_slot,
             window_id: None,
-            config,
+            last_viewport: None,
             frames: 0,
             dirty_updates: 0,
-            bytes_in: 0,
-            bytes_out: 0,
             started: now,
             last_byte_at: None,
             input_sent_at: None,
@@ -192,37 +194,30 @@ impl App {
                 Task::none()
             }
             Message::Resized(size) => {
-                let (cell_px, line_px) = crate::widget::layout_metrics(size);
-                let cols = ((size.width / cell_px).floor() as usize).max(10);
-                let rows = ((size.height / line_px).floor() as usize).max(4);
+                self.last_viewport = Some(size);
+                let cols =
+                    ((size.width / self.metrics.cell_w).floor() as usize).max(10);
+                let rows =
+                    ((size.height / self.metrics.line_h).floor() as usize).max(4);
                 self.session.resize(cols, rows);
                 Task::none()
             }
         }
     }
 
-    /// 收割 PTY 字节喂仿真核心;统计并标记重绘。
+    /// 收割 PTY 字节喂仿真核心;标记重绘。
     fn pump(&mut self) {
-        let before = self.bytes_in;
-        loop {
-            // 借用冲突拆分:drain 内部自持 rx;这里只看返回值
-            if self.session.drain() {
-                self.last_byte_at = Some(Instant::now());
-            } else {
-                break;
-            }
-        }
-        // drain() 单次已清空积压;统计字节数走快照差(简化:帧内只标记)
-        if self.last_byte_at.is_some() {
+        if self.session.drain() {
+            self.last_byte_at = Some(Instant::now());
             self.dirty_updates += 1;
         }
-        let _ = before;
         self.frames += 1;
     }
 
     pub fn view(&self) -> Element<'_, Message> {
         Element::new(TermGrid {
             lines: self.session.term.visible_styled_lines(),
+            metrics: self.metrics,
         })
     }
 
@@ -236,6 +231,29 @@ impl App {
             &mut out,
             format_args!("shell: {}\ngrid: {cols}x{rows}\n", self.config.shell),
         );
+        let _ = std::fmt::Write::write_fmt(
+            &mut out,
+            format_args!(
+                "metrics: font_px={:.3} cell_w={:.4} line_h={:.3} (cell_em={:.4})\n",
+                self.metrics.font_px,
+                self.metrics.cell_w,
+                self.metrics.line_h,
+                self.metrics.cell_w / self.metrics.font_px
+            ),
+        );
+        match self.last_viewport {
+            Some(v) => {
+                let fit = (cols as f32 * self.metrics.cell_w) <= v.width + 0.5;
+                let _ = std::fmt::Write::write_fmt(
+                    &mut out,
+                    format_args!(
+                        "viewport: {:.1}x{:.1}\nfit_ok: {} (cols*cell_w={:.1} <= viewport_w={:.1})\n",
+                        v.width, v.height, fit, cols as f32 * self.metrics.cell_w, v.width
+                    ),
+                );
+            }
+            None => out.push_str("viewport: unknown\nfit_ok: unknown\n"),
+        }
         let _ = std::fmt::Write::write_fmt(
             &mut out,
             format_args!(

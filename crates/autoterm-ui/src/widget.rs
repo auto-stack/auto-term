@@ -11,19 +11,14 @@ use iced::{
 
 use autoterm_core::{Color as TermColor, NamedColor, StyledChar};
 
+use crate::metrics::GridMetrics;
 use crate::{DEFAULT_BG, DEFAULT_FG};
 
-/// resize 换算的度量(与 draw 侧一致)。
-pub fn layout_metrics(viewport: Size) -> (f32, f32) {
-    let cell_px = crate::FONT_PX * crate::CELL_ADVANCE_EM;
-    let line_px = crate::FONT_PX * crate::LINE_HEIGHT_EM;
-    let _ = viewport;
-    (cell_px, line_px)
-}
-
-/// 终端网格 widget。
+/// 终端网格 widget。度量用 App 传入的实测 [`GridMetrics`]
+/// (resize 与 draw 同源,右缘不裁剪由构造保证)。
 pub struct TermGrid {
     pub lines: Vec<Vec<StyledChar>>,
+    pub metrics: GridMetrics,
 }
 
 impl<Message> Widget<Message, Theme, iced::Renderer> for TermGrid {
@@ -51,12 +46,11 @@ impl<Message> Widget<Message, Theme, iced::Renderer> for TermGrid {
         viewport: &Rectangle,
     ) {
         let bounds = layout.bounds();
-        // 网格拟合窗口(PLAN-001 验证的策略;T5 换实测 advance)
-        let cols = self.lines.first().map_or(1, |l| l.len().max(1)) as f32;
-        let rows = self.lines.len().max(1) as f32;
-        let cell_px = bounds.width / cols;
-        let line_px = bounds.height / rows;
-        let font_px = cell_px / crate::CELL_ADVANCE_EM;
+        // 实测度量(T5):cell_w 即 'M' 的 shaping advance,与 iced
+        // 文本渲染同源;cols 由 resize 按同源度量算出,右缘天然不裁。
+        let cell_px = self.metrics.cell_w;
+        let line_px = self.metrics.line_h;
+        let font_px = self.metrics.font_px;
 
         renderer.fill_quad(
             renderer::Quad { bounds, ..Default::default() },
