@@ -9,16 +9,35 @@ use iced::{
     alignment,
 };
 
-use autoterm_core::{Color as TermColor, NamedColor, StyledChar};
+use std::sync::atomic::{AtomicU64, Ordering};
+
+use autoterm_core::{Color as TermColor, Damage, NamedColor, StyledChar};
 
 use crate::metrics::GridMetrics;
 use crate::{DEFAULT_BG, DEFAULT_FG};
 
+/// 绘制取证(T6):fill_text 调用数,draw 结束时滚动更新。
+static DRAW_RUNS_LAST: AtomicU64 = AtomicU64::new(0);
+static DRAW_RUNS_PREV: AtomicU64 = AtomicU64::new(0);
+
+/// 读绘制 run 计数(prev, last)。
+pub fn draw_runs() -> (u64, u64) {
+    (
+        DRAW_RUNS_PREV.load(Ordering::Relaxed),
+        DRAW_RUNS_LAST.load(Ordering::Relaxed),
+    )
+}
+
 /// 终端网格 widget。度量用 App 传入的实测 [`GridMetrics`]
 /// (resize 与 draw 同源,右缘不裁剪由构造保证)。
+///
+/// `damage` 为本帧损伤语义标记(T8 光标行/未来保留式画布用);
+/// iced 即时模式每帧全量重建场景,不能跳过未脏行的绘制——
+/// 绘制级剪裁属 Phase 2 保留式画布(见 docs/designs/001)。
 pub struct TermGrid {
     pub lines: Vec<Vec<StyledChar>>,
     pub metrics: GridMetrics,
+    pub damage: Damage,
 }
 
 impl<Message> Widget<Message, Theme, iced::Renderer> for TermGrid {
@@ -56,6 +75,8 @@ impl<Message> Widget<Message, Theme, iced::Renderer> for TermGrid {
             renderer::Quad { bounds, ..Default::default() },
             DEFAULT_BG,
         );
+
+        let mut runs: u64 = 0;
 
         for (y, line) in self.lines.iter().enumerate() {
             let line_y = bounds.y + y as f32 * line_px;
@@ -103,8 +124,16 @@ impl<Message> Widget<Message, Theme, iced::Renderer> for TermGrid {
                     to_iced_color(fg, true),
                     *viewport,
                 );
+                runs += 1;
             }
         }
+
+        // 滚动 run 计数(取证:damage 门控快照 + iced 内部形状缓存
+        // 承担 shaping 级缓存;emit 数恒为行内 run 总数)
+        let prev = DRAW_RUNS_LAST.load(Ordering::Relaxed);
+        DRAW_RUNS_PREV.store(prev, Ordering::Relaxed);
+        DRAW_RUNS_LAST.store(runs, Ordering::Relaxed);
+        let _ = &self.damage;
     }
 }
 

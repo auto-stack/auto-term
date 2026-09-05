@@ -20,8 +20,15 @@ use std::sync::mpsc::{Receiver, Sender, channel};
 
 use alacritty_terminal::event::{Event, EventListener};
 use alacritty_terminal::grid::Dimensions;
-use alacritty_terminal::term::{Config, Term};
+use alacritty_terminal::term::{Config, Term, TermDamage};
 use alacritty_terminal::vte::ansi::Processor;
+
+/// 一帧的损伤描述(owned;由 `TermDamage` 转换)。
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub enum Damage {
+    Full,
+    Lines(Vec<usize>),
+}
 
 /// 网格尺寸(cols × rows);实现 Dimensions 供 `Term::new`/`Term::resize`。
 #[derive(Clone, Copy, Debug)]
@@ -140,6 +147,19 @@ impl TermSession {
     /// 回滚历史行数(已滚出视口的行数)。
     pub fn history_size(&self) -> usize {
         self.term.grid().history_size()
+    }
+
+    /// 取走当前损伤并复位(损伤重绘,PLAN-002 T6)。
+    /// `Full`=整帧重画;`Lines`=脏行号集合(视口相对,含光标行)。
+    pub fn take_damage(&mut self) -> Damage {
+        let damage = match self.term.damage() {
+            TermDamage::Full => Damage::Full,
+            TermDamage::Partial(iter) => {
+                Damage::Lines(iter.map(|l| l.line).collect())
+            }
+        };
+        self.term.reset_damage();
+        damage
     }
 
     pub fn size(&self) -> (usize, usize) {

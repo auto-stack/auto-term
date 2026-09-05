@@ -19,6 +19,7 @@ use iced::{Color, Element, Size, Subscription, Task, time};
 use std::hash::{Hash, Hasher};
 
 use autoterm_core::PtySession;
+use autoterm_core::{Damage, StyledChar};
 pub use widget::TermGrid;
 use metrics::GridMetrics;
 
@@ -69,6 +70,10 @@ pub struct App {
     pub started: Instant,
     pub last_byte_at: Option<Instant>,
     input_sent_at: Option<Instant>,
+    /// 损伤门控快照(T6):仅在字节到达/resize/scroll 后重建。
+    pub damage: Damage,
+    pub snapshot: Vec<Vec<StyledChar>>,
+    pub snapshot_rebuilds: u64,
 
     queued_input: Vec<(Instant, Vec<u8>)>,
     exit_at: Option<Instant>,
@@ -100,13 +105,23 @@ impl App {
             started: now,
             last_byte_at: None,
             input_sent_at: None,
+            damage: Damage::Full,
+            snapshot: Vec::new(),
+            snapshot_rebuilds: 0,
             queued_input,
             exit_at,
-        })
+        }
+        .initialized())
     }
 
     pub fn title(&self) -> &str {
         "AutoTerm"
+    }
+
+    /// 构造尾拍:首帧快照就位(空网格 + Full 损伤)。
+    fn initialized(mut self) -> Self {
+        self.refresh_after_change();
+        self
     }
 
     pub fn subscription(&self) -> Subscription<Message> {
@@ -200,6 +215,7 @@ impl App {
                 let rows =
                     ((size.height / self.metrics.line_h).floor() as usize).max(4);
                 self.session.resize(cols, rows);
+                self.refresh_after_change();
                 Task::none()
             }
         }
@@ -210,14 +226,32 @@ impl App {
         if self.session.drain() {
             self.last_byte_at = Some(Instant::now());
             self.dirty_updates += 1;
+            self.refresh_after_change();
         }
         self.frames += 1;
     }
 
+    /// 内容变了(resize/scroll/字节到达)之后:取损伤、按需重建快照。
+    /// 损伤门控(T6):快照仅在内容实际变化时重建,空闲帧免全网格遍历;
+    /// 绘制级脏行剪裁在 iced 即时模式下会清空未脏行,不做(见
+    /// docs/designs/001 的损伤协议节)。
+    fn refresh_after_change(&mut self) {
+        self.damage = self.session.term.take_damage();
+        let content_changed = match &self.damage {
+            Damage::Full => true,
+            Damage::Lines(lines) => !lines.is_empty(),
+        };
+        if content_changed {
+            self.snapshot = self.session.term.visible_styled_lines();
+            self.snapshot_rebuilds += 1;
+        }
+    }
+
     pub fn view(&self) -> Element<'_, Message> {
         Element::new(TermGrid {
-            lines: self.session.term.visible_styled_lines(),
+            lines: self.snapshot.clone(),
             metrics: self.metrics,
+            damage: self.damage.clone(),
         })
     }
 
@@ -257,11 +291,26 @@ impl App {
         let _ = std::fmt::Write::write_fmt(
             &mut out,
             format_args!(
-                "uptime_s: {:.3}\nframes: {}\ndirty_updates: {}\n",
+                "uptime_s: {:.3}\nframes: {}\ndirty_updates: {}\nsnapshot_rebuilds: {}\n",
                 self.started.elapsed().as_secs_f64(),
                 self.frames,
-                self.dirty_updates
+                self.dirty_updates,
+                self.snapshot_rebuilds
             ),
+        );
+        match &self.damage {
+            Damage::Full => out.push_str("damage_last: full\n"),
+            Damage::Lines(l) => {
+                let _ = std::fmt::Write::write_fmt(
+                    &mut out,
+                    format_args!("damage_last: lines={}\n", l.len()),
+                );
+            }
+        }
+        let (runs_prev, runs_last) = widget::draw_runs();
+        let _ = std::fmt::Write::write_fmt(
+            &mut out,
+            format_args!("draw_runs_prev: {runs_prev}\ndraw_runs_last: {runs_last}\n"),
         );
         if let Some(t) = self.last_byte_at {
             let _ = std::fmt::Write::write_fmt(

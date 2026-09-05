@@ -1,7 +1,7 @@
 //! 仿真回归矩阵:纯 VT 字节(不经 PTY)→ 网格/事件断言。
 //! (PLAN-002 T3;PLAN-001 留下的"回归种子"兑现——六类语义各至少一例)
 
-use autoterm_core::{Color, NamedColor, Rgb, TermSession};
+use autoterm_core::{Color, Damage, NamedColor, Rgb, TermSession};
 
 fn lines(session: &TermSession) -> Vec<String> {
     session.visible_lines()
@@ -130,4 +130,28 @@ fn dsr_cursor_position_report() {
     s.feed(b"\x1b[3;4H\x1b[6n");
     let answers = s.pump();
     assert_eq!(answers, b"\x1b[3;4R", "光标移到 (3,4) 后应答 ESC[3;4R");
+}
+
+#[test]
+fn damage_tracking_partial_and_full() {
+    let mut s = TermSession::new(20, 5);
+    // 首帧:全损伤(启动即覆盖全屏)
+    assert_eq!(s.take_damage(), Damage::Full);
+
+    // 单行写入:脏行为少数(光标行 ± ),非 Full
+    s.feed(b"HI");
+    let d = s.take_damage();
+    let Damage::Lines(lines) = d else {
+        panic!("单行写入应为行级损伤,实际 {d:?}");
+    };
+    assert!(!lines.is_empty(), "至少光标行脏");
+    assert!(lines.len() < 5, "单行写入不应全屏脏;实际 {lines:?}");
+
+    // 静默一拍:无 feed → 损伤恒含光标行(damage() 语义:Always
+    // damage current cursor),除此之外无别的脏行
+    assert_eq!(s.take_damage(), Damage::Lines(vec![0]));
+
+    // 清屏(ED 2)→ 全损伤
+    s.feed(b"\x1b[2J");
+    assert_eq!(s.take_damage(), Damage::Full);
 }
