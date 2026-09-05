@@ -116,3 +116,12 @@ dev 钩子激活时才有 50ms DevTick(不触发重绘)。
 - 残留(Phase 2+):字形图集/保留式画布(含绘制级损伤剪裁)、
   IME/选中、Ctrl+C/Break 语义矩阵、Unix 基座、光标闪烁与形状
   (Underline/Beam 已取 shape 未分形状渲染)。
+
+### 附录补注(PLAN-003 T1 PoC,2026-09-05)
+
+保留式画布前提验证通过:`iced::advanced::text::paragraph::Plain<P>`
+公面可用——构造走 iced_graphics 全局字体系统(OnceLock 惰性,
+headless 测试无需 application);`update()` 内建 content 比对 +
+`compare`(注意:compare 只看版式参数不看文本,content 由 Plain
+先比)+ Bounds 差异走 resize;同内容反复 update 零重建。
+T2-T4 按 `Plain<Paragraph>` 落地行缓存。
