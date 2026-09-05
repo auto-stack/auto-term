@@ -373,10 +373,12 @@ impl App {
                 self.session.term.display_offset()
             ),
         );
-        let (runs_prev, runs_last) = widget::draw_runs();
+        let (rb_prev, rb_last) = widget::paragraph_rebuilds();
         let _ = std::fmt::Write::write_fmt(
             &mut out,
-            format_args!("draw_runs_prev: {runs_prev}\ndraw_runs_last: {runs_last}\n"),
+            format_args!(
+                "paragraph_rebuilds_prev: {rb_prev}\nparagraph_rebuilds_last: {rb_last}\n"
+            ),
         );
         match widget::cursor_drawn() {
             Some((row, col)) => {
