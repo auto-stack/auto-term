@@ -124,6 +124,24 @@ impl TermSession {
         self.dirty = true;
     }
 
+    /// 回滚浏览,方向同 grid::Scroll::Delta 约定:**正=上翻历史,
+    /// 负=下回实时**(alacritty 上游语义,UI 滚轮按此映射)。
+    pub fn scroll(&mut self, delta_lines: i32) {
+        use alacritty_terminal::grid::Scroll;
+        self.term.scroll_display(Scroll::Delta(delta_lines));
+        self.dirty = true;
+    }
+
+    /// 当前回滚偏移(0 = 贴底实时)。
+    pub fn display_offset(&self) -> usize {
+        self.term.grid().display_offset()
+    }
+
+    /// 回滚历史行数(已滚出视口的行数)。
+    pub fn history_size(&self) -> usize {
+        self.term.grid().history_size()
+    }
+
     pub fn size(&self) -> (usize, usize) {
         (self.size.cols, self.size.rows)
     }
@@ -139,14 +157,18 @@ impl TermSession {
     }
 
     /// 可见区带样式快照(前台/后台色随格携带,真彩/256 色证据来源)。
+    /// 回滚时 display_iter 给出绝对网格行(历史区为负),此处映射回
+    /// 视口行号:`row = line + display_offset`。
     pub fn visible_styled_lines(&self) -> Vec<Vec<StyledChar>> {
         let (cols, rows) = (self.size.cols, self.size.rows);
+        let display_offset = self.term.grid().display_offset() as i32;
         let mut lines: Vec<Vec<StyledChar>> = vec![Vec::with_capacity(cols); rows];
         for indexed in self.term.renderable_content().display_iter {
             let cell = indexed.cell;
+            let row = (indexed.point.line.0 + display_offset) as usize;
             let line = lines
-                .get_mut(indexed.point.line.0 as usize)
-                .expect("display_iter 越界:行坐标超出 rows");
+                .get_mut(row)
+                .expect("display_iter 越界:绝对行+偏移超出视口");
             line.push(StyledChar { c: cell.c, fg: cell.fg, bg: cell.bg });
         }
         lines
