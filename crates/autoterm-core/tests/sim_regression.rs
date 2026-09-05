@@ -2,7 +2,8 @@
 //! (PLAN-002 T3;PLAN-001 留下的"回归种子"兑现——六类语义各至少一例)
 
 use autoterm_core::{
-    Color, Column, Damage, Line, NamedColor, Point, Rgb, SelectionType, Side, TermSession,
+    Color, Column, CursorShape, Damage, Line, NamedColor, Point, Rgb, SelectionType, Side,
+    TermSession,
 };
 
 fn lines(session: &TermSession) -> Vec<String> {
@@ -220,4 +221,73 @@ fn selection_lines_full_rows_with_scrollback() {
     assert_eq!(range.start.column.0, 0, "行选应扩满整行(起始列 0)");
     assert_eq!(range.end.column.0, 19, "行选应扩满整行(终止列 19=last_column)");
     assert_eq!(s.selection_text().as_deref(), Some("L2\nL3\n"), "行选文本带换行尾");
+}
+
+// ---- PLAN-005 T1:DECSCUSR 光标形状透传 + 块选(Block)----
+
+#[test]
+fn decscusr_cursor_shape() {
+    let mut s = TermSession::new(20, 5);
+    assert_eq!(s.cursor_shape(), CursorShape::Block, "默认形状应为 Block");
+
+    // DECSCUSR(CSI Ps SP q):4=Underline,6=Beam,2=Block
+    s.feed(b"\x1b[4 q");
+    assert_eq!(s.cursor_shape(), CursorShape::Underline, "DECSCUSR 4 应设 Underline");
+    s.feed(b"\x1b[6 q");
+    assert_eq!(s.cursor_shape(), CursorShape::Beam, "DECSCUSR 6 应设 Beam");
+    s.feed(b"\x1b[2 q");
+    assert_eq!(s.cursor_shape(), CursorShape::Block, "DECSCUSR 2 应设回 Block");
+
+    // Hidden 来自 DECTCEM(?25l)而非 DECSCUSR;隐藏后 cursor() 为 None
+    s.feed(b"\x1b[?25l");
+    assert_eq!(s.cursor_shape(), CursorShape::Hidden, "DECTCEM 后形状应为 Hidden");
+    assert!(s.cursor().is_none(), "Hidden 时 cursor() 应为 None");
+}
+
+#[test]
+fn selection_block_range_rectangular() {
+    let mut s = TermSession::new(20, 5);
+    s.feed(b"AAAABBBB\r\nCCCCDDDD\r\nEEEEFFFF");
+
+    // Alt+拖选矩形:锚 (0,2) → (2,6),三行同一列带 2..=6(含端点)
+    s.begin_selection(SelectionType::Block, abs_point(&s, 0, 2), Side::Left);
+    s.update_selection(abs_point(&s, 2, 6), Side::Right);
+    let range = s.selection_range().expect("块选应有 range");
+    assert!(range.is_block, "Block 选中 range.is_block 应为 true");
+    assert_eq!(
+        (range.start.line.0, range.start.column.0),
+        (0, 2),
+        "矩形起点应归一化到左上角"
+    );
+    assert_eq!(
+        (range.end.line.0, range.end.column.0),
+        (2, 6),
+        "矩形终点应归一化到右下角(列含端点)"
+    );
+
+    // 反向拖选(左下 → 右上)仍归一化为同一矩形
+    s.begin_selection(SelectionType::Block, abs_point(&s, 2, 2), Side::Left);
+    s.update_selection(abs_point(&s, 0, 6), Side::Right);
+    let range = s.selection_range().expect("反向块选应有 range");
+    assert_eq!(
+        (range.start.line.0, range.start.column.0),
+        (0, 2),
+        "反向拖选起点仍应归一化到左上角"
+    );
+    assert_eq!((range.end.line.0, range.end.column.0), (2, 6));
+}
+
+#[test]
+fn selection_block_text_per_line_truncation() {
+    let mut s = TermSession::new(20, 5);
+    s.feed(b"AAAABBBB\r\nCCCCDDDD\r\nEEEEFFFF");
+
+    // 块选列带 2..=6:逐行截取该列带,行间 \n,末行不带换行
+    s.begin_selection(SelectionType::Block, abs_point(&s, 0, 2), Side::Left);
+    s.update_selection(abs_point(&s, 2, 6), Side::Right);
+    assert_eq!(
+        s.selection_text().as_deref(),
+        Some("AABBB\nCCDDD\nEEFFF"),
+        "块选文本应逐行截取列带(各 5 格)并以 \\n 相连,末行无换行"
+    );
 }
