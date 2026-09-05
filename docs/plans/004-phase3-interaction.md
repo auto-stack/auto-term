@@ -4,7 +4,7 @@ status: drafting
 feature_name: AutoTerm Phase 3 交互完备(选中/复制粘贴 + Ctrl+C 稳定版复测 + IME)
 author: [zhaopuming]
 created_at: 2026-09-05T16:05:00+08:00
-updated_at: 2026-09-05T16:05:00+08:00
+updated_at: 2026-09-05T16:25:00+08:00
 
 # Leave these EMPTY here — /auto-plan:review fills them:
 supersedes_spec_components: []
@@ -223,11 +223,14 @@ IME:聚焦时 Shell::request_input_method(光标矩形,purpose=Terminal)
 
 ## 待澄清事项
 
-1. **Ctrl+C 稳定版复测环境**:本机为 26200 内部版——若无稳定版
-   Windows 环境可用,T7 记"待环境"挂 DEBTS(不阻塞);
-2. **copy-on-select 默认开**:alacritty 惯例松开即复制;若用户偏好
-   显式复制(Ctrl+Shift+C),T4 时一行开关调整;
-3. **IME over-the-spot 落不下时**:自绘 preedit(光标行尾下划线)为
-   备选,UX 略糙——若都不行按 blocker 记录;
-4. **拖选自动滚动**:Phase 4 候选(MVP 视口内),与块选/右键菜单
-   同批。
+> 2026-09-05 用户四项裁定,全部落定:
+
+1. **Ctrl+C 稳定版复测环境**:**已裁定——无稳定版环境**。T7 按
+   "待环境"执行:矩阵脚本就绪、结果栏记"待环境",挂 DEBTS
+   (不阻塞其余交付);有环境之日补测即关账;
+2. **copy-on-select 默认开**:**已裁定——确认默认开**(松开即复制,
+   Ctrl+Shift+C 仍保留为显式通道);
+3. **IME 路径**:**已裁定——走 over-the-spot 首选**;落不下再按
+   备选(自绘 preedit)→ blocker 的次序处理;
+4. **拖选自动滚动**:**已裁定——本计划不做**,维持 Phase 4 候选
+   (与块选/右键菜单同批)。
