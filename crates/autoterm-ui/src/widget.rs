@@ -44,11 +44,14 @@ fn row_cache() -> &'static Mutex<Vec<Option<RowEntry>>> {
     ROW_CACHE.get_or_init(|| Mutex::new(Vec::new()))
 }
 
-/// 取证(T3):Paragraph 重建计数(draw 结束滚动)。
+/// 取证(T3):Paragraph 重建计数(draw 结束滚动;仅 dev-tools)。
+#[cfg(feature = "dev-tools")]
 static REBUILDS_LAST: AtomicU64 = AtomicU64::new(0);
+#[cfg(feature = "dev-tools")]
 static REBUILDS_PREV: AtomicU64 = AtomicU64::new(0);
 
 /// 读 Paragraph 重建计数(prev, last)。
+#[cfg(feature = "dev-tools")]
 pub fn paragraph_rebuilds() -> (u64, u64) {
     (
         REBUILDS_PREV.load(Ordering::Relaxed),
@@ -56,10 +59,12 @@ pub fn paragraph_rebuilds() -> (u64, u64) {
     )
 }
 
-/// 取证(T8):光标绘制状态(row*8192+col;u64::MAX=未画)。
+/// 取证(T8):光标绘制状态(row*8192+col;u64::MAX=未画;仅 dev-tools)。
+#[cfg(feature = "dev-tools")]
 static CURSOR_DRAWN: AtomicU64 = AtomicU64::new(u64::MAX);
 
 /// 读光标绘制状态(None=未画)。
+#[cfg(feature = "dev-tools")]
 pub fn cursor_drawn() -> Option<(usize, usize)> {
     let v = CURSOR_DRAWN.load(Ordering::Relaxed);
     (v != u64::MAX).then(|| ((v / 8192) as usize, (v % 8192) as usize))
@@ -158,6 +163,7 @@ impl<Message> Widget<Message, Theme, iced::Renderer> for TermGrid {
             cache.clear();
             cache.resize_with(self.lines.len(), || None);
         }
+        #[cfg(feature = "dev-tools")]
         let mut rebuilds: u64 = 0;
 
         for (y, line) in self.lines.iter().enumerate() {
@@ -173,7 +179,10 @@ impl<Message> Widget<Message, Theme, iced::Renderer> for TermGrid {
                     let para =
                         build_row_paragraph(line, row_width, line_px, font_px);
                     cache[y] = Some(RowEntry { para, digest });
-                    rebuilds += 1;
+                    #[cfg(feature = "dev-tools")]
+                    {
+                        rebuilds += 1;
+                    }
                 }
             }
             if let Some(entry) = cache[y].as_ref() {
@@ -186,9 +195,12 @@ impl<Message> Widget<Message, Theme, iced::Renderer> for TermGrid {
             }
         }
 
-        let prev = REBUILDS_LAST.load(Ordering::Relaxed);
-        REBUILDS_PREV.store(prev, Ordering::Relaxed);
-        REBUILDS_LAST.store(rebuilds, Ordering::Relaxed);
+        #[cfg(feature = "dev-tools")]
+        {
+            let prev = REBUILDS_LAST.load(Ordering::Relaxed);
+            REBUILDS_PREV.store(prev, Ordering::Relaxed);
+            REBUILDS_LAST.store(rebuilds, Ordering::Relaxed);
+        }
 
         self.draw_scroll_badge(
             renderer,
@@ -242,6 +254,7 @@ impl TermGrid {
         font_px: f32,
         viewport: Rectangle,
     ) {
+        #[cfg(feature = "dev-tools")]
         let mut cursor_state = u64::MAX;
         if let Some((row, col)) = self.cursor {
             if let Some(line) = self.lines.get(row) {
@@ -267,10 +280,14 @@ impl TermGrid {
                         glyph_fg,
                         viewport,
                     );
-                    cursor_state = (row as u64) * 8192 + col as u64;
+                    #[cfg(feature = "dev-tools")]
+                    {
+                        cursor_state = (row as u64) * 8192 + col as u64;
+                    }
                 }
             }
         }
+        #[cfg(feature = "dev-tools")]
         CURSOR_DRAWN.store(cursor_state, Ordering::Relaxed);
     }
 }

@@ -29,12 +29,16 @@ use metrics::GridMetrics;
 pub struct AppConfig {
     pub shell: String,
     /// dev 取证:自动键入(可多段,"ms:text" 语法同 spike)。
+    #[cfg(feature = "dev-tools")]
     pub dev_autotype: Vec<String>,
     /// dev 取证:到时转储并退出(秒;0=不退出)。
+    #[cfg(feature = "dev-tools")]
     pub dev_exit_after: u64,
     /// dev 取证:退出前回滚的行数(正=上翻;转储回滚后视图)。
+    #[cfg(feature = "dev-tools")]
     pub dev_scroll: Option<i32>,
     /// dev 取证:退出时转储目标文件。
+    #[cfg(feature = "dev-tools")]
     pub dev_dump: Option<PathBuf>,
 }
 
@@ -49,7 +53,8 @@ pub enum Message {
     Scrolled(i32),
     /// 窗口关闭:同步杀子进程再退出(T8)。
     Closed(iced::window::Id),
-    /// dev 钩子的粗定时(仅 dev 参数激活时订阅;常态不存在)。
+    /// dev 钩子的粗定时(仅 dev-tools 构建存在;常态不存在)。
+    #[cfg(feature = "dev-tools")]
     DevTick,
 }
 
@@ -84,7 +89,9 @@ pub struct App {
     /// 光标(视口相对;Hidden=None)。随快照一并刷新。
     pub cursor: Option<(usize, usize)>,
 
+    #[cfg(feature = "dev-tools")]
     queued_input: Vec<(Instant, Vec<u8>)>,
+    #[cfg(feature = "dev-tools")]
     exit_at: Option<Instant>,
 }
 
@@ -95,11 +102,13 @@ impl App {
         let notify_slot = Arc::new(Mutex::new(session.take_notify_receiver()));
         let metrics = metrics::measure();
         let now = Instant::now();
+        #[cfg(feature = "dev-tools")]
         let queued_input = config
             .dev_autotype
             .iter()
             .map(|s| parse_input(s, now))
             .collect();
+        #[cfg(feature = "dev-tools")]
         let exit_at = (config.dev_exit_after > 0)
             .then(|| now + Duration::from_secs(config.dev_exit_after));
         Ok(Self {
@@ -118,7 +127,9 @@ impl App {
             snapshot: Vec::new(),
             snapshot_rebuilds: 0,
             cursor: None,
+            #[cfg(feature = "dev-tools")]
             queued_input,
+            #[cfg(feature = "dev-tools")]
             exit_at,
         }
         .initialized())
@@ -189,13 +200,16 @@ impl App {
             // 窗口关闭:同步清理子进程(T8)
             iced::window::close_events().map(Message::Closed),
         ];
-        if self.config.dev_autotype.is_empty() && self.exit_at.is_none() {
-            // 常态:无任何定时器,空闲零唤醒(验收标准 3)
-        } else {
-            subs.push(
-                time::every(Duration::from_millis(50)).map(|_| Message::DevTick),
-            );
+        #[cfg(feature = "dev-tools")]
+        {
+            if !self.config.dev_autotype.is_empty() || self.exit_at.is_some() {
+                subs.push(
+                    time::every(Duration::from_millis(50))
+                        .map(|_| Message::DevTick),
+                );
+            }
         }
+        // 默认构建:无任何定时器,空闲零唤醒
         Subscription::batch(subs)
     }
 
@@ -206,6 +220,7 @@ impl App {
                 self.pump();
                 Task::none()
             }
+            #[cfg(feature = "dev-tools")]
             Message::DevTick => {
                 let now = Instant::now();
                 self.queued_input.retain(|(at, bytes)| {
@@ -323,8 +338,8 @@ impl App {
         })
     }
 
-    /// dev 转储:网格文本 + 计数(T5 起追加 metrics/fit、T6 runs、
-    /// T7 偏移、T8 光标)。
+    /// dev 转储:网格文本 + 计数(取证;仅 dev-tools 构建)。
+    #[cfg(feature = "dev-tools")]
     pub fn dump_state(&mut self) {
         let Some(path) = self.config.dev_dump.clone() else { return };
         let mut out = String::new();
@@ -434,7 +449,8 @@ impl App {
 }
 
 /// dev-autotype 语法:"<延迟毫秒>:<文本>";无前缀即立即。转义
-/// \r \n \t(同 spike)。
+/// \r \n \t \xHH(仅 dev-tools 构建)。
+#[cfg(feature = "dev-tools")]
 fn parse_input(s: &str, start: Instant) -> (Instant, Vec<u8>) {
     if let Some((n, rest)) = s.split_once(':') {
         if let Ok(ms) = n.parse::<u64>() {
