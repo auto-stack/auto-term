@@ -461,15 +461,24 @@ fn unescape(s: &str) -> Vec<u8> {
                 // \xHH:两位十六进制字节(T5,Ctrl+C=\x03 等注入用)
                 Some('x') => {
                     chars.next();
-                    let h = chars.next().and_then(|c| c.to_digit(16));
-                    let l = chars.next().and_then(|c| c.to_digit(16));
-                    match (h, l) {
+                    let c1 = chars.next();
+                    let c2 = chars.next();
+                    match (
+                        c1.and_then(|c| c.to_digit(16)),
+                        c2.and_then(|c| c.to_digit(16)),
+                    ) {
                         (Some(h), Some(l)) => {
                             out.push((h * 16 + l) as u8);
                         }
                         _ => {
-                            // 无效十六进制:原样保留
+                            // 无效十六进制:原样保留(回吐已消费字符)
                             out.extend_from_slice(b"\\x");
+                            for c in [c1, c2].into_iter().flatten() {
+                                let mut buf = [0u8; 4];
+                                out.extend_from_slice(
+                                    c.encode_utf8(&mut buf).as_bytes(),
+                                );
+                            }
                         }
                     }
                 }
