@@ -449,7 +449,7 @@ fn unescape(s: &str) -> Vec<u8> {
     let mut chars = s.chars().peekable();
     while let Some(c) = chars.next() {
         if c == '\\' {
-            match chars.peek() {
+            match chars.peek().copied() {
                 Some('r') | Some('n') => {
                     chars.next();
                     out.push(b'\r');
@@ -458,8 +458,23 @@ fn unescape(s: &str) -> Vec<u8> {
                     chars.next();
                     out.push(b'\t');
                 }
+                // \xHH:两位十六进制字节(T5,Ctrl+C=\x03 等注入用)
+                Some('x') => {
+                    chars.next();
+                    let h = chars.next().and_then(|c| c.to_digit(16));
+                    let l = chars.next().and_then(|c| c.to_digit(16));
+                    match (h, l) {
+                        (Some(h), Some(l)) => {
+                            out.push((h * 16 + l) as u8);
+                        }
+                        _ => {
+                            // 无效十六进制:原样保留
+                            out.extend_from_slice(b"\\x");
+                        }
+                    }
+                }
                 Some(other) => {
-                    out.push(*other as u8);
+                    out.push(other as u8);
                     chars.next();
                 }
                 None => out.push(b'\\'),
@@ -529,3 +544,21 @@ pub const DEFAULT_BG: Color = Color::from_rgb8(0x10, 0x14, 0x18);
 pub const CELL_ADVANCE_EM: f32 = 1126.0 / 2048.0;
 pub const LINE_HEIGHT_EM: f32 = 1.25;
 pub const FONT_PX: f32 = 16.0;
+
+#[cfg(test)]
+mod unescape_tests {
+    use super::unescape;
+
+    #[test]
+    fn hex_escape() {
+        assert_eq!(unescape(r"\x41"), b"A");
+        assert_eq!(unescape(r"\x03"), &[0x03]);
+        assert_eq!(unescape(r"\x1b[A"), &[0x1b, b'[', b'A']);
+        // 大小写十六进制
+        assert_eq!(unescape(r"\x0D"), &[0x0d]);
+        // 无效十六进制:原样保留反斜杠与 x
+        assert_eq!(unescape(r"\xzz"), br"\xzz");
+        // 与既有转义混用
+        assert_eq!(unescape(r"a\x09b\r"), b"a\tb\r");
+    }
+}
