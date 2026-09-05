@@ -1,6 +1,6 @@
 ---
 plan_id: PLAN-002
-status: reviewed
+status: archived
 feature_name: AutoTerm Phase 1 单窗口 MVP(正式架构 + 仿真回归 + 损伤重绘/事件驱动)
 author: [zhaopuming]
 created_at: 2026-09-05T09:36:11+08:00

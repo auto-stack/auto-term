@@ -11,6 +11,17 @@
      "PLAN-001"
     ],
     "status": "published"
+   },
+   {
+    "id": "P002-1",
+    "section": "reports",
+    "title": "AutoTerm Phase 1 单窗口 MVP — 变更摘要",
+    "content": "把 PLAN-001 的三个 spike 升格为**正式架构**:`crates/autoterm-core`\n(PTY 会话 + alacritty_terminal 封装,含仿真回归测试)与\n`crates/autoterm-ui`(iced 单窗口终端,事件驱动 + 损伤重绘 + 实测字形\n度量 + 滚动回滚 + 光标块)。spike 三 crate 保留为归档不动。清偿\nDEBTS #1/#3/#4(整帧重拼→损伤重绘、固定度量→实测、轮询→事件驱动)\n与 #5/#7 部分(回滚 UI、关闭语义),并产出 Phase 1 设计文档\n`docs/designs/001-phase1-architecture.md`(正式架构的耐久记录,\n000 决策链的延续)。",
+    "file": "docs/plans/archived/002-phase1-mvp.md",
+    "related": [
+     "PLAN-002"
+    ],
+    "status": "published"
    }
   ],
   "goals": [
@@ -22,6 +33,17 @@
     "file": "docs/plans/archived/001-autoterm-bootstrap.md",
     "related": [
      "PLAN-001"
+    ],
+    "status": "proposed"
+   },
+   {
+    "id": "P002-2",
+    "section": "goals",
+    "title": "AutoTerm Phase 1 单窗口 MVP — 目标",
+    "content": "1. **正式 crate 结构**:`autoterm-core`(可独立测试的终端会话层)+\n   `autoterm-ui`(窗口层),层间单向依赖,spikes/ 原样归档;\n2. **仿真回归种子化**:纯 VT 字节级断言套件(光标/颜色/备用屏幕/\n   宽字符/回滚/DSR 应答)+ 真 PTY 集成测试,双轨回归;\n3. **渲染管线三项清偿**:损伤重绘(Term::damage 驱动)、实测字形\n   advance(cosmic-text,含宽字符双格判定)、事件驱动 PTY→UI\n   (reader 线程唤醒,替换 16ms 轮询);\n4. **MVP 可日用**:滚动回滚(滚轮/PgUp/PgDn)、光标块、窗口关闭\n   杀子进程、Ctrl+C;\n5. **设计沉淀**:`docs/designs/001-phase1-architecture.md` 记录正式\n   架构与 000→002 决策链。\n\n非目标(排除):tabs/splits(Phase 2+);字形图集级 GPU 优化\n(损伤重绘+事件驱动已获主要收益,图集留性能专项);IME/选中/主题\n系统;Unix 基座适配(仍 Windows-only,另立计划);`.at`/auto-lang\nVM 集成(路线 A 生态对齐,待 auto-ui 仓前置调查)。",
+    "file": "docs/plans/archived/002-phase1-mvp.md",
+    "related": [
+     "PLAN-002"
     ],
     "status": "proposed"
    }
@@ -36,6 +58,20 @@
     "related": [
      "PLAN-001"
     ],
+    "status": "stable",
+    "superseded_by": [
+     "P002-3"
+    ]
+   },
+   {
+    "id": "P002-3",
+    "section": "architecture",
+    "title": "AutoTerm Phase 1 单窗口 MVP — 架构方案",
+    "content": "```\ncrates/autoterm-ui    iced 单窗口:widget(损伤感知)、键盘/滚轮、\n                      字形度量、窗口生命周期        ──仅依赖──┐\ncrates/autoterm-core  PtySession(portable-pty:spawn/reader 线程/\n                      答案回写/resize/kill 语义)+\n                      TermSession(alacritty_terminal 封装:\n                      feed/pump/damage/scroll/快照)  ←────┘\nspikes/               PLAN-001 归档,不再演进\n```\n\n数据流(事件驱动,替换 spike 的 16ms 轮询):\n\n```\n子进程 ─ConPTY→ reader 线程 ─channel→ iced subscription(唤醒)\n   ▲                                        │ feed/pump\n   └─ 写主端(答案/键盘) ←─ update() ←────┘\ndraw():damage(行级) → 只重画脏行;光标块反色;回滚经 scroll_display\n```\n\n与外部系统:ash 仍仅运行时配置耦合(`--shell`,默认 pwsh);\niced 升级沿 0.14(与 auto-ui 同栈,集成路径见待澄清 #2)。",
+    "file": "docs/plans/archived/002-phase1-mvp.md",
+    "related": [
+     "PLAN-002"
+    ],
     "status": "stable"
    }
   ],
@@ -48,6 +84,20 @@
     "file": "docs/plans/archived/001-autoterm-bootstrap.md",
     "related": [
      "PLAN-001"
+    ],
+    "status": "stable",
+    "superseded_by": [
+     "P002-4"
+    ]
+   },
+   {
+    "id": "P002-4",
+    "section": "designs",
+    "title": "AutoTerm Phase 1 单窗口 MVP — 详细设计",
+    "content": "### crates/autoterm-core(lib)\n\n- `term.rs`:TermSession 迁移自 spikes/term-probe/src/lib.rs,新增\n  `take_damage()`(透传 `Term::damage()`/`reset_damage()`)与\n  `scroll(delta_lines)`(透传 `scroll_display`);\n- `pty.rs`:PtySession —— openpty(PtySize 由 ui 侧传入)、spawn、\n  reader 线程→`Receiver<Vec<u8>>`(EOF 哨兵空 vec)、\n  `pump_and_answer(writer)`:feed 后取 PtyWrite 应答写回主端、\n  resize(先 TermSession 后 master)、`kill()`;\n- `tests/live_pty.rs`:迁移 spike 集成测试(`cmd /c echo\n  hello_term_probe` → 网格断言);\n- `tests/sim_regression.rs`:**纯 VT 字节**(不经 PTY)的回归矩阵:\n  - 光标/ED/EL:清屏+定位+写入 → 指定行列文本;\n  - SGR 38;2 真彩与 38;5 256 色 → StyledChar 色值断言;\n  - DECSET 1049 备用屏幕:切入→写入→切出,主屏原内容保留;\n  - CJK 宽字符:占两格(第二格 spacer);\n  - 回滚:超屏输出后 scroll_display 回看历史行;\n  - DSR:`ESC[6n` → pump 输出匹配 `\\x1b[...;...R`;\n- `tests/pty_lifecycle.rs`:spawn→EOF→`exited()` 真;drop(kill)\n  后 `wait()` 拿到退出状态。\n\n### crates/autoterm-ui(bin `autoterm`)\n\n- `main.rs`:iced application(boot 闭包建 PtySession+TermSession,\n  `window::oldest()` 记 Id);`--shell <exe>`(默认 pwsh)、\n  `--dev-exit-after/--dev-autotype/--dev-dump`(冒烟取证钩子);\n- 事件驱动订阅:reader 线程字节经 iced 订阅通道(0.14 实际 API,\n  候选 `Subscription::run` + stream channel)发 `Message::PtyBytes`,\n  替换 `time::every`;键盘 `keyboard::listen`、窗口\n  `resize_events`;\n- `metrics.rs`:启动时 cosmic-text 测 `advance('M')` 得 cell 宽,\n  行高取字体 ascent+descent;`is_wide(c)` = advance≥1.9×cell;\n- `widget.rs`:网格 widget 迁移自 render-probe,改动:\n  - draw 按 `take_damage()` 只重画脏行(Full 退化为整帧);\n  - 光标块:`renderable_content().cursor` 反色渲染;\n  - 滚轮/Shift+滚轮 → `scroll(delta)`;PgUp/PgDn 翻页;\n    回滚偏移>0 时顶行显示 `↑N` 指示;\n  - NamedColor 全枚举映射(Dim/Bright 前景),16/256/真彩表\n    收敛到 `palette.rs`;\n- 关闭语义:窗口 `Event::Closed` → `PtySession::kill()` + wait,\n  退出 app;\n- 顶层 `src/lib.rs`(便于 ui 单测)+ `src/bin/autoterm.rs` 入口。\n\n### docs/designs/001-phase1-architecture.md(T9 交付)\n\n章节:正式 crate 结构图、事件驱动数据流时序、损伤重绘协议\n(damage 语义→脏行集合→draw 剪裁)、字形度量与宽字符策略、\n回滚模型(display_offset 与状态指示)、000→002 决策链与残留缺口\n(引 DEBTS 未清项)。终态含\"结论\"节。",
+    "file": "docs/plans/archived/002-phase1-mvp.md",
+    "related": [
+     "PLAN-002"
     ],
     "status": "stable"
    }
@@ -62,6 +112,20 @@
     "related": [
      "PLAN-001"
     ],
+    "status": "verified",
+    "superseded_by": [
+     "P002-5"
+    ]
+   },
+   {
+    "id": "P002-5",
+    "section": "tests",
+    "title": "AutoTerm Phase 1 单窗口 MVP — 测试设计",
+    "content": "- 自动:autoterm-core 三套测试(live_pty/sim_regression/\n  pty_lifecycle)+ metrics 单测 + workspace 全量 `cargo test`;\n- 半自动:`--dev-*` 钩子冒烟(echo 回显、2000 行流式、滚轮回滚\n  快照、光标块绘制证据)——**以程序化证据为主**(网格转储、度量\n  数值断言、draw 状态转储),截图仅作人工复核补充,不构成验收\n  依赖(计划执行不依赖多模态会话);\n- 手动:日常试用清单(pwsh/ash 各 10 分钟:补全/表格/真彩/\n  Ctrl+C/关闭无残留进程 + 光标块/对齐目测);\n- 不做:性能基准自动化(字形图集专项时另立)、Unix 矩阵。",
+    "file": "docs/plans/archived/002-phase1-mvp.md",
+    "related": [
+     "PLAN-002"
+    ],
     "status": "verified"
    }
   ],
@@ -74,6 +138,17 @@
     "file": "docs/plans/archived/001-autoterm-bootstrap.md",
     "related": [
      "PLAN-001"
+    ],
+    "status": "published"
+   },
+   {
+    "id": "P002-6",
+    "section": "reviews",
+    "title": "AutoTerm Phase 1 单窗口 MVP — 验收标准",
+    "content": "1. `crates/autoterm-core`、`crates/autoterm-ui` 存在且\n   `cargo test --workspace` 全绿(spikes/ 原样未动);\n2. sim_regression ≥ 6 个断言用例全过(光标/真彩/256 色/备用屏/\n   宽字符/回滚/DSR 至少各一);\n3. 事件驱动生效:常态空闲不触发重绘帧(日志/计数证据),\n   字节到达即醒;\n4. 损伤重绘:单行改动帧的重画 run 数 < 全网格 run 数(计数断言);\n5. 实测度量:cell 宽来自 cosmic-text 实测(单测断言 >0 且与\n   0.55em 量级一致);右缘无裁剪由**度量断言**保证\n   (dev 转储含 cols×cell_w ≤ 视口宽 数值,程序化核验);\n6. 滚轮回滚可用:大输出后回滚快照含历史行,顶行有偏移指示;\n7. 光标块**绘制证据**:dev 转储含 `cursor_drawn_at`(行列)+\n   反色标志(draw 状态),人工目测为可选补充;窗口关闭后无残留\n   子进程(tasklist 验证);\n8. `docs/designs/001-phase1-architecture.md` 存在且含\"结论\"节;\n9. README 更新(Win10 1809+ 支持声明、autoterm 运行段);\n   DEBTS 勾账(#1/#3/#4 清偿,#5/#7/#10 部分清偿并注明);\n10. `cargo tree --workspace` 无 `ash-core`/`auto-shell` 路径依赖。",
+    "file": "docs/plans/archived/002-phase1-mvp.md",
+    "related": [
+     "PLAN-002"
     ],
     "status": "published"
    }
