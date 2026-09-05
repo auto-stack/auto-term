@@ -32,6 +32,8 @@ pub struct PtySession {
     rx: Receiver<Vec<u8>>,
     writer: Box<dyn Write + Send>,
     eof: bool,
+    /// reader 唤醒通道接收端(UI 事件驱动订阅用;取走后由订阅持有)。
+    notify_rx: Option<Receiver<()>>,
 }
 
 impl PtySession {
@@ -71,6 +73,10 @@ impl PtySession {
         let master = pair.master;
 
         let (tx, rx) = channel::<Vec<u8>>();
+        // 每块字节后发一次唤醒:UI 订阅据此即时 drain(事件驱动,
+        // 替换 spike 的 16ms 轮询)。发送端只活在 reader 线程——
+        // 线程结束时通道断开,UI 侧订阅随之安静。
+        let (tx_notify, notify_rx) = channel::<()>();
         thread::spawn(move || {
             let mut reader = reader;
             let mut buf = [0u8; 16384];
@@ -78,12 +84,14 @@ impl PtySession {
                 match reader.read(&mut buf) {
                     Ok(0) | Err(_) => {
                         let _ = tx.send(Vec::new()); // EOF 哨兵
+                        let _ = tx_notify.send(());
                         break;
                     }
                     Ok(n) => {
                         if tx.send(buf[..n].to_vec()).is_err() {
                             break;
                         }
+                        let _ = tx_notify.send(());
                     }
                 }
             }
@@ -96,7 +104,13 @@ impl PtySession {
             rx,
             writer,
             eof: false,
+            notify_rx: Some(notify_rx),
         })
+    }
+
+    /// 取走 reader 唤醒接收端(供 UI 事件驱动订阅;仅首次有效)。
+    pub fn take_notify_receiver(&mut self) -> Option<Receiver<()>> {
+        self.notify_rx.take()
     }
 
     /// 收割 reader 线程积压字节:喂仿真核心,DSR/DA 应答回写主端。
