@@ -149,3 +149,18 @@ Break/Cancel 变体,事件层不可分辨;②即使可分辨,CTRL_BREAK_EVENT
 (经 child pid 发 GenerateConsoleCtrlEvent;BREAK 常数 0,
 CTRL_C 常数 1 取决于句柄语义)——待用户裁定(计划 003
 待澄清#3),批准后约 30 行 win32 代码可闭环。
+
+### 附录补注:IME 可行性(PLAN-003 T8,2026-09-05)
+
+**结论:管线公开可用,落地路由 Phase 3。**
+
+- iced 0.14 公面完备:`Event::InputMethod(Opened/Preedit/Commit/
+  Closed)`、`Shell::request_input_method(cursor_rect, purpose)`、
+  `InputMethod::Enabled { preedit }` 支持 **over-the-spot** 模式
+  (运行时代为叠加显示预编辑串,widget 无需自绘);
+- 落地成本:TermGrid 需补 `Widget::update` 事件处理(当前仅
+  size/layout/draw)以在聚焦时请求 IME、经 Shell 发布 Preedit/
+  Commit 到 App 消息;预编辑期间需挂起键盘直写(避免双写);
+- **验证约束(路由主因)**:IME 组合输入无法经 `--dev-autotype`
+  无人值守触发——取证强依赖真人中文输入法交互;按本仓"程序化
+  证据为主"的政策,列入 Phase 3(或用户点名时以手动清单验收)。
