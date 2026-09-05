@@ -573,9 +573,15 @@ impl App {
         })
     }
 
-    /// 选中区间覆盖的格子数(非块选:行段求和;取证 `selection_cells`)。
+    /// 选中区间覆盖的格子数(块选:列带×行数矩形;非块选:行段求和;
+    /// 取证 `selection_cells`)。
     fn selection_cell_count(&self) -> usize {
         let Some(r) = self.selection_range else { return 0 };
+        if r.is_block {
+            let rows = (r.end.line.0 - r.start.line.0 + 1) as usize;
+            let cols = r.end.column.0 - r.start.column.0 + 1;
+            return rows * cols;
+        }
         let cols = self.session.term.size().0;
         (r.start.line.0..=r.end.line.0)
             .map(|line| {
@@ -745,7 +751,8 @@ fn parse_input(s: &str, start: Instant) -> (Instant, Vec<u8>) {
 }
 
 /// dev-select 语法(T3):"<ms>:<r1>:<c1>-<r2>:<c2>"(视口相对格)。
-/// T5 起支持可选类型前缀:"<ms>:<simple|semantic|lines>:<r1>:<c1>-..."。
+/// T5 起支持可选类型前缀:"<ms>:<simple|semantic|lines|block>:<r1>:<c1>-..."
+/// (block=块选,005 T2)。
 #[cfg(feature = "dev-tools")]
 fn parse_dev_select(s: &str, start: Instant) -> Option<(Instant, DevSelectSpec)> {
     let (ms, rest) = s.split_once(':')?;
@@ -754,6 +761,7 @@ fn parse_dev_select(s: &str, start: Instant) -> Option<(Instant, DevSelectSpec)>
         Some(("simple", r)) => (SelectionType::Simple, r),
         Some(("semantic", r)) => (SelectionType::Semantic, r),
         Some(("lines", r)) => (SelectionType::Lines, r),
+        Some(("block", r)) => (SelectionType::Block, r),
         _ => (SelectionType::Simple, rest),
     };
     let (a, b) = rest.split_once('-')?;

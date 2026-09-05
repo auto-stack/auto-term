@@ -22,7 +22,7 @@ use iced::advanced::{
 };
 use iced::{
     Color, Element, Font, Length, Point, Rectangle, Size, Theme,
-    alignment, mouse,
+    alignment, keyboard, mouse,
 };
 use iced::advanced::input_method::{InputMethod, Purpose};
 use iced::advanced::input_method;
@@ -109,17 +109,33 @@ pub struct TermGrid {
 }
 
 /// 鼠标交互持久状态(经 `Tree` 跨帧存活;PLAN-004 T2)。
-/// 拖选进行中标志 + 多击计数(500ms 内同格 2=Semantic、3=Lines)。
+/// 拖选进行中标志 + 多击计数(500ms 内同格 2=Semantic、3=Lines)
+/// + 键盘修饰(ModifiersChanged 驱动,Alt+拖选块选用;005 T2)。
 #[derive(Debug, Default)]
 pub struct GridInteraction {
     dragging: bool,
     last_click_at: Option<Instant>,
     last_count: u8,
     last_cell: Option<(usize, usize)>,
+    mods: keyboard::Modifiers,
 }
 
 /// 多击判定窗口。
 const MULTI_CLICK_WINDOW: Duration = Duration::from_millis(500);
+
+/// 按下起始选中类型(纯函数,可单测;005 T2):Alt 按下恒为 Block
+/// (块选,Windows Terminal 惯例);否则多击计数 2=Semantic、
+/// 3=Lines、1=Simple。
+fn begin_selection_type(count: u8, mods: keyboard::Modifiers) -> SelectionType {
+    if mods.alt() {
+        return SelectionType::Block;
+    }
+    match count {
+        2 => SelectionType::Semantic,
+        3 => SelectionType::Lines,
+        _ => SelectionType::Simple,
+    }
+}
 
 impl Widget<Message, Theme, iced::Renderer> for TermGrid {
     fn size(&self) -> Size<Length> {
@@ -164,19 +180,22 @@ impl Widget<Message, Theme, iced::Renderer> for TermGrid {
         // preedit 覆盖层仅内容变才重建)
         self.request_ime(shell, bounds, self.preedit.as_deref());
         match event {
+            iced::Event::Keyboard(keyboard::Event::ModifiersChanged(mods)) => {
+                state.mods = *mods;
+            }
             iced::Event::Mouse(mouse::Event::ButtonPressed(mouse::Button::Left)) => {
                 let Some(pos) = cursor.position_over(bounds) else { return };
                 let (cell, side) = self.pixel_to_cell(pos, bounds);
                 let now = Instant::now();
-                let multi = state.last_click_at.is_some_and(|t| now - t <= MULTI_CLICK_WINDOW)
+                // Alt 按下恒为 Block(005 T2):不参与多击计数(计数视同
+                // 1,序列重启),与 1/2/3 击语义正交。
+                let alt = state.mods.alt();
+                let multi = !alt
+                    && state.last_click_at.is_some_and(|t| now - t <= MULTI_CLICK_WINDOW)
                     && state.last_cell == Some(cell)
                     && state.last_count < 3;
                 let count = if multi { state.last_count + 1 } else { 1 };
-                let ty = match count {
-                    2 => SelectionType::Semantic,
-                    3 => SelectionType::Lines,
-                    _ => SelectionType::Simple,
-                };
+                let ty = begin_selection_type(count, state.mods);
                 state.last_click_at = Some(now);
                 state.last_count = count;
                 state.last_cell = Some(cell);
@@ -314,15 +333,22 @@ impl Widget<Message, Theme, iced::Renderer> for TermGrid {
                 let cols = self.lines.first().map_or(0, |l| l.len());
                 let highlight = Color { a: 0.25, ..DEFAULT_FG };
                 for row in start_row.max(0)..=end_row.min(last_visible) {
-                    let col_begin = if row == start_row {
-                        sel.start.column.0
+                    // 块选:每行同一列带(矩形对齐);行选:首末行截段、
+                    // 中间行整行(005 T2)
+                    let (col_begin, col_last) = if sel.is_block {
+                        (sel.start.column.0, sel.end.column.0)
                     } else {
-                        0
-                    };
-                    let col_last = if row == end_row {
-                        sel.end.column.0
-                    } else {
-                        cols.saturating_sub(1)
+                        let begin = if row == start_row {
+                            sel.start.column.0
+                        } else {
+                            0
+                        };
+                        let last = if row == end_row {
+                            sel.end.column.0
+                        } else {
+                            cols.saturating_sub(1)
+                        };
+                        (begin, last)
                     };
                     renderer.fill_quad(
                         renderer::Quad {
@@ -672,5 +698,57 @@ fn term_color_key(c: TermColor) -> u64 {
 impl<'a> From<TermGrid> for Element<'a, Message> {
     fn from(grid: TermGrid) -> Self {
         Element::new(grid)
+    }
+}
+
+#[cfg(test)]
+mod begin_selection_type_tests {
+    use super::begin_selection_type;
+    use autoterm_core::SelectionType;
+    use iced::keyboard::Modifiers;
+
+    #[test]
+    fn alt_forces_block_and_restarts_click_count() {
+        // Alt 恒 Block:单/双/三击计数一概不参与
+        assert_eq!(
+            begin_selection_type(1, Modifiers::ALT),
+            SelectionType::Block
+        );
+        assert_eq!(
+            begin_selection_type(2, Modifiers::ALT),
+            SelectionType::Block,
+            "Alt 按下时双击计数不得翻成 Semantic"
+        );
+        assert_eq!(
+            begin_selection_type(3, Modifiers::ALT.union(Modifiers::SHIFT)),
+            SelectionType::Block,
+            "Alt+Shift 仍为 Block"
+        );
+    }
+
+    #[test]
+    fn plain_clicks_map_multi_count() {
+        assert_eq!(
+            begin_selection_type(1, Modifiers::empty()),
+            SelectionType::Simple
+        );
+        assert_eq!(
+            begin_selection_type(2, Modifiers::empty()),
+            SelectionType::Semantic
+        );
+        assert_eq!(
+            begin_selection_type(3, Modifiers::empty()),
+            SelectionType::Lines
+        );
+        assert_eq!(
+            begin_selection_type(4, Modifiers::empty()),
+            SelectionType::Simple,
+            "计数溢出回 Simple(与旧 match _ 分支一致)"
+        );
+        // 非 Alt 修饰(Shift/Ctrl)不影响多击映射
+        assert_eq!(
+            begin_selection_type(2, Modifiers::SHIFT),
+            SelectionType::Semantic
+        );
     }
 }
