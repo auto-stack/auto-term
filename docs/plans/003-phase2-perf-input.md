@@ -1,15 +1,21 @@
 ---
 plan_id: PLAN-003
-status: execution_done
+status: reviewed
 feature_name: AutoTerm Phase 2 性能与输入完备性(保留式画布 + Ctrl+C 矩阵 + IME)
 author: [zhaopuming]
 created_at: 2026-09-05T13:27:54+08:00
 updated_at: 2026-09-05T13:45:00+08:00
 
 # Leave these EMPTY here — /auto-plan:review fills them:
-supersedes_spec_components: []
+supersedes_spec_components:
+  - "P002-4(designs): 修订——其'Phase 2 路由'节(保留式画布/绘制级剪裁)已由本计划兑现,详细设计更新为保留式画布协议"
 new_spec_components: []
-touched_goals: []
+touched_goals:
+  - "goal-1: 绘制级损伤剪裁落地(末帧脏行重建 0<rows,002 验收#4 兑现)"
+  - "goal-2: Ctrl+C/Break 语义矩阵完结(系统性平台发现,win32 路由 Phase 3)"
+  - "goal-3: IME 调查完结(管线公面完备,验证需真人交互,路由 Phase 3)"
+  - "goal-4: 三尾巴清偿(dev-tools feature/log+env_logger/NoOp)"
+  - "goal-5: 决策链沉淀(001 文档 002→003 节)" 
 
 current_step: 12
 total_steps: 12
@@ -225,7 +231,58 @@ eprintln、`Message::NoOp` 替换空唤醒复用。
 
 ## 复审记录
 
-(待 /auto-plan:review 填写)
+**复审人**:auto-plan:review(ZCode 会话)· **时间**:2026-09-05 15:20 +08:00
+**复审场所**:worktree `D:/autostack/.wt/auto-term-003/auto-term`(分支
+`plan-003-dev`,12 提交,工作区干净;diff 21 文件 +1087 行)
+
+### 验收标准逐条复验(全部重跑)
+
+| # | 标准 | 结论 | 复验证据 |
+| --- | --- | --- | --- |
+| 1 | 全量绿+无 ash | **PASS** | full-suite 19 用例零失败;`cargo tree` 零匹配 |
+| 2 | 绘制级不等式 | **PASS** | 复跑:`damage_last: lines=1` + `paragraph_rebuilds_last: 0`(脏行内容未变,重建 0 < 32;强于不等式) |
+| 3 | Ctrl+C 矩阵 | **PASS(按待澄清#4 口径)** | 矩阵完结:ash(raw-mode)✓、pwsh/cmd/ping(控制台 API)平台性不中断;**复审新增 ping 探针**确认系统性(非应用特例) |
+| 4 | Ctrl+Break 结论 | **PASS** | 001 附录 5 处(双重阻断:iced 键层 + win32 同 Ctrl+C 路线) |
+| 5 | IME 结论 | **PASS** | 001 附录 6 处(管线公面完备;验证需真人交互) |
+| 6 | dev-tools 门控 | **PASS** | 默认构建 `--help` 0 个 dev 参数、`--dev-*` 拒收;feature 构建绿 |
+| 7 | 001 决策链+DEBTS | **PASS** | `002→003`×1(五条);DEBTS #1/#2 关账、#6/#7 路由注明 |
+| 8 | 零 eprintln | **PASS** | src 两 crate grep=0(log::info + dev-tools 下 env_logger) |
+
+**Full-suite 门**(唯一一次):`cargo test --workspace` 19 用例全绿。
+
+### 两项裁定(用户征询复审人意见后采纳)
+
+**裁定#1(待澄清#3,win32 直调):不引入本计划,定为 Phase 3 首任务。**
+复审补 ping 探针:6 回包持续至被杀、无 Control-C 统计、无提示符——
+0x03 缺失升级为**系统性**(pwsh/cmd-timeout/ping 三独立程序全中),
+T6 结论坐实。不现在引入的理由:①主要客户端(ash/VT 系)Ctrl+C
+今日可用;②`GenerateConsoleCtrlEvent` 要求与目标共享控制台,ConPTY
+场景 autoterm 与子进程不共 console,可行路径(AttachConsole 到
+conhost)属未文档化地带,需先行调查——"30 行代码、300 行调查",
+塞进已完成的计划违背门禁节奏;③改动隔离(独立小模块),Phase 3
+开篇做零风险。用户如要现在补,退回 work 一轮即可。
+
+**裁定#2(IME 路由 Phase 3):认可。** 实现路径清晰(Widget::update
++消息接线),但验证必须真人输入法交互,与本仓程序化证据政策冲突;
+现在交付等于交付复审无法验证的代码。
+
+### 遗漏 / 延后 / workaround 猎查
+
+- **遗漏**:未发现;T1-T12 均有提交+证据,diff 覆盖全部声面。
+  微瑕:`cell_px_slop` 用常量而非实测 cell(仅余量启发,不影响对齐,
+  记观察);
+- **延后**:①真 Ctrl+C/Break(裁定#1,Phase 3 首任务);②IME
+  (裁定#2,Phase 3,手动清单验收);③验收#3 的"三 shell 全过"按
+  待澄清#4 预授权口径记为平台怪癖——均为显式裁定,无静默;
+- **Workaround(均已备案)**:digest 替代 compare(其不含文本)、
+  取证静态量(进 dev-tools feature)、像素取证降级(PrintWindow 对
+  wgpu 不稳,程序化像素扫描替代)、唤醒转发 is_full 重试。
+
+### 结论
+
+**通过 → `status: reviewed`**。8/8 标准过(含两项显式裁定);
+full-suite 绿;002 验收#4 在本计划兑现闭环;执行期另抓出并修复
+唤醒线程死亡 bug(20000 行 3 连稳)。可进入 `/auto-plan:merge`。
 
 ## 待澄清事项
 
