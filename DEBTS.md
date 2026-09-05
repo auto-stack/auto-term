@@ -38,4 +38,9 @@
 4. 光标形状(Underline/Beam)与闪烁;
 5. Ctrl+C 稳定版复测(#7 待环境后关账或立项 win32);
 6. Unix 基座适配;
-7. iced↔auto-ui 生态对齐(`.at` 组件模型承载原生 widget 调查)。
+7. iced↔auto-ui 生态对齐(`.at` 组件模型承载原生 widget 调查);
+8. **Auto 复刻**(用户裁定 2026-09-05:AutoLang 可直调 Rust 库,
+   当前 Rust 实现有效;届时将应用层[autoterm-core 封装 +
+   autoterm-ui App/TermGrid,约 2k 行]以 Auto 代码复刻,引擎
+   crate[alacritty_terminal/iced/portable-pty]经绑定复用——
+   前置依赖 #7 的组件模型调查)。
