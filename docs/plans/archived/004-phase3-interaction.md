@@ -1,6 +1,6 @@
 ---
 plan_id: PLAN-004
-status: reviewed
+status: archived
 feature_name: AutoTerm Phase 3 交互完备(选中/复制粘贴 + Ctrl+C 稳定版复测 + IME)
 author: [zhaopuming]
 created_at: 2026-09-05T16:05:00+08:00
@@ -190,7 +190,7 @@ IME:聚焦时 Shell::request_input_method(光标矩形,purpose=Terminal)
       验证:`cargo test -p autoterm-core --test sim_regression`(11 用例绿)
       [✅ 已完成] 2afafd1 — TDD 红→绿,11/11 passed(Simple 范围/文本、
       Semantic 词扩 bar 4..=6、Lines 扩满行含回滚绝对行契约 -display_offset)
-- [ ] **T2** ui 事件地基:`crates/autoterm-ui/src/widget.rs` 实现
+- [x] **T2** ui 事件地基:`crates/autoterm-ui/src/widget.rs` 实现
       `Widget::update`(鼠标按下/移动/释放→像素→格子→shell.publish
       `Message::Select`);lib.rs 增 Select 消息族与 App 处理
       (Begin/Extend/Finish 驱动 core)。
@@ -198,7 +198,7 @@ IME:聚焦时 Shell::request_input_method(光标矩形,purpose=Terminal)
       [✅ 已完成] 3575987 — build 绿(警告全为既有);echo-hi 冒烟回显正常;
       Tree 持久 GridInteraction(拖选标志+多击计数),越界 clamp,
       Interaction::Text;App.selection_range 随交互与内容变化刷新
-- [ ] **T3** 高亮渲染:TermGrid 增 selection 字段,draw 在文本层前
+- [x] **T3** 高亮渲染:TermGrid 增 selection 字段,draw 在文本层前
       画高亮 quad(不进行缓存 digest);App 刷新链路接通。
       验证:冒烟 `--dev-select` + 像素扫描(evidence/004/select-highlight.png)
       [✅ 已完成] 6729b79 — 高亮带**恰好 5 行**(注入行 2..6)×40px 物理
@@ -209,7 +209,7 @@ IME:聚焦时 Shell::request_input_method(光标矩形,purpose=Terminal)
       PW_RENDERFULLCONTENT + SetProcessDPIAware(本机 200% 缩放)+ 背景
       直通带自校验 + 带色扫描(003 的 PrintWindow 不稳结论在本机按
       RENDERFULLCONTENT 标志复验可用)
-- [ ] **T4** 复制/粘贴:Finish→copy-on-select;Ctrl+Shift+C/V 键盘
+- [x] **T4** 复制/粘贴:Finish→copy-on-select;Ctrl+Shift+C/V 键盘
       拦截(key_to_bytes 之前);`\n` 规整;剪贴板读回断言。
       验证:dev 冒烟转储 `selection_text` + 粘贴回显断言
       [✅ 已完成] a40c14c — 粘贴回显 `PS> PASTED_004` 上屏;退出后外部
@@ -217,14 +217,14 @@ IME:聚焦时 Shell::request_input_method(光标矩形,purpose=Terminal)
       拦截决策抽纯函数 clipboard_shortcut 单测 2 用例(裸 Ctrl+C 落 0x03
       不劫持);执行期真 bug:DevTick 注入丢弃返回 Task→剪贴板写从未执行,
       改批量返回(ui 测试 7 绿)
-- [ ] **T5** 双击/三击:widget 点击计数(Semantic/Lines);dev-select
+- [x] **T5** 双击/三击:widget 点击计数(Semantic/Lines);dev-select
       支持类型参数;词选用 `--dev-select "ms:semantic:..."`。
       验证:sim 用例已绿的 Semantic/Lines 经 UI 注入冒烟断言
       [✅ 已完成] c91905d — 计数在 T2 落地(Tree 态,500ms 同格窗);
       semantic 注入:整词 SELECT_MARKER_LINE 入选,窄选实测左边界恰在
       `:` 语义转义符(词边界机制实证);lines 注入:318 cells = 3×106
       恰三整行;证据 semantic-dump.txt / lines-dump.txt
-- [ ] **T6** 取证固化:`--dev-select` 钩子(dev-tools feature 内)+
+- [x] **T6** 取证固化:`--dev-select` 钩子(dev-tools feature 内)+
       转储 `selection_text/selection_cells`;证据归档
       `docs/designs/evidence/004-select/`。
       验证:归档文件存在且含像素扫描结果
@@ -232,14 +232,14 @@ IME:聚焦时 Shell::request_input_method(光标矩形,purpose=Terminal)
       select-scan.txt 含像素扫描结果(5 行带 + 命中色 70/73/76 对
       71/73/76);7 个 txt 含 selection_text/highlight 断言;
       补语义边界窄选证据(`:` 转义符左边界)
-- [ ] **T7** Ctrl+C 稳定版复测:矩阵三通道在稳定版 Windows 执行;
+- [x] **T7** Ctrl+C 稳定版复测:矩阵三通道在稳定版 Windows 执行;
       无环境则记"待环境"并挂 DEBTS;结论回填 001 附录。
       验证:001 附录 grep "稳定版" ≥1
       [✅ 已完成] 7b3fc01 — 按裁定走"待环境":001 附录新增
       "稳定版复测裁定"节(grep 稳定版 = 5 ≥1),矩阵沿用 003-matrix
       三通道骨架,DEBTS #7 持账,决策树(正常→关账/复现→win32 立项)
       不变
-- [ ] **T8** IME:request_input_method + Preedit/Commit 处理
+- [x] **T8** IME:request_input_method + Preedit/Commit 处理
       (over-the-spot 优先);人工清单(pwsh/ash 各 5 分钟)+ 截图。
       验证:清单全过截图存档,或 blocker 记录进 001/DEBTS
       [✅ 已完成] b55ebff — 管线全通(IME 锚定请求/Preedit 挂起不写
@@ -249,7 +249,7 @@ IME:聚焦时 Shell::request_input_method(光标矩形,purpose=Terminal)
       4 物理行 × 318px = 恰 17 格(CJK 双宽);**人工清单待用户执行**
       (合成输入无法自动化,003 已裁定;跑法已写进 001 附录)——本项
       按计划验证条款记 blocker 路径,非静默
-- [ ] **T9** 文档:001 追加 003→004 决策链;DEBTS 勾账与重排
+- [x] **T9** 文档:001 追加 003→004 决策链;DEBTS 勾账与重排
       (#6 清账,#7 按复测,新增自动滚动/块选为 Phase 4 候选);
       README 交互说明(选中/复制/粘贴/IME)。
       验证:`grep -c "003→004" docs/designs/001-phase1-architecture.md` ≥1
@@ -258,7 +258,7 @@ IME:聚焦时 Shell::request_input_method(光标矩形,purpose=Terminal)
       覆盖层不落屏,升级 iced 时重试);Phase 4 候选按裁定#4 重排;
       README 增交互表(拖选/双击/三击/copy-on-select/Ctrl+Shift+C/V/
       右键粘贴/IME 内联预编辑)
-- [ ] **T10** 收尾:全量回归 + 无 ash 断言 + 双构建(默认/dev-tools)。
+- [x] **T10** 收尾:全量回归 + 无 ash 断言 + 双构建(默认/dev-tools)。
       验证:`cargo test --workspace` 绿 + `! cargo tree --workspace |
       grep -q ash-core` && echo OK + `cargo build -p autoterm-ui
       --features dev-tools` 绿
