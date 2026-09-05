@@ -36,6 +36,7 @@ docs/designs/         设计决策(000:渲染路线 A/B;001:Phase 1 正式架构
 cargo run -q -p autoterm-ui --                    # 交互终端(默认 pwsh)
 cargo run -q -p autoterm-ui -- --shell <exe>      # 指定 shell(如 ash.exe)
 cargo test --workspace                            # 全量回归
+# 取证钩子(--dev-autotype/--dev-dump 等)需 --features dev-tools 构建
 ```
 
 架构与设计决策:`docs/designs/001-phase1-architecture.md`(000→002
