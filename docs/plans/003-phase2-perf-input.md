@@ -1,17 +1,17 @@
 ---
 plan_id: PLAN-003
-status: drafting
+status: executing
 feature_name: AutoTerm Phase 2 性能与输入完备性(保留式画布 + Ctrl+C 矩阵 + IME)
 author: [zhaopuming]
 created_at: 2026-09-05T13:27:54+08:00
-updated_at: 2026-09-05T13:27:54+08:00
+updated_at: 2026-09-05T13:45:00+08:00
 
 # Leave these EMPTY here — /auto-plan:review fills them:
 supersedes_spec_components: []
 new_spec_components: []
 touched_goals: []
 
-current_step: 0
+current_step: 3
 total_steps: 12
 ---
 
@@ -161,21 +161,24 @@ eprintln、`Message::NoOp` 替换空唤醒复用。
 
 ## 执行步骤
 
-- [ ] **T1** PoC:`crates/autoterm-ui/tests/paragraph_poc.rs` —
+- [x] **T1** PoC:`crates/autoterm-ui/tests/paragraph_poc.rs` —
       构造 `<iced::Renderer as advanced::text::Renderer>::Paragraph`
       (`with_text`+`load` 路径以实际公面为准),shaping "HELLO"
       断言 `min_bounds().width > 0`;结论(可行/受阻+原因)记
       `docs/designs/001` 附录草注。
       验证:`cargo test -p autoterm-ui paragraph_poc`
-- [ ] **T2** `widget.rs` 保留式画布:`RowPara` 缓存 + draw 按行
+      [✅ 已完成] 3 用例绿:`Plain<P>` 公面可行(update 内建 content 比对,compare 只看版式;全局字体系统惰性初始化;100 次同内容零重建);实际构造路径是 `Plain::new/update`,无需手工 with_text+load;结论已记 001 附录;commit 07caeb7
+- [x] **T2** `widget.rs` 保留式画布:`RowPara` 缓存 + draw 按行
       `compare` 复用/重建 + `fill_paragraph` 绘制;同色 run 背景
       块逻辑保留。
       验证:`cargo build -p autoterm-ui` + 冒烟 echo-hi 转储不变
-- [ ] **T3** damage 门控重建:`Damage::Lines` 只对脏行 compare,
+      [✅ 已完成] 实现演进:compare 不含文本,改用**行 digest(字符+前后景色)**判异 + `Para::with_spans`(同色 run 合 span、前景色烘焙);**像素证据**(程序化扫描,不依赖视觉模型):ash find 表格 338 彩色像素落于表格行带(span 颜色上屏),网格行↔亮带 1:1(位置正确);PrintWindow 对 wgpu 偶发错抓已识别为取证工具问题(标题 -like 歧义),按计划证据政策像素降为辅助;evidence/003-canvas/ 归档;commit 4d8574f/53d526f
+- [x] **T3** damage 门控重建:`Damage::Lines` 只对脏行 compare,
       `Full` 全量;静态计数 `PARAGRAPH_REBUILDS`,dev 转储输出
       `paragraph_rebuilds_last/prev`。
       验证:`cargo test -p autoterm-ui` + 冒烟:echo 单行帧
       rebuilds < rows(转储断言)
+      [✅ 已完成] 冒烟:末帧 `damage_last: lines=2` + `paragraph_rebuilds_last: 0`(脏行内容未变连重建都免,0 < 32 强于不等式);全程 snapshot_rebuilds 16-18 / frames 93(门控生效);行缓存经全局 OnceLock 持有(跨 view 存活)
 - [ ] **T4** 回归对照:20000 行流式冒烟(rebuilds 合理,无错位/
       残影;网格终态完整)。
       验证:冒烟转储含 20000 且 `fit_ok: true`
