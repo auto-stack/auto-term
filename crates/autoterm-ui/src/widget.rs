@@ -14,11 +14,14 @@ use std::sync::atomic::{AtomicU64, Ordering};
 use autoterm_core::{Color as TermColor, Damage, NamedColor, StyledChar};
 
 use crate::metrics::GridMetrics;
+use crate::palette::to_iced_color;
 use crate::{DEFAULT_BG, DEFAULT_FG};
 
 /// 绘制取证(T6):fill_text 调用数,draw 结束时滚动更新。
 static DRAW_RUNS_LAST: AtomicU64 = AtomicU64::new(0);
 static DRAW_RUNS_PREV: AtomicU64 = AtomicU64::new(0);
+/// 绘制取证(T8):光标绘制状态(row*8192+col;u64::MAX=未画)。
+static CURSOR_DRAWN: AtomicU64 = AtomicU64::new(u64::MAX);
 
 /// 读绘制 run 计数(prev, last)。
 pub fn draw_runs() -> (u64, u64) {
@@ -40,6 +43,8 @@ pub struct TermGrid {
     pub damage: Damage,
     /// 回滚偏移(0=贴底);>0 时顶行右侧画 `↑N` 指示(T7)。
     pub scroll_offset: usize,
+    /// 光标(视口相对;Hidden=None)→ 反色块(T8)。
+    pub cursor: Option<(usize, usize)>,
 }
 
 impl<Message> Widget<Message, Theme, iced::Renderer> for TermGrid {
@@ -166,7 +171,55 @@ impl<Message> Widget<Message, Theme, iced::Renderer> for TermGrid {
                 *viewport,
             );
         }
+
+        // 光标块(T8):反色——块底=原前景色,字形=原背景色
+        let mut cursor_state = u64::MAX;
+        if let Some((row, col)) = self.cursor {
+            if let Some(line) = self.lines.get(row) {
+                if let Some(cell) = line.get(col) {
+                    let block_bg = to_iced_color(cell.fg, true);
+                    let glyph_fg = to_iced_color(cell.bg, false);
+                    let rect = Rectangle::new(
+                        Point::new(
+                            bounds.x + col as f32 * cell_px,
+                            bounds.y + row as f32 * line_px,
+                        ),
+                        Size::new(cell_px, line_px),
+                    );
+                    renderer.fill_quad(
+                        renderer::Quad { bounds: rect, ..Default::default() },
+                        block_bg,
+                    );
+                    let mut buf = [0u8; 4];
+                    let content = cell.c.encode_utf8(&mut buf).to_string();
+                    renderer.fill_text(
+                        iced::advanced::text::Text {
+                            content,
+                            bounds: Size::new(cell_px, line_px),
+                            size: font_px.into(),
+                            line_height: LineHeight::Absolute(line_px.into()),
+                            font: Font::MONOSPACE,
+                            align_x: iced::Alignment::Start.into(),
+                            align_y: alignment::Vertical::Top,
+                            shaping: Shaping::Basic,
+                            wrapping: Wrapping::None,
+                        },
+                        rect.position(),
+                        glyph_fg,
+                        *viewport,
+                    );
+                    cursor_state = (row as u64) * 8192 + col as u64;
+                }
+            }
+        }
+        CURSOR_DRAWN.store(cursor_state, Ordering::Relaxed);
     }
+}
+
+/// 读光标绘制状态(None=未画)。
+pub fn cursor_drawn() -> Option<(usize, usize)> {
+    let v = CURSOR_DRAWN.load(Ordering::Relaxed);
+    (v != u64::MAX).then(|| ((v / 8192) as usize, (v % 8192) as usize))
 }
 
 impl<'a, Message> From<TermGrid> for Element<'a, Message> {
@@ -183,71 +236,3 @@ fn term_color_key(c: TermColor) -> u64 {
     }
 }
 
-/// vte ansi Color → iced Color(过渡版:Named 16 色 + 前景/背景默认,
-/// T8 换 palette.rs 全映射)。
-pub fn to_iced_color(c: TermColor, is_fg: bool) -> Color {
-    const BASE16: [[u8; 3]; 16] = [
-        [0x00, 0x00, 0x00], [0x80, 0x00, 0x00], [0x00, 0x80, 0x00], [0x80, 0x80, 0x00],
-        [0x00, 0x00, 0x80], [0x80, 0x00, 0x80], [0x00, 0x80, 0x80], [0xc0, 0xc0, 0xc0],
-        [0x80, 0x80, 0x80], [0xff, 0x00, 0x00], [0x00, 0xff, 0x00], [0xff, 0xff, 0x00],
-        [0x00, 0x00, 0xff], [0xff, 0x00, 0xff], [0x00, 0xff, 0xff], [0xff, 0xff, 0xff],
-    ];
-    match c {
-        TermColor::Spec(rgb) => Color::from_rgb8(rgb.r, rgb.g, rgb.b),
-        TermColor::Indexed(i) => {
-            let [r, g, b] = xterm256(i);
-            Color::from_rgb8(r, g, b)
-        }
-        TermColor::Named(n) => {
-            let base = match n {
-                NamedColor::Black => Some(0),
-                NamedColor::Red => Some(1),
-                NamedColor::Green => Some(2),
-                NamedColor::Yellow => Some(3),
-                NamedColor::Blue => Some(4),
-                NamedColor::Magenta => Some(5),
-                NamedColor::Cyan => Some(6),
-                NamedColor::White => Some(7),
-                NamedColor::BrightBlack => Some(8),
-                NamedColor::BrightRed => Some(9),
-                NamedColor::BrightGreen => Some(10),
-                NamedColor::BrightYellow => Some(11),
-                NamedColor::BrightBlue => Some(12),
-                NamedColor::BrightMagenta => Some(13),
-                NamedColor::BrightCyan => Some(14),
-                NamedColor::BrightWhite => Some(15),
-                _ => None,
-            };
-            match base {
-                Some(i) => {
-                    let [r, g, b] = BASE16[i];
-                    Color::from_rgb8(r, g, b)
-                }
-                None => {
-                    if is_fg { DEFAULT_FG } else { DEFAULT_BG }
-                }
-            }
-        }
-    }
-}
-
-pub fn xterm256(i: u8) -> [u8; 3] {
-    const BASE16: [[u8; 3]; 16] = [
-        [0x00, 0x00, 0x00], [0x80, 0x00, 0x00], [0x00, 0x80, 0x00], [0x80, 0x80, 0x00],
-        [0x00, 0x00, 0x80], [0x80, 0x00, 0x80], [0x00, 0x80, 0x80], [0xc0, 0xc0, 0xc0],
-        [0x80, 0x80, 0x80], [0xff, 0x00, 0x00], [0x00, 0xff, 0x00], [0xff, 0xff, 0x00],
-        [0x00, 0x00, 0xff], [0xff, 0x00, 0xff], [0x00, 0xff, 0xff], [0xff, 0xff, 0xff],
-    ];
-    match i {
-        0..=15 => BASE16[i as usize],
-        16..=231 => {
-            let v = (i - 16) as usize;
-            let steps = [0, 95, 135, 175, 215, 255];
-            [steps[v / 36] as u8, steps[(v % 36) / 6] as u8, steps[v % 6] as u8]
-        }
-        _ => {
-            let gray = 8 + (i - 232) as u8 * 10;
-            [gray, gray, gray]
-        }
-    }
-}

@@ -162,6 +162,16 @@ impl TermSession {
         damage
     }
 
+    /// 光标位置(视口相对 (row, col));Hidden 时 None。
+    pub fn cursor(&self) -> Option<(usize, usize)> {
+        use alacritty_terminal::vte::ansi::CursorShape;
+        let cursor = self.term.renderable_content().cursor;
+        match cursor.shape {
+            CursorShape::Hidden => None,
+            _ => Some((cursor.point.line.0 as usize, cursor.point.column.0 as usize)),
+        }
+    }
+
     pub fn size(&self) -> (usize, usize) {
         (self.size.cols, self.size.rows)
     }

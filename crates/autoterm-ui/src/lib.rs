@@ -6,6 +6,7 @@
 //! 才有粗粒度 dev timer)。
 
 pub mod metrics;
+pub mod palette;
 pub mod widget;
 
 use std::path::PathBuf;
@@ -46,6 +47,8 @@ pub enum Message {
     WindowId(Option<iced::window::Id>),
     /// 滚轮回滚(正=上翻历史,同 Scroll::Delta 约定;行为行)。
     Scrolled(i32),
+    /// 窗口关闭:同步杀子进程再退出(T8)。
+    Closed(iced::window::Id),
     /// dev 钩子的粗定时(仅 dev 参数激活时订阅;常态不存在)。
     DevTick,
 }
@@ -78,6 +81,8 @@ pub struct App {
     pub damage: Damage,
     pub snapshot: Vec<Vec<StyledChar>>,
     pub snapshot_rebuilds: u64,
+    /// 光标(视口相对;Hidden=None)。随快照一并刷新。
+    pub cursor: Option<(usize, usize)>,
 
     queued_input: Vec<(Instant, Vec<u8>)>,
     exit_at: Option<Instant>,
@@ -112,6 +117,7 @@ impl App {
             damage: Damage::Full,
             snapshot: Vec::new(),
             snapshot_rebuilds: 0,
+            cursor: None,
             queued_input,
             exit_at,
         }
@@ -171,6 +177,8 @@ impl App {
                 }) => Message::Scrolled((y * 3.0) as i32),
                 _ => Message::PtyBytes,
             }),
+            // 窗口关闭:同步清理子进程(T8)
+            iced::window::close_events().map(Message::Closed),
         ];
         if self.config.dev_autotype.is_empty() && self.exit_at.is_none() {
             // 常态:无任何定时器,空闲零唤醒(验收标准 3)
@@ -245,6 +253,13 @@ impl App {
                 self.refresh_after_change();
                 Task::none()
             }
+            Message::Closed(_id) => {
+                // 关闭语义(T8):显式杀+等,窗口关闭不留孤儿进程;
+                // Drop 安全网仍在(异常路径兜底)。
+                self.session.kill();
+                let _ = self.session.wait();
+                iced::exit()
+            }
             Message::WindowId(id) => {
                 self.window_id = id;
                 Task::none()
@@ -284,6 +299,7 @@ impl App {
         };
         if content_changed {
             self.snapshot = self.session.term.visible_styled_lines();
+            self.cursor = self.session.term.cursor();
             self.snapshot_rebuilds += 1;
         }
     }
@@ -294,6 +310,7 @@ impl App {
             metrics: self.metrics,
             damage: self.damage.clone(),
             scroll_offset: self.session.term.display_offset(),
+            cursor: self.cursor,
         })
     }
 
@@ -361,6 +378,15 @@ impl App {
             &mut out,
             format_args!("draw_runs_prev: {runs_prev}\ndraw_runs_last: {runs_last}\n"),
         );
+        match widget::cursor_drawn() {
+            Some((row, col)) => {
+                let _ = std::fmt::Write::write_fmt(
+                    &mut out,
+                    format_args!("cursor_drawn_at: ({row},{col}) inverted=true\n"),
+                );
+            }
+            None => out.push_str("cursor_drawn_at: none inverted=false\n"),
+        }
         if let Some(t) = self.last_byte_at {
             let _ = std::fmt::Write::write_fmt(
                 &mut out,
