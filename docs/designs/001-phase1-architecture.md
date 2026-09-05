@@ -164,3 +164,27 @@ CTRL_C 常数 1 取决于句柄语义)——待用户裁定(计划 003
 - **验证约束(路由主因)**:IME 组合输入无法经 `--dev-autotype`
   无人值守触发——取证强依赖真人中文输入法交互;按本仓"程序化
   证据为主"的政策,列入 Phase 3(或用户点名时以手动清单验收)。
+
+## 002→003 决策链(PLAN-003,2026-09-05)
+
+1. **保留式画布落地**(兑现 002 验收#4 的路由):每行
+   `Para::with_spans` 缓存 + 行 digest(字符+前后景色)判异 +
+   `Damage::Lines` 脏行门控;`compare` 只看版式参数不含文本,故
+   digest 由我们自持;span 前景色烘焙进 buffer,cryoglyph 逐字形
+   color_opt 优先渲染(源码级+338 彩色像素证据);背景与光标仍走
+   quad。**绘制级剪裁至此闭环**:末帧脏行内容未变时重建数为 0。
+2. **健壮性修复(20000 行首现)**:唤醒转发线程遇 iced 通道 Full
+   即退出的 bug——尾部字节无人 drain;改为 is_full 重试后 3 连跑
+   bytes_fed 恒定、输出完整。
+3. **Ctrl+C/Ctrl+Break 矩阵结论**:ConPTY 不把裸 0x03 翻译为
+   CTRL_C_EVENT(经典控制台 API 程序收不到中断;raw-mode 客户端
+   如 ash 正常);Ctrl+Break 被 iced 键层与 win32 双重阻断——
+   真事件需 `GenerateConsoleCtrlEvent` win32 直调(待用户裁定)。
+4. **IME**:管线公面完备(over-the-spot 叠加),落地需 Widget::
+   update;验证强依赖真人输入法交互,路由 Phase 3。
+5. **dev-tools feature**:`--dev-*`/DevTick/转储/取证静态量全部
+   cfg 门控,默认构建零 dev 面;log+env_logger 替换 eprintln;
+   Message::NoOp 清偿空唤醒复用。
+
+残留缺口(Phase 3+):真 Ctrl+C/Break(win32 裁定后 ~30 行)、
+IME 落地、Unix 基座、光标形状/闪烁、选中。
