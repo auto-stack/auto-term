@@ -34,7 +34,7 @@ use autoterm_core::{
 use crate::metrics::GridMetrics;
 use crate::palette::to_iced_color;
 use crate::{
-    DEFAULT_BG, DEFAULT_FG, Message, SelectMsg, Vertical, edge_band,
+    DEFAULT_BG, DEFAULT_FG, MenuState, Message, SelectMsg, Vertical, edge_band,
 };
 
 type Para = <iced::Renderer as iced::advanced::text::Renderer>::Paragraph;
@@ -108,6 +108,35 @@ pub struct TermGrid {
     /// IME 挂起预编辑(不写 PTY;over-the-spot 覆盖层由 runtime 绘制,
     /// PLAN-004 T8)。
     pub preedit: Option<String>,
+    /// 右键菜单浮层(005 T5):Some=draw 最顶层画;命中检测纯函数。
+    pub menu: Option<MenuState>,
+}
+
+/// 菜单几何(widget 本地像素;draw 与命中检测同源,纯函数可单测)。
+const MENU_W: f32 = 88.0;
+const MENU_ITEM_H: f32 = 26.0;
+/// 菜单项标签(复制/粘贴/全选;待澄清#4 采纳默认三项)。
+const MENU_LABELS: [&str; 3] = ["复制", "粘贴", "全选"];
+/// 菜单浮层底色(像素取证判别色)。
+const MENU_BG: Color = Color::from_rgb8(0x2a, 0x2e, 0x34);
+
+/// 菜单矩形(widget 本地坐标)。
+fn menu_rect(at: (f32, f32)) -> Rectangle {
+    Rectangle::new(
+        Point::new(at.0, at.1),
+        Size::new(MENU_W, MENU_ITEM_H * MENU_LABELS.len() as f32),
+    )
+}
+
+/// 菜单命中检测(纯函数):返回命中的项索引;矩形外 None。
+/// (y 须先作下界判断——负差值 `as usize` 饱和为 0,会误命中首项)
+fn menu_item_at(at: (f32, f32), pos: Point) -> Option<usize> {
+    let r = menu_rect(at);
+    if pos.x < r.x || pos.x >= r.x + r.width || pos.y < r.y {
+        return None;
+    }
+    let idx = ((pos.y - r.y) / MENU_ITEM_H) as usize;
+    (idx < MENU_LABELS.len()).then_some(idx)
 }
 
 /// 鼠标交互持久状态(经 `Tree` 跨帧存活;PLAN-004 T2)。
@@ -120,6 +149,8 @@ pub struct GridInteraction {
     last_count: u8,
     last_cell: Option<(usize, usize)>,
     mods: keyboard::Modifiers,
+    /// 菜单悬停项(draw 反色;菜单开着时随 CursorMoved 刷新)。
+    hover_item: Option<usize>,
 }
 
 /// 多击判定窗口。
@@ -187,6 +218,25 @@ impl Widget<Message, Theme, iced::Renderer> for TermGrid {
             }
             iced::Event::Mouse(mouse::Event::ButtonPressed(mouse::Button::Left)) => {
                 let Some(pos) = cursor.position_over(bounds) else { return };
+                // 菜单开着时左键归菜单:命中项→动作,未命中→关闭;
+                // 一律吞掉(不得触发选中 Begin,005 T5)
+                if let Some(menu) = self.menu {
+                    let local = Point::new(pos.x - bounds.x, pos.y - bounds.y);
+                    match menu_item_at(menu.at, local) {
+                        Some(idx) => {
+                            let item = [
+                                crate::MenuItem::Copy,
+                                crate::MenuItem::Paste,
+                                crate::MenuItem::SelectAll,
+                            ][idx];
+                            shell.publish(Message::MenuAction(item));
+                        }
+                        None => shell.publish(Message::ContextMenu(None)),
+                    }
+                    state.hover_item = None;
+                    shell.capture_event();
+                    return;
+                }
                 let (cell, side) = self.pixel_to_cell(pos, bounds);
                 let now = Instant::now();
                 // Alt 按下恒为 Block(005 T2):不参与多击计数(计数视同
@@ -223,6 +273,14 @@ impl Widget<Message, Theme, iced::Renderer> for TermGrid {
                 _ => {}
             },
             iced::Event::Mouse(mouse::Event::CursorMoved { .. }) => {
+                // 菜单开着时移动只刷新悬停项(不拖选;005 T5)
+                if let Some(menu) = self.menu {
+                    state.hover_item = cursor
+                        .position_over(bounds)
+                        .map(|p| Point::new(p.x - bounds.x, p.y - bounds.y))
+                        .and_then(|local| menu_item_at(menu.at, local));
+                    return;
+                }
                 if !state.dragging {
                     return;
                 }
@@ -251,7 +309,24 @@ impl Widget<Message, Theme, iced::Renderer> for TermGrid {
                 if !cursor.is_over(bounds) {
                     return;
                 }
-                shell.publish(Message::Paste);
+                // 右键 = 开上下文菜单(005 T5;原"直接粘贴"由菜单项
+                // 承担)。拖选进行中先收尾(菜单与拖选互斥)。
+                if state.dragging {
+                    state.dragging = false;
+                    shell.publish(Message::Select(SelectMsg::Finish));
+                }
+                let pos = cursor.position().unwrap_or(bounds.position());
+                // 菜单锚点 clamp 进视口(右/下缘不越界)
+                let at = (
+                    (pos.x - bounds.x).clamp(0.0, (bounds.width - MENU_W).max(0.0)),
+                    (pos.y - bounds.y)
+                        .clamp(0.0, (bounds.height - menu_rect((0.0, 0.0)).height).max(0.0)),
+                );
+                state.hover_item = menu_item_at(at, Point::new(
+                    pos.x - bounds.x,
+                    pos.y - bounds.y,
+                ));
+                shell.publish(Message::ContextMenu(Some(at)));
                 shell.capture_event();
             }
             _ => {}
@@ -275,7 +350,7 @@ impl Widget<Message, Theme, iced::Renderer> for TermGrid {
 
     fn draw(
         &self,
-        _tree: &Tree,
+        tree: &Tree,
         renderer: &mut iced::Renderer,
         _theme: &Theme,
         _style: &renderer::Style,
@@ -438,6 +513,7 @@ impl Widget<Message, Theme, iced::Renderer> for TermGrid {
         );
         self.draw_cursor(renderer, bounds, cell_px, line_px, font_px, *viewport);
         self.draw_preedit(renderer, bounds, cell_px, line_px, font_px, *viewport);
+        self.draw_menu(tree, renderer, bounds, line_px, font_px, *viewport);
     }
 }
 
@@ -565,6 +641,60 @@ impl TermGrid {
         PREEDIT_DRAWN.store(drawn, Ordering::Relaxed);
     }
 
+    /// 右键菜单浮层(005 T5,draw 最顶层):底 quad + 边框 + 三项
+    /// 文本(复制/粘贴/全选)+ hover 反色;悬停项取自 Tree 态。
+    fn draw_menu(
+        &self,
+        tree: &Tree,
+        renderer: &mut iced::Renderer,
+        bounds: Rectangle,
+        line_px: f32,
+        font_px: f32,
+        viewport: Rectangle,
+    ) {
+        let Some(menu) = self.menu else { return };
+        let hover = tree.state.downcast_ref::<GridInteraction>().hover_item;
+        let rect = menu_rect(menu.at);
+        let rect = Rectangle::new(
+            Point::new(bounds.x + rect.x, bounds.y + rect.y),
+            rect.size(),
+        );
+        renderer.fill_quad(
+            renderer::Quad {
+                bounds: rect,
+                border: iced::Border {
+                    color: Color { a: 0.4, ..DEFAULT_FG },
+                    width: 1.0,
+                    radius: 0.0.into(),
+                },
+                ..Default::default()
+            },
+            MENU_BG,
+        );
+        for (i, label) in MENU_LABELS.iter().enumerate() {
+            let item_y = rect.y + i as f32 * MENU_ITEM_H;
+            let hovered = hover == Some(i);
+            if hovered {
+                renderer.fill_quad(
+                    renderer::Quad {
+                        bounds: Rectangle::new(
+                            Point::new(rect.x + 1.0, item_y + 1.0),
+                            Size::new(MENU_W - 2.0, MENU_ITEM_H - 2.0),
+                        ),
+                        ..Default::default()
+                    },
+                    DEFAULT_FG,
+                );
+            }
+            renderer.fill_text(
+                menu_text((*label).to_string(), MENU_W - 12.0, line_px, font_px),
+                Point::new(rect.x + 8.0, item_y + (MENU_ITEM_H - line_px) / 2.0),
+                if hovered { DEFAULT_BG } else { DEFAULT_FG },
+                viewport,
+            );
+        }
+    }
+
     fn draw_cursor(
         &self,
         renderer: &mut iced::Renderer,
@@ -573,8 +703,7 @@ impl TermGrid {
         line_px: f32,
         font_px: f32,
         viewport: Rectangle,
-    ) {
-        #[cfg(feature = "dev-tools")]
+    ) {        #[cfg(feature = "dev-tools")]
         let mut cursor_state = u64::MAX;
         if let Some((row, col)) = self.cursor {
             if let Some(line) = self.lines.get(row) {
@@ -619,12 +748,39 @@ fn plain_text(
     line_px: f32,
     font_px: f32,
 ) -> Text<String, Font> {
+    text_with_font(content, width, line_px, font_px, Font::MONOSPACE)
+}
+
+/// 菜单标签文本:MONOSPACE(Consolas)无 CJK 字形(004 preedit
+/// 取证同款豆腐块),中文标签走系统界面字体(005 T5)。
+fn menu_text(
+    content: String,
+    width: f32,
+    line_px: f32,
+    font_px: f32,
+) -> Text<String, Font> {
+    text_with_font(
+        content,
+        width,
+        line_px,
+        font_px,
+        Font::with_name("Microsoft YaHei UI"),
+    )
+}
+
+fn text_with_font(
+    content: String,
+    width: f32,
+    line_px: f32,
+    font_px: f32,
+    font: Font,
+) -> Text<String, Font> {
     Text {
         content,
         bounds: Size::new(width, line_px),
         size: font_px.into(),
         line_height: LineHeight::Absolute(line_px.into()),
-        font: Font::MONOSPACE,
+        font,
         align_x: iced::Alignment::Start.into(),
         align_y: alignment::Vertical::Top,
         shaping: Shaping::Basic,
@@ -726,6 +882,52 @@ mod edge_band_tests {
     fn beyond_edges_reports_direction() {
         assert_eq!(edge_band(-1.0, 0.0, 650.0), Some(Vertical::Up));
         assert_eq!(edge_band(651.0, 0.0, 650.0), Some(Vertical::Down));
+    }
+}
+
+#[cfg(test)]
+mod menu_item_at_tests {
+    use super::{MENU_ITEM_H, menu_item_at};
+    use iced::Point;
+
+    const AT: (f32, f32) = (100.0, 50.0);
+
+    #[test]
+    fn hits_map_to_item_index() {
+        // 第 1 项中点 → 复制(idx 0)
+        assert_eq!(
+            menu_item_at(AT, Point::new(140.0, AT.1 + MENU_ITEM_H / 2.0)),
+            Some(0)
+        );
+        // 第 2 项中点 → 粘贴(idx 1)
+        assert_eq!(
+            menu_item_at(
+                AT,
+                Point::new(140.0, AT.1 + MENU_ITEM_H * 1.5)
+            ),
+            Some(1)
+        );
+        // 第 3 项中点 → 全选(idx 2)
+        assert_eq!(
+            menu_item_at(
+                AT,
+                Point::new(140.0, AT.1 + MENU_ITEM_H * 2.5)
+            ),
+            Some(2)
+        );
+    }
+
+    #[test]
+    fn outside_rect_and_below_items_miss() {
+        // 矩形外(左/右/下)
+        assert_eq!(menu_item_at(AT, Point::new(99.0, 60.0)), None);
+        assert_eq!(menu_item_at(AT, Point::new(189.0, 60.0)), None);
+        assert_eq!(menu_item_at(AT, Point::new(140.0, 49.0)), None);
+        // 右缘之下(y 越过三项总高)
+        assert_eq!(
+            menu_item_at(AT, Point::new(140.0, AT.1 + MENU_ITEM_H * 3.0 + 1.0)),
+            None
+        );
     }
 }
 

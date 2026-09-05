@@ -53,6 +53,11 @@ pub struct AppConfig {
     /// dev 取证:退出时转储目标文件。
     #[cfg(feature = "dev-tools")]
     pub dev_dump: Option<PathBuf>,
+    /// dev 取证:到时注入右键菜单事件(可多段:"<ms>:<x>:<y>"=在
+    /// widget 本地像素开菜单,"<ms>:close"=关菜单;与真实右键/外点
+    /// 同一 ContextMenu 消息路径;菜单浮层像素取证用,005 T5)。
+    #[cfg(feature = "dev-tools")]
+    pub dev_menu: Vec<String>,
 }
 
 #[derive(Debug, Clone)]
@@ -73,6 +78,11 @@ pub enum Message {
     Select(SelectMsg),
     /// 粘贴(Ctrl+Shift+V / 右键;PLAN-004 T4)。
     Paste,
+    /// 右键菜单开合(005 T5):Some(widget 本地像素锚点)=打开,
+    /// None=关闭。
+    ContextMenu(Option<(f32, f32)>),
+    /// 右键菜单项动作(005 T5;复制/粘贴走 004 同路径)。
+    MenuAction(MenuItem),
     /// 剪贴板读取完成(粘贴流第二拍;PLAN-004 T4)。
     Pasted(String),
     /// IME 预编辑变化(挂起显示,不写 PTY;PLAN-004 T8)。
@@ -113,6 +123,23 @@ pub enum SelectMsg {
 pub enum Vertical {
     Up,
     Down,
+}
+
+/// 右键菜单项(005 T5)。动作映射:Copy=copy_selection(与
+/// Ctrl+Shift+C 同函数)、Paste=paste_from_clipboard(与快捷键
+/// 同路径)、SelectAll=视口 Lines 全选。
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum MenuItem {
+    Copy,
+    Paste,
+    SelectAll,
+}
+
+/// 右键菜单状态(005 T5):`at` = 菜单左上角(widget 本地像素);
+/// 菜单几何与命中检测在 widget(与 pixel_to_cell 同域)。
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct MenuState {
+    pub at: (f32, f32),
 }
 
 /// 指针 y 是否落在视口上/下边缘带(纯函数,可单测):越过上缘
@@ -166,6 +193,9 @@ pub struct App {
     /// 拖选自动滚动(005 T4):Some(每拍行数,上缘正/下缘负)时挂
     /// 50ms 条件订阅;Finish/离缘清除(空闲零唤醒的守门员)。
     pub drag_scroll: Option<i32>,
+    /// 右键菜单(005 T5):Some=开着(view 传 TermGrid 画浮层;
+    /// ESC/外点关闭;开着时暂停自动滚动)。
+    pub menu: Option<MenuState>,
     /// IME 挂起预编辑(空=无;不写 PTY,over-the-spot 显示)。
     pub preedit: Option<String>,
 
@@ -180,6 +210,9 @@ pub struct App {
     queued_paste: Option<(Instant, String)>,
     #[cfg(feature = "dev-tools")]
     queued_preedit: Option<(Instant, String)>,
+    /// dev-menu 注入队列(None 项=关菜单;005 T5)。
+    #[cfg(feature = "dev-tools")]
+    queued_menu: Vec<(Instant, Option<(f32, f32)>)>,
     #[cfg(feature = "dev-tools")]
     exit_at: Option<Instant>,
 }
@@ -225,6 +258,12 @@ impl App {
             .as_deref()
             .and_then(|s| parse_dev_paste(s, now));
         #[cfg(feature = "dev-tools")]
+        let queued_menu: Vec<_> = config
+            .dev_menu
+            .iter()
+            .filter_map(|s| parse_dev_menu(s, now))
+            .collect();
+        #[cfg(feature = "dev-tools")]
         let exit_at = (config.dev_exit_after > 0)
             .then(|| now + Duration::from_secs(config.dev_exit_after));
         Ok(Self {
@@ -245,6 +284,7 @@ impl App {
             cursor: None,
             selection_range: None,
             drag_scroll: None,
+            menu: None,
             preedit: None,
             #[cfg(feature = "dev-tools")]
             queued_input,
@@ -256,6 +296,8 @@ impl App {
             queued_paste,
             #[cfg(feature = "dev-tools")]
             queued_preedit,
+            #[cfg(feature = "dev-tools")]
+            queued_menu,
             #[cfg(feature = "dev-tools")]
             exit_at,
         }
@@ -328,9 +370,9 @@ impl App {
             iced::window::close_events().map(Message::Closed),
         ];
         // 拖选自动滚动(005 T4):仅拖选压边时挂 50ms 条件订阅——
-        // 空闲/拖选中不压边均零唤醒;方向行数经 DragScrollTick 从
-        // 状态取(Subscription::map 禁捕获)。
-        if self.drag_scroll.is_some() {
+        // 空闲/拖选中不压边均零唤醒;菜单开着时暂停(005 T5);
+        // 方向行数经 DragScrollTick 从状态取(Subscription::map 禁捕获)。
+        if self.drag_scroll.is_some() && self.menu.is_none() {
             subs.push(
                 time::every(Duration::from_millis(50)).map(|_| Message::DragScrollTick),
             );
@@ -342,6 +384,7 @@ impl App {
                 || self.queued_select.is_some()
                 || self.queued_paste.is_some()
                 || self.queued_preedit.is_some()
+                || !self.queued_menu.is_empty()
             {
                 subs.push(
                     time::every(Duration::from_millis(50))
@@ -451,6 +494,28 @@ impl App {
                         tasks.push(self.update(Message::SetPreedit(text)));
                     }
                 }
+                // dev-menu 注入:到期项逐个走真实 ContextMenu 路径
+                let mut menu_fired: Vec<Option<(f32, f32)>> = Vec::new();
+                self.queued_menu.retain(|(at, what)| {
+                    if now >= *at {
+                        menu_fired.push(*what);
+                        false
+                    } else {
+                        true
+                    }
+                });
+                for what in menu_fired {
+                    match what {
+                        Some(at_menu) => {
+                            log::info!("dev-menu inject: open {at_menu:?}");
+                            tasks.push(self.update(Message::ContextMenu(Some(at_menu))));
+                        }
+                        None => {
+                            log::info!("dev-menu inject: close");
+                            tasks.push(self.update(Message::ContextMenu(None)));
+                        }
+                    }
+                }
                 // 边缘保持模式每拍都有 Extend task,转储/退出判定必须
                 // 先于 task 返回执行(否则被饿死,应用永不退出——005 T4
                 // 首跑实证)
@@ -471,6 +536,16 @@ impl App {
                 Task::none()
             }
             Message::Key(key, mods) => {
+                // 菜单开着时 ESC 仅关菜单(不写 PTY、不回滚;005 T5)
+                if self.menu.is_some()
+                    && matches!(
+                        &key,
+                        Key::Named(iced::keyboard::key::Named::Escape)
+                    )
+                {
+                    self.menu = None;
+                    return Task::none();
+                }
                 // 回滚时键入先回正(终端惯例)
                 if self.session.term.display_offset() > 0 {
                     self.session.term.scroll(i32::MIN);
@@ -540,6 +615,30 @@ impl App {
                 Task::none()
             }
             Message::Paste => self.paste_from_clipboard(),
+            Message::ContextMenu(at) => {
+                self.menu = at.map(|at| MenuState { at });
+                Task::none()
+            }
+            Message::MenuAction(item) => {
+                self.menu = None;
+                match item {
+                    MenuItem::Copy => self.copy_selection(),
+                    MenuItem::Paste => self.paste_from_clipboard(),
+                    MenuItem::SelectAll => {
+                        // 视口 Lines 全选:左上 Begin、右下 Extend,
+                        // 行选语义自动扩满整行(005 T5)
+                        let (cols, rows) = self.session.term.size();
+                        let begin = self.cell_to_point((0, 0));
+                        let end = self.cell_to_point((rows - 1, cols - 1));
+                        self.session
+                            .term
+                            .begin_selection(SelectionType::Lines, begin, Side::Left);
+                        self.session.term.update_selection(end, Side::Left);
+                        self.selection_range = self.session.term.selection_range();
+                        Task::none()
+                    }
+                }
+            }
             Message::Pasted(text) => {
                 // \r\n / \n → \r 规整(终端行提交约定),再写 PTY
                 let normalized = text.replace("\r\n", "\r").replace('\n', "\r");
@@ -665,6 +764,7 @@ impl App {
             cursor: self.cursor,
             selection: self.selection_range,
             preedit: self.preedit.clone(),
+            menu: self.menu,
         })
     }
 
@@ -902,6 +1002,19 @@ fn parse_dev_paste(s: &str, start: Instant) -> Option<(Instant, String)> {
     let (ms, rest) = s.split_once(':')?;
     let at = start + Duration::from_millis(ms.parse::<u64>().ok()?);
     Some((at, rest.to_string()))
+}
+
+/// dev-menu 语法:"<ms>:<x>:<y>"(开,widget 本地像素)或
+/// "<ms>:close"(关;005 T5)。
+#[cfg(feature = "dev-tools")]
+fn parse_dev_menu(s: &str, start: Instant) -> Option<(Instant, Option<(f32, f32)>)> {
+    let (ms, rest) = s.split_once(':')?;
+    let at = start + Duration::from_millis(ms.parse::<u64>().ok()?);
+    if rest == "close" {
+        return Some((at, None));
+    }
+    let (x, y) = rest.split_once(':')?;
+    Some((at, Some((x.parse().ok()?, y.parse().ok()?))))
 }
 
 fn unescape(s: &str) -> Vec<u8> {

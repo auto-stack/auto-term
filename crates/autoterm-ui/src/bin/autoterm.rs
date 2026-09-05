@@ -50,6 +50,11 @@ struct Args {
     #[arg(long = "dev-dump")]
     #[cfg(feature = "dev-tools")]
     dev_dump: Option<std::path::PathBuf>,
+
+    /// [dev 取证] 到时注入右键菜单("<ms>:<x>:<y>",widget 本地像素)
+    #[arg(long = "dev-menu")]
+    #[cfg(feature = "dev-tools")]
+    dev_menu: Vec<String>,
 }
 
 fn main() -> Result<()> {
@@ -72,6 +77,8 @@ fn main() -> Result<()> {
         dev_scroll: args.dev_scroll,
         #[cfg(feature = "dev-tools")]
         dev_dump: args.dev_dump,
+        #[cfg(feature = "dev-tools")]
+        dev_menu: args.dev_menu,
     };
 
     let window = iced::window::Settings {
