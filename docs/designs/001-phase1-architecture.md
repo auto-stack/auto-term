@@ -125,3 +125,27 @@ headless 测试无需 application);`update()` 内建 content 比对 +
 `compare`(注意:compare 只看版式参数不看文本,content 由 Plain
 先比)+ Bounds 差异走 resize;同内容反复 update 零重建。
 T2-T4 按 `Plain<Paragraph>` 落地行缓存。
+
+### 附录补注:Ctrl+C / Ctrl+Break 语义矩阵(PLAN-003 T6/T7,2026-09-05)
+
+**矩阵实测**(证据 evidence/003-matrix/):
+
+| 客户端 | Ctrl+C(裸 0x03 字节) | 普通键中断 |
+| --- | --- | --- |
+| ash REPL(raw mode 直读字节) | ✓ 响应(行编辑重置/回提示符) | ✓ |
+| pwsh `Start-Sleep`(控制台 API) | ✗ 无 ^C 回显、不中断 | ✓ |
+| cmd `timeout`(控制台 API) | ✗ 不中断 | ✓('x' 即退) |
+
+**平台结论**:ConPTY 输入管道的裸 0x03 字节**不会被翻译为
+CTRL_C_EVENT**——经典控制台 API 程序(ReadConsole 系)收不到
+中断;VT/raw-mode 客户端(自读字节,如 ash)不受影响。
+
+**Ctrl+Break 双重阻断**(T7):①iced 0.14 `key::Named` 无
+Break/Cancel 变体,事件层不可分辨;②即使可分辨,CTRL_BREAK_EVENT
+与真实 Ctrl+C 事件同走 win32 `GenerateConsoleCtrlEvent(pid, event)`
+——portable-pty 不暴露子进程组句柄。
+
+**路由**:真 Ctrl+C/Ctrl+Break 需本仓引入 win32 直调模块
+(经 child pid 发 GenerateConsoleCtrlEvent;BREAK 常数 0,
+CTRL_C 常数 1 取决于句柄语义)——待用户裁定(计划 003
+待澄清#3),批准后约 30 行 win32 代码可闭环。
