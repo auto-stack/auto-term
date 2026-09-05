@@ -188,3 +188,32 @@ CTRL_C 常数 1 取决于句柄语义)——待用户裁定(计划 003
 
 残留缺口(Phase 3+):真 Ctrl+C/Break(win32 裁定后 ~30 行)、
 IME 落地、Unix 基座、光标形状/闪烁、选中。
+
+### 附录补注:WT/Alacritty 的 Ctrl+C 机制与本机实测(复审期补充调查)
+
+**上游源码事实**(microsoft/terminal,src/terminal/parser/
+InputStateMachineEngine.cpp + src/host/input.cpp):
+- **无人调用 GenerateConsoleCtrlEvent**。两条公道:
+  ①裸 0x03:输入状态机 `_DoControlCharacter` 把 ETX 特判,合成为
+  VK'C'+LEFT_CTRL_PRESSED 按键事件(down+up)→ `WriteCtrlKey` →
+  `HandleGenericKeyEvent` → 行输入模式下 `HandleCtrlEvent
+  (CTRL_C_EVENT)`;
+  ②win32-input 编码(`ESC[vk;sc;uc;kd;cs;rc_`,DECSET 9001 握手后
+  WT 用之):同样经 `WriteCtrlKey`,源码注释明言"即使非控制键也走
+  此路,以确保 Ctrl+C/Ctrl+Break 被正确处理";
+- ConPTY 信号管道(PtySignalInputThread)只承载 Resize/ShowHide/
+  ClearBuffer/SetParent,**无 Ctrl 信号**;
+- Alacritty 即裸 0x03 路径(其 input 映射 Ctrl+C→字节 3)。
+
+**本机实测矩阵**(Win11 26200):
+| 通道 | 结果 |
+| --- | --- |
+| 最小 ConPTY 管道(portable-pty 直连)+ 裸 0x03 → cmd/ping | 不中断 |
+| 最小 ConPTY 管道 + win32 编码按键事件 → cmd/ping | 不中断 |
+| **真 Windows Terminal + 真实 ^C 键**(SendKeys 实测) | **同样不中断** |
+
+**结论**:上游机制在源码层完备,但本机(26200 内部版)conhost 的
+0x03/编码→CTRL_C_EVENT 翻译未生效,WT 与 AutoTerm 同病——是
+机器/版本级行为,非本仓实现缺口。Phase 3 首任务修正为:先在稳定
+OS 版本上复测(若正常则本机为内部版回归,无需任何代码;若复现,
+再评估 AttachConsole+GenerateConsoleCtrlEvent 的 win32 直调)。
