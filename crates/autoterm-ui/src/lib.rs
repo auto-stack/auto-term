@@ -148,12 +148,21 @@ impl App {
                             std::thread::spawn(move || {
                                 loop {
                                     match rx.recv() {
-                                        Ok(()) => {
-                                            if sender.try_send(Message::PtyBytes).is_err() {
-                                                break;
+                                        Ok(()) => loop {
+                                            // 通道满 = UI 忙:重试而非退出
+                                            // (退出会永久丢唤醒,20000 行
+                                            // 突发实测暴露过)
+                                            match sender.try_send(Message::PtyBytes) {
+                                                Ok(()) => break,
+                                                Err(e) if e.is_full() => {
+                                                    std::thread::sleep(
+                                                        std::time::Duration::from_millis(4),
+                                                    );
+                                                }
+                                                Err(_) => return, // 通道关闭:app 退出
                                             }
-                                        }
-                                        Err(_) => break,
+                                        },
+                                        Err(_) => return,
                                     }
                                 }
                             });
@@ -410,6 +419,10 @@ impl App {
                 );
             }
         }
+        let _ = std::fmt::Write::write_fmt(
+            &mut out,
+            format_args!("bytes_fed: {}\n", self.session.bytes_fed()),
+        );
         out.push_str("=== grid_text_begin ===\n");
         for line in self.session.term.visible_lines() {
             let _ = std::fmt::Write::write_fmt(&mut out, format_args!("{line}\n"));

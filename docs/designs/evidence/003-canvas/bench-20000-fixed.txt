@@ -1,0 +1,52 @@
+shell: pwsh
+grid: 106x32
+metrics: font_px=16.000 cell_w=9.3750 line_h=20.000 (cell_em=0.5859)
+viewport: 1000.0x650.0
+fit_ok: true (cols*cell_w=993.8 <= viewport_w=1000.0)
+uptime_s: 14.007
+frames: 19755
+dirty_updates: 373
+snapshot_rebuilds: 376
+damage_last: full
+scroll_offset: 0
+paragraph_rebuilds_prev: 0
+paragraph_rebuilds_last: 0
+cursor_drawn_at: (31,19) inverted=true
+last_byte_after_start_s: 4.291
+input_sent_after_start_s: 3.011
+last_byte_after_input_s: 1.281
+bytes_fed: 129721
+=== grid_text_begin ===
+19970
+19971
+19972
+19973
+19974
+19975
+19976
+19977
+19978
+19979
+19980
+19981
+19982
+19983
+19984
+19985
+19986
+19987
+19988
+19989
+19990
+19991
+19992
+19993
+19994
+19995
+19996
+19997
+19998
+19999
+20000
+PS C:\Users\zhaop>
+=== grid_text_end ===
