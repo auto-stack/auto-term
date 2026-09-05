@@ -189,6 +189,34 @@ CTRL_C 常数 1 取决于句柄语义)——待用户裁定(计划 003
 残留缺口(Phase 3+):真 Ctrl+C/Break(win32 裁定后 ~30 行)、
 IME 落地、Unix 基座、光标形状/闪烁、选中。
 
+## 003→004 决策链(PLAN-004,2026-09-05)
+
+1. **选中/复制/粘贴闭环**(DEBTS #6 清账,用户 2026-09-05 直接
+   反馈"无法选择文字和复制"为头号交付):core 选中封装
+   (begin/update/clear + range/text 透传,TDD 3 用例钉死回滚绝对行
+   契约)→ `Widget::update` 鼠标事件地基(像素→格子→Select 消息族,
+   Tree 态点击计数 1/2/3 = Simple/Semantic/Lines)→ 高亮 overlay
+   quad(文本层之下,不进行缓存 digest,避开损伤门控盲区)→
+   copy-on-select(裁定默认开)+ Ctrl+Shift+C/V 拦截(key_to_bytes
+   前,裸 Ctrl+C 落 0x03 不劫持)+ 右键粘贴;证据:像素带扫描
+   (5 行带恰 40px×5,命中色 (70,73,76) 对理论 (71,73,76))+
+   外部 Get-Clipboard 读回一致。
+2. **IME 落地**(003 路由兑现):锚定请求 + Preedit/Commit 事件
+   转发(挂起不写 PTY);over-the-spot 运行时覆盖层首选已试但本机
+   不落屏(main-events 相相位丢弃 input_method),按裁定次序降级
+   **自绘 preedit**(内联+下划线,像素证据:318px=恰 17 格);
+   人工拼音清单待用户执行(见附录 T8 节)。
+3. **Ctrl+C 稳定版复测**:用户裁定无稳定版环境——按"待环境"挂
+   DEBTS #7(矩阵脚本就绪,决策树不变;见附录 T7 节)。
+4. **取证方法学推进**:PrintWindow(PW_RENDERFULLCONTENT)复验可用
+   (003 的不稳结论限定于默认标志工况);高缩放屏(200%)必须
+   SetProcessDPIAware;背景直通带内容自校验替代脆弱的窗口匹配;
+   dev 注入自愈式(pwsh 冷启动 → iced 首显 resize 风暴清选中)
+   与 Task 必须返回(丢弃即副作用静默失效)。
+
+残留缺口(Phase 4+):拖选自动滚动、块选/右键菜单、选中色配置、
+光标形状/闪烁、Ctrl+C 待环境复测、Unix 基座、auto-ui 对齐。
+
 ### 附录补注:WT/Alacritty 的 Ctrl+C 机制与本机实测(复审期补充调查)
 
 **上游源码事实**(microsoft/terminal,src/terminal/parser/
