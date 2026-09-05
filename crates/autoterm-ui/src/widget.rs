@@ -24,6 +24,8 @@ use iced::{
     Color, Element, Font, Length, Point, Rectangle, Size, Theme,
     alignment, mouse,
 };
+use iced::advanced::input_method::{InputMethod, Purpose};
+use iced::advanced::input_method;
 
 use autoterm_core::{
     Color as TermColor, Damage, NamedColor, SelectionRange, SelectionType, Side, StyledChar,
@@ -66,11 +68,26 @@ pub fn paragraph_rebuilds() -> (u64, u64) {
 #[cfg(feature = "dev-tools")]
 static CURSOR_DRAWN: AtomicU64 = AtomicU64::new(u64::MAX);
 
+/// 取证(004 T8):request_ime 调用计数 + 自绘 preedit 帧计数(仅 dev-tools)。
+#[cfg(feature = "dev-tools")]
+static IME_REQUEST_COUNT: AtomicU64 = AtomicU64::new(0);
+#[cfg(feature = "dev-tools")]
+static PREEDIT_DRAWN: AtomicU64 = AtomicU64::new(0);
+
 /// 读光标绘制状态(None=未画)。
 #[cfg(feature = "dev-tools")]
 pub fn cursor_drawn() -> Option<(usize, usize)> {
     let v = CURSOR_DRAWN.load(Ordering::Relaxed);
     (v != u64::MAX).then(|| ((v / 8192) as usize, (v % 8192) as usize))
+}
+
+/// 读 IME 取证(请求总数,自绘 preedit 帧数)。
+#[cfg(feature = "dev-tools")]
+pub fn ime_requests() -> (u64, u64) {
+    (
+        IME_REQUEST_COUNT.load(Ordering::Relaxed),
+        PREEDIT_DRAWN.load(Ordering::Relaxed),
+    )
 }
 
 /// 终端网格 widget。度量用 App 传入的实测 [`GridMetrics`]
@@ -86,6 +103,9 @@ pub struct TermGrid {
     /// 选中区间(绝对网格行;配合 `scroll_offset` 回视口)→ 高亮
     /// overlay quad(文本层之下,每帧 emit,不进行缓存 digest)。
     pub selection: Option<SelectionRange>,
+    /// IME 挂起预编辑(不写 PTY;over-the-spot 覆盖层由 runtime 绘制,
+    /// PLAN-004 T8)。
+    pub preedit: Option<String>,
 }
 
 /// 鼠标交互持久状态(经 `Tree` 跨帧存活;PLAN-004 T2)。
@@ -139,6 +159,10 @@ impl Widget<Message, Theme, iced::Renderer> for TermGrid {
     ) {
         let bounds = layout.bounds();
         let state = tree.state.downcast_mut::<GridInteraction>();
+        // T8:任意事件到达即以当前光标/preedit 刷新 IME 声明(锚点随
+        // 光标移动;幂等——runtime 对未变的 (rect,purpose) 去重,
+        // preedit 覆盖层仅内容变才重建)
+        self.request_ime(shell, bounds, self.preedit.as_deref());
         match event {
             iced::Event::Mouse(mouse::Event::ButtonPressed(mouse::Button::Left)) => {
                 let Some(pos) = cursor.position_over(bounds) else { return };
@@ -160,6 +184,23 @@ impl Widget<Message, Theme, iced::Renderer> for TermGrid {
                 shell.publish(Message::Select(SelectMsg::Begin { ty, cell, side }));
                 shell.capture_event();
             }
+            iced::Event::InputMethod(ime) => match ime {
+                input_method::Event::Preedit(text, _) => {
+                    shell.publish(Message::SetPreedit(text.clone()));
+                    // 用事件内最新 preedit 即时驱动覆盖层(不等下一帧)
+                    self.request_ime(shell, bounds, Some(text));
+                    shell.capture_event();
+                }
+                input_method::Event::Commit(text) => {
+                    shell.publish(Message::CommitIme(text.clone()));
+                    self.request_ime(shell, bounds, None);
+                    shell.capture_event();
+                }
+                input_method::Event::Closed => {
+                    shell.publish(Message::SetPreedit(String::new()));
+                }
+                _ => {}
+            },
             iced::Event::Mouse(mouse::Event::CursorMoved { .. }) => {
                 if !state.dragging {
                     return;
@@ -361,10 +402,42 @@ impl Widget<Message, Theme, iced::Renderer> for TermGrid {
             *viewport,
         );
         self.draw_cursor(renderer, bounds, cell_px, line_px, font_px, *viewport);
+        self.draw_preedit(renderer, bounds, cell_px, line_px, font_px, *viewport);
     }
 }
 
 impl TermGrid {
+    /// 以终端光标格为锚向 runtime 声明 IME 策略(T8):
+    /// over-the-spot 首选已试——runtime 覆盖层在本机/此版本不落屏
+    /// (main-events 相相位丢弃 input_method;381 次请求实证),
+    /// 按计划裁定次序降级为**自绘 preedit**(draw_preedit);
+    /// 此处仍请求 Enabled{cursor, Terminal, preedit: None}——
+    /// 保 winit 的 IME 启用与组合窗定位(set_ime_cursor_area)。
+    fn request_ime(
+        &self,
+        shell: &mut iced::advanced::Shell<'_, Message>,
+        bounds: Rectangle,
+        _preedit: Option<&str>,
+    ) {
+        let (row, col) = self.cursor.unwrap_or((0, 0));
+        let cursor = Rectangle::new(
+            Point::new(
+                bounds.x + col as f32 * self.metrics.cell_w,
+                bounds.y + row as f32 * self.metrics.line_h,
+            ),
+            Size::new(self.metrics.cell_w, self.metrics.line_h),
+        );
+        shell.request_input_method(&InputMethod::<String>::Enabled {
+            cursor,
+            purpose: Purpose::Terminal,
+            preedit: None,
+        });
+        #[cfg(feature = "dev-tools")]
+        {
+            IME_REQUEST_COUNT.fetch_add(1, Ordering::Relaxed);
+        }
+    }
+
     /// 像素坐标 → (视口格 (row, col), 格内左右侧)。
     /// 越界(拖出边缘)clamp 到边缘格;侧界取格中点(拖选锚点语义)。
     fn pixel_to_cell(&self, pos: Point, bounds: Rectangle) -> ((usize, usize), Side) {
@@ -406,6 +479,55 @@ impl TermGrid {
             DEFAULT_FG,
             viewport,
         );
+    }
+
+    /// 自绘 IME 预编辑(T8 备选路径):光标格起内联显示 + 下划线;
+    /// 不写 PTY(挂起),Commit 才上屏。CJK 按双格宽估算下划线长度。
+    #[allow(clippy::too_many_arguments)]
+    fn draw_preedit(
+        &self,
+        renderer: &mut iced::Renderer,
+        bounds: Rectangle,
+        cell_px: f32,
+        line_px: f32,
+        font_px: f32,
+        viewport: Rectangle,
+    ) {
+        #[cfg(feature = "dev-tools")]
+        let mut drawn = 0u64;
+        if let Some(text) = self.preedit.as_deref().filter(|t| !t.is_empty()) {
+            if let Some((row, col)) = self.cursor {
+                let x = bounds.x + col as f32 * cell_px;
+                let y = bounds.y + row as f32 * line_px;
+                let cells = text
+                    .chars()
+                    .map(|c| if c.is_ascii() { 1.0 } else { 2.0 })
+                    .sum::<f32>();
+                let w = cells * cell_px;
+                renderer.fill_text(
+                    plain_text(text.to_string(), w + cell_px, line_px, font_px),
+                    Point::new(x, y),
+                    DEFAULT_FG,
+                    viewport,
+                );
+                renderer.fill_quad(
+                    renderer::Quad {
+                        bounds: Rectangle::new(
+                            Point::new(x, y + line_px - 3.0),
+                            Size::new(w, 2.0),
+                        ),
+                        ..Default::default()
+                    },
+                    DEFAULT_FG,
+                );
+                #[cfg(feature = "dev-tools")]
+                {
+                    drawn = 1;
+                }
+            }
+        }
+        #[cfg(feature = "dev-tools")]
+        PREEDIT_DRAWN.store(drawn, Ordering::Relaxed);
     }
 
     fn draw_cursor(

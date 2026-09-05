@@ -40,6 +40,10 @@ pub struct AppConfig {
     /// 不依赖系统剪贴板状态)。
     #[cfg(feature = "dev-tools")]
     pub dev_paste: Option<String>,
+    /// dev 取证:到时注入 IME 预编辑("<ms>:<文本>",走 SetPreedit
+    /// 真实路径;覆盖层像素取证用)。
+    #[cfg(feature = "dev-tools")]
+    pub dev_preedit: Option<String>,
     /// dev 取证:到时转储并退出(秒;0=不退出)。
     #[cfg(feature = "dev-tools")]
     pub dev_exit_after: u64,
@@ -68,6 +72,10 @@ pub enum Message {
     Paste,
     /// 剪贴板读取完成(粘贴流第二拍;PLAN-004 T4)。
     Pasted(String),
+    /// IME 预编辑变化(挂起显示,不写 PTY;PLAN-004 T8)。
+    SetPreedit(String),
+    /// IME 提交(清 preedit + 直写 PTY;PLAN-004 T8)。
+    CommitIme(String),
     /// dev 钩子的粗定时(仅 dev-tools 构建存在;常态不存在)。
     #[cfg(feature = "dev-tools")]
     DevTick,
@@ -127,6 +135,8 @@ pub struct App {
     pub cursor: Option<(usize, usize)>,
     /// 当前选中区间(绝对坐标;高亮渲染用,随交互/内容变化刷新)。
     pub selection_range: Option<SelectionRange>,
+    /// IME 挂起预编辑(空=无;不写 PTY,over-the-spot 显示)。
+    pub preedit: Option<String>,
 
     #[cfg(feature = "dev-tools")]
     queued_input: Vec<(Instant, Vec<u8>)>,
@@ -134,6 +144,8 @@ pub struct App {
     queued_select: Option<(Instant, DevSelectSpec)>,
     #[cfg(feature = "dev-tools")]
     queued_paste: Option<(Instant, String)>,
+    #[cfg(feature = "dev-tools")]
+    queued_preedit: Option<(Instant, String)>,
     #[cfg(feature = "dev-tools")]
     exit_at: Option<Instant>,
 }
@@ -171,6 +183,11 @@ impl App {
             .as_deref()
             .and_then(|s| parse_dev_paste(s, now));
         #[cfg(feature = "dev-tools")]
+        let queued_preedit = config
+            .dev_preedit
+            .as_deref()
+            .and_then(|s| parse_dev_paste(s, now));
+        #[cfg(feature = "dev-tools")]
         let exit_at = (config.dev_exit_after > 0)
             .then(|| now + Duration::from_secs(config.dev_exit_after));
         Ok(Self {
@@ -190,12 +207,15 @@ impl App {
             snapshot_rebuilds: 0,
             cursor: None,
             selection_range: None,
+            preedit: None,
             #[cfg(feature = "dev-tools")]
             queued_input,
             #[cfg(feature = "dev-tools")]
             queued_select,
             #[cfg(feature = "dev-tools")]
             queued_paste,
+            #[cfg(feature = "dev-tools")]
+            queued_preedit,
             #[cfg(feature = "dev-tools")]
             exit_at,
         }
@@ -273,6 +293,7 @@ impl App {
                 || self.exit_at.is_some()
                 || self.queued_select.is_some()
                 || self.queued_paste.is_some()
+                || self.queued_preedit.is_some()
             {
                 subs.push(
                     time::every(Duration::from_millis(50))
@@ -343,6 +364,14 @@ impl App {
                         tasks.push(self.update(Message::Pasted(text)));
                     }
                 }
+                if let Some((at, text)) = self.queued_preedit.clone() {
+                    if now >= at {
+                        self.queued_preedit = None;
+                        log::info!("dev-preedit inject: {text:?}");
+                        // 与真实 IME Preedit 事件同路径(挂起显示)
+                        tasks.push(self.update(Message::SetPreedit(text)));
+                    }
+                }
                 if !tasks.is_empty() {
                     return Task::batch(tasks);
                 }
@@ -410,6 +439,18 @@ impl App {
                 Task::none()
             }
             Message::Select(msg) => self.handle_select(msg),
+            Message::SetPreedit(text) => {
+                // 挂起显示:空串=清除;不写 PTY
+                self.preedit = (!text.is_empty()).then_some(text);
+                Task::none()
+            }
+            Message::CommitIme(text) => {
+                self.preedit = None;
+                if !text.is_empty() {
+                    self.session.write_input(text.as_bytes());
+                }
+                Task::none()
+            }
             Message::Paste => self.paste_from_clipboard(),
             Message::Pasted(text) => {
                 // \r\n / \n → \r 规整(终端行提交约定),再写 PTY
@@ -528,6 +569,7 @@ impl App {
             scroll_offset: self.session.term.display_offset(),
             cursor: self.cursor,
             selection: self.selection_range,
+            preedit: self.preedit.clone(),
         })
     }
 
@@ -624,6 +666,20 @@ impl App {
         let _ = std::fmt::Write::write_fmt(
             &mut out,
             format_args!("selection_cells: {}\n", self.selection_cell_count()),
+        );
+        match &self.preedit {
+            Some(t) => {
+                let _ = std::fmt::Write::write_fmt(
+                    &mut out,
+                    format_args!("preedit: \"{t}\"\n"),
+                );
+            }
+            None => out.push_str("preedit: none\n"),
+        }
+        let (ime_count, preedit_drawn) = widget::ime_requests();
+        let _ = std::fmt::Write::write_fmt(
+            &mut out,
+            format_args!("ime_requests: {ime_count}\npreedit_drawn: {preedit_drawn}\n"),
         );
         let (rb_prev, rb_last) = widget::paragraph_rebuilds();
         let _ = std::fmt::Write::write_fmt(

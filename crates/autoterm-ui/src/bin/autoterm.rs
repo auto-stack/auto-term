@@ -31,6 +31,11 @@ struct Args {
     #[cfg(feature = "dev-tools")]
     dev_paste: Option<String>,
 
+    /// [dev 取证] 到时注入 IME 预编辑("<ms>:<文本>",走 SetPreedit 路径)
+    #[arg(long = "dev-preedit")]
+    #[cfg(feature = "dev-tools")]
+    dev_preedit: Option<String>,
+
     /// [dev 取证] 到时转储并退出的秒数(0 = 不自动退出)
     #[arg(long, default_value = "0")]
     #[cfg(feature = "dev-tools")]
@@ -59,6 +64,8 @@ fn main() -> Result<()> {
         dev_select: args.dev_select,
         #[cfg(feature = "dev-tools")]
         dev_paste: args.dev_paste,
+        #[cfg(feature = "dev-tools")]
+        dev_preedit: args.dev_preedit,
         #[cfg(feature = "dev-tools")]
         dev_exit_after: args.dev_exit_after,
         #[cfg(feature = "dev-tools")]

@@ -231,3 +231,27 @@ T7 按"待环境"执行:
 - **决策树不变**:稳定版正常 → 内部版回归关账(零代码);复现 →
   win32 直调(AttachConsole+GenerateConsoleCtrlEvent,未文档化路径)
   立项。
+
+### 附录补注:IME 落地(PLAN-004 T8,2026-09-05)
+
+**003 的路由在 004 兑现**,事件地基即 T2 的 `Widget::update`:
+
+- **管线**:任意事件 → `request_input_method(Enabled{cursor:
+  终端光标格矩形, purpose: Terminal})`(winit `set_ime_allowed/
+  cursor_area`,组合窗随光标);`Event::InputMethod::{Preedit,Commit,
+  Closed}` → `Message::SetPreedit/CommitIme`——preedit 挂起显示
+  **不写 PTY**,Commit 清挂起 + `write_input` 直写;
+- **over-the-spot 首选已试**:preedit 交 runtime 覆盖层
+  (`Enabled{preedit: Some}` → iced_winit `draw_preedit`)。**本机
+  不落屏**:main-events 相相位对 `State::Updated{input_method}` 的
+  消费直接忽略(仅 redraw 相相位应用),dev 埋点 381 次请求、App
+  状态与 view 链路均证请求已发出——运行时消费边界,按计划裁定
+  次序降级**自绘**(preedit 在光标格内联 + 2px 下划线,CJK 双格宽
+  估算);
+- **像素证据**(evidence/004-select/):下划线 4 物理行(2px×200%
+  缩放)× 318px = **恰 17 格**(7 CJK×2 + IME×1 格)× 9.375px × 2
+  ——自绘渲染几何精确;视觉复核提示符后内联带下划线;
+- **人工清单待执行**(真实 IME 合成无法自动键入,003 已裁定):
+  pwsh/ash 各 5 分钟——拼音组句/上屏/中英切换/Esc 取消;通过后
+  截图归档。清单跑法:启动 autoterm → Win+Space 切微软拼音 →
+  提示符组句 → Enter 上屏 → Shift 切中英 → Esc 取消预编辑。
