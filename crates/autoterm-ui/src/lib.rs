@@ -21,6 +21,7 @@ use std::hash::{Hash, Hasher};
 
 use autoterm_core::PtySession;
 use autoterm_core::{Damage, StyledChar};
+pub use autoterm_core::{SelectionRange, SelectionType, Side};
 pub use widget::TermGrid;
 use metrics::GridMetrics;
 
@@ -53,12 +54,35 @@ pub enum Message {
     Scrolled(i32),
     /// 窗口关闭:同步杀子进程再退出(T8)。
     Closed(iced::window::Id),
+    /// 选中消息族(PLAN-004 T2;widget 鼠标事件或 dev 注入)。
+    Select(SelectMsg),
+    /// 粘贴(Ctrl+Shift+V / 右键;PLAN-004 T4)。
+    Paste,
     /// dev 钩子的粗定时(仅 dev-tools 构建存在;常态不存在)。
     #[cfg(feature = "dev-tools")]
     DevTick,
     /// 显式空操作:订阅里非键盘/非滚轮事件的归宿(替代 PtyBytes
     /// 空唤醒复用,002 复审瑕疵清偿)。
     NoOp,
+}
+
+/// 选中交互消息(PLAN-004 T2)。`cell` 为视口相对 (row, col),
+/// App 侧换算绝对网格行(`- display_offset`)后驱动 core。
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum SelectMsg {
+    /// 按下起点(单/双/三击 → Simple/Semantic/Lines)。
+    Begin {
+        ty: SelectionType,
+        cell: (usize, usize),
+        side: Side,
+    },
+    /// 拖动终点(widget 已 clamp 到边缘格)。
+    Extend {
+        cell: (usize, usize),
+        side: Side,
+    },
+    /// 释放收尾(copy-on-select 在此触发;空选清除)。
+    Finish,
 }
 
 /// 订阅数据源:唤醒接收端的"一次性槽"(run_with 需 Hash,恒等即可)。
@@ -91,6 +115,8 @@ pub struct App {
     pub snapshot_rebuilds: u64,
     /// 光标(视口相对;Hidden=None)。随快照一并刷新。
     pub cursor: Option<(usize, usize)>,
+    /// 当前选中区间(绝对坐标;高亮渲染用,随交互/内容变化刷新)。
+    pub selection_range: Option<SelectionRange>,
 
     #[cfg(feature = "dev-tools")]
     queued_input: Vec<(Instant, Vec<u8>)>,
@@ -130,6 +156,7 @@ impl App {
             snapshot: Vec::new(),
             snapshot_rebuilds: 0,
             cursor: None,
+            selection_range: None,
             #[cfg(feature = "dev-tools")]
             queued_input,
             #[cfg(feature = "dev-tools")]
@@ -292,6 +319,11 @@ impl App {
                 self.window_id = id;
                 Task::none()
             }
+            Message::Select(msg) => self.handle_select(msg),
+            Message::Paste => {
+                // 粘贴落地在 T4(剪贴板读取 + \n 规整 + write_input)
+                Task::none()
+            }
             Message::Resized(size) => {
                 self.last_viewport = Some(size);
                 let cols =
@@ -315,6 +347,36 @@ impl App {
         self.frames += 1;
     }
 
+    /// 选中消息族处理(T2):视口格 → 绝对网格点 → 驱动 core;
+    /// 高亮区间随之刷新(渲染为 overlay,不进快照/damage)。
+    fn handle_select(&mut self, msg: SelectMsg) -> Task<Message> {
+        match msg {
+            SelectMsg::Begin { ty, cell, side } => {
+                self.session.term.begin_selection(ty, self.cell_to_point(cell), side);
+            }
+            SelectMsg::Extend { cell, side } => {
+                self.session.term.update_selection(self.cell_to_point(cell), side);
+            }
+            SelectMsg::Finish => {
+                // 空选清除(copy-on-select 在 T4 落地)
+                if self.session.term.selection_range().is_none() {
+                    self.session.term.clear_selection();
+                }
+            }
+        }
+        self.selection_range = self.session.term.selection_range();
+        Task::none()
+    }
+
+    /// 视口格 (row, col) → core 绝对网格点(历史区为负)。
+    fn cell_to_point(&self, (row, col): (usize, usize)) -> autoterm_core::Point {
+        let d = self.session.term.display_offset() as i32;
+        autoterm_core::Point::new(
+            autoterm_core::Line(row as i32 - d),
+            autoterm_core::Column(col),
+        )
+    }
+
     /// 内容变了(resize/scroll/字节到达)之后:取损伤、按需重建快照。
     /// 损伤门控(T6):快照仅在内容实际变化时重建,空闲帧免全网格遍历;
     /// 绘制级脏行剪裁在 iced 即时模式下会清空未脏行,不做(见
@@ -330,6 +392,8 @@ impl App {
             self.cursor = self.session.term.cursor();
             self.snapshot_rebuilds += 1;
         }
+        // 选中锚定网格内容:滚动/新增行使绝对行漂移,区间随之重取
+        self.selection_range = self.session.term.selection_range();
     }
 
     pub fn view(&self) -> Element<'_, Message> {

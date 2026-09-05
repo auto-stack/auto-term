@@ -12,6 +12,7 @@
 
 use std::sync::atomic::{AtomicU64, Ordering};
 use std::sync::{Mutex, OnceLock};
+use std::time::{Duration, Instant};
 
 use iced::advanced::layout::{Limits, Node};
 use iced::advanced::text::Renderer as _;
@@ -21,14 +22,14 @@ use iced::advanced::{
 };
 use iced::{
     Element, Font, Length, Point, Rectangle, Size, Theme,
-    alignment,
+    alignment, mouse,
 };
 
-use autoterm_core::{Color as TermColor, Damage, NamedColor, StyledChar};
+use autoterm_core::{Color as TermColor, Damage, NamedColor, StyledChar, SelectionType, Side};
 
 use crate::metrics::GridMetrics;
 use crate::palette::to_iced_color;
-use crate::{DEFAULT_BG, DEFAULT_FG};
+use crate::{DEFAULT_BG, DEFAULT_FG, Message, SelectMsg};
 
 type Para = <iced::Renderer as iced::advanced::text::Renderer>::Paragraph;
 
@@ -82,9 +83,30 @@ pub struct TermGrid {
     pub cursor: Option<(usize, usize)>,
 }
 
-impl<Message> Widget<Message, Theme, iced::Renderer> for TermGrid {
+/// 鼠标交互持久状态(经 `Tree` 跨帧存活;PLAN-004 T2)。
+/// 拖选进行中标志 + 多击计数(500ms 内同格 2=Semantic、3=Lines)。
+#[derive(Debug, Default)]
+pub struct GridInteraction {
+    dragging: bool,
+    last_click_at: Option<Instant>,
+    last_count: u8,
+    last_cell: Option<(usize, usize)>,
+}
+
+/// 多击判定窗口。
+const MULTI_CLICK_WINDOW: Duration = Duration::from_millis(500);
+
+impl Widget<Message, Theme, iced::Renderer> for TermGrid {
     fn size(&self) -> Size<Length> {
         Size::new(Length::Fill, Length::Fill)
+    }
+
+    fn tag(&self) -> iced::advanced::widget::tree::Tag {
+        iced::advanced::widget::tree::Tag::of::<GridInteraction>()
+    }
+
+    fn state(&self) -> iced::advanced::widget::tree::State {
+        iced::advanced::widget::tree::State::new(GridInteraction::default())
     }
 
     fn layout(
@@ -94,6 +116,87 @@ impl<Message> Widget<Message, Theme, iced::Renderer> for TermGrid {
         limits: &Limits,
     ) -> Node {
         Node::new(limits.max())
+    }
+
+    /// 鼠标事件地基(PLAN-004 T2):像素→格子→publish Select 消息族。
+    /// 左键按下→Begin(计数 1=Simple/2=Semantic/3=Lines);按住移动→
+    /// Extend(越界 clamp 到边缘格);左键释放→Finish;右键释放→Paste。
+    fn update(
+        &mut self,
+        tree: &mut Tree,
+        event: &iced::Event,
+        layout: iced::advanced::layout::Layout<'_>,
+        cursor: mouse::Cursor,
+        _renderer: &iced::Renderer,
+        _clipboard: &mut dyn iced::advanced::Clipboard,
+        shell: &mut iced::advanced::Shell<'_, Message>,
+        _viewport: &Rectangle,
+    ) {
+        let bounds = layout.bounds();
+        let state = tree.state.downcast_mut::<GridInteraction>();
+        match event {
+            iced::Event::Mouse(mouse::Event::ButtonPressed(mouse::Button::Left)) => {
+                let Some(pos) = cursor.position_over(bounds) else { return };
+                let (cell, side) = self.pixel_to_cell(pos, bounds);
+                let now = Instant::now();
+                let multi = state.last_click_at.is_some_and(|t| now - t <= MULTI_CLICK_WINDOW)
+                    && state.last_cell == Some(cell)
+                    && state.last_count < 3;
+                let count = if multi { state.last_count + 1 } else { 1 };
+                let ty = match count {
+                    2 => SelectionType::Semantic,
+                    3 => SelectionType::Lines,
+                    _ => SelectionType::Simple,
+                };
+                state.last_click_at = Some(now);
+                state.last_count = count;
+                state.last_cell = Some(cell);
+                state.dragging = true;
+                shell.publish(Message::Select(SelectMsg::Begin { ty, cell, side }));
+                shell.capture_event();
+            }
+            iced::Event::Mouse(mouse::Event::CursorMoved { .. }) => {
+                if !state.dragging {
+                    return;
+                }
+                // 拖选越界不动视野(自动滚动非目标),Extend clamp 到边缘格
+                let Some(pos) = cursor.position() else { return };
+                let (cell, side) = self.pixel_to_cell(pos, bounds);
+                shell.publish(Message::Select(SelectMsg::Extend { cell, side }));
+                shell.capture_event();
+            }
+            iced::Event::Mouse(mouse::Event::ButtonReleased(mouse::Button::Left)) => {
+                if !state.dragging {
+                    return;
+                }
+                state.dragging = false;
+                shell.publish(Message::Select(SelectMsg::Finish));
+                shell.capture_event();
+            }
+            iced::Event::Mouse(mouse::Event::ButtonReleased(mouse::Button::Right)) => {
+                if !cursor.is_over(bounds) {
+                    return;
+                }
+                shell.publish(Message::Paste);
+                shell.capture_event();
+            }
+            _ => {}
+        }
+    }
+
+    fn mouse_interaction(
+        &self,
+        _tree: &Tree,
+        layout: iced::advanced::layout::Layout<'_>,
+        cursor: mouse::Cursor,
+        _viewport: &Rectangle,
+        _renderer: &iced::Renderer,
+    ) -> mouse::Interaction {
+        if cursor.is_over(layout.bounds()) {
+            mouse::Interaction::Text
+        } else {
+            mouse::Interaction::None
+        }
     }
 
     fn draw(
@@ -215,6 +318,19 @@ impl<Message> Widget<Message, Theme, iced::Renderer> for TermGrid {
 }
 
 impl TermGrid {
+    /// 像素坐标 → (视口格 (row, col), 格内左右侧)。
+    /// 越界(拖出边缘)clamp 到边缘格;侧界取格中点(拖选锚点语义)。
+    fn pixel_to_cell(&self, pos: Point, bounds: Rectangle) -> ((usize, usize), Side) {
+        let cols = self.lines.first().map_or(1, |l| l.len()).max(1);
+        let rows = self.lines.len().max(1);
+        let fx = (pos.x - bounds.x) / self.metrics.cell_w;
+        let fy = (pos.y - bounds.y) / self.metrics.line_h;
+        let col = (fx.floor() as i32).clamp(0, cols as i32 - 1) as usize;
+        let row = (fy.floor() as i32).clamp(0, rows as i32 - 1) as usize;
+        let side = if fx - fx.floor() >= 0.5 { Side::Right } else { Side::Left };
+        ((row, col), side)
+    }
+
     fn draw_scroll_badge(
         &self,
         renderer: &mut iced::Renderer,
@@ -384,7 +500,7 @@ fn term_color_key(c: TermColor) -> u64 {
     }
 }
 
-impl<'a, Message> From<TermGrid> for Element<'a, Message> {
+impl<'a> From<TermGrid> for Element<'a, Message> {
     fn from(grid: TermGrid) -> Self {
         Element::new(grid)
     }
