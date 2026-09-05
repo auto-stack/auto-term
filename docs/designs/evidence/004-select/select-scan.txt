@@ -1,0 +1,5 @@
+window: 2026x1371
+highlight_pixels: 178657
+avg_highlight_color_rgb: 70.0,73.0,76.0 (target 71,73,76)
+highlight_rows_total: 200
+highlight_bands: y 138-337  height=200

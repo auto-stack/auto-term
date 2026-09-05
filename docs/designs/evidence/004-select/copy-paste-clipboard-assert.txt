@@ -1,0 +1,2 @@
+clipboard: [A:\nPS C:\Users\zhaop> PASTED_004\n\n]
+MATCH: clipboard == selection_text

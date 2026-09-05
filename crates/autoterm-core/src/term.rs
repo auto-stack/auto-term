@@ -14,12 +14,15 @@
 //! - resize 语义:`Term::resize(Dimensions)`,自实现 Dimensions 即可。
 
 pub use alacritty_terminal;
+pub use alacritty_terminal::index::{Column, Line, Point, Side};
+pub use alacritty_terminal::selection::{SelectionRange, SelectionType};
 pub use alacritty_terminal::vte::ansi::{Color, NamedColor, Rgb};
 
 use std::sync::mpsc::{Receiver, Sender, channel};
 
 use alacritty_terminal::event::{Event, EventListener};
 use alacritty_terminal::grid::Dimensions;
+use alacritty_terminal::selection::Selection;
 use alacritty_terminal::term::{Config, Term, TermDamage};
 use alacritty_terminal::vte::ansi::Processor;
 
@@ -147,6 +150,36 @@ impl TermSession {
     /// 回滚历史行数(已滚出视口的行数)。
     pub fn history_size(&self) -> usize {
         self.term.grid().history_size()
+    }
+
+    /// 开始一次选中(PLAN-004 T1)。`point` 为**绝对网格坐标**
+    /// (视口行 - display_offset;历史区为负,由 UI 侧换算);
+    /// Semantic/Lines 模式仅凭锚点即扩词/扩行,无需 update。
+    pub fn begin_selection(&mut self, ty: SelectionType, point: Point, side: Side) {
+        self.term.selection = Some(Selection::new(ty, point, side));
+    }
+
+    /// 拖动更新选中终点(Simple/Block 跟随;Semantic/Lines 重扩)。
+    pub fn update_selection(&mut self, point: Point, side: Side) {
+        if let Some(selection) = self.term.selection.as_mut() {
+            selection.update(point, side);
+        }
+    }
+
+    /// 清除选中。空选/越界选由 to_range 返回 None 语义兜底。
+    pub fn clear_selection(&mut self) {
+        self.term.selection = None;
+    }
+
+    /// 当前选中的网格区间(绝对坐标;空选返回 None)。
+    /// 高亮渲染与像素扫描取证共用。
+    pub fn selection_range(&self) -> Option<SelectionRange> {
+        self.term.selection.as_ref().and_then(|s| s.to_range(&self.term))
+    }
+
+    /// 选中文本(Simple/Semantic 紧凑拼接;Lines 每行带 \n)。
+    pub fn selection_text(&self) -> Option<String> {
+        self.term.selection_to_string()
     }
 
     /// 取走当前损伤并复位(损伤重绘,PLAN-002 T6)。

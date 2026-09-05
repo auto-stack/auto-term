@@ -1,0 +1,5 @@
+window: 2026x1371
+underline_rows_ge200px: 4
+longest_solid_bright_run_px: 318
+text_band_bright_pixels(y<300): 3552
+verdict: PREEDIT_SELF_DRAWN_VISIBLE

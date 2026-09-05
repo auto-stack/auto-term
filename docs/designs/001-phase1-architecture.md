@@ -189,6 +189,34 @@ CTRL_C 常数 1 取决于句柄语义)——待用户裁定(计划 003
 残留缺口(Phase 3+):真 Ctrl+C/Break(win32 裁定后 ~30 行)、
 IME 落地、Unix 基座、光标形状/闪烁、选中。
 
+## 003→004 决策链(PLAN-004,2026-09-05)
+
+1. **选中/复制/粘贴闭环**(DEBTS #6 清账,用户 2026-09-05 直接
+   反馈"无法选择文字和复制"为头号交付):core 选中封装
+   (begin/update/clear + range/text 透传,TDD 3 用例钉死回滚绝对行
+   契约)→ `Widget::update` 鼠标事件地基(像素→格子→Select 消息族,
+   Tree 态点击计数 1/2/3 = Simple/Semantic/Lines)→ 高亮 overlay
+   quad(文本层之下,不进行缓存 digest,避开损伤门控盲区)→
+   copy-on-select(裁定默认开)+ Ctrl+Shift+C/V 拦截(key_to_bytes
+   前,裸 Ctrl+C 落 0x03 不劫持)+ 右键粘贴;证据:像素带扫描
+   (5 行带恰 40px×5,命中色 (70,73,76) 对理论 (71,73,76))+
+   外部 Get-Clipboard 读回一致。
+2. **IME 落地**(003 路由兑现):锚定请求 + Preedit/Commit 事件
+   转发(挂起不写 PTY);over-the-spot 运行时覆盖层首选已试但本机
+   不落屏(main-events 相相位丢弃 input_method),按裁定次序降级
+   **自绘 preedit**(内联+下划线,像素证据:318px=恰 17 格);
+   人工拼音清单待用户执行(见附录 T8 节)。
+3. **Ctrl+C 稳定版复测**:用户裁定无稳定版环境——按"待环境"挂
+   DEBTS #7(矩阵脚本就绪,决策树不变;见附录 T7 节)。
+4. **取证方法学推进**:PrintWindow(PW_RENDERFULLCONTENT)复验可用
+   (003 的不稳结论限定于默认标志工况);高缩放屏(200%)必须
+   SetProcessDPIAware;背景直通带内容自校验替代脆弱的窗口匹配;
+   dev 注入自愈式(pwsh 冷启动 → iced 首显 resize 风暴清选中)
+   与 Task 必须返回(丢弃即副作用静默失效)。
+
+残留缺口(Phase 4+):拖选自动滚动、块选/右键菜单、选中色配置、
+光标形状/闪烁、Ctrl+C 待环境复测、Unix 基座、auto-ui 对齐。
+
 ### 附录补注:WT/Alacritty 的 Ctrl+C 机制与本机实测(复审期补充调查)
 
 **上游源码事实**(microsoft/terminal,src/terminal/parser/
@@ -217,3 +245,41 @@ InputStateMachineEngine.cpp + src/host/input.cpp):
 机器/版本级行为,非本仓实现缺口。Phase 3 首任务修正为:先在稳定
 OS 版本上复测(若正常则本机为内部版回归,无需任何代码;若复现,
 再评估 AttachConsole+GenerateConsoleCtrlEvent 的 win32 直调)。
+
+### 附录补注:稳定版复测裁定(PLAN-004 T7,2026-09-05)
+
+**用户裁定(2026-09-05)**:当前无稳定版 Windows 环境可执行复测。
+T7 按"待环境"执行:
+
+- **矩阵就绪**:三通道复测脚本与证据骨架沿用 evidence/003-matrix/
+  (裸 0x03 / win32 编码 / 真 WT+真实 ^C),在稳定版机器上重跑即得数;
+- **结果栏:待环境**——26200 内部版的矩阵结论维持上文(三通道全不
+  中断),稳定版数据到位之日补测即关账;
+- **挂账**:DEBTS #7 持有该项(不阻塞 Phase 3 其余交付);
+- **决策树不变**:稳定版正常 → 内部版回归关账(零代码);复现 →
+  win32 直调(AttachConsole+GenerateConsoleCtrlEvent,未文档化路径)
+  立项。
+
+### 附录补注:IME 落地(PLAN-004 T8,2026-09-05)
+
+**003 的路由在 004 兑现**,事件地基即 T2 的 `Widget::update`:
+
+- **管线**:任意事件 → `request_input_method(Enabled{cursor:
+  终端光标格矩形, purpose: Terminal})`(winit `set_ime_allowed/
+  cursor_area`,组合窗随光标);`Event::InputMethod::{Preedit,Commit,
+  Closed}` → `Message::SetPreedit/CommitIme`——preedit 挂起显示
+  **不写 PTY**,Commit 清挂起 + `write_input` 直写;
+- **over-the-spot 首选已试**:preedit 交 runtime 覆盖层
+  (`Enabled{preedit: Some}` → iced_winit `draw_preedit`)。**本机
+  不落屏**:main-events 相相位对 `State::Updated{input_method}` 的
+  消费直接忽略(仅 redraw 相相位应用),dev 埋点 381 次请求、App
+  状态与 view 链路均证请求已发出——运行时消费边界,按计划裁定
+  次序降级**自绘**(preedit 在光标格内联 + 2px 下划线,CJK 双格宽
+  估算);
+- **像素证据**(evidence/004-select/):下划线 4 物理行(2px×200%
+  缩放)× 318px = **恰 17 格**(7 CJK×2 + IME×1 格)× 9.375px × 2
+  ——自绘渲染几何精确;视觉复核提示符后内联带下划线;
+- **人工清单待执行**(真实 IME 合成无法自动键入,003 已裁定):
+  pwsh/ash 各 5 分钟——拼音组句/上屏/中英切换/Esc 取消;通过后
+  截图归档。清单跑法:启动 autoterm → Win+Space 切微软拼音 →
+  提示符组句 → Enter 上屏 → Shift 切中英 → Esc 取消预编辑。

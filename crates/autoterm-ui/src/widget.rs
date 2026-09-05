@@ -12,6 +12,7 @@
 
 use std::sync::atomic::{AtomicU64, Ordering};
 use std::sync::{Mutex, OnceLock};
+use std::time::{Duration, Instant};
 
 use iced::advanced::layout::{Limits, Node};
 use iced::advanced::text::Renderer as _;
@@ -20,15 +21,19 @@ use iced::advanced::{
     Renderer as _, Widget, renderer, widget::Tree,
 };
 use iced::{
-    Element, Font, Length, Point, Rectangle, Size, Theme,
-    alignment,
+    Color, Element, Font, Length, Point, Rectangle, Size, Theme,
+    alignment, mouse,
 };
+use iced::advanced::input_method::{InputMethod, Purpose};
+use iced::advanced::input_method;
 
-use autoterm_core::{Color as TermColor, Damage, NamedColor, StyledChar};
+use autoterm_core::{
+    Color as TermColor, Damage, NamedColor, SelectionRange, SelectionType, Side, StyledChar,
+};
 
 use crate::metrics::GridMetrics;
 use crate::palette::to_iced_color;
-use crate::{DEFAULT_BG, DEFAULT_FG};
+use crate::{DEFAULT_BG, DEFAULT_FG, Message, SelectMsg};
 
 type Para = <iced::Renderer as iced::advanced::text::Renderer>::Paragraph;
 
@@ -63,11 +68,26 @@ pub fn paragraph_rebuilds() -> (u64, u64) {
 #[cfg(feature = "dev-tools")]
 static CURSOR_DRAWN: AtomicU64 = AtomicU64::new(u64::MAX);
 
+/// 取证(004 T8):request_ime 调用计数 + 自绘 preedit 帧计数(仅 dev-tools)。
+#[cfg(feature = "dev-tools")]
+static IME_REQUEST_COUNT: AtomicU64 = AtomicU64::new(0);
+#[cfg(feature = "dev-tools")]
+static PREEDIT_DRAWN: AtomicU64 = AtomicU64::new(0);
+
 /// 读光标绘制状态(None=未画)。
 #[cfg(feature = "dev-tools")]
 pub fn cursor_drawn() -> Option<(usize, usize)> {
     let v = CURSOR_DRAWN.load(Ordering::Relaxed);
     (v != u64::MAX).then(|| ((v / 8192) as usize, (v % 8192) as usize))
+}
+
+/// 读 IME 取证(请求总数,自绘 preedit 帧数)。
+#[cfg(feature = "dev-tools")]
+pub fn ime_requests() -> (u64, u64) {
+    (
+        IME_REQUEST_COUNT.load(Ordering::Relaxed),
+        PREEDIT_DRAWN.load(Ordering::Relaxed),
+    )
 }
 
 /// 终端网格 widget。度量用 App 传入的实测 [`GridMetrics`]
@@ -80,11 +100,38 @@ pub struct TermGrid {
     pub scroll_offset: usize,
     /// 光标(视口相对;Hidden=None)→ 反色块。
     pub cursor: Option<(usize, usize)>,
+    /// 选中区间(绝对网格行;配合 `scroll_offset` 回视口)→ 高亮
+    /// overlay quad(文本层之下,每帧 emit,不进行缓存 digest)。
+    pub selection: Option<SelectionRange>,
+    /// IME 挂起预编辑(不写 PTY;over-the-spot 覆盖层由 runtime 绘制,
+    /// PLAN-004 T8)。
+    pub preedit: Option<String>,
 }
 
-impl<Message> Widget<Message, Theme, iced::Renderer> for TermGrid {
+/// 鼠标交互持久状态(经 `Tree` 跨帧存活;PLAN-004 T2)。
+/// 拖选进行中标志 + 多击计数(500ms 内同格 2=Semantic、3=Lines)。
+#[derive(Debug, Default)]
+pub struct GridInteraction {
+    dragging: bool,
+    last_click_at: Option<Instant>,
+    last_count: u8,
+    last_cell: Option<(usize, usize)>,
+}
+
+/// 多击判定窗口。
+const MULTI_CLICK_WINDOW: Duration = Duration::from_millis(500);
+
+impl Widget<Message, Theme, iced::Renderer> for TermGrid {
     fn size(&self) -> Size<Length> {
         Size::new(Length::Fill, Length::Fill)
+    }
+
+    fn tag(&self) -> iced::advanced::widget::tree::Tag {
+        iced::advanced::widget::tree::Tag::of::<GridInteraction>()
+    }
+
+    fn state(&self) -> iced::advanced::widget::tree::State {
+        iced::advanced::widget::tree::State::new(GridInteraction::default())
     }
 
     fn layout(
@@ -94,6 +141,108 @@ impl<Message> Widget<Message, Theme, iced::Renderer> for TermGrid {
         limits: &Limits,
     ) -> Node {
         Node::new(limits.max())
+    }
+
+    /// 鼠标事件地基(PLAN-004 T2):像素→格子→publish Select 消息族。
+    /// 左键按下→Begin(计数 1=Simple/2=Semantic/3=Lines);按住移动→
+    /// Extend(越界 clamp 到边缘格);左键释放→Finish;右键释放→Paste。
+    fn update(
+        &mut self,
+        tree: &mut Tree,
+        event: &iced::Event,
+        layout: iced::advanced::layout::Layout<'_>,
+        cursor: mouse::Cursor,
+        _renderer: &iced::Renderer,
+        _clipboard: &mut dyn iced::advanced::Clipboard,
+        shell: &mut iced::advanced::Shell<'_, Message>,
+        _viewport: &Rectangle,
+    ) {
+        let bounds = layout.bounds();
+        let state = tree.state.downcast_mut::<GridInteraction>();
+        // T8:任意事件到达即以当前光标/preedit 刷新 IME 声明(锚点随
+        // 光标移动;幂等——runtime 对未变的 (rect,purpose) 去重,
+        // preedit 覆盖层仅内容变才重建)
+        self.request_ime(shell, bounds, self.preedit.as_deref());
+        match event {
+            iced::Event::Mouse(mouse::Event::ButtonPressed(mouse::Button::Left)) => {
+                let Some(pos) = cursor.position_over(bounds) else { return };
+                let (cell, side) = self.pixel_to_cell(pos, bounds);
+                let now = Instant::now();
+                let multi = state.last_click_at.is_some_and(|t| now - t <= MULTI_CLICK_WINDOW)
+                    && state.last_cell == Some(cell)
+                    && state.last_count < 3;
+                let count = if multi { state.last_count + 1 } else { 1 };
+                let ty = match count {
+                    2 => SelectionType::Semantic,
+                    3 => SelectionType::Lines,
+                    _ => SelectionType::Simple,
+                };
+                state.last_click_at = Some(now);
+                state.last_count = count;
+                state.last_cell = Some(cell);
+                state.dragging = true;
+                shell.publish(Message::Select(SelectMsg::Begin { ty, cell, side }));
+                shell.capture_event();
+            }
+            iced::Event::InputMethod(ime) => match ime {
+                input_method::Event::Preedit(text, _) => {
+                    shell.publish(Message::SetPreedit(text.clone()));
+                    // 用事件内最新 preedit 即时驱动覆盖层(不等下一帧)
+                    self.request_ime(shell, bounds, Some(text));
+                    shell.capture_event();
+                }
+                input_method::Event::Commit(text) => {
+                    shell.publish(Message::CommitIme(text.clone()));
+                    self.request_ime(shell, bounds, None);
+                    shell.capture_event();
+                }
+                input_method::Event::Closed => {
+                    shell.publish(Message::SetPreedit(String::new()));
+                }
+                _ => {}
+            },
+            iced::Event::Mouse(mouse::Event::CursorMoved { .. }) => {
+                if !state.dragging {
+                    return;
+                }
+                // 拖选越界不动视野(自动滚动非目标),Extend clamp 到边缘格
+                let Some(pos) = cursor.position() else { return };
+                let (cell, side) = self.pixel_to_cell(pos, bounds);
+                shell.publish(Message::Select(SelectMsg::Extend { cell, side }));
+                shell.capture_event();
+            }
+            iced::Event::Mouse(mouse::Event::ButtonReleased(mouse::Button::Left)) => {
+                if !state.dragging {
+                    return;
+                }
+                state.dragging = false;
+                shell.publish(Message::Select(SelectMsg::Finish));
+                shell.capture_event();
+            }
+            iced::Event::Mouse(mouse::Event::ButtonReleased(mouse::Button::Right)) => {
+                if !cursor.is_over(bounds) {
+                    return;
+                }
+                shell.publish(Message::Paste);
+                shell.capture_event();
+            }
+            _ => {}
+        }
+    }
+
+    fn mouse_interaction(
+        &self,
+        _tree: &Tree,
+        layout: iced::advanced::layout::Layout<'_>,
+        cursor: mouse::Cursor,
+        _viewport: &Rectangle,
+        _renderer: &iced::Renderer,
+    ) -> mouse::Interaction {
+        if cursor.is_over(layout.bounds()) {
+            mouse::Interaction::Text
+        } else {
+            mouse::Interaction::None
+        }
     }
 
     fn draw(
@@ -150,6 +299,48 @@ impl<Message> Widget<Message, Theme, iced::Renderer> for TermGrid {
                     },
                     to_iced_color(bg, false),
                 );
+            }
+        }
+
+        // 选中高亮层(T3):overlay quad 每帧 emit——不进行缓存 digest,
+        // 避开损伤门控盲区(core 的 damage 不感知 selection 变化);
+        // 区间为绝对网格行,+scroll_offset 回视口行,视口外行自然裁掉。
+        if let Some(sel) = self.selection {
+            let offset = self.scroll_offset as i32;
+            let start_row = sel.start.line.0 + offset;
+            let end_row = sel.end.line.0 + offset;
+            let last_visible = self.lines.len() as i32 - 1;
+            if end_row >= 0 && start_row <= last_visible {
+                let cols = self.lines.first().map_or(0, |l| l.len());
+                let highlight = Color { a: 0.25, ..DEFAULT_FG };
+                for row in start_row.max(0)..=end_row.min(last_visible) {
+                    let col_begin = if row == start_row {
+                        sel.start.column.0
+                    } else {
+                        0
+                    };
+                    let col_last = if row == end_row {
+                        sel.end.column.0
+                    } else {
+                        cols.saturating_sub(1)
+                    };
+                    renderer.fill_quad(
+                        renderer::Quad {
+                            bounds: Rectangle::new(
+                                Point::new(
+                                    bounds.x + col_begin as f32 * cell_px,
+                                    bounds.y + row as f32 * line_px,
+                                ),
+                                Size::new(
+                                    (col_last - col_begin + 1) as f32 * cell_px,
+                                    line_px,
+                                ),
+                            ),
+                            ..Default::default()
+                        },
+                        highlight,
+                    );
+                }
             }
         }
 
@@ -211,10 +402,55 @@ impl<Message> Widget<Message, Theme, iced::Renderer> for TermGrid {
             *viewport,
         );
         self.draw_cursor(renderer, bounds, cell_px, line_px, font_px, *viewport);
+        self.draw_preedit(renderer, bounds, cell_px, line_px, font_px, *viewport);
     }
 }
 
 impl TermGrid {
+    /// 以终端光标格为锚向 runtime 声明 IME 策略(T8):
+    /// over-the-spot 首选已试——runtime 覆盖层在本机/此版本不落屏
+    /// (main-events 相相位丢弃 input_method;381 次请求实证),
+    /// 按计划裁定次序降级为**自绘 preedit**(draw_preedit);
+    /// 此处仍请求 Enabled{cursor, Terminal, preedit: None}——
+    /// 保 winit 的 IME 启用与组合窗定位(set_ime_cursor_area)。
+    fn request_ime(
+        &self,
+        shell: &mut iced::advanced::Shell<'_, Message>,
+        bounds: Rectangle,
+        _preedit: Option<&str>,
+    ) {
+        let (row, col) = self.cursor.unwrap_or((0, 0));
+        let cursor = Rectangle::new(
+            Point::new(
+                bounds.x + col as f32 * self.metrics.cell_w,
+                bounds.y + row as f32 * self.metrics.line_h,
+            ),
+            Size::new(self.metrics.cell_w, self.metrics.line_h),
+        );
+        shell.request_input_method(&InputMethod::<String>::Enabled {
+            cursor,
+            purpose: Purpose::Terminal,
+            preedit: None,
+        });
+        #[cfg(feature = "dev-tools")]
+        {
+            IME_REQUEST_COUNT.fetch_add(1, Ordering::Relaxed);
+        }
+    }
+
+    /// 像素坐标 → (视口格 (row, col), 格内左右侧)。
+    /// 越界(拖出边缘)clamp 到边缘格;侧界取格中点(拖选锚点语义)。
+    fn pixel_to_cell(&self, pos: Point, bounds: Rectangle) -> ((usize, usize), Side) {
+        let cols = self.lines.first().map_or(1, |l| l.len()).max(1);
+        let rows = self.lines.len().max(1);
+        let fx = (pos.x - bounds.x) / self.metrics.cell_w;
+        let fy = (pos.y - bounds.y) / self.metrics.line_h;
+        let col = (fx.floor() as i32).clamp(0, cols as i32 - 1) as usize;
+        let row = (fy.floor() as i32).clamp(0, rows as i32 - 1) as usize;
+        let side = if fx - fx.floor() >= 0.5 { Side::Right } else { Side::Left };
+        ((row, col), side)
+    }
+
     fn draw_scroll_badge(
         &self,
         renderer: &mut iced::Renderer,
@@ -243,6 +479,55 @@ impl TermGrid {
             DEFAULT_FG,
             viewport,
         );
+    }
+
+    /// 自绘 IME 预编辑(T8 备选路径):光标格起内联显示 + 下划线;
+    /// 不写 PTY(挂起),Commit 才上屏。CJK 按双格宽估算下划线长度。
+    #[allow(clippy::too_many_arguments)]
+    fn draw_preedit(
+        &self,
+        renderer: &mut iced::Renderer,
+        bounds: Rectangle,
+        cell_px: f32,
+        line_px: f32,
+        font_px: f32,
+        viewport: Rectangle,
+    ) {
+        #[cfg(feature = "dev-tools")]
+        let mut drawn = 0u64;
+        if let Some(text) = self.preedit.as_deref().filter(|t| !t.is_empty()) {
+            if let Some((row, col)) = self.cursor {
+                let x = bounds.x + col as f32 * cell_px;
+                let y = bounds.y + row as f32 * line_px;
+                let cells = text
+                    .chars()
+                    .map(|c| if c.is_ascii() { 1.0 } else { 2.0 })
+                    .sum::<f32>();
+                let w = cells * cell_px;
+                renderer.fill_text(
+                    plain_text(text.to_string(), w + cell_px, line_px, font_px),
+                    Point::new(x, y),
+                    DEFAULT_FG,
+                    viewport,
+                );
+                renderer.fill_quad(
+                    renderer::Quad {
+                        bounds: Rectangle::new(
+                            Point::new(x, y + line_px - 3.0),
+                            Size::new(w, 2.0),
+                        ),
+                        ..Default::default()
+                    },
+                    DEFAULT_FG,
+                );
+                #[cfg(feature = "dev-tools")]
+                {
+                    drawn = 1;
+                }
+            }
+        }
+        #[cfg(feature = "dev-tools")]
+        PREEDIT_DRAWN.store(drawn, Ordering::Relaxed);
     }
 
     fn draw_cursor(
@@ -384,7 +669,7 @@ fn term_color_key(c: TermColor) -> u64 {
     }
 }
 
-impl<'a, Message> From<TermGrid> for Element<'a, Message> {
+impl<'a> From<TermGrid> for Element<'a, Message> {
     fn from(grid: TermGrid) -> Self {
         Element::new(grid)
     }
