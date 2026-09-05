@@ -27,10 +27,12 @@ use metrics::GridMetrics;
 #[derive(Clone, Debug)]
 pub struct AppConfig {
     pub shell: String,
-    /// dev 取证:到时自动键入(可多段,"ms:text" 语法同 spike)。
+    /// dev 取证:自动键入(可多段,"ms:text" 语法同 spike)。
     pub dev_autotype: Vec<String>,
     /// dev 取证:到时转储并退出(秒;0=不退出)。
     pub dev_exit_after: u64,
+    /// dev 取证:退出前回滚的行数(正=上翻;转储回滚后视图)。
+    pub dev_scroll: Option<i32>,
     /// dev 取证:退出时转储目标文件。
     pub dev_dump: Option<PathBuf>,
 }
@@ -42,6 +44,8 @@ pub enum Message {
     Key(Key, Modifiers),
     Resized(Size),
     WindowId(Option<iced::window::Id>),
+    /// 滚轮回滚(正=上翻历史,同 Scroll::Delta 约定;行为行)。
+    Scrolled(i32),
     /// dev 钩子的粗定时(仅 dev 参数激活时订阅;常态不存在)。
     DevTick,
 }
@@ -160,6 +164,13 @@ impl App {
             }),
             iced::window::resize_events()
                 .map(|(_id, size)| Message::Resized(size)),
+            // 滚轮回滚:wheel 正 y = 上翻(进历史),每格 3 行
+            iced::event::listen().map(|event| match event {
+                iced::Event::Mouse(iced::mouse::Event::WheelScrolled {
+                    delta: iced::mouse::ScrollDelta::Lines { y, .. },
+                }) => Message::Scrolled((y * 3.0) as i32),
+                _ => Message::PtyBytes,
+            }),
         ];
         if self.config.dev_autotype.is_empty() && self.exit_at.is_none() {
             // 常态:无任何定时器,空闲零唤醒(验收标准 3)
@@ -191,6 +202,10 @@ impl App {
                 });
                 if let Some(at) = self.exit_at {
                     if now >= at {
+                        if let Some(delta) = self.config.dev_scroll {
+                            self.session.term.scroll(delta);
+                            self.refresh_after_change();
+                        }
                         self.dump_state();
                         self.session.kill();
                         return iced::exit();
@@ -199,9 +214,35 @@ impl App {
                 Task::none()
             }
             Message::Key(key, mods) => {
+                // 回滚时键入先回正(终端惯例)
+                if self.session.term.display_offset() > 0 {
+                    self.session.term.scroll(i32::MIN);
+                    self.refresh_after_change();
+                }
+                // PgUp/PgDn = UI 翻页回滚(消费,不进 PTY)
+                match &key {
+                    Key::Named(iced::keyboard::key::Named::PageUp) => {
+                        let rows = self.session.term.size().1 as i32;
+                        self.session.term.scroll(rows);
+                        self.refresh_after_change();
+                        return Task::none();
+                    }
+                    Key::Named(iced::keyboard::key::Named::PageDown) => {
+                        let rows = self.session.term.size().1 as i32;
+                        self.session.term.scroll(-rows);
+                        self.refresh_after_change();
+                        return Task::none();
+                    }
+                    _ => {}
+                }
                 if let Some(bytes) = key_to_bytes(&key, &mods) {
                     self.session.write_input(&bytes);
                 }
+                Task::none()
+            }
+            Message::Scrolled(delta) => {
+                self.session.term.scroll(delta);
+                self.refresh_after_change();
                 Task::none()
             }
             Message::WindowId(id) => {
@@ -252,6 +293,7 @@ impl App {
             lines: self.snapshot.clone(),
             metrics: self.metrics,
             damage: self.damage.clone(),
+            scroll_offset: self.session.term.display_offset(),
         })
     }
 
@@ -307,6 +349,13 @@ impl App {
                 );
             }
         }
+        let _ = std::fmt::Write::write_fmt(
+            &mut out,
+            format_args!(
+                "scroll_offset: {}\n",
+                self.session.term.display_offset()
+            ),
+        );
         let (runs_prev, runs_last) = widget::draw_runs();
         let _ = std::fmt::Write::write_fmt(
             &mut out,

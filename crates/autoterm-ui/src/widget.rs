@@ -38,6 +38,8 @@ pub struct TermGrid {
     pub lines: Vec<Vec<StyledChar>>,
     pub metrics: GridMetrics,
     pub damage: Damage,
+    /// 回滚偏移(0=贴底);>0 时顶行右侧画 `↑N` 指示(T7)。
+    pub scroll_offset: usize,
 }
 
 impl<Message> Widget<Message, Theme, iced::Renderer> for TermGrid {
@@ -134,6 +136,36 @@ impl<Message> Widget<Message, Theme, iced::Renderer> for TermGrid {
         DRAW_RUNS_PREV.store(prev, Ordering::Relaxed);
         DRAW_RUNS_LAST.store(runs, Ordering::Relaxed);
         let _ = &self.damage;
+
+        // 回滚指示:顶行右侧 ↑N(T7)
+        if self.scroll_offset > 0 {
+            let badge = format!("↑{}", self.scroll_offset);
+            let badge_w = badge.chars().count() as f32 * cell_px + cell_px;
+            let bg_bounds = Rectangle::new(
+                Point::new(bounds.x + bounds.width - badge_w - cell_px, bounds.y),
+                Size::new(badge_w, line_px),
+            );
+            renderer.fill_quad(
+                renderer::Quad { bounds: bg_bounds, ..Default::default() },
+                DEFAULT_BG,
+            );
+            renderer.fill_text(
+                iced::advanced::text::Text {
+                    content: badge,
+                    bounds: Size::new(badge_w, line_px),
+                    size: font_px.into(),
+                    line_height: LineHeight::Absolute(line_px.into()),
+                    font: Font::MONOSPACE,
+                    align_x: iced::Alignment::Start.into(),
+                    align_y: alignment::Vertical::Top,
+                    shaping: Shaping::Basic,
+                    wrapping: Wrapping::None,
+                },
+                Point::new(bg_bounds.x, bounds.y),
+                crate::DEFAULT_FG,
+                *viewport,
+            );
+        }
     }
 }
 

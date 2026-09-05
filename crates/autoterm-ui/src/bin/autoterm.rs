@@ -23,6 +23,10 @@ struct Args {
     #[arg(long, default_value = "0")]
     dev_exit_after: u64,
 
+    /// [dev 取证] 退出前回滚行数(正=上翻历史;转储回滚后视图)
+    #[arg(long, allow_hyphen_values = true)]
+    dev_scroll: Option<i32>,
+
     /// [dev 取证] 退出时转储网格与指标到该文件
     #[arg(long = "dev-dump")]
     dev_dump: Option<std::path::PathBuf>,
@@ -34,6 +38,7 @@ fn main() -> Result<()> {
         shell: args.shell.clone(),
         dev_autotype: args.dev_autotype,
         dev_exit_after: args.dev_exit_after,
+        dev_scroll: args.dev_scroll,
         dev_dump: args.dev_dump,
     };
 
