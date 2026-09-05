@@ -1,0 +1,58 @@
+shell: pwsh
+grid: 106x32
+metrics: font_px=16.000 cell_w=9.3750 line_h=20.000 (cell_em=0.5859)
+viewport: 1000.0x650.0
+fit_ok: true (cols*cell_w=993.8 <= viewport_w=1000.0)
+uptime_s: 15.003
+frames: 161
+dirty_updates: 18
+snapshot_rebuilds: 27
+damage_last: lines=0
+scroll_offset: 11
+selection_text: "L06\nL07\nL08\nL09\nL10\nL11\nL12\nL13\nL14\nL15"
+selection_cells: 50
+selection_range: (-4,0)-(5,4) is_block=true (绝对网格行;视口行=绝对+scroll_offset)
+preedit: none
+ime_requests: 372
+preedit_drawn: 0
+paragraph_rebuilds_prev: 0
+paragraph_rebuilds_last: 0
+cursor_drawn_at: (31,19) inverted=true
+last_byte_after_start_s: 4.566
+input_sent_after_start_s: 4.003
+last_byte_after_input_s: 0.562
+bytes_fed: 3030
+=== grid_text_begin ===
+PS C:\Users\zhaop> 0..40 | ForEach-Object { "L{0:D2}" -f $_ }
+L00
+L01
+L02
+L03
+L04
+L05
+L06
+L07
+L08
+L09
+L10
+L11
+L12
+L13
+L14
+L15
+L16
+L17
+L18
+L19
+L20
+L21
+L22
+L23
+L24
+L25
+L26
+L27
+L28
+L29
+L30
+=== grid_text_end ===

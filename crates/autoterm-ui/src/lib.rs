@@ -64,6 +64,9 @@ pub enum Message {
     WindowId(Option<iced::window::Id>),
     /// 滚轮回滚(正=上翻历史,同 Scroll::Delta 约定;行为行)。
     Scrolled(i32),
+    /// 拖选自动滚动的节拍(005 T4):仅 drag_scroll 挂起时存在;
+    /// 方向行数取自 App 状态(订阅 map 禁捕获,经状态中转)。
+    DragScrollTick,
     /// 窗口关闭:同步杀子进程再退出(T8)。
     Closed(iced::window::Id),
     /// 选中消息族(PLAN-004 T2;widget 鼠标事件或 dev 注入)。
@@ -94,14 +97,39 @@ pub enum SelectMsg {
         cell: (usize, usize),
         side: Side,
     },
-    /// 拖动终点(widget 已 clamp 到边缘格)。
+    /// 拖动终点(widget 已 clamp 到边缘格);`at_edge` = 指针停在
+    /// 视口上/下边缘带(拖选自动滚动信号,005 T4)。
     Extend {
         cell: (usize, usize),
         side: Side,
+        at_edge: Option<Vertical>,
     },
     /// 释放收尾(copy-on-select 在此触发;空选清除)。
     Finish,
 }
+
+/// 拖选越界方向(视口上/下边缘带;005 T4)。
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum Vertical {
+    Up,
+    Down,
+}
+
+/// 指针 y 是否落在视口上/下边缘带(纯函数,可单测):越过上缘
+/// 即 Up、越过下缘即 Down;视口内为 None(widget 已把格 clamp 到
+/// 边缘行,这里只补"方向"信号)。
+fn edge_band(pos_y: f32, bounds_y: f32, bounds_height: f32) -> Option<Vertical> {
+    if pos_y < bounds_y {
+        Some(Vertical::Up)
+    } else if pos_y > bounds_y + bounds_height {
+        Some(Vertical::Down)
+    } else {
+        None
+    }
+}
+
+/// 自动滚动步长(行/拍,50ms;待澄清#5 采纳默认:距缘不分档)。
+pub const AUTO_SCROLL_ROWS: i32 = 2;
 
 /// 订阅数据源:唤醒接收端的"一次性槽"(run_with 需 Hash,恒等即可)。
 #[derive(Clone)]
@@ -135,6 +163,9 @@ pub struct App {
     pub cursor: Option<(usize, usize)>,
     /// 当前选中区间(绝对坐标;高亮渲染用,随交互/内容变化刷新)。
     pub selection_range: Option<SelectionRange>,
+    /// 拖选自动滚动(005 T4):Some(每拍行数,上缘正/下缘负)时挂
+    /// 50ms 条件订阅;Finish/离缘清除(空闲零唤醒的守门员)。
+    pub drag_scroll: Option<i32>,
     /// IME 挂起预编辑(空=无;不写 PTY,over-the-spot 显示)。
     pub preedit: Option<String>,
 
@@ -142,6 +173,9 @@ pub struct App {
     queued_input: Vec<(Instant, Vec<u8>)>,
     #[cfg(feature = "dev-tools")]
     queued_select: Option<(Instant, DevSelectSpec)>,
+    /// 边缘保持注入已 Begin(防重复;005 T4)。
+    #[cfg(feature = "dev-tools")]
+    select_edge_holding: bool,
     #[cfg(feature = "dev-tools")]
     queued_paste: Option<(Instant, String)>,
     #[cfg(feature = "dev-tools")]
@@ -151,12 +185,15 @@ pub struct App {
 }
 
 /// dev-select 注入规格(视口相对格;经 handle_select 走真实消息路径)。
+/// `edge` = 边缘保持模式(005 T4 取证):到点后每拍补发带 at_edge
+/// 的 Extend,驱动自动滚动(无 Finish,转储时选区仍在)。
 #[cfg(feature = "dev-tools")]
 #[derive(Debug, Clone, Copy)]
 struct DevSelectSpec {
     ty: SelectionType,
     start: (usize, usize),
     end: (usize, usize),
+    edge: Option<Vertical>,
 }
 
 impl App {
@@ -207,11 +244,14 @@ impl App {
             snapshot_rebuilds: 0,
             cursor: None,
             selection_range: None,
+            drag_scroll: None,
             preedit: None,
             #[cfg(feature = "dev-tools")]
             queued_input,
             #[cfg(feature = "dev-tools")]
             queued_select,
+            #[cfg(feature = "dev-tools")]
+            select_edge_holding: false,
             #[cfg(feature = "dev-tools")]
             queued_paste,
             #[cfg(feature = "dev-tools")]
@@ -287,6 +327,14 @@ impl App {
             // 窗口关闭:同步清理子进程(T8)
             iced::window::close_events().map(Message::Closed),
         ];
+        // 拖选自动滚动(005 T4):仅拖选压边时挂 50ms 条件订阅——
+        // 空闲/拖选中不压边均零唤醒;方向行数经 DragScrollTick 从
+        // 状态取(Subscription::map 禁捕获)。
+        if self.drag_scroll.is_some() {
+            subs.push(
+                time::every(Duration::from_millis(50)).map(|_| Message::DragScrollTick),
+            );
+        }
         #[cfg(feature = "dev-tools")]
         {
             if !self.config.dev_autotype.is_empty()
@@ -331,29 +379,60 @@ impl App {
                 if let Some((at, spec)) = self.queued_select {
                     // 自愈注入:到点后若选中缺失(窗口首显 resize 风暴会
                     // 清选——pwsh 冷启动慢时风暴晚于注入)即重注入,
-                    // 选中在手则保持(幂等,dev 专用)
-                    if now >= at && self.selection_range.is_none() {
-                        log::info!(
-                            "dev-select inject: ty={:?} start={:?} end={:?}",
-                            spec.ty,
-                            spec.start,
-                            spec.end
-                        );
-                        tasks.push(self.handle_select(SelectMsg::Begin {
-                            ty: spec.ty,
-                            cell: spec.start,
-                            side: Side::Left,
-                        }));
-                        tasks.push(self.handle_select(SelectMsg::Extend {
-                            cell: spec.end,
-                            side: Side::Right,
-                        }));
-                        tasks.push(self.handle_select(SelectMsg::Finish));
-                        log::info!(
-                            "dev-select injected: range={:?} text={:?}",
-                            self.selection_range,
-                            self.session.term.selection_text()
-                        );
+                    // 选中在手则保持(幂等,dev 专用)。
+                    // 边缘保持模式(edge=Some):Begin 一次(缺失自愈),
+                    // 此后每拍 Extend 压边,自动滚动持续到转储。
+                    if now >= at {
+                        match spec.edge {
+                            Some(edge) => {
+                                if !self.select_edge_holding
+                                    || self.selection_range.is_none()
+                                {
+                                    log::info!(
+                                        "dev-select edge-hold begin: ty={:?} start={:?}",
+                                        spec.ty,
+                                        spec.start
+                                    );
+                                    self.select_edge_holding = true;
+                                    tasks.push(self.handle_select(SelectMsg::Begin {
+                                        ty: spec.ty,
+                                        cell: spec.start,
+                                        side: Side::Left,
+                                    }));
+                                }
+                                tasks.push(self.handle_select(SelectMsg::Extend {
+                                    cell: spec.end,
+                                    side: Side::Right,
+                                    at_edge: Some(edge),
+                                }));
+                            }
+                            None => {
+                                if self.selection_range.is_none() {
+                                    log::info!(
+                                        "dev-select inject: ty={:?} start={:?} end={:?}",
+                                        spec.ty,
+                                        spec.start,
+                                        spec.end
+                                    );
+                                    tasks.push(self.handle_select(SelectMsg::Begin {
+                                        ty: spec.ty,
+                                        cell: spec.start,
+                                        side: Side::Left,
+                                    }));
+                                    tasks.push(self.handle_select(SelectMsg::Extend {
+                                        cell: spec.end,
+                                        side: Side::Right,
+                                        at_edge: None,
+                                    }));
+                                    tasks.push(self.handle_select(SelectMsg::Finish));
+                                    log::info!(
+                                        "dev-select injected: range={:?} text={:?}",
+                                        self.selection_range,
+                                        self.session.term.selection_text()
+                                    );
+                                }
+                            }
+                        }
                     }
                 }
                 if let Some((at, text)) = self.queued_paste.clone() {
@@ -372,9 +451,9 @@ impl App {
                         tasks.push(self.update(Message::SetPreedit(text)));
                     }
                 }
-                if !tasks.is_empty() {
-                    return Task::batch(tasks);
-                }
+                // 边缘保持模式每拍都有 Extend task,转储/退出判定必须
+                // 先于 task 返回执行(否则被饿死,应用永不退出——005 T4
+                // 首跑实证)
                 if let Some(at) = self.exit_at {
                     if now >= at {
                         if let Some(delta) = self.config.dev_scroll {
@@ -385,6 +464,9 @@ impl App {
                         self.session.kill();
                         return iced::exit();
                     }
+                }
+                if !tasks.is_empty() {
+                    return Task::batch(tasks);
                 }
                 Task::none()
             }
@@ -426,6 +508,12 @@ impl App {
                 self.session.term.scroll(delta);
                 self.refresh_after_change();
                 Task::none()
+            }
+            Message::DragScrollTick => {
+                match self.drag_scroll {
+                    Some(delta) => self.update(Message::Scrolled(delta)),
+                    None => Task::none(),
+                }
             }
             Message::Closed(_id) => {
                 // 关闭语义(T8):显式杀+等,窗口关闭不留孤儿进程;
@@ -486,15 +574,22 @@ impl App {
     /// 选中消息族处理(T2):视口格 → 绝对网格点 → 驱动 core;
     /// 高亮区间随之刷新(渲染为 overlay,不进快照/damage)。
     /// Finish = copy-on-select(用户裁定默认开;空选清除)。
+    /// Extend 压边时置 drag_scroll(005 T4),离缘/收尾清除。
     fn handle_select(&mut self, msg: SelectMsg) -> Task<Message> {
         match msg {
             SelectMsg::Begin { ty, cell, side } => {
+                self.drag_scroll = None;
                 self.session.term.begin_selection(ty, self.cell_to_point(cell), side);
             }
-            SelectMsg::Extend { cell, side } => {
+            SelectMsg::Extend { cell, side, at_edge } => {
                 self.session.term.update_selection(self.cell_to_point(cell), side);
+                self.drag_scroll = at_edge.map(|edge| match edge {
+                    Vertical::Up => AUTO_SCROLL_ROWS,
+                    Vertical::Down => -AUTO_SCROLL_ROWS,
+                });
             }
             SelectMsg::Finish => {
+                self.drag_scroll = None;
                 if let Some(text) = self
                     .session
                     .term
@@ -673,6 +768,22 @@ impl App {
             &mut out,
             format_args!("selection_cells: {}\n", self.selection_cell_count()),
         );
+        match self.selection_range {
+            Some(r) => {
+                let _ = std::fmt::Write::write_fmt(
+                    &mut out,
+                    format_args!(
+                        "selection_range: ({},{})-({},{}) is_block={} (绝对网格行;视口行=绝对+scroll_offset)\n",
+                        r.start.line.0,
+                        r.start.column.0,
+                        r.end.line.0,
+                        r.end.column.0,
+                        r.is_block
+                    ),
+                );
+            }
+            None => out.push_str("selection_range: none\n"),
+        }
         match &self.preedit {
             Some(t) => {
                 let _ = std::fmt::Write::write_fmt(
@@ -752,11 +863,18 @@ fn parse_input(s: &str, start: Instant) -> (Instant, Vec<u8>) {
 
 /// dev-select 语法(T3):"<ms>:<r1>:<c1>-<r2>:<c2>"(视口相对格)。
 /// T5 起支持可选类型前缀:"<ms>:<simple|semantic|lines|block>:<r1>:<c1>-..."
-/// (block=块选,005 T2)。
+/// (block=块选,005 T2);后缀可选 ":up"/":down" = 边缘保持注入
+/// (每拍 Extend 压边驱动自动滚动,005 T4)。
 #[cfg(feature = "dev-tools")]
 fn parse_dev_select(s: &str, start: Instant) -> Option<(Instant, DevSelectSpec)> {
     let (ms, rest) = s.split_once(':')?;
     let at = start + Duration::from_millis(ms.parse::<u64>().ok()?);
+    // 边缘后缀先摘(取最后一个 ':'),无后缀则原样
+    let (rest, edge) = match rest.rsplit_once(':') {
+        Some((r, "up")) => (r, Some(Vertical::Up)),
+        Some((r, "down")) => (r, Some(Vertical::Down)),
+        _ => (rest, None),
+    };
     let (ty, rest) = match rest.split_once(':') {
         Some(("simple", r)) => (SelectionType::Simple, r),
         Some(("semantic", r)) => (SelectionType::Semantic, r),
@@ -773,6 +891,7 @@ fn parse_dev_select(s: &str, start: Instant) -> Option<(Instant, DevSelectSpec)>
             ty,
             start: (r1.parse().ok()?, c1.parse().ok()?),
             end: (r2.parse().ok()?, c2.parse().ok()?),
+            edge,
         },
     ))
 }

@@ -33,7 +33,9 @@ use autoterm_core::{
 
 use crate::metrics::GridMetrics;
 use crate::palette::to_iced_color;
-use crate::{DEFAULT_BG, DEFAULT_FG, Message, SelectMsg};
+use crate::{
+    DEFAULT_BG, DEFAULT_FG, Message, SelectMsg, Vertical, edge_band,
+};
 
 type Para = <iced::Renderer as iced::advanced::text::Renderer>::Paragraph;
 
@@ -224,10 +226,17 @@ impl Widget<Message, Theme, iced::Renderer> for TermGrid {
                 if !state.dragging {
                     return;
                 }
-                // 拖选越界不动视野(自动滚动非目标),Extend clamp 到边缘格
+                // 拖选越界不动视野,Extend clamp 到边缘格;指针越过
+                // 上/下边缘时附 at_edge(自动滚动信号,005 T4)
                 let Some(pos) = cursor.position() else { return };
                 let (cell, side) = self.pixel_to_cell(pos, bounds);
-                shell.publish(Message::Select(SelectMsg::Extend { cell, side }));
+                let at_edge =
+                    edge_band(pos.y, bounds.y, bounds.height);
+                shell.publish(Message::Select(SelectMsg::Extend {
+                    cell,
+                    side,
+                    at_edge,
+                }));
                 shell.capture_event();
             }
             iced::Event::Mouse(mouse::Event::ButtonReleased(mouse::Button::Left)) => {
@@ -698,6 +707,25 @@ fn term_color_key(c: TermColor) -> u64 {
 impl<'a> From<TermGrid> for Element<'a, Message> {
     fn from(grid: TermGrid) -> Self {
         Element::new(grid)
+    }
+}
+
+#[cfg(test)]
+mod edge_band_tests {
+    use super::edge_band;
+    use crate::Vertical;
+
+    #[test]
+    fn inside_viewport_has_no_edge() {
+        assert_eq!(edge_band(100.0, 0.0, 650.0), None);
+        assert_eq!(edge_band(0.0, 0.0, 650.0), None, "上缘线上不算越界");
+        assert_eq!(edge_band(650.0, 0.0, 650.0), None, "下缘线上不算越界");
+    }
+
+    #[test]
+    fn beyond_edges_reports_direction() {
+        assert_eq!(edge_band(-1.0, 0.0, 650.0), Some(Vertical::Up));
+        assert_eq!(edge_band(651.0, 0.0, 650.0), Some(Vertical::Down));
     }
 }
 
