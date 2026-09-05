@@ -4,7 +4,7 @@ status: drafting
 feature_name: AutoTerm Phase 1 单窗口 MVP(正式架构 + 仿真回归 + 损伤重绘/事件驱动)
 author: [zhaopuming]
 created_at: 2026-09-05T09:36:11+08:00
-updated_at: 2026-09-05T09:36:11+08:00
+updated_at: 2026-09-05T10:05:00+08:00
 
 # Leave these EMPTY here — /auto-plan:review fills them:
 supersedes_spec_components: []
@@ -162,10 +162,11 @@ iced 升级沿 0.14(与 auto-ui 同栈,集成路径见待澄清 #2)。
 - 自动:autoterm-core 三套测试(live_pty/sim_regression/
   pty_lifecycle)+ metrics 单测 + workspace 全量 `cargo test`;
 - 半自动:`--dev-*` 钩子冒烟(echo 回显、2000 行流式、滚轮回滚
-  快照、光标块截图)——复用 PLAN-001 的取证方法(PrintWindow +
-  网格转储);
+  快照、光标块绘制证据)——**以程序化证据为主**(网格转储、度量
+  数值断言、draw 状态转储),截图仅作人工复核补充,不构成验收
+  依赖(计划执行不依赖多模态会话);
 - 手动:日常试用清单(pwsh/ash 各 10 分钟:补全/表格/真彩/
-  Ctrl+C/关闭无残留进程);
+  Ctrl+C/关闭无残留进程 + 光标块/对齐目测);
 - 不做:性能基准自动化(字形图集专项时另立)、Unix 矩阵。
 
 ## 验收标准
@@ -178,9 +179,12 @@ iced 升级沿 0.14(与 auto-ui 同栈,集成路径见待澄清 #2)。
    字节到达即醒;
 4. 损伤重绘:单行改动帧的重画 run 数 < 全网格 run 数(计数断言);
 5. 实测度量:cell 宽来自 cosmic-text 实测(单测断言 >0 且与
-   0.55em 量级一致);右缘无裁剪(冒烟截图);
+   0.55em 量级一致);右缘无裁剪由**度量断言**保证
+   (dev 转储含 cols×cell_w ≤ 视口宽 数值,程序化核验);
 6. 滚轮回滚可用:大输出后回滚快照含历史行,顶行有偏移指示;
-7. 光标块可见;窗口关闭后无残留子进程(tasklist 验证);
+7. 光标块**绘制证据**:dev 转储含 `cursor_drawn_at`(行列)+
+   反色标志(draw 状态),人工目测为可选补充;窗口关闭后无残留
+   子进程(tasklist 验证);
 8. `docs/designs/001-phase1-architecture.md` 存在且含"结论"节;
 9. README 更新(Win10 1809+ 支持声明、autoterm 运行段);
    DEBTS 勾账(#1/#3/#4 清偿,#5/#7/#10 部分清偿并注明);
@@ -217,10 +221,12 @@ iced 升级沿 0.14(与 auto-ui 同栈,集成路径见待澄清 #2)。
       --dev-dump <f>` 转储网格含 `hi`
 - [ ] **T5** 写 `crates/autoterm-ui/src/metrics.rs`:cosmic-text
       实测 advance('M')=cell 宽、行高 ascent+descent、
-      `is_wide(c)`(≥1.9×cell);widget 改用实测度量。
+      `is_wide(c)`(≥1.9×cell);widget 改用实测度量;dev 转储
+      增加 `metrics` 行(cell_w/line_h/cols)与 `fit_ok:
+      cols*cell_w<=viewport_w` 断言值。
       验证:`cargo test -p autoterm-ui metrics`(cell>0,数量级
-      0.5–0.7em;CJK 判 wide)+
-      `--dev-dump` 冒烟右缘无裁剪(截图核验)
+      0.5–0.7em;CJK 判 wide)+ `--dev-dump` 冒烟转储含
+      `fit_ok: true`
 - [ ] **T6** 损伤重绘:autoterm-core `TermSession::take_damage()`
       (damage+reset_damage 透传);ui widget draw 按脏行集合剪裁,
       帧计数器(debug 日志)记重画 run 数。
@@ -233,10 +239,11 @@ iced 升级沿 0.14(与 auto-ui 同栈,集成路径见待澄清 #2)。
       + `--dev-scroll -10` 钩子)转储含首行 `1`
 - [ ] **T8** 光标块 + 关闭语义 + 全色表:`palette.rs` 收敛
       NamedColor 全映射(含 Dim/Bright 前景);渲染
-      `renderable_content().cursor` 反色块;窗口 Closed → kill+wait
-      子进程。
-      验证:冒烟截图见光标块;关闭后
-      `tasklist | grep -c <autoterm 子进程名>` 为 0
+      `renderable_content().cursor` 反色块,draw 状态经 dev 转储
+      输出 `cursor_drawn_at: (row,col) inverted=true/false`;
+      窗口 Closed → kill+wait 子进程。
+      验证:冒烟 `--dev-dump` 含 `cursor_drawn_at` 且 inverted=true;
+      关闭后 `tasklist | grep -c <autoterm 子进程名>` 为 0
 - [ ] **T9** 写 `docs/designs/001-phase1-architecture.md`(章节
       见详细设计;含 000→002 决策链与残留缺口)。
       验证:`test -f docs/designs/001-phase1-architecture.md &&
