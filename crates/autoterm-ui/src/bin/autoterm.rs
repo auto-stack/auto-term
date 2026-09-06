@@ -6,7 +6,9 @@ use anyhow::Result;
 use clap::Parser;
 use iced::{Font, Size, Task};
 
-use autoterm_ui::{App, AppConfig, Message, DEFAULT_SELECTION_COLOR, parse_hex_color};
+use autoterm_ui::{
+    App, AppConfig, CtrlCMode, Message, DEFAULT_SELECTION_COLOR, parse_ctrl_c_mode, parse_hex_color,
+};
 
 #[derive(Parser, Debug)]
 #[command(name = "autoterm", about = "AutoTerm — AutoOS 通用终端")]
@@ -18,6 +20,11 @@ struct Args {
     /// 选中高亮色(RRGGBB[AA] 十六进制;非法回退默认 e8e8e8@25%)
     #[arg(long = "selection-color", default_value = "e8e8e840")]
     selection_color: String,
+
+    /// Ctrl+C 投递模式(auto/byte/event/both;默认 auto——ash 豁免为
+    /// 字节,其余双投递;008,详见 designs/003 §4.1)
+    #[arg(long = "ctrl-c-mode", default_value = "auto")]
+    ctrl_c_mode: String,
 
     /// [dev 取证] 自动键入("<延迟毫秒>:<文本>",可多段;转义同 unescape)
     #[arg(long = "dev-autotype")]
@@ -69,6 +76,13 @@ fn main() -> Result<()> {
         shell: args.shell.clone(),
         selection_color: parse_hex_color(&args.selection_color)
             .unwrap_or(DEFAULT_SELECTION_COLOR),
+        ctrl_c_mode: parse_ctrl_c_mode(&args.ctrl_c_mode).unwrap_or_else(|| {
+            eprintln!(
+                "非法 --ctrl-c-mode {:?}(可用 auto|byte|event|both),回退 auto",
+                args.ctrl_c_mode
+            );
+            CtrlCMode::Auto
+        }),
         #[cfg(feature = "dev-tools")]
         dev_autotype: args.dev_autotype,
         #[cfg(feature = "dev-tools")]

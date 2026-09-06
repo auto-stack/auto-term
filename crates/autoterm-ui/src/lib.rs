@@ -31,6 +31,8 @@ pub struct AppConfig {
     pub shell: String,
     /// 选中高亮色(005 T6;默认 e8e8e8@25%)。
     pub selection_color: Color,
+    /// Ctrl+C 投递模式(008;默认 Auto)。
+    pub ctrl_c_mode: CtrlCMode,
     /// dev 取证:自动键入(可多段,"ms:text" 语法同 spike)。
     #[cfg(feature = "dev-tools")]
     pub dev_autotype: Vec<String>,
@@ -488,15 +490,25 @@ impl App {
             #[cfg(feature = "dev-tools")]
             Message::DevTick => {
                 let now = Instant::now();
+                // 到期字节先收集再处理:孤 0x03 要走 handle_ctrl_c(与
+                // 真实按键同路,008 T5),retain 闭包内借不了整个 self。
+                let mut due: Vec<Vec<u8>> = Vec::new();
                 self.queued_input.retain(|(at, bytes)| {
                     if now >= *at {
-                        self.session.write_input(bytes);
-                        self.input_sent_at.get_or_insert_with(Instant::now);
+                        due.push(bytes.clone());
                         false
                     } else {
                         true
                     }
                 });
+                for bytes in due {
+                    if bytes.as_slice() == [0x03] {
+                        self.handle_ctrl_c();
+                    } else {
+                        self.session.write_input(&bytes);
+                    }
+                    self.input_sent_at.get_or_insert_with(Instant::now);
+                }
                 // 注入产生的 Task(如 Finish 的 copy-on-select 剪贴板写)
                 // 必须返回给 runtime 执行——丢弃即静默失效(T4 实证)
                 let mut tasks: Vec<Task<Message>> = Vec::new();
@@ -655,6 +667,13 @@ impl App {
                     Some(ClipboardShortcut::Paste) => return self.paste_from_clipboard(),
                     None => {}
                 }
+                // 裸 Ctrl+C:双投递拦截(008 T5)——事件管运行中命令,
+                // 0x03 字节管 raw 行编辑器;在 key_to_bytes 前截住,
+                // 否则只落字节(DEBTS #12 修复前行为)。
+                if is_bare_ctrl_c(&key, &mods) {
+                    self.handle_ctrl_c();
+                    return Task::none();
+                }
                 if let Some(bytes) = key_to_bytes(&key, &mods) {
                     self.session.write_input(&bytes);
                 }
@@ -810,6 +829,24 @@ impl App {
     fn paste_from_clipboard(&self) -> Task<Message> {
         iced::clipboard::read()
             .then(|opt| Task::done(Message::Pasted(opt.unwrap_or_default())))
+    }
+
+    /// 裸 Ctrl+C 落地(008,DEBTS #12):按有效模式双投递——
+    /// `interrupt()` 广播控制事件(中断运行中命令),0x03 字节供
+    /// raw 行编辑器废弃输入行;两消费方不重叠,Both 为推荐默认。
+    /// auto 模式下 ash 豁免为仅字节(idle 态事件会整体终止 ash,
+    /// 实测见 designs/003 §4.1;#13 落地后撤豁免)。
+    fn handle_ctrl_c(&mut self) {
+        match resolve_effective_mode(self.config.ctrl_c_mode, &self.config.shell) {
+            CtrlCMode::Byte => self.session.write_input(&[0x03]),
+            CtrlCMode::Event => {
+                self.session.interrupt();
+            }
+            CtrlCMode::Both | CtrlCMode::Auto => {
+                self.session.interrupt();
+                self.session.write_input(&[0x03]);
+            }
+        }
     }
 
     /// 视口格 (row, col) → core 绝对网格点(历史区为负)。
@@ -1244,6 +1281,65 @@ pub fn clipboard_shortcut(key: &Key, mods: &Modifiers) -> Option<ClipboardShortc
     }
 }
 
+/// Ctrl+C 投递模式(PLAN-008,DEBTS #12):
+/// - `Byte`:仅写 0x03(修复前行为;ash 在 #13 落地前的 auto 豁免);
+/// - `Event`:仅 `interrupt()` 广播控制事件;
+/// - `Both`:事件 + 字节(默认推荐:事件中断运行中命令,字节供
+///   raw 行编辑器废弃输入行——两消费方不重叠);
+/// - `Auto`:按 shell 判定——ash(实测 idle 态事件整体终止进程,
+///   见 designs/003 §4.1 矩阵)豁免为 Byte,其余 Both。
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum CtrlCMode {
+    Auto,
+    Byte,
+    Event,
+    Both,
+}
+
+/// 解析 `--ctrl-c-mode` 参数(大小写不敏感;非法返 None 由调用方
+/// 回退默认并告警)。
+pub fn parse_ctrl_c_mode(s: &str) -> Option<CtrlCMode> {
+    match s.trim().to_ascii_lowercase().as_str() {
+        "auto" => Some(CtrlCMode::Auto),
+        "byte" => Some(CtrlCMode::Byte),
+        "event" => Some(CtrlCMode::Event),
+        "both" => Some(CtrlCMode::Both),
+        _ => None,
+    }
+}
+
+/// 裸 Ctrl+C(Character 'c' + Ctrl 且**非** Shift;Ctrl+Shift+C 归
+/// 剪贴板复制,不得劫持)。
+pub fn is_bare_ctrl_c(key: &Key, mods: &Modifiers) -> bool {
+    if !mods.control() || mods.shift() {
+        return false;
+    }
+    let Key::Character(s) = key else { return false };
+    let mut chars = s.chars();
+    match (chars.next(), chars.next()) {
+        (Some(c), None) => c.to_ascii_lowercase() == 'c',
+        _ => false,
+    }
+}
+
+/// auto 模式落地:ash(文件名 stem 判定,#13 落地后撤)→ Byte,
+/// 其余 → Both;显式模式原样透传。
+pub fn resolve_effective_mode(mode: CtrlCMode, shell_program: &str) -> CtrlCMode {
+    match mode {
+        CtrlCMode::Auto => {
+            let is_ash = std::path::Path::new(shell_program)
+                .file_stem()
+                .is_some_and(|stem| stem.eq_ignore_ascii_case("ash"));
+            if is_ash {
+                CtrlCMode::Byte
+            } else {
+                CtrlCMode::Both
+            }
+        }
+        other => other,
+    }
+}
+
 /// 键盘 → PTY 字节(承 spike:可打印/Enter/Backspace/Tab/方向键/
 /// Home/End/Delete/PgUp/PgDn/Ctrl+字母;Shift 符号映射自理)。
 pub fn key_to_bytes(key: &Key, mods: &Modifiers) -> Option<Vec<u8>> {
@@ -1414,5 +1510,77 @@ mod clipboard_shortcut_tests {
             ),
             None
         );
+    }
+}
+
+#[cfg(test)]
+mod ctrl_c_tests {
+    use super::{CtrlCMode, Key, Modifiers, is_bare_ctrl_c, parse_ctrl_c_mode, resolve_effective_mode};
+
+    fn key_mods_test(c: &str, ctrl: bool, shift: bool) -> (Key, Modifiers) {
+        let mut m = Modifiers::empty();
+        if ctrl {
+            m = m.union(Modifiers::CTRL);
+        }
+        if shift {
+            m = m.union(Modifiers::SHIFT);
+        }
+        (Key::Character(c.into()), m)
+    }
+
+    #[test]
+    fn bare_ctrl_c_detected() {
+        let (k, m) = key_mods_test("c", true, false);
+        assert!(is_bare_ctrl_c(&k, &m), "裸 Ctrl+C 必须命中");
+    }
+
+    #[test]
+    fn ctrl_shift_c_not_bare() {
+        let (k, m) = key_mods_test("c", true, true);
+        assert!(!is_bare_ctrl_c(&k, &m), "Ctrl+Shift+C 是剪贴板复制,不得劫持");
+    }
+
+    #[test]
+    fn plain_c_not_bare() {
+        let (k, m) = key_mods_test("c", false, false);
+        assert!(!is_bare_ctrl_c(&k, &m), "无 Ctrl 不拦截");
+        let (k, m) = key_mods_test("d", true, false);
+        assert!(!is_bare_ctrl_c(&k, &m), "Ctrl+D 不拦截");
+    }
+
+    #[test]
+    fn auto_mode_exempt_ash() {
+        // T4 实测 idle 态事件整体终止 ash → auto 下 ash 豁免为字节
+        assert_eq!(
+            resolve_effective_mode(CtrlCMode::Auto, "D:/x/auto-shell/ash/target/release/ash.exe"),
+            CtrlCMode::Byte
+        );
+        assert_eq!(
+            resolve_effective_mode(CtrlCMode::Auto, "ash.exe"),
+            CtrlCMode::Byte
+        );
+    }
+
+    #[test]
+    fn auto_mode_full_for_others() {
+        assert_eq!(resolve_effective_mode(CtrlCMode::Auto, "pwsh"), CtrlCMode::Both);
+        assert_eq!(resolve_effective_mode(CtrlCMode::Auto, "cmd"), CtrlCMode::Both);
+    }
+
+    #[test]
+    fn explicit_mode_passthrough() {
+        for m in [CtrlCMode::Byte, CtrlCMode::Event, CtrlCMode::Both] {
+            assert_eq!(resolve_effective_mode(m, "ash.exe"), m, "显式模式不判 shell");
+        }
+    }
+
+    #[test]
+    fn parse_accepts_four_modes() {
+        assert_eq!(parse_ctrl_c_mode("auto"), Some(CtrlCMode::Auto));
+        assert_eq!(parse_ctrl_c_mode("byte"), Some(CtrlCMode::Byte));
+        assert_eq!(parse_ctrl_c_mode("event"), Some(CtrlCMode::Event));
+        assert_eq!(parse_ctrl_c_mode("both"), Some(CtrlCMode::Both));
+        assert_eq!(parse_ctrl_c_mode("AUTO"), Some(CtrlCMode::Auto), "大小写不敏感");
+        assert_eq!(parse_ctrl_c_mode("nope"), None);
     }
 }
