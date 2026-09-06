@@ -22,18 +22,21 @@ use iced::advanced::{
 };
 use iced::{
     Color, Element, Font, Length, Point, Rectangle, Size, Theme,
-    alignment, mouse,
+    alignment, keyboard, mouse,
 };
 use iced::advanced::input_method::{InputMethod, Purpose};
 use iced::advanced::input_method;
 
 use autoterm_core::{
-    Color as TermColor, Damage, NamedColor, SelectionRange, SelectionType, Side, StyledChar,
+    Color as TermColor, CursorShape, Damage, NamedColor, SelectionRange, SelectionType, Side,
+    StyledChar,
 };
 
 use crate::metrics::GridMetrics;
 use crate::palette::to_iced_color;
-use crate::{DEFAULT_BG, DEFAULT_FG, Message, SelectMsg};
+use crate::{
+    DEFAULT_BG, DEFAULT_FG, MenuState, Message, SelectMsg, Vertical, edge_band,
+};
 
 type Para = <iced::Renderer as iced::advanced::text::Renderer>::Paragraph;
 
@@ -100,26 +103,80 @@ pub struct TermGrid {
     pub scroll_offset: usize,
     /// 光标(视口相对;Hidden=None)→ 反色块。
     pub cursor: Option<(usize, usize)>,
+    /// 光标形状(DECSCUSR;Underline=格底 2px、Beam=格左 2px、
+    /// 其余=反色块;005 T7)。
+    pub cursor_shape: CursorShape,
+    /// 光标当前帧是否可见(005 T8;闪烁相位 off 帧跳过绘制)。
+    pub cursor_visible: bool,
     /// 选中区间(绝对网格行;配合 `scroll_offset` 回视口)→ 高亮
     /// overlay quad(文本层之下,每帧 emit,不进行缓存 digest)。
     pub selection: Option<SelectionRange>,
     /// IME 挂起预编辑(不写 PTY;over-the-spot 覆盖层由 runtime 绘制,
     /// PLAN-004 T8)。
     pub preedit: Option<String>,
+    /// 右键菜单浮层(005 T5):Some=draw 最顶层画;命中检测纯函数。
+    pub menu: Option<MenuState>,
+    /// 选中高亮色(005 T6;默认 e8e8e8@25%,可 --selection-color)。
+    pub selection_color: Color,
+}
+
+/// 菜单几何(widget 本地像素;draw 与命中检测同源,纯函数可单测)。
+const MENU_W: f32 = 88.0;
+const MENU_ITEM_H: f32 = 26.0;
+/// 菜单项标签(复制/粘贴/全选;待澄清#4 采纳默认三项)。
+const MENU_LABELS: [&str; 3] = ["复制", "粘贴", "全选"];
+/// 菜单浮层底色(像素取证判别色)。
+const MENU_BG: Color = Color::from_rgb8(0x2a, 0x2e, 0x34);
+
+/// 菜单矩形(widget 本地坐标)。
+fn menu_rect(at: (f32, f32)) -> Rectangle {
+    Rectangle::new(
+        Point::new(at.0, at.1),
+        Size::new(MENU_W, MENU_ITEM_H * MENU_LABELS.len() as f32),
+    )
+}
+
+/// 菜单命中检测(纯函数):返回命中的项索引;矩形外 None。
+/// (y 须先作下界判断——负差值 `as usize` 饱和为 0,会误命中首项)
+fn menu_item_at(at: (f32, f32), pos: Point) -> Option<usize> {
+    let r = menu_rect(at);
+    if pos.x < r.x || pos.x >= r.x + r.width || pos.y < r.y {
+        return None;
+    }
+    let idx = ((pos.y - r.y) / MENU_ITEM_H) as usize;
+    (idx < MENU_LABELS.len()).then_some(idx)
 }
 
 /// 鼠标交互持久状态(经 `Tree` 跨帧存活;PLAN-004 T2)。
-/// 拖选进行中标志 + 多击计数(500ms 内同格 2=Semantic、3=Lines)。
+/// 拖选进行中标志 + 多击计数(500ms 内同格 2=Semantic、3=Lines)
+/// + 键盘修饰(ModifiersChanged 驱动,Alt+拖选块选用;005 T2)。
 #[derive(Debug, Default)]
 pub struct GridInteraction {
     dragging: bool,
     last_click_at: Option<Instant>,
     last_count: u8,
     last_cell: Option<(usize, usize)>,
+    mods: keyboard::Modifiers,
+    /// 菜单悬停项(draw 反色;菜单开着时随 CursorMoved 刷新)。
+    hover_item: Option<usize>,
 }
 
 /// 多击判定窗口。
 const MULTI_CLICK_WINDOW: Duration = Duration::from_millis(500);
+
+/// 按下起始选中类型(纯函数,可单测;005 T2):Alt 按下恒为 Block
+/// (块选,Windows Terminal 惯例);否则多击计数 2=Semantic、
+/// 3=Lines、1=Simple。
+fn begin_selection_type(count: u8, mods: keyboard::Modifiers) -> SelectionType {
+    if mods.alt() {
+        return SelectionType::Block;
+    }
+    match count {
+        2 => SelectionType::Semantic,
+        3 => SelectionType::Lines,
+        _ => SelectionType::Simple,
+    }
+}
 
 impl Widget<Message, Theme, iced::Renderer> for TermGrid {
     fn size(&self) -> Size<Length> {
@@ -164,19 +221,41 @@ impl Widget<Message, Theme, iced::Renderer> for TermGrid {
         // preedit 覆盖层仅内容变才重建)
         self.request_ime(shell, bounds, self.preedit.as_deref());
         match event {
+            iced::Event::Keyboard(keyboard::Event::ModifiersChanged(mods)) => {
+                state.mods = *mods;
+            }
             iced::Event::Mouse(mouse::Event::ButtonPressed(mouse::Button::Left)) => {
                 let Some(pos) = cursor.position_over(bounds) else { return };
+                // 菜单开着时左键归菜单:命中项→动作,未命中→关闭;
+                // 一律吞掉(不得触发选中 Begin,005 T5)
+                if let Some(menu) = self.menu {
+                    let local = Point::new(pos.x - bounds.x, pos.y - bounds.y);
+                    match menu_item_at(menu.at, local) {
+                        Some(idx) => {
+                            let item = [
+                                crate::MenuItem::Copy,
+                                crate::MenuItem::Paste,
+                                crate::MenuItem::SelectAll,
+                            ][idx];
+                            shell.publish(Message::MenuAction(item));
+                        }
+                        None => shell.publish(Message::ContextMenu(None)),
+                    }
+                    state.hover_item = None;
+                    shell.capture_event();
+                    return;
+                }
                 let (cell, side) = self.pixel_to_cell(pos, bounds);
                 let now = Instant::now();
-                let multi = state.last_click_at.is_some_and(|t| now - t <= MULTI_CLICK_WINDOW)
+                // Alt 按下恒为 Block(005 T2):不参与多击计数(计数视同
+                // 1,序列重启),与 1/2/3 击语义正交。
+                let alt = state.mods.alt();
+                let multi = !alt
+                    && state.last_click_at.is_some_and(|t| now - t <= MULTI_CLICK_WINDOW)
                     && state.last_cell == Some(cell)
                     && state.last_count < 3;
                 let count = if multi { state.last_count + 1 } else { 1 };
-                let ty = match count {
-                    2 => SelectionType::Semantic,
-                    3 => SelectionType::Lines,
-                    _ => SelectionType::Simple,
-                };
+                let ty = begin_selection_type(count, state.mods);
                 state.last_click_at = Some(now);
                 state.last_count = count;
                 state.last_cell = Some(cell);
@@ -202,13 +281,28 @@ impl Widget<Message, Theme, iced::Renderer> for TermGrid {
                 _ => {}
             },
             iced::Event::Mouse(mouse::Event::CursorMoved { .. }) => {
+                // 菜单开着时移动只刷新悬停项(不拖选;005 T5)
+                if let Some(menu) = self.menu {
+                    state.hover_item = cursor
+                        .position_over(bounds)
+                        .map(|p| Point::new(p.x - bounds.x, p.y - bounds.y))
+                        .and_then(|local| menu_item_at(menu.at, local));
+                    return;
+                }
                 if !state.dragging {
                     return;
                 }
-                // 拖选越界不动视野(自动滚动非目标),Extend clamp 到边缘格
+                // 拖选越界不动视野,Extend clamp 到边缘格;指针越过
+                // 上/下边缘时附 at_edge(自动滚动信号,005 T4)
                 let Some(pos) = cursor.position() else { return };
                 let (cell, side) = self.pixel_to_cell(pos, bounds);
-                shell.publish(Message::Select(SelectMsg::Extend { cell, side }));
+                let at_edge =
+                    edge_band(pos.y, bounds.y, bounds.height);
+                shell.publish(Message::Select(SelectMsg::Extend {
+                    cell,
+                    side,
+                    at_edge,
+                }));
                 shell.capture_event();
             }
             iced::Event::Mouse(mouse::Event::ButtonReleased(mouse::Button::Left)) => {
@@ -223,7 +317,24 @@ impl Widget<Message, Theme, iced::Renderer> for TermGrid {
                 if !cursor.is_over(bounds) {
                     return;
                 }
-                shell.publish(Message::Paste);
+                // 右键 = 开上下文菜单(005 T5;原"直接粘贴"由菜单项
+                // 承担)。拖选进行中先收尾(菜单与拖选互斥)。
+                if state.dragging {
+                    state.dragging = false;
+                    shell.publish(Message::Select(SelectMsg::Finish));
+                }
+                let pos = cursor.position().unwrap_or(bounds.position());
+                // 菜单锚点 clamp 进视口(右/下缘不越界)
+                let at = (
+                    (pos.x - bounds.x).clamp(0.0, (bounds.width - MENU_W).max(0.0)),
+                    (pos.y - bounds.y)
+                        .clamp(0.0, (bounds.height - menu_rect((0.0, 0.0)).height).max(0.0)),
+                );
+                state.hover_item = menu_item_at(at, Point::new(
+                    pos.x - bounds.x,
+                    pos.y - bounds.y,
+                ));
+                shell.publish(Message::ContextMenu(Some(at)));
                 shell.capture_event();
             }
             _ => {}
@@ -247,7 +358,7 @@ impl Widget<Message, Theme, iced::Renderer> for TermGrid {
 
     fn draw(
         &self,
-        _tree: &Tree,
+        tree: &Tree,
         renderer: &mut iced::Renderer,
         _theme: &Theme,
         _style: &renderer::Style,
@@ -312,17 +423,24 @@ impl Widget<Message, Theme, iced::Renderer> for TermGrid {
             let last_visible = self.lines.len() as i32 - 1;
             if end_row >= 0 && start_row <= last_visible {
                 let cols = self.lines.first().map_or(0, |l| l.len());
-                let highlight = Color { a: 0.25, ..DEFAULT_FG };
+                let highlight = self.selection_color;
                 for row in start_row.max(0)..=end_row.min(last_visible) {
-                    let col_begin = if row == start_row {
-                        sel.start.column.0
+                    // 块选:每行同一列带(矩形对齐);行选:首末行截段、
+                    // 中间行整行(005 T2)
+                    let (col_begin, col_last) = if sel.is_block {
+                        (sel.start.column.0, sel.end.column.0)
                     } else {
-                        0
-                    };
-                    let col_last = if row == end_row {
-                        sel.end.column.0
-                    } else {
-                        cols.saturating_sub(1)
+                        let begin = if row == start_row {
+                            sel.start.column.0
+                        } else {
+                            0
+                        };
+                        let last = if row == end_row {
+                            sel.end.column.0
+                        } else {
+                            cols.saturating_sub(1)
+                        };
+                        (begin, last)
                     };
                     renderer.fill_quad(
                         renderer::Quad {
@@ -403,6 +521,7 @@ impl Widget<Message, Theme, iced::Renderer> for TermGrid {
         );
         self.draw_cursor(renderer, bounds, cell_px, line_px, font_px, *viewport);
         self.draw_preedit(renderer, bounds, cell_px, line_px, font_px, *viewport);
+        self.draw_menu(tree, renderer, bounds, line_px, font_px, *viewport);
     }
 }
 
@@ -530,6 +649,60 @@ impl TermGrid {
         PREEDIT_DRAWN.store(drawn, Ordering::Relaxed);
     }
 
+    /// 右键菜单浮层(005 T5,draw 最顶层):底 quad + 边框 + 三项
+    /// 文本(复制/粘贴/全选)+ hover 反色;悬停项取自 Tree 态。
+    fn draw_menu(
+        &self,
+        tree: &Tree,
+        renderer: &mut iced::Renderer,
+        bounds: Rectangle,
+        line_px: f32,
+        font_px: f32,
+        viewport: Rectangle,
+    ) {
+        let Some(menu) = self.menu else { return };
+        let hover = tree.state.downcast_ref::<GridInteraction>().hover_item;
+        let rect = menu_rect(menu.at);
+        let rect = Rectangle::new(
+            Point::new(bounds.x + rect.x, bounds.y + rect.y),
+            rect.size(),
+        );
+        renderer.fill_quad(
+            renderer::Quad {
+                bounds: rect,
+                border: iced::Border {
+                    color: Color { a: 0.4, ..DEFAULT_FG },
+                    width: 1.0,
+                    radius: 0.0.into(),
+                },
+                ..Default::default()
+            },
+            MENU_BG,
+        );
+        for (i, label) in MENU_LABELS.iter().enumerate() {
+            let item_y = rect.y + i as f32 * MENU_ITEM_H;
+            let hovered = hover == Some(i);
+            if hovered {
+                renderer.fill_quad(
+                    renderer::Quad {
+                        bounds: Rectangle::new(
+                            Point::new(rect.x + 1.0, item_y + 1.0),
+                            Size::new(MENU_W - 2.0, MENU_ITEM_H - 2.0),
+                        ),
+                        ..Default::default()
+                    },
+                    DEFAULT_FG,
+                );
+            }
+            renderer.fill_text(
+                menu_text((*label).to_string(), MENU_W - 12.0, line_px, font_px),
+                Point::new(rect.x + 8.0, item_y + (MENU_ITEM_H - line_px) / 2.0),
+                if hovered { DEFAULT_BG } else { DEFAULT_FG },
+                viewport,
+            );
+        }
+    }
+
     fn draw_cursor(
         &self,
         renderer: &mut iced::Renderer,
@@ -538,39 +711,73 @@ impl TermGrid {
         line_px: f32,
         font_px: f32,
         viewport: Rectangle,
-    ) {
-        #[cfg(feature = "dev-tools")]
+    ) {        #[cfg(feature = "dev-tools")]
         let mut cursor_state = u64::MAX;
-        if let Some((row, col)) = self.cursor {
+        // 闪烁相位 off 帧:跳过光标绘制(005 T8);CURSOR_DRAWN 记
+        // u64::MAX(=未画),取证即"相位灭"
+        if self.cursor_visible {
+            if let Some((row, col)) = self.cursor {
             if let Some(line) = self.lines.get(row) {
                 if let Some(cell) = line.get(col) {
-                    let block_bg = to_iced_color(cell.fg, true);
-                    let glyph_fg = to_iced_color(cell.bg, false);
-                    let rect = Rectangle::new(
-                        Point::new(
-                            bounds.x + col as f32 * cell_px,
-                            bounds.y + row as f32 * line_px,
-                        ),
-                        Size::new(cell_px, line_px),
-                    );
-                    renderer.fill_quad(
-                        renderer::Quad { bounds: rect, ..Default::default() },
-                        block_bg,
-                    );
-                    let mut buf = [0u8; 4];
-                    let content = cell.c.encode_utf8(&mut buf).to_string();
-                    renderer.fill_text(
-                        plain_text(content, cell_px, line_px, font_px),
-                        rect.position(),
-                        glyph_fg,
-                        viewport,
-                    );
+                    let x = bounds.x + col as f32 * cell_px;
+                    let y = bounds.y + row as f32 * line_px;
+                    let fg = to_iced_color(cell.fg, true);
+                    match self.cursor_shape {
+                        // Underline:格底 2px 亮条(不反色字形,005 T7)
+                        CursorShape::Underline => {
+                            renderer.fill_quad(
+                                renderer::Quad {
+                                    bounds: Rectangle::new(
+                                        Point::new(x, y + line_px - 3.0),
+                                        Size::new(cell_px, 2.0),
+                                    ),
+                                    ..Default::default()
+                                },
+                                fg,
+                            );
+                        }
+                        // Beam:格左缘 2px 亮条(不反色字形,005 T7)
+                        CursorShape::Beam => {
+                            renderer.fill_quad(
+                                renderer::Quad {
+                                    bounds: Rectangle::new(
+                                        Point::new(x, y),
+                                        Size::new(2.0, line_px),
+                                    ),
+                                    ..Default::default()
+                                },
+                                fg,
+                            );
+                        }
+                        // Block/HollowBlock/Hidden:现状反色块(Hidden 时
+                        // cursor() 已为 None,不会到这里)
+                        _ => {
+                            let glyph_fg = to_iced_color(cell.bg, false);
+                            let rect = Rectangle::new(
+                                Point::new(x, y),
+                                Size::new(cell_px, line_px),
+                            );
+                            renderer.fill_quad(
+                                renderer::Quad { bounds: rect, ..Default::default() },
+                                fg,
+                            );
+                            let mut buf = [0u8; 4];
+                            let content = cell.c.encode_utf8(&mut buf).to_string();
+                            renderer.fill_text(
+                                plain_text(content, cell_px, line_px, font_px),
+                                rect.position(),
+                                glyph_fg,
+                                viewport,
+                            );
+                        }
+                    }
                     #[cfg(feature = "dev-tools")]
                     {
                         cursor_state = (row as u64) * 8192 + col as u64;
                     }
                 }
             }
+        }
         }
         #[cfg(feature = "dev-tools")]
         CURSOR_DRAWN.store(cursor_state, Ordering::Relaxed);
@@ -584,12 +791,39 @@ fn plain_text(
     line_px: f32,
     font_px: f32,
 ) -> Text<String, Font> {
+    text_with_font(content, width, line_px, font_px, Font::MONOSPACE)
+}
+
+/// 菜单标签文本:MONOSPACE(Consolas)无 CJK 字形(004 preedit
+/// 取证同款豆腐块),中文标签走系统界面字体(005 T5)。
+fn menu_text(
+    content: String,
+    width: f32,
+    line_px: f32,
+    font_px: f32,
+) -> Text<String, Font> {
+    text_with_font(
+        content,
+        width,
+        line_px,
+        font_px,
+        Font::with_name("Microsoft YaHei UI"),
+    )
+}
+
+fn text_with_font(
+    content: String,
+    width: f32,
+    line_px: f32,
+    font_px: f32,
+    font: Font,
+) -> Text<String, Font> {
     Text {
         content,
         bounds: Size::new(width, line_px),
         size: font_px.into(),
         line_height: LineHeight::Absolute(line_px.into()),
-        font: Font::MONOSPACE,
+        font,
         align_x: iced::Alignment::Start.into(),
         align_y: alignment::Vertical::Top,
         shaping: Shaping::Basic,
@@ -672,5 +906,122 @@ fn term_color_key(c: TermColor) -> u64 {
 impl<'a> From<TermGrid> for Element<'a, Message> {
     fn from(grid: TermGrid) -> Self {
         Element::new(grid)
+    }
+}
+
+#[cfg(test)]
+mod edge_band_tests {
+    use super::edge_band;
+    use crate::Vertical;
+
+    #[test]
+    fn inside_viewport_has_no_edge() {
+        assert_eq!(edge_band(100.0, 0.0, 650.0), None);
+        assert_eq!(edge_band(0.0, 0.0, 650.0), None, "上缘线上不算越界");
+        assert_eq!(edge_band(650.0, 0.0, 650.0), None, "下缘线上不算越界");
+    }
+
+    #[test]
+    fn beyond_edges_reports_direction() {
+        assert_eq!(edge_band(-1.0, 0.0, 650.0), Some(Vertical::Up));
+        assert_eq!(edge_band(651.0, 0.0, 650.0), Some(Vertical::Down));
+    }
+}
+
+#[cfg(test)]
+mod menu_item_at_tests {
+    use super::{MENU_ITEM_H, menu_item_at};
+    use iced::Point;
+
+    const AT: (f32, f32) = (100.0, 50.0);
+
+    #[test]
+    fn hits_map_to_item_index() {
+        // 第 1 项中点 → 复制(idx 0)
+        assert_eq!(
+            menu_item_at(AT, Point::new(140.0, AT.1 + MENU_ITEM_H / 2.0)),
+            Some(0)
+        );
+        // 第 2 项中点 → 粘贴(idx 1)
+        assert_eq!(
+            menu_item_at(
+                AT,
+                Point::new(140.0, AT.1 + MENU_ITEM_H * 1.5)
+            ),
+            Some(1)
+        );
+        // 第 3 项中点 → 全选(idx 2)
+        assert_eq!(
+            menu_item_at(
+                AT,
+                Point::new(140.0, AT.1 + MENU_ITEM_H * 2.5)
+            ),
+            Some(2)
+        );
+    }
+
+    #[test]
+    fn outside_rect_and_below_items_miss() {
+        // 矩形外(左/右/下)
+        assert_eq!(menu_item_at(AT, Point::new(99.0, 60.0)), None);
+        assert_eq!(menu_item_at(AT, Point::new(189.0, 60.0)), None);
+        assert_eq!(menu_item_at(AT, Point::new(140.0, 49.0)), None);
+        // 右缘之下(y 越过三项总高)
+        assert_eq!(
+            menu_item_at(AT, Point::new(140.0, AT.1 + MENU_ITEM_H * 3.0 + 1.0)),
+            None
+        );
+    }
+}
+
+#[cfg(test)]
+mod begin_selection_type_tests {
+    use super::begin_selection_type;
+    use autoterm_core::SelectionType;
+    use iced::keyboard::Modifiers;
+
+    #[test]
+    fn alt_forces_block_and_restarts_click_count() {
+        // Alt 恒 Block:单/双/三击计数一概不参与
+        assert_eq!(
+            begin_selection_type(1, Modifiers::ALT),
+            SelectionType::Block
+        );
+        assert_eq!(
+            begin_selection_type(2, Modifiers::ALT),
+            SelectionType::Block,
+            "Alt 按下时双击计数不得翻成 Semantic"
+        );
+        assert_eq!(
+            begin_selection_type(3, Modifiers::ALT.union(Modifiers::SHIFT)),
+            SelectionType::Block,
+            "Alt+Shift 仍为 Block"
+        );
+    }
+
+    #[test]
+    fn plain_clicks_map_multi_count() {
+        assert_eq!(
+            begin_selection_type(1, Modifiers::empty()),
+            SelectionType::Simple
+        );
+        assert_eq!(
+            begin_selection_type(2, Modifiers::empty()),
+            SelectionType::Semantic
+        );
+        assert_eq!(
+            begin_selection_type(3, Modifiers::empty()),
+            SelectionType::Lines
+        );
+        assert_eq!(
+            begin_selection_type(4, Modifiers::empty()),
+            SelectionType::Simple,
+            "计数溢出回 Simple(与旧 match _ 分支一致)"
+        );
+        // 非 Alt 修饰(Shift/Ctrl)不影响多击映射
+        assert_eq!(
+            begin_selection_type(2, Modifiers::SHIFT),
+            SelectionType::Semantic
+        );
     }
 }

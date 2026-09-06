@@ -41,28 +41,30 @@ cargo test --workspace                            # 全量回归
 # 取证钩子(--dev-autotype/--dev-select 等)需 --features dev-tools 构建
 ```
 
-## 交互(Phase 3,PLAN-004)
+## 交互(Phase 3/4,PLAN-004/005)
 
 | 操作 | 行为 |
 | --- | --- |
-| 左键拖选 | 字符级选中,松开即复制(copy-on-select,默认开) |
+| 左键拖选 | 字符级选中,松开即复制(copy-on-select,默认开);拖到视口上/下边缘自动滚动(松开或离开边缘即停) |
+| Alt+左键拖选 | 块选:矩形列带选中,复制按行截断(与多击计数正交) |
 | 双击 / 三击 | 词选(semantic)/ 整行选(lines),松开即复制 |
 | Ctrl+Shift+C / Ctrl+Shift+V | 显式复制 / 粘贴(裸 Ctrl+C 仍走 PTY 中断,不劫持) |
-| 右键 | 粘贴 |
+| 右键 | 上下文菜单(复制 / 粘贴 / 全选);ESC 或菜单外点击关闭 |
 | 滚轮 / PgUp / PgDn | 回滚浏览(键入自动回正,右上 `↑N` 偏移指示) |
 | IME | 预编辑内联显示于光标处(带下划线,不上屏);提交/上屏才写入 PTY |
+| 光标 | 形状随 shell DECSCUSR(Block/Underline/Beam);聚焦时 500ms 闪烁;失焦/IME 组合中/菜单开着时常亮 |
 
-选中高亮随内容滚动保持锚定(绝对网格行);拖选暂不自动滚动
-(Phase 4 候选)。细节与证据:`docs/designs/001-phase1-architecture.md`
-(000→004 决策链)。
+选中高亮随内容滚动保持锚定(绝对网格行);高亮色可配
+`--selection-color RRGGBB[AA]`(默认 `e8e8e8@25%`,非法值回退默认)。
+细节与证据:`docs/designs/001-phase1-architecture.md`(000→005 决策链)。
 
 架构与设计决策:`docs/designs/001-phase1-architecture.md`;已知债务与
-Phase 4 方向:`DEBTS.md`。
+后续方向:`DEBTS.md`。
 
-## 下一步(Phase 4+)
+## 下一步
 
-- 拖选到边缘自动滚动、块选、右键上下文菜单、选中色配置;
-- Ctrl+C 稳定版复测(待环境,见 DEBTS #7);光标形状/闪烁;
-- Unix 基座适配;Auto 化(DEBTS 候选 #8——前提调查已毕:TermGrid 须
-  以 auto-lang 内原生组件落地,rust-mode 示例存在存量编译问题,见
-  `docs/designs/002-autoize-feasibility.md`)。
+- Ctrl+C 稳定版复测(待环境,见 DEBTS #7);
+- Unix 基座适配;
+- Auto 化(DEBTS #8,用户裁定必须项):Rust 版功能已齐全,#7 调查
+  已关账(TermGrid 须以 auto-lang 内原生组件落地,rust-mode 示例
+  存在存量编译问题,见 `docs/designs/002-autoize-feasibility.md`)。

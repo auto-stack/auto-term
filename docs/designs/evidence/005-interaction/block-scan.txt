@@ -1,0 +1,18 @@
+window_px: 2026x1371  scale=2.026
+highlight_rows: 54
+band: y 98-106 height=9 x 52-142 width_px=91
+band_cells: 4.79 (cell_w=9.375 x scale=2.026)
+band_x_spread: start=0 end=0 (tol 3)
+block_aligned: True
+band: y 129-146 height=18 x 52-142 width_px=91
+band_cells: 4.79 (cell_w=9.375 x scale=2.026)
+band_x_spread: start=0 end=0 (tol 3)
+block_aligned: True
+band: y 169-186 height=18 x 52-142 width_px=91
+band_cells: 4.79 (cell_w=9.375 x scale=2.026)
+band_x_spread: start=0 end=0 (tol 3)
+block_aligned: True
+band: y 209-217 height=9 x 52-142 width_px=91
+band_cells: 4.79 (cell_w=9.375 x scale=2.026)
+band_x_spread: start=0 end=0 (tol 3)
+block_aligned: True

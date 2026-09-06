@@ -21,7 +21,7 @@ use std::hash::{Hash, Hasher};
 
 use autoterm_core::PtySession;
 use autoterm_core::{Damage, StyledChar};
-pub use autoterm_core::{SelectionRange, SelectionType, Side};
+pub use autoterm_core::{CursorShape, SelectionRange, SelectionType, Side};
 pub use widget::TermGrid;
 use metrics::GridMetrics;
 
@@ -29,6 +29,8 @@ use metrics::GridMetrics;
 #[derive(Clone, Debug)]
 pub struct AppConfig {
     pub shell: String,
+    /// 选中高亮色(005 T6;默认 e8e8e8@25%)。
+    pub selection_color: Color,
     /// dev 取证:自动键入(可多段,"ms:text" 语法同 spike)。
     #[cfg(feature = "dev-tools")]
     pub dev_autotype: Vec<String>,
@@ -53,6 +55,11 @@ pub struct AppConfig {
     /// dev 取证:退出时转储目标文件。
     #[cfg(feature = "dev-tools")]
     pub dev_dump: Option<PathBuf>,
+    /// dev 取证:到时注入右键菜单事件(可多段:"<ms>:<x>:<y>"=在
+    /// widget 本地像素开菜单,"<ms>:close"=关菜单;与真实右键/外点
+    /// 同一 ContextMenu 消息路径;菜单浮层像素取证用,005 T5)。
+    #[cfg(feature = "dev-tools")]
+    pub dev_menu: Vec<String>,
 }
 
 #[derive(Debug, Clone)]
@@ -64,12 +71,20 @@ pub enum Message {
     WindowId(Option<iced::window::Id>),
     /// 滚轮回滚(正=上翻历史,同 Scroll::Delta 约定;行为行)。
     Scrolled(i32),
+    /// 拖选自动滚动的节拍(005 T4):仅 drag_scroll 挂起时存在;
+    /// 方向行数取自 App 状态(订阅 map 禁捕获,经状态中转)。
+    DragScrollTick,
     /// 窗口关闭:同步杀子进程再退出(T8)。
     Closed(iced::window::Id),
     /// 选中消息族(PLAN-004 T2;widget 鼠标事件或 dev 注入)。
     Select(SelectMsg),
     /// 粘贴(Ctrl+Shift+V / 右键;PLAN-004 T4)。
     Paste,
+    /// 右键菜单开合(005 T5):Some(widget 本地像素锚点)=打开,
+    /// None=关闭。
+    ContextMenu(Option<(f32, f32)>),
+    /// 右键菜单项动作(005 T5;复制/粘贴走 004 同路径)。
+    MenuAction(MenuItem),
     /// 剪贴板读取完成(粘贴流第二拍;PLAN-004 T4)。
     Pasted(String),
     /// IME 预编辑变化(挂起显示,不写 PTY;PLAN-004 T8)。
@@ -79,6 +94,10 @@ pub enum Message {
     /// dev 钩子的粗定时(仅 dev-tools 构建存在;常态不存在)。
     #[cfg(feature = "dev-tools")]
     DevTick,
+    /// 窗口聚焦变化(005 T8;true=聚焦)。
+    Focused(bool),
+    /// 光标闪烁相位拍(005 T8):500ms 取反;仅聚焦+可见时挂。
+    BlinkTick,
     /// 显式空操作:订阅里非键盘/非滚轮事件的归宿(替代 PtyBytes
     /// 空唤醒复用,002 复审瑕疵清偿)。
     NoOp,
@@ -94,13 +113,91 @@ pub enum SelectMsg {
         cell: (usize, usize),
         side: Side,
     },
-    /// 拖动终点(widget 已 clamp 到边缘格)。
+    /// 拖动终点(widget 已 clamp 到边缘格);`at_edge` = 指针停在
+    /// 视口上/下边缘带(拖选自动滚动信号,005 T4)。
     Extend {
         cell: (usize, usize),
         side: Side,
+        at_edge: Option<Vertical>,
     },
     /// 释放收尾(copy-on-select 在此触发;空选清除)。
     Finish,
+}
+
+/// 拖选越界方向(视口上/下边缘带;005 T4)。
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum Vertical {
+    Up,
+    Down,
+}
+
+/// 右键菜单项(005 T5)。动作映射:Copy=copy_selection(与
+/// Ctrl+Shift+C 同函数)、Paste=paste_from_clipboard(与快捷键
+/// 同路径)、SelectAll=视口 Lines 全选。
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum MenuItem {
+    Copy,
+    Paste,
+    SelectAll,
+}
+
+/// 右键菜单状态(005 T5):`at` = 菜单左上角(widget 本地像素);
+/// 菜单几何与命中检测在 widget(与 pixel_to_cell 同域)。
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct MenuState {
+    pub at: (f32, f32),
+}
+
+/// 指针 y 是否落在视口上/下边缘带(纯函数,可单测):越过上缘
+/// 即 Up、越过下缘即 Down;视口内为 None(widget 已把格 clamp 到
+/// 边缘行,这里只补"方向"信号)。
+fn edge_band(pos_y: f32, bounds_y: f32, bounds_height: f32) -> Option<Vertical> {
+    if pos_y < bounds_y {
+        Some(Vertical::Up)
+    } else if pos_y > bounds_y + bounds_height {
+        Some(Vertical::Down)
+    } else {
+        None
+    }
+}
+
+/// 自动滚动步长(行/拍,50ms;待澄清#5 采纳默认:距缘不分档)。
+pub const AUTO_SCROLL_ROWS: i32 = 2;
+
+/// 选中高亮默认色(005 T6):e8e8e8@25%——004 硬编码值移入配置,
+/// 默认视觉不变。
+pub const DEFAULT_SELECTION_COLOR: Color = Color {
+    r: 232.0 / 255.0,
+    g: 232.0 / 255.0,
+    b: 232.0 / 255.0,
+    a: 0.25,
+};
+
+/// 十六进制色解析(纯函数,可单测;005 T6):`RRGGBB[AA]`,可带
+/// `#` 前缀。6 位 = RGB(α 取默认 0.25,维持现视觉);8 位末两位
+/// = α/255。非法(长度/非十六进制)返回 None,调用方回退默认色。
+pub fn parse_hex_color(s: &str) -> Option<Color> {
+    let hex = s.strip_prefix('#').unwrap_or(s);
+    if hex.is_empty() || !hex.chars().all(|c| c.is_ascii_hexdigit()) {
+        return None;
+    }
+    let pair = |i: usize| u8::from_str_radix(&hex[i..i + 2], 16).ok();
+    let chan = |i: usize| Some(f32::from(pair(i)?) / 255.0);
+    match hex.len() {
+        6 => Some(Color {
+            r: chan(0)?,
+            g: chan(2)?,
+            b: chan(4)?,
+            a: DEFAULT_SELECTION_COLOR.a,
+        }),
+        8 => Some(Color {
+            r: chan(0)?,
+            g: chan(2)?,
+            b: chan(4)?,
+            a: chan(6)?,
+        }),
+        _ => None,
+    }
 }
 
 /// 订阅数据源:唤醒接收端的"一次性槽"(run_with 需 Hash,恒等即可)。
@@ -111,6 +208,16 @@ impl Hash for NotifySlot {
     fn hash<H: Hasher>(&self, state: &mut H) {
         0u64.hash(state);
     }
+}
+
+/// 取证(T8):闪烁相位翻转计数(仅 dev-tools)。
+#[cfg(feature = "dev-tools")]
+static BLINK_TOGGLES: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(0);
+
+/// 读闪烁相位翻转计数(None=非 dev 构建;005 T8)。
+#[cfg(feature = "dev-tools")]
+pub fn blink_toggles() -> u64 {
+    BLINK_TOGGLES.load(std::sync::atomic::Ordering::Relaxed)
 }
 
 pub struct App {
@@ -133,8 +240,21 @@ pub struct App {
     pub snapshot_rebuilds: u64,
     /// 光标(视口相对;Hidden=None)。随快照一并刷新。
     pub cursor: Option<(usize, usize)>,
+    /// 光标形状(DECSCUSR 透传,005 T7;渲染分形用)。
+    pub cursor_shape: CursorShape,
+    /// 窗口聚焦(005 T8;闪烁门控之一)。初值 false:收到 winit
+    /// Focused(true) 才挂闪烁(后台起窗不闪,聚焦即闪)。
+    pub focused: bool,
+    /// 闪烁相位(005 T8):true=光标亮;门控不满足时常亮。
+    pub cursor_blink_on: bool,
     /// 当前选中区间(绝对坐标;高亮渲染用,随交互/内容变化刷新)。
     pub selection_range: Option<SelectionRange>,
+    /// 拖选自动滚动(005 T4):Some(每拍行数,上缘正/下缘负)时挂
+    /// 50ms 条件订阅;Finish/离缘清除(空闲零唤醒的守门员)。
+    pub drag_scroll: Option<i32>,
+    /// 右键菜单(005 T5):Some=开着(view 传 TermGrid 画浮层;
+    /// ESC/外点关闭;开着时暂停自动滚动)。
+    pub menu: Option<MenuState>,
     /// IME 挂起预编辑(空=无;不写 PTY,over-the-spot 显示)。
     pub preedit: Option<String>,
 
@@ -142,21 +262,30 @@ pub struct App {
     queued_input: Vec<(Instant, Vec<u8>)>,
     #[cfg(feature = "dev-tools")]
     queued_select: Option<(Instant, DevSelectSpec)>,
+    /// 边缘保持注入已 Begin(防重复;005 T4)。
+    #[cfg(feature = "dev-tools")]
+    select_edge_holding: bool,
     #[cfg(feature = "dev-tools")]
     queued_paste: Option<(Instant, String)>,
     #[cfg(feature = "dev-tools")]
     queued_preedit: Option<(Instant, String)>,
+    /// dev-menu 注入队列(None 项=关菜单;005 T5)。
+    #[cfg(feature = "dev-tools")]
+    queued_menu: Vec<(Instant, Option<(f32, f32)>)>,
     #[cfg(feature = "dev-tools")]
     exit_at: Option<Instant>,
 }
 
 /// dev-select 注入规格(视口相对格;经 handle_select 走真实消息路径)。
+/// `edge` = 边缘保持模式(005 T4 取证):到点后每拍补发带 at_edge
+/// 的 Extend,驱动自动滚动(无 Finish,转储时选区仍在)。
 #[cfg(feature = "dev-tools")]
 #[derive(Debug, Clone, Copy)]
 struct DevSelectSpec {
     ty: SelectionType,
     start: (usize, usize),
     end: (usize, usize),
+    edge: Option<Vertical>,
 }
 
 impl App {
@@ -188,6 +317,12 @@ impl App {
             .as_deref()
             .and_then(|s| parse_dev_paste(s, now));
         #[cfg(feature = "dev-tools")]
+        let queued_menu: Vec<_> = config
+            .dev_menu
+            .iter()
+            .filter_map(|s| parse_dev_menu(s, now))
+            .collect();
+        #[cfg(feature = "dev-tools")]
         let exit_at = (config.dev_exit_after > 0)
             .then(|| now + Duration::from_secs(config.dev_exit_after));
         Ok(Self {
@@ -206,16 +341,25 @@ impl App {
             snapshot: Vec::new(),
             snapshot_rebuilds: 0,
             cursor: None,
+            cursor_shape: CursorShape::Block,
+            focused: false,
+            cursor_blink_on: true,
             selection_range: None,
+            drag_scroll: None,
+            menu: None,
             preedit: None,
             #[cfg(feature = "dev-tools")]
             queued_input,
             #[cfg(feature = "dev-tools")]
             queued_select,
             #[cfg(feature = "dev-tools")]
+            select_edge_holding: false,
+            #[cfg(feature = "dev-tools")]
             queued_paste,
             #[cfg(feature = "dev-tools")]
             queued_preedit,
+            #[cfg(feature = "dev-tools")]
+            queued_menu,
             #[cfg(feature = "dev-tools")]
             exit_at,
         }
@@ -286,7 +430,34 @@ impl App {
             }),
             // 窗口关闭:同步清理子进程(T8)
             iced::window::close_events().map(Message::Closed),
+            // 窗口聚焦变化(005 T8;闪烁门控)
+            iced::event::listen().map(|event| match event {
+                iced::Event::Window(iced::window::Event::Focused) => Message::Focused(true),
+                iced::Event::Window(iced::window::Event::Unfocused) => {
+                    Message::Focused(false)
+                }
+                _ => Message::NoOp,
+            }),
         ];
+        // 拖选自动滚动(005 T4):仅拖选压边时挂 50ms 条件订阅——
+        // 空闲/拖选中不压边均零唤醒;菜单开着时暂停(005 T5);
+        // 方向行数经 DragScrollTick 从状态取(Subscription::map 禁捕获)。
+        if self.drag_scroll.is_some() && self.menu.is_none() {
+            subs.push(
+                time::every(Duration::from_millis(50)).map(|_| Message::DragScrollTick),
+            );
+        }
+        // 光标闪烁(005 T8):仅聚焦 + 光标可见 + 无菜单 + 无 preedit
+        // 时挂 500ms 条件订阅(空闲零唤醒:门控不满足即无定时器)。
+        if self.focused
+            && self.cursor_shape != CursorShape::Hidden
+            && self.menu.is_none()
+            && self.preedit.is_none()
+        {
+            subs.push(
+                time::every(Duration::from_millis(500)).map(|_| Message::BlinkTick),
+            );
+        }
         #[cfg(feature = "dev-tools")]
         {
             if !self.config.dev_autotype.is_empty()
@@ -294,6 +465,7 @@ impl App {
                 || self.queued_select.is_some()
                 || self.queued_paste.is_some()
                 || self.queued_preedit.is_some()
+                || !self.queued_menu.is_empty()
             {
                 subs.push(
                     time::every(Duration::from_millis(50))
@@ -331,29 +503,60 @@ impl App {
                 if let Some((at, spec)) = self.queued_select {
                     // 自愈注入:到点后若选中缺失(窗口首显 resize 风暴会
                     // 清选——pwsh 冷启动慢时风暴晚于注入)即重注入,
-                    // 选中在手则保持(幂等,dev 专用)
-                    if now >= at && self.selection_range.is_none() {
-                        log::info!(
-                            "dev-select inject: ty={:?} start={:?} end={:?}",
-                            spec.ty,
-                            spec.start,
-                            spec.end
-                        );
-                        tasks.push(self.handle_select(SelectMsg::Begin {
-                            ty: spec.ty,
-                            cell: spec.start,
-                            side: Side::Left,
-                        }));
-                        tasks.push(self.handle_select(SelectMsg::Extend {
-                            cell: spec.end,
-                            side: Side::Right,
-                        }));
-                        tasks.push(self.handle_select(SelectMsg::Finish));
-                        log::info!(
-                            "dev-select injected: range={:?} text={:?}",
-                            self.selection_range,
-                            self.session.term.selection_text()
-                        );
+                    // 选中在手则保持(幂等,dev 专用)。
+                    // 边缘保持模式(edge=Some):Begin 一次(缺失自愈),
+                    // 此后每拍 Extend 压边,自动滚动持续到转储。
+                    if now >= at {
+                        match spec.edge {
+                            Some(edge) => {
+                                if !self.select_edge_holding
+                                    || self.selection_range.is_none()
+                                {
+                                    log::info!(
+                                        "dev-select edge-hold begin: ty={:?} start={:?}",
+                                        spec.ty,
+                                        spec.start
+                                    );
+                                    self.select_edge_holding = true;
+                                    tasks.push(self.handle_select(SelectMsg::Begin {
+                                        ty: spec.ty,
+                                        cell: spec.start,
+                                        side: Side::Left,
+                                    }));
+                                }
+                                tasks.push(self.handle_select(SelectMsg::Extend {
+                                    cell: spec.end,
+                                    side: Side::Right,
+                                    at_edge: Some(edge),
+                                }));
+                            }
+                            None => {
+                                if self.selection_range.is_none() {
+                                    log::info!(
+                                        "dev-select inject: ty={:?} start={:?} end={:?}",
+                                        spec.ty,
+                                        spec.start,
+                                        spec.end
+                                    );
+                                    tasks.push(self.handle_select(SelectMsg::Begin {
+                                        ty: spec.ty,
+                                        cell: spec.start,
+                                        side: Side::Left,
+                                    }));
+                                    tasks.push(self.handle_select(SelectMsg::Extend {
+                                        cell: spec.end,
+                                        side: Side::Right,
+                                        at_edge: None,
+                                    }));
+                                    tasks.push(self.handle_select(SelectMsg::Finish));
+                                    log::info!(
+                                        "dev-select injected: range={:?} text={:?}",
+                                        self.selection_range,
+                                        self.session.term.selection_text()
+                                    );
+                                }
+                            }
+                        }
                     }
                 }
                 if let Some((at, text)) = self.queued_paste.clone() {
@@ -372,9 +575,31 @@ impl App {
                         tasks.push(self.update(Message::SetPreedit(text)));
                     }
                 }
-                if !tasks.is_empty() {
-                    return Task::batch(tasks);
+                // dev-menu 注入:到期项逐个走真实 ContextMenu 路径
+                let mut menu_fired: Vec<Option<(f32, f32)>> = Vec::new();
+                self.queued_menu.retain(|(at, what)| {
+                    if now >= *at {
+                        menu_fired.push(*what);
+                        false
+                    } else {
+                        true
+                    }
+                });
+                for what in menu_fired {
+                    match what {
+                        Some(at_menu) => {
+                            log::info!("dev-menu inject: open {at_menu:?}");
+                            tasks.push(self.update(Message::ContextMenu(Some(at_menu))));
+                        }
+                        None => {
+                            log::info!("dev-menu inject: close");
+                            tasks.push(self.update(Message::ContextMenu(None)));
+                        }
+                    }
                 }
+                // 边缘保持模式每拍都有 Extend task,转储/退出判定必须
+                // 先于 task 返回执行(否则被饿死,应用永不退出——005 T4
+                // 首跑实证)
                 if let Some(at) = self.exit_at {
                     if now >= at {
                         if let Some(delta) = self.config.dev_scroll {
@@ -386,9 +611,22 @@ impl App {
                         return iced::exit();
                     }
                 }
+                if !tasks.is_empty() {
+                    return Task::batch(tasks);
+                }
                 Task::none()
             }
             Message::Key(key, mods) => {
+                // 菜单开着时 ESC 仅关菜单(不写 PTY、不回滚;005 T5)
+                if self.menu.is_some()
+                    && matches!(
+                        &key,
+                        Key::Named(iced::keyboard::key::Named::Escape)
+                    )
+                {
+                    self.menu = None;
+                    return Task::none();
+                }
                 // 回滚时键入先回正(终端惯例)
                 if self.session.term.display_offset() > 0 {
                     self.session.term.scroll(i32::MIN);
@@ -427,6 +665,12 @@ impl App {
                 self.refresh_after_change();
                 Task::none()
             }
+            Message::DragScrollTick => {
+                match self.drag_scroll {
+                    Some(delta) => self.update(Message::Scrolled(delta)),
+                    None => Task::none(),
+                }
+            }
             Message::Closed(_id) => {
                 // 关闭语义(T8):显式杀+等,窗口关闭不留孤儿进程;
                 // Drop 安全网仍在(异常路径兜底)。
@@ -452,12 +696,48 @@ impl App {
                 Task::none()
             }
             Message::Paste => self.paste_from_clipboard(),
+            Message::ContextMenu(at) => {
+                self.menu = at.map(|at| MenuState { at });
+                Task::none()
+            }
+            Message::MenuAction(item) => {
+                self.menu = None;
+                match item {
+                    MenuItem::Copy => self.copy_selection(),
+                    MenuItem::Paste => self.paste_from_clipboard(),
+                    MenuItem::SelectAll => {
+                        // 视口 Lines 全选:左上 Begin、右下 Extend,
+                        // 行选语义自动扩满整行(005 T5)
+                        let (cols, rows) = self.session.term.size();
+                        let begin = self.cell_to_point((0, 0));
+                        let end = self.cell_to_point((rows - 1, cols - 1));
+                        self.session
+                            .term
+                            .begin_selection(SelectionType::Lines, begin, Side::Left);
+                        self.session.term.update_selection(end, Side::Left);
+                        self.selection_range = self.session.term.selection_range();
+                        Task::none()
+                    }
+                }
+            }
             Message::Pasted(text) => {
                 // \r\n / \n → \r 规整(终端行提交约定),再写 PTY
                 let normalized = text.replace("\r\n", "\r").replace('\n', "\r");
                 if !normalized.is_empty() {
                     self.session.write_input(normalized.as_bytes());
                 }
+                Task::none()
+            }
+            Message::Focused(focused) => {
+                self.focused = focused;
+                // 相位复位:聚焦即亮,失焦常亮(005 T8)
+                self.cursor_blink_on = true;
+                Task::none()
+            }
+            Message::BlinkTick => {
+                self.cursor_blink_on = !self.cursor_blink_on;
+                #[cfg(feature = "dev-tools")]
+                BLINK_TOGGLES.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
                 Task::none()
             }
             Message::Resized(size) => {
@@ -486,15 +766,22 @@ impl App {
     /// 选中消息族处理(T2):视口格 → 绝对网格点 → 驱动 core;
     /// 高亮区间随之刷新(渲染为 overlay,不进快照/damage)。
     /// Finish = copy-on-select(用户裁定默认开;空选清除)。
+    /// Extend 压边时置 drag_scroll(005 T4),离缘/收尾清除。
     fn handle_select(&mut self, msg: SelectMsg) -> Task<Message> {
         match msg {
             SelectMsg::Begin { ty, cell, side } => {
+                self.drag_scroll = None;
                 self.session.term.begin_selection(ty, self.cell_to_point(cell), side);
             }
-            SelectMsg::Extend { cell, side } => {
+            SelectMsg::Extend { cell, side, at_edge } => {
                 self.session.term.update_selection(self.cell_to_point(cell), side);
+                self.drag_scroll = at_edge.map(|edge| match edge {
+                    Vertical::Up => AUTO_SCROLL_ROWS,
+                    Vertical::Down => -AUTO_SCROLL_ROWS,
+                });
             }
             SelectMsg::Finish => {
+                self.drag_scroll = None;
                 if let Some(text) = self
                     .session
                     .term
@@ -546,9 +833,12 @@ impl App {
         };
         if content_changed {
             self.snapshot = self.session.term.visible_styled_lines();
-            self.cursor = self.session.term.cursor();
             self.snapshot_rebuilds += 1;
         }
+        // 光标位置/形状每次刷新都取(DECSCUSR 只改形状不产 Wakeup,
+        // 快照门控会漏;字节到达必经此处,代价一次 renderable 快照)
+        self.cursor = self.session.term.cursor();
+        self.cursor_shape = self.session.term.cursor_shape();
         // 选中锚定网格内容:滚动/新增行使绝对行漂移,区间随之重取
         let prev_selection = self.selection_range;
         self.selection_range = self.session.term.selection_range();
@@ -561,6 +851,19 @@ impl App {
         }
     }
 
+    /// 光标当前是否可见(005 T8):门控(聚焦+形状可见+无菜单+
+    /// 无 preedit)满足时随闪烁相位;否则常亮;Hidden 恒不可见。
+    fn cursor_visible(&self) -> bool {
+        if self.cursor.is_none() {
+            return false;
+        }
+        let blinking = self.focused
+            && self.cursor_shape != CursorShape::Hidden
+            && self.menu.is_none()
+            && self.preedit.is_none();
+        !blinking || self.cursor_blink_on
+    }
+
     pub fn view(&self) -> Element<'_, Message> {
         Element::new(TermGrid {
             lines: self.snapshot.clone(),
@@ -568,14 +871,24 @@ impl App {
             damage: self.damage.clone(),
             scroll_offset: self.session.term.display_offset(),
             cursor: self.cursor,
+            cursor_shape: self.cursor_shape,
+            cursor_visible: self.cursor_visible(),
             selection: self.selection_range,
             preedit: self.preedit.clone(),
+            menu: self.menu,
+            selection_color: self.config.selection_color,
         })
     }
 
-    /// 选中区间覆盖的格子数(非块选:行段求和;取证 `selection_cells`)。
+    /// 选中区间覆盖的格子数(块选:列带×行数矩形;非块选:行段求和;
+    /// 取证 `selection_cells`)。
     fn selection_cell_count(&self) -> usize {
         let Some(r) = self.selection_range else { return 0 };
+        if r.is_block {
+            let rows = (r.end.line.0 - r.start.line.0 + 1) as usize;
+            let cols = r.end.column.0 - r.start.column.0 + 1;
+            return rows * cols;
+        }
         let cols = self.session.term.size().0;
         (r.start.line.0..=r.end.line.0)
             .map(|line| {
@@ -667,6 +980,22 @@ impl App {
             &mut out,
             format_args!("selection_cells: {}\n", self.selection_cell_count()),
         );
+        match self.selection_range {
+            Some(r) => {
+                let _ = std::fmt::Write::write_fmt(
+                    &mut out,
+                    format_args!(
+                        "selection_range: ({},{})-({},{}) is_block={} (绝对网格行;视口行=绝对+scroll_offset)\n",
+                        r.start.line.0,
+                        r.start.column.0,
+                        r.end.line.0,
+                        r.end.column.0,
+                        r.is_block
+                    ),
+                );
+            }
+            None => out.push_str("selection_range: none\n"),
+        }
         match &self.preedit {
             Some(t) => {
                 let _ = std::fmt::Write::write_fmt(
@@ -692,11 +1021,36 @@ impl App {
             Some((row, col)) => {
                 let _ = std::fmt::Write::write_fmt(
                     &mut out,
-                    format_args!("cursor_drawn_at: ({row},{col}) inverted=true\n"),
+                    format_args!(
+                        "cursor_drawn_at: ({row},{col}) shape={} inverted_block_only=false\n",
+                        cursor_shape_name(self.session.term.cursor_shape())
+                    ),
                 );
             }
-            None => out.push_str("cursor_drawn_at: none inverted=false\n"),
+            None => out.push_str("cursor_drawn_at: none\n"),
         }
+        let _ = std::fmt::Write::write_fmt(
+            &mut out,
+            format_args!(
+                "cursor_shape: {}\n",
+                cursor_shape_name(self.session.term.cursor_shape())
+            ),
+        );
+        let _ = std::fmt::Write::write_fmt(
+            &mut out,
+            format_args!(
+                "cursor_visible: {} (focused={} blink_phase={} menu={} preedit={})\n",
+                self.cursor_visible(),
+                self.focused,
+                self.cursor_blink_on,
+                self.menu.is_some(),
+                self.preedit.is_some()
+            ),
+        );
+        let _ = std::fmt::Write::write_fmt(
+            &mut out,
+            format_args!("blink_toggles: {}\n", blink_toggles()),
+        );
         if let Some(t) = self.last_byte_at {
             let _ = std::fmt::Write::write_fmt(
                 &mut out,
@@ -732,6 +1086,18 @@ impl App {
     }
 }
 
+/// 光标形状的转储名(dev 取证,005 T7)。
+#[cfg(feature = "dev-tools")]
+fn cursor_shape_name(shape: CursorShape) -> &'static str {
+    match shape {
+        CursorShape::Block => "block",
+        CursorShape::Underline => "underline",
+        CursorShape::Beam => "beam",
+        CursorShape::HollowBlock => "hollow_block",
+        CursorShape::Hidden => "hidden",
+    }
+}
+
 /// dev-autotype 语法:"<延迟毫秒>:<文本>";无前缀即立即。转义
 /// \r \n \t \xHH(仅 dev-tools 构建)。
 #[cfg(feature = "dev-tools")]
@@ -745,15 +1111,24 @@ fn parse_input(s: &str, start: Instant) -> (Instant, Vec<u8>) {
 }
 
 /// dev-select 语法(T3):"<ms>:<r1>:<c1>-<r2>:<c2>"(视口相对格)。
-/// T5 起支持可选类型前缀:"<ms>:<simple|semantic|lines>:<r1>:<c1>-..."。
+/// T5 起支持可选类型前缀:"<ms>:<simple|semantic|lines|block>:<r1>:<c1>-..."
+/// (block=块选,005 T2);后缀可选 ":up"/":down" = 边缘保持注入
+/// (每拍 Extend 压边驱动自动滚动,005 T4)。
 #[cfg(feature = "dev-tools")]
 fn parse_dev_select(s: &str, start: Instant) -> Option<(Instant, DevSelectSpec)> {
     let (ms, rest) = s.split_once(':')?;
     let at = start + Duration::from_millis(ms.parse::<u64>().ok()?);
+    // 边缘后缀先摘(取最后一个 ':'),无后缀则原样
+    let (rest, edge) = match rest.rsplit_once(':') {
+        Some((r, "up")) => (r, Some(Vertical::Up)),
+        Some((r, "down")) => (r, Some(Vertical::Down)),
+        _ => (rest, None),
+    };
     let (ty, rest) = match rest.split_once(':') {
         Some(("simple", r)) => (SelectionType::Simple, r),
         Some(("semantic", r)) => (SelectionType::Semantic, r),
         Some(("lines", r)) => (SelectionType::Lines, r),
+        Some(("block", r)) => (SelectionType::Block, r),
         _ => (SelectionType::Simple, rest),
     };
     let (a, b) = rest.split_once('-')?;
@@ -765,6 +1140,7 @@ fn parse_dev_select(s: &str, start: Instant) -> Option<(Instant, DevSelectSpec)>
             ty,
             start: (r1.parse().ok()?, c1.parse().ok()?),
             end: (r2.parse().ok()?, c2.parse().ok()?),
+            edge,
         },
     ))
 }
@@ -775,6 +1151,19 @@ fn parse_dev_paste(s: &str, start: Instant) -> Option<(Instant, String)> {
     let (ms, rest) = s.split_once(':')?;
     let at = start + Duration::from_millis(ms.parse::<u64>().ok()?);
     Some((at, rest.to_string()))
+}
+
+/// dev-menu 语法:"<ms>:<x>:<y>"(开,widget 本地像素)或
+/// "<ms>:close"(关;005 T5)。
+#[cfg(feature = "dev-tools")]
+fn parse_dev_menu(s: &str, start: Instant) -> Option<(Instant, Option<(f32, f32)>)> {
+    let (ms, rest) = s.split_once(':')?;
+    let at = start + Duration::from_millis(ms.parse::<u64>().ok()?);
+    if rest == "close" {
+        return Some((at, None));
+    }
+    let (x, y) = rest.split_once(':')?;
+    Some((at, Some((x.parse().ok()?, y.parse().ok()?))))
 }
 
 fn unescape(s: &str) -> Vec<u8> {
@@ -912,6 +1301,38 @@ pub const DEFAULT_BG: Color = Color::from_rgb8(0x10, 0x14, 0x18);
 pub const CELL_ADVANCE_EM: f32 = 1126.0 / 2048.0;
 pub const LINE_HEIGHT_EM: f32 = 1.25;
 pub const FONT_PX: f32 = 16.0;
+
+#[cfg(test)]
+mod parse_hex_color_tests {
+    use super::{DEFAULT_SELECTION_COLOR, parse_hex_color};
+
+    #[test]
+    fn six_digit_takes_default_alpha() {
+        let c = parse_hex_color("ff0000").expect("6 位应可解析");
+        assert_eq!((c.r, c.g, c.b), (1.0, 0.0, 0.0));
+        assert_eq!(c.a, DEFAULT_SELECTION_COLOR.a, "6 位维持默认 25% α");
+        // # 前缀与大小写
+        let c = parse_hex_color("#E8E8E8").expect("带 # 大写应可解析");
+        assert_eq!((c.r, c.g, c.b), (232.0 / 255.0, 232.0 / 255.0, 232.0 / 255.0));
+    }
+
+    #[test]
+    fn eight_digit_carries_alpha() {
+        let c = parse_hex_color("00ff0080").expect("8 位应可解析");
+        assert_eq!((c.r, c.g, c.b), (0.0, 1.0, 0.0));
+        assert!((c.a - 128.0 / 255.0).abs() < 1e-6);
+    }
+
+    #[test]
+    fn invalid_falls_back_to_none() {
+        assert_eq!(parse_hex_color(""), None);
+        assert_eq!(parse_hex_color("ff00"), None, "4 位不合法");
+        assert_eq!(parse_hex_color("ff000"), None, "5 位不合法");
+        assert_eq!(parse_hex_color("ff00000"), None, "7 位不合法");
+        assert_eq!(parse_hex_color("zz0000"), None, "非十六进制不合法");
+        assert_eq!(parse_hex_color("ff 000"), None, "空白不合法");
+    }
+}
 
 #[cfg(test)]
 mod unescape_tests {

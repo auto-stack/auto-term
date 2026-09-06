@@ -16,7 +16,7 @@
 pub use alacritty_terminal;
 pub use alacritty_terminal::index::{Column, Line, Point, Side};
 pub use alacritty_terminal::selection::{SelectionRange, SelectionType};
-pub use alacritty_terminal::vte::ansi::{Color, NamedColor, Rgb};
+pub use alacritty_terminal::vte::ansi::{Color, CursorShape, NamedColor, Rgb};
 
 use std::sync::mpsc::{Receiver, Sender, channel};
 
@@ -203,6 +203,12 @@ impl TermSession {
             CursorShape::Hidden => None,
             _ => Some((cursor.point.line.0 as usize, cursor.point.column.0 as usize)),
         }
+    }
+
+    /// 当前光标形状(DECSCUSR 透传,PLAN-005 T1)。
+    /// 旧 `cursor()` 签名保持不变,调用点最小改。
+    pub fn cursor_shape(&self) -> CursorShape {
+        self.term.renderable_content().cursor.shape
     }
 
     pub fn size(&self) -> (usize, usize) {

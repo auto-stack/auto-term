@@ -1,0 +1,6 @@
+window_px: 2026x1371
+expect: red-dominant wash rows (ff0000 selection-color), not default gray 71,73,76
+red_dominant_pixels: 78492
+avg_red_rgb: 76.1,15.1,18.1
+highlight_rows_total: 78
+selcolor_changed: True

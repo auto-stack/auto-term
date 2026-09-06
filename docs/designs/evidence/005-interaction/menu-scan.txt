@@ -1,0 +1,6 @@
+window_px: 2026x1371  scale=2.026
+open_panel_pixels: 23396  bbox: (1215,660)-(1386,811)
+open_bbox_size_px: 172x152 (expect ~88x78 = panel logical x scale)
+menu_panel_visible: True
+closed_panel_pixels: 34 (expect ~0 after ESC)
+menu_closed_by_esc: True

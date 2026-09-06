@@ -1,0 +1,59 @@
+shell: pwsh
+grid: 106x32
+metrics: font_px=16.000 cell_w=9.3750 line_h=20.000 (cell_em=0.5859)
+viewport: 1000.0x650.0
+fit_ok: true (cols*cell_w=993.8 <= viewport_w=1000.0)
+uptime_s: 10.004
+frames: 119
+dirty_updates: 13
+snapshot_rebuilds: 16
+damage_last: lines=1
+scroll_offset: 0
+selection_text: none
+selection_cells: 0
+selection_range: none
+preedit: none
+ime_requests: 199
+preedit_drawn: 0
+paragraph_rebuilds_prev: 0
+paragraph_rebuilds_last: 0
+cursor_drawn_at: (20,19) shape=underline inverted_block_only=false
+cursor_shape: underline
+last_byte_after_start_s: 5.555
+input_sent_after_start_s: 4.508
+last_byte_after_input_s: 1.047
+bytes_fed: 1999
+=== grid_text_begin ===
+PS C:\Users\zhaop> Write-Host "`e[20;40H`e[4 q" -NoNewline
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+PS C:\Users\zhaop>
+
+
+
+
+
+
+
+
+
+
+
+=== grid_text_end ===
