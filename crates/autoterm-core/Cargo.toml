@@ -4,6 +4,11 @@ version = "0.1.0"
 edition.workspace = true
 license.workspace = true
 
+# PLAN-009 P2 (T6): cdylib 目标供 Auto 侧 libloading 运行期加载(无环铁律
+# 的 FFI 边界);rlib 保留给本仓原生面,依赖零新增。
+[lib]
+crate-type = ["rlib", "cdylib"]
+
 [dependencies]
 alacritty_terminal = "0.26"
 anyhow = "1.0.104"
