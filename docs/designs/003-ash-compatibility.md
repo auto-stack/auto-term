@@ -17,7 +17,7 @@
 | 色彩 | ash 认 `TERM=alacritty` + `COLORTERM=truecolor` 为 24-bit 真彩(`color info` 网格文本自证) |
 | 退出语义 | `exit` 与 Ctrl+D(0x04)均正路径退出(`try_wait`,无孤儿) |
 | resize | 80x24→120x40 核心尺寸同步,REPL 存活且继续响应 |
-| **Ctrl+C 中断运行中命令** | **不可用,且与 shell 无关**(F2,通路层缺陷);叠加 ash 内建命令本就不可中断(F1,ash 侧)→ **当前任何长命令无法用 Ctrl+C 打断** |
+| **Ctrl+C 中断运行中命令** | **已修复(008,2026-09-06)**:辅助进程广播控制事件(Break→C 双投递),`cmd/pwsh` 运行中命令可中断(UI 铁证);ash 受 F1 限制 auto 豁免为仅字节;残留缺口 = ping 类(Break 免疫)与 ash 内建,见 §4.1 |
 | 冷启动 | 热机(release 产物,`~/.ashrc` 已存在)下 spawn→提示符 < 100ms(全套 7 用例含双 spawn 共 0.36s) |
 
 ## 2. 场景矩阵
@@ -33,7 +33,7 @@
 | ④b | `ctrl_d_eof_terminates` | 空行 0x04 → `exited()` ≤10s(实测一次即退) | ✅ |
 | ⑤ | `resize_survives` | resize 后 `term.size()==(120,40)`,marker 继续上屏,存活 | ✅ |
 | ⑥ | `color_info_reports_truecolor` | 网格含 `24-bit truecolor` | ✅ `Color depth: 24-bit truecolor (COLORTERM=truecolor, TERM=alacritty)` |
-| — | `f2_repro_cmd_interrupt` / `f2_repro_pwsh_interrupt` | F2 复现器,`#[ignore]` 留档;修 DEBTS #12 后去 ignore 验证 | 🔒 已知失败 |
+| ⑦ | `ctrl_c_event_effect_on_ash` | 事件注入下 ash 三态矩阵(idle/builtin/external,析取断言) | ✅ 008,见 §4.1 |
 
 门控:`AUTOTERM_ASH_BIN` env 优先 → 兄弟仓约定路径探测
 (`../auto-shell`、`../../`、`../../../auto-shell`,主仓与 `.wt/<grp>/<repo>`
@@ -45,7 +45,7 @@ worktree 布局都覆盖)→ 皆无则打印 skip 说明(缺席不假绿)。
 | --- | --- | --- | --- |
 | A | echo 往返 | `❯ echo ash_ui_probe` + 输出行 `ash_ui_probe`(2 次命中) | ✅ |
 | B | 真彩 | `Ash 24-bit Truecolor Rainbow!` + `Color depth: 24-bit truecolor (…)` | ✅ |
-| C | sleep 30 + 0x03 + echo after_c | `after_c` **0 次命中**,`❯ sleep 30` 冻结至 16s dump | ⚠️ F2 之 UI 级证据 |
+| C | sleep 30 + 0x03 + echo after_c | `after_c` **0 次命中**,`❯ sleep 30` 冻结至 16s dump | ⚠️ 007 时点 F2 之 UI 级证据(008 后:ash 内建仍惰性,同结果;修复证据改由 cmd 主体,见 §4.1) |
 
 复跑命令(多段注入须重复 `--dev-autotype` 标志;clap Vec 按**出现次数**
 收集,单标志空格多值不被接受):
