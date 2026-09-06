@@ -104,26 +104,34 @@
      src/ui/terminal/,本仓 widget.rs 冻结为参考 oracle)+ **本仓转型**
      (README 定位节)。遗留 → 见下方"009 新增观察"。
 
-## 009 新增观察(PLAN-009 T11 收账,2026-09-06)
+## 009 新增观察(PLAN-009 T11 收账,2026-09-06;PLAN-010 T9 逐条销账)
 
-1. **a2r 快照存量编译债(74 例)**:rustc 实编门(auto-lang
-   `a2r_rustc_real_compile_gate`)首跑暴露 006 时代文本金样管线的存量
-   编译炸裂(错误码逐例在 auto-lang `test/a2r/compile_gate_known_broken.txt`
-   ledger);门对新破坏必红,ledger 变绿即报 obsolete。修复属 a2r codegen
-   缺陷账(建议以 question 族为首批)。
-2. **a2r `List.new()` 路径限定 bug**:`List.new()` 会被错误限定为
-   `<最后 use.rs 符号>::Vec::new()`(T8 实证);绕开:空列表用 `[]`
-   字面量(at-gen/README.md)。
-3. **CLI `auto trans` 挂起**:master 存量回归(f3185a7 时代可用);
-   in-process `transpile_rust` 同源正常,转译规程走库面(at-gen README)。
-4. **Vue/web terminal 后端留白**(非目标确认):未来虚拟桌面需 web 形态
+1. **~~a2r 快照存量编译债(74 例)~~ 已清偿达标(PLAN-010 T2,
+   2026-09-07)**:74 → 37(恰 50%);首批 question 族 21 例、批2
+   say/std 前导/委托缺省/空集合/mut 注册表/Box 免克隆/Option-get/
+   comptime/闭包块尾 15 例(理由逐条在案);遗留 37 例
+   (智能指针自动解包族/interop 外部框架族/语法未编码族/ownership-闭包
+   耦合族/singles)留 ledger 继续;实编门 0 unexpected,失败清单已
+   逐例输出(门禁设施补齐)。
+2. **~~a2r `List.new()` 路径限定 bug~~ 已修(PLAN-010 T1)**:根因=
+   Type.method() 表达式 source_crate 兜底限定误伤内置集合映射;修=
+   auto_type_to_rust 命中者(List/Map/Set→Vec/HashMap/HashSet)豁免
+   use.rs 前缀;快照 a2r/10_collections/007_list_new 先红后绿入库;
+   `[]` 字面量绕开写法不再必要。
+3. **~~CLI `auto trans` 挂起~~ 已修(PLAN-010 T3)**:根因=单文件 CLI
+   三处兄弟 .at 预扫无界(crate-root 无条件 parent().parent()),任意
+   路径遍历整棵无关树逐个 parse;修=src 字面名才按 crate 根扫+深度/
+   数量/大小/垃圾目录统一有界;60 行样本 13.3s 完成,产物编译绿,
+   与 in-process 逐字节一致。
+4. **Vue/web terminal 后端留白**(维持留白):未来虚拟桌面需 web 形态
    时另立调查(xterm.js 类渲染 + 引擎桥可行性;PLAN-009 待澄清4)。
-5. **terminal 组件数据面性能余量**:形态甲(props-feed)2000 行流式
-   基准 <0.1s(debug,帧预算 16ms),无降级需要;超大规模流式如遇帧
-   预算压力再评估形态乙(预授权规则在案)。
-6. **at-gen 窗口标题 cosmetic**:"Auto Lang - Iced" 为 iced application
-   缺省标题;复刻应用应暴露自定义标题(iced .title() 一行)。
-7. **E0080 已顺手修(T8,R4 预授权内)**:run_app tick 订阅捕获闭包被
-   iced 0.14 const 检查必炸——TickWrap 变体构造器零捕获方案
-   (auto-lang renderer.rs);002 §4 记录的"两示例同炸"应已解除,
-   建议_auto-lang 侧复跑当年两个示例复核后销账。
+5. **terminal 组件数据面性能余量**(维持观察):形态甲(props-feed)
+   2000 行流式基准 <0.1s(debug,帧预算 16ms),无降级需要;超大规模
+   流式如遇帧预算压力再评估形态乙(预授权规则在案)。
+6. **~~at-gen 窗口标题 cosmetic~~ 已修(PLAN-010 T5)**:auto-lang 侧
+   run_app_with_title(Option<&str>) application 链标题面(待澄清④
+   最小改,不动 VM 轨);at-gen main 接 Some("AutoTerm")。
+7. **~~E0080~~ 已复核销账(PLAN-010 T4)**:ui_counter/ui_accordion +
+   tick_interval_ms(Some(16)) 临时变体两例 --features ui-iced 双绿
+   (build 级验证,变体验证后撤销)——TickWrap 变体构造器根修实证
+   有效,002 §4 "两示例同炸"解除。
