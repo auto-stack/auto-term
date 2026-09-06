@@ -106,3 +106,16 @@ fn spawn_prompt_renders() {
         s.bytes_fed()
     );
 }
+
+/// ② echo 往返:键入行由 reedline 自渲染、命令输出由 ash 写回,
+/// marker 上屏即闭环(键盘 → PTY → shell → 仿真核心 → 网格)。
+#[test]
+fn echo_roundtrip() {
+    let Some(bin) = ensure_ash() else { return };
+    let mut s = spawn_ash_with_prompt(&bin);
+    let marker = format!("ash_probe_{}", std::process::id());
+    s.write_input(format!("echo {marker}\r").as_bytes());
+    wait_for(&mut s, Duration::from_secs(10), "echo marker 上屏", |t| {
+        t.visible_lines().iter().any(|l| l.contains(&marker))
+    });
+}
