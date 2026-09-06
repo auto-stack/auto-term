@@ -11,7 +11,7 @@ supersedes_spec_components: []
 new_spec_components: []
 touched_goals: []
 
-current_step: 1
+current_step: 2
 total_steps: 11
 ---
 
@@ -301,6 +301,16 @@ P2 其实可与 P1 并行——见执行步骤注);P3 对拍绿 → P4 收账。
   形态(甲/乙)实测裁定落执行记录。
   验证:`cargo build -p auto-lang --features ui-iced` 绿 +
   最小示例可跑(headless 断言占位矩形存在)。
+  [✅ 已完成] ui-iced 构建绿(check 双配置 0 error);`src/ui/terminal/`
+  core(零 iced 依赖,TerminalCore 注册表/feed/损伤代)+ iced 适配器(占位
+  矩形 quad);实际接线点由编译器枚举(view.rs 变体/vnode_converter/
+  snapshot_builder/iced renderer 三处/aura_view_builder 标签派发×2/
+  a2ui schema+import,widget_registry 与 component 经查为 VM 自定义组件
+  registry 与 Component trait,非原生变体注册面);最小示例
+  `test/ui/terminal_min/src/front/app.at` headless 全链断言绿。
+  **数据面裁定:形态甲 props-feed**(View::Terminal{key,cols,rows,lines,
+  style} 每帧喂入,code_editor §5.4 同姿势;T3 的 2000 行流式基准达标则
+  维持,超标按预授权规则降乙)。
 
 - **T3** [P1/auto-lang] 视口+损伤:网格渲染/宽字符/行级损伤门控/
   RowPara 等价缓存/光标三形+闪烁(搬 widget.rs draw/damage 块)。
