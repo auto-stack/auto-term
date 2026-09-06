@@ -107,6 +107,98 @@ fn spawn_prompt_renders() {
     );
 }
 
+/// 轮询 exited() 直到成立或超时(ConPTY 平台事实:主端读流无 EOF,
+/// 退出检测只能走 try_wait,见 pty.rs:10-14)。
+fn wait_exit(s: &mut PtySession, timeout: Duration, what: &str) {
+    let deadline = Instant::now() + timeout;
+    while !s.exited() {
+        assert!(
+            Instant::now() < deadline,
+            "等待 {what} 退出超时;网格:\n{}",
+            grid_text(s)
+        );
+        std::thread::sleep(Duration::from_millis(50));
+    }
+}
+
+/// ④a `exit` 命令退出:启动横幅明示 "Type 'exit' or press Ctrl+D
+/// to exit";exit 后子进程确已退出、无孤儿(Drop 兜底之外的正路径)。
+#[test]
+fn exit_command_terminates() {
+    let Some(bin) = ensure_ash() else { return };
+    let mut s = spawn_ash_with_prompt(&bin);
+    s.write_input(b"exit\r");
+    wait_exit(&mut s, Duration::from_secs(10), "exit 命令");
+}
+
+/// ④b Ctrl+D(0x04)EOF 退出:空提示符行上发送;至多两次(部分行
+/// 编辑器需要二次确认),间隔 3s,退出总预算 10s。
+#[test]
+fn ctrl_d_eof_terminates() {
+    let Some(bin) = ensure_ash() else { return };
+    let mut s = spawn_ash_with_prompt(&bin);
+    s.write_input(b"\x04");
+    let retry_deadline = Instant::now() + Duration::from_secs(3);
+    while !s.exited() {
+        if Instant::now() >= retry_deadline {
+            s.write_input(b"\x04"); // 第二次 EOF 确认
+            break;
+        }
+        std::thread::sleep(Duration::from_millis(50));
+    }
+    wait_exit(&mut s, Duration::from_secs(10), "Ctrl+D EOF");
+}
+
+/// ⑤ resize 存活:80x24 → 120x40 后仿真核心尺寸同步、ash 继续响应
+/// (ConPTY resize → ash 收到窗口变更;REPL 不崩、不糊)。
+#[test]
+fn resize_survives() {
+    let Some(bin) = ensure_ash() else { return };
+    let mut s = spawn_ash_with_prompt(&bin);
+    let marker1 = format!("before_resize_{}", std::process::id());
+    s.write_input(format!("echo {marker1}\r").as_bytes());
+    wait_for(&mut s, Duration::from_secs(10), "resize 前 marker 上屏", |t| {
+        t.visible_lines().iter().any(|l| l.contains(&marker1))
+    });
+    s.resize(120, 40);
+    assert_eq!(s.term.size(), (120, 40), "仿真核心尺寸应同步 resize");
+    let marker2 = format!("after_resize_{}", std::process::id());
+    s.write_input(format!("echo {marker2}\r").as_bytes());
+    wait_for(&mut s, Duration::from_secs(10), "resize 后 marker 上屏", |t| {
+        t.visible_lines().iter().any(|l| l.contains(&marker2))
+    });
+    assert!(!s.exited(), "resize 不应杀死 shell");
+}
+
+/// ⑥ 色彩深度自证:`color info` 把 ash 的判定打印进网格
+/// (commands.rs:95-110);TERM=alacritty + COLORTERM=truecolor
+/// (pty.rs:63-64)下应为 "24-bit truecolor"。不符即 R4 风险坐实,
+/// 按发现流程记档,不静默迎合。
+#[test]
+fn color_info_reports_truecolor() {
+    let Some(bin) = ensure_ash() else { return };
+    let mut s = spawn_ash_with_prompt(&bin);
+    s.write_input(b"color info\r");
+    wait_for(&mut s, Duration::from_secs(10), "color info 输出上屏", |t| {
+        t.visible_lines()
+            .iter()
+            .any(|l| l.contains("Color depth:"))
+    });
+    let line = s
+        .term
+        .visible_lines()
+        .iter()
+        .find(|l| l.contains("Color depth:"))
+        .expect("上面 wait_for 已保证存在")
+        .trim()
+        .to_string();
+    eprintln!("ash color info: {line}");
+    assert!(
+        line.contains("24-bit truecolor"),
+        "R4:TERM=alacritty+COLORTERM=truecolor 下 ash 应判 24-bit;实际: {line}"
+    );
+}
+
 /// ② echo 往返:键入行由 reedline 自渲染、命令输出由 ash 写回,
 /// marker 上屏即闭环(键盘 → PTY → shell → 仿真核心 → 网格)。
 #[test]
