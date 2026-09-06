@@ -26,20 +26,19 @@ cargo build                            # bin = autoterm-at(GUI,ui-iced 默认开
 
 ## 转译再生成规程
 
-CLI `auto trans` 暂挂(PLAN-009 待澄清9),用 in-process 同源 API:
+CLI 已恢复(PLAN-010 T3:兄弟扫描有界化;亦可用 in-process 同源 API):
 
-```rust
-// 放入 auto-lang 仓 crates/auto-lang/src/tests/a2r_tests.rs 跑一次:
-let src = read_to_string("…/auto-term/at/autoterm.at").unwrap();
-let mut r = transpile_rust("autoterm", &src).unwrap();
-std::fs::write("…/auto-term/at-gen/src/app_logic.rs", r.done().unwrap()).unwrap();
+```bash
+auto trans -p at/autoterm.at rust
+# 产物 at/autoterm.a2r.rs → 复制为 at-gen/src/app_logic.rs
+# (in-process 等价入口:auto-lang a2r_tests::temp_plan009_t8_transpile_at_app)
 ```
 
-## 已知转译变形(006 S2 F 清单在案 + T8 新增)
+## 已知转译变形(006 S2 F 清单在案 + T8 新增;PLAN-010 T1/T2 后复核)
 
 - `int` → `i64`、字段强制 `pub`、杂点 `.clone()` 噪声(006 F2/F3/F5);
-- **新增(T8 记债)**:`List.new()` 被错误路径限定为 `<最后 use.rs 符号>::Vec::new()`
-  ——绕开:空列表用 `[]` 字面量(语料 19_ownership/003 先例);
+- ~~`List.new()` 被错误路径限定~~ **已修(PLAN-010 T1)**:内置集合映射
+  (List/Map/Set→Vec/HashMap/HashSet)豁免 use.rs 前缀;`[]` 绕开不再必要;
 - `use.rs` 导入清单会丢失「声明后未再显式调用」的符号——绕开:不保留
   只导入不调用的面。
 
