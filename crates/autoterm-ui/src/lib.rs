@@ -29,6 +29,8 @@ use metrics::GridMetrics;
 #[derive(Clone, Debug)]
 pub struct AppConfig {
     pub shell: String,
+    /// 选中高亮色(005 T6;默认 e8e8e8@25%)。
+    pub selection_color: Color,
     /// dev 取证:自动键入(可多段,"ms:text" 语法同 spike)。
     #[cfg(feature = "dev-tools")]
     pub dev_autotype: Vec<String>,
@@ -157,6 +159,42 @@ fn edge_band(pos_y: f32, bounds_y: f32, bounds_height: f32) -> Option<Vertical> 
 
 /// 自动滚动步长(行/拍,50ms;待澄清#5 采纳默认:距缘不分档)。
 pub const AUTO_SCROLL_ROWS: i32 = 2;
+
+/// 选中高亮默认色(005 T6):e8e8e8@25%——004 硬编码值移入配置,
+/// 默认视觉不变。
+pub const DEFAULT_SELECTION_COLOR: Color = Color {
+    r: 232.0 / 255.0,
+    g: 232.0 / 255.0,
+    b: 232.0 / 255.0,
+    a: 0.25,
+};
+
+/// 十六进制色解析(纯函数,可单测;005 T6):`RRGGBB[AA]`,可带
+/// `#` 前缀。6 位 = RGB(α 取默认 0.25,维持现视觉);8 位末两位
+/// = α/255。非法(长度/非十六进制)返回 None,调用方回退默认色。
+pub fn parse_hex_color(s: &str) -> Option<Color> {
+    let hex = s.strip_prefix('#').unwrap_or(s);
+    if hex.is_empty() || !hex.chars().all(|c| c.is_ascii_hexdigit()) {
+        return None;
+    }
+    let pair = |i: usize| u8::from_str_radix(&hex[i..i + 2], 16).ok();
+    let chan = |i: usize| Some(f32::from(pair(i)?) / 255.0);
+    match hex.len() {
+        6 => Some(Color {
+            r: chan(0)?,
+            g: chan(2)?,
+            b: chan(4)?,
+            a: DEFAULT_SELECTION_COLOR.a,
+        }),
+        8 => Some(Color {
+            r: chan(0)?,
+            g: chan(2)?,
+            b: chan(4)?,
+            a: chan(6)?,
+        }),
+        _ => None,
+    }
+}
 
 /// 订阅数据源:唤醒接收端的"一次性槽"(run_with 需 Hash,恒等即可)。
 #[derive(Clone)]
@@ -765,6 +803,7 @@ impl App {
             selection: self.selection_range,
             preedit: self.preedit.clone(),
             menu: self.menu,
+            selection_color: self.config.selection_color,
         })
     }
 
@@ -1152,6 +1191,38 @@ pub const DEFAULT_BG: Color = Color::from_rgb8(0x10, 0x14, 0x18);
 pub const CELL_ADVANCE_EM: f32 = 1126.0 / 2048.0;
 pub const LINE_HEIGHT_EM: f32 = 1.25;
 pub const FONT_PX: f32 = 16.0;
+
+#[cfg(test)]
+mod parse_hex_color_tests {
+    use super::{DEFAULT_SELECTION_COLOR, parse_hex_color};
+
+    #[test]
+    fn six_digit_takes_default_alpha() {
+        let c = parse_hex_color("ff0000").expect("6 位应可解析");
+        assert_eq!((c.r, c.g, c.b), (1.0, 0.0, 0.0));
+        assert_eq!(c.a, DEFAULT_SELECTION_COLOR.a, "6 位维持默认 25% α");
+        // # 前缀与大小写
+        let c = parse_hex_color("#E8E8E8").expect("带 # 大写应可解析");
+        assert_eq!((c.r, c.g, c.b), (232.0 / 255.0, 232.0 / 255.0, 232.0 / 255.0));
+    }
+
+    #[test]
+    fn eight_digit_carries_alpha() {
+        let c = parse_hex_color("00ff0080").expect("8 位应可解析");
+        assert_eq!((c.r, c.g, c.b), (0.0, 1.0, 0.0));
+        assert!((c.a - 128.0 / 255.0).abs() < 1e-6);
+    }
+
+    #[test]
+    fn invalid_falls_back_to_none() {
+        assert_eq!(parse_hex_color(""), None);
+        assert_eq!(parse_hex_color("ff00"), None, "4 位不合法");
+        assert_eq!(parse_hex_color("ff000"), None, "5 位不合法");
+        assert_eq!(parse_hex_color("ff00000"), None, "7 位不合法");
+        assert_eq!(parse_hex_color("zz0000"), None, "非十六进制不合法");
+        assert_eq!(parse_hex_color("ff 000"), None, "空白不合法");
+    }
+}
 
 #[cfg(test)]
 mod unescape_tests {

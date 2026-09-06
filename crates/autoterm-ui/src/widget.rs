@@ -110,6 +110,8 @@ pub struct TermGrid {
     pub preedit: Option<String>,
     /// 右键菜单浮层(005 T5):Some=draw 最顶层画;命中检测纯函数。
     pub menu: Option<MenuState>,
+    /// 选中高亮色(005 T6;默认 e8e8e8@25%,可 --selection-color)。
+    pub selection_color: Color,
 }
 
 /// 菜单几何(widget 本地像素;draw 与命中检测同源,纯函数可单测)。
@@ -415,7 +417,7 @@ impl Widget<Message, Theme, iced::Renderer> for TermGrid {
             let last_visible = self.lines.len() as i32 - 1;
             if end_row >= 0 && start_row <= last_visible {
                 let cols = self.lines.first().map_or(0, |l| l.len());
-                let highlight = Color { a: 0.25, ..DEFAULT_FG };
+                let highlight = self.selection_color;
                 for row in start_row.max(0)..=end_row.min(last_visible) {
                     // 块选:每行同一列带(矩形对齐);行选:首末行截段、
                     // 中间行整行(005 T2)

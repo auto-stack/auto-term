@@ -1,0 +1,58 @@
+shell: pwsh
+grid: 106x32
+metrics: font_px=16.000 cell_w=9.3750 line_h=20.000 (cell_em=0.5859)
+viewport: 1000.0x650.0
+fit_ok: true (cols*cell_w=993.8 <= viewport_w=1000.0)
+uptime_s: 14.007
+frames: 115
+dirty_updates: 12
+snapshot_rebuilds: 15
+damage_last: lines=2
+scroll_offset: 0
+selection_text: "AAAABBBB\nCCCCDDDD\nEEEEFFFF"
+selection_cells: 220
+selection_range: (1,0)-(3,7) is_block=false (绝对网格行;视口行=绝对+scroll_offset)
+preedit: none
+ime_requests: 280
+preedit_drawn: 0
+paragraph_rebuilds_prev: 0
+paragraph_rebuilds_last: 0
+cursor_drawn_at: (4,19) inverted=true
+last_byte_after_start_s: 5.566
+input_sent_after_start_s: 5.012
+last_byte_after_input_s: 0.554
+bytes_fed: 2277
+=== grid_text_begin ===
+PS C:\Users\zhaop> echo AAAABBBB;echo CCCCDDDD;echo EEEEFFFF
+AAAABBBB
+CCCCDDDD
+EEEEFFFF
+PS C:\Users\zhaop>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+=== grid_text_end ===

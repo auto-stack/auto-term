@@ -6,7 +6,7 @@ use anyhow::Result;
 use clap::Parser;
 use iced::{Font, Size, Task};
 
-use autoterm_ui::{App, AppConfig, Message};
+use autoterm_ui::{App, AppConfig, Message, DEFAULT_SELECTION_COLOR, parse_hex_color};
 
 #[derive(Parser, Debug)]
 #[command(name = "autoterm", about = "AutoTerm — AutoOS 通用终端")]
@@ -14,6 +14,10 @@ struct Args {
     /// shell 可执行文件(默认 pwsh)
     #[arg(long, default_value = "pwsh")]
     shell: String,
+
+    /// 选中高亮色(RRGGBB[AA] 十六进制;非法回退默认 e8e8e8@25%)
+    #[arg(long = "selection-color", default_value = "e8e8e840")]
+    selection_color: String,
 
     /// [dev 取证] 自动键入("<延迟毫秒>:<文本>",可多段;转义同 unescape)
     #[arg(long = "dev-autotype")]
@@ -63,6 +67,8 @@ fn main() -> Result<()> {
     let args = Args::parse();
     let config = AppConfig {
         shell: args.shell.clone(),
+        selection_color: parse_hex_color(&args.selection_color)
+            .unwrap_or(DEFAULT_SELECTION_COLOR),
         #[cfg(feature = "dev-tools")]
         dev_autotype: args.dev_autotype,
         #[cfg(feature = "dev-tools")]
