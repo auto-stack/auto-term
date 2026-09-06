@@ -11,7 +11,7 @@ supersedes_spec_components: []
 new_spec_components: []
 touched_goals: []
 
-current_step: 5
+current_step: 6
 total_steps: 11
 ---
 
@@ -351,6 +351,11 @@ P2 其实可与 P1 并行——见执行步骤注);P3 对拍绿 → P4 收账。
   `ffi.rs`(opaque handle + 标量 C ABI,数据面对齐 P1 裁定形态)。
   验证:`cargo build -p autoterm-core` 产出 cdylib +
   FFI 符号导出清单核对(nm/dumpbin 或集成测试加载即证)。
+  [✅ 已完成] 12/12 符号导出核对在案(spawn/write_input/feed_ready/
+  take_dirty_rows/row_text/row_style/cursor/resize/interrupt/is_exited/
+  kill/free;计划 9 符号 + cursor/is_exited/free 细化);cdylib=
+  target/debug/autoterm_core.dll;色标量编码 kind<<24|value;row_style
+  即 P1 注册表旁路的引擎对侧。
 
 - **T7** [P2/auto-term] 独立集成测试:libloading 加载 cdylib 跑
   echo 往返 + resize + interrupt 全链。
