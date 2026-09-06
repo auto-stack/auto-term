@@ -198,6 +198,11 @@ ASH=D:/autostack/auto-shell/ash/target/release/ash.exe
 5. **部署**:autoterm.exe 与 autoterm-ctrlc.exe **同目录**分发
    (008 Ctrl+C 事件注入的辅助进程;缺失时自动降级字节路径,
    修复前行为,不崩)。
+6. **Auto 复刻应用形态**(PLAN-010 T5 追补,009 待澄清③授权):
+   随包分发 `autoterm_engine` cdylib(`autoterm_core.dll`,debug/
+   release 后缀随目标),与宿主同目录;以及与宿主同目录的
+   `autoterm-ctrlc.exe`(interrupt 契约不变)。窗口标题为复刻侧
+   自有("AutoTerm"),不复用 ash 标题。
 6. **回归门禁**:任何 auto-term 变更后跑
    `cargo test -p autoterm-core --test ash_integration`
    (ash 在场即全量断言,缺席即显式 skip)。

@@ -60,7 +60,12 @@
 4. ~~光标形状(Underline/Beam)与闪烁~~ **已清偿(005 T7/T8)**:
    DECSCUSR 三形分形渲染(像素证据);闪烁四重门控条件订阅
    500ms,失焦/隐藏/菜单/preedit 均不闪;零唤醒回归 frames=5@11s;
-5. Ctrl+C 稳定版复测(债务 #7,待环境后关账或立项 win32);
+5. ~~Ctrl+C 稳定版复测(债务 #7)~~ **已关账(PLAN-010 T6,
+   2026-09-07)**:关账证据 = 009 `parity_interrupt` 门禁——26200 真实
+   ConPTY 上 timeout 主体 + 双投递(auto/事件+字节)广播成功路径实测
+   有效(门禁绿);auto-term 侧 `engine_ffi_integration` interrupt 分支
+   在案。#5 与旧账 #7(006 调查项)合并销账,同一事实;win32 立项
+   不再需要;ping 类 Break 免疫残留维持 §4.1 已知边界记录;
 6. Unix 基座适配(独立轨道,不属"功能齐全"批);
 7. **已关账(PLAN-006,2026-09-05)**:iced↔AutoUI 生态对齐调查毕——
    `.at` 组件模型**不承载**自定义渲染(View 封闭 28 变体),TermGrid

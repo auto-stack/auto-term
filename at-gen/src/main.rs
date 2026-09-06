@@ -113,7 +113,8 @@ fn main() -> std::process::ExitCode {
     }
     #[cfg(feature = "ui-iced")]
     {
-        match auto_lang::ui::HostBackend::Iced.run::<shell::AutoTermShell>() {
+        // PLAN-010 T5: 复刻应用窗口标题——不再是 iced 缺省 "Auto Lang - Iced"。
+        match auto_lang::ui::iced::run_app_with_title::<shell::AutoTermShell>(Some("AutoTerm")) {
             Ok(()) => std::process::ExitCode::SUCCESS,
             Err(e) => {
                 eprintln!("app error: {e}");
