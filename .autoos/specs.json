@@ -89,6 +89,17 @@
           "PLAN-008"
         ],
         "status": "published"
+      },
+      {
+        "id": "P009-1",
+        "section": "reports",
+        "title": "AutoTerm Auto 化第一相位(分支 A:a2r 修缮 → terminal 原生组件 → 引擎 adapter → Auto 复刻对拍) — 变更摘要",
+        "content": "兑现用户 2026-09-06 的 **GO 裁定(分支 A,单计划管理)**:AutoTerm 从\n\"Rust 参考实现\"走向真身——**Auto 代码应用层 + auto-lang 内 `terminal`\n原生组件 + 本仓 Rust 引擎 adapter**。这是 DEBTS 候选清单 #8(必须项,\n总工作量 25–50 人日跨两仓)的第一相位落地,拆解草案源自\n`docs/designs/002-autoize-feasibility.md` §6(P006 调查结论,四问全正面)。\n\n四相位(每相位验证过即 fold,worktree 常驻):\n\n- **P0 auto-lang:a2r 修缮**(小,先行):F1 组合缺陷(E0369)+ 快照门\n  扩\"rustc 实编\"档——复刻的转译地基;\n- **P1 auto-lang:`terminal` 原生组件**(大,关键路径):本仓\n  TermGrid 控件逻辑(视口渲染/损伤门控/选中三模式+块选/IME/光标)\n  **整体迁移**进 `crates/auto-lang/src/ui/`,code_editor 范式接线;\n  **单一真身原则**:迁移完成后本仓 widget.rs 冻结;\n- **P2 本仓:引擎 cdylib adapter**(中,与 P1 并行可):autoterm-core\n  包成 FFI 友好标量面(spawn/feed/drain/resize/interrupt/…),\n  运行期 libloading 加载;\n- **P3 本仓:Auto 复刻 + 行为对拍**:`.at` 应用层 → a2r 转译 →\n  rustc 实编,与 Rust oracle 对拍(场景矩阵复用 007/008 门禁形态);\n- **P4 收账**:DEBTS #8 关账条件回写 + 本仓转型声明\n  (**引擎 adapter 活 / 参考实现 oracle 冻结**)。\n\n**无环铁律**(用户 2026-09-06 对齐):auto-lang 对 auto-term **零\nCargo 依赖**——引擎经 cdylib 运行期加载(FFI 边界切断环);`.at`\n经 a2r 转译产物单向依赖 auto-lang 运行时。兜底:若 P1 发现组件确需\n引擎侧类型,抽零依赖 `terminal-types` 叶子 crate 双方共用(仍无环)。",
+        "file": "docs/plans/archived/009-autoize-phase1.md",
+        "related": [
+          "PLAN-009"
+        ],
+        "status": "published"
       }
     ],
     "goals": [
@@ -178,6 +189,17 @@
         "file": "docs/plans/archived/008-ctrlc-interrupt-fix.md",
         "related": [
           "PLAN-008"
+        ],
+        "status": "proposed"
+      },
+      {
+        "id": "P009-2",
+        "section": "goals",
+        "title": "AutoTerm Auto 化第一相位(分支 A:a2r 修缮 → terminal 原生组件 → 引擎 adapter → Auto 复刻对拍) — 目标",
+        "content": "1. **P0**:a2r 快照目录(`crates/auto-lang/test/a2r/`)全绿 + 新增\n   \"rustc 实编\"门(转译产物能过 cargo check/build)全绿;本仓\n   `spikes/autoize-roundtrip/` 重跑,差异相对 006 记录归档;\n2. **P1**:`terminal` 组件在 auto-lang 落地——`ui-iced` feature 构建绿,\n   headless/iced 双后端测试绿(照 selectable_text 的测试管线),\n   最小 `.at` 示例可渲染 `<terminal/>`;rust-mode 示例 E0080 存量\n   编译炸裂顺手小修(006 §4 结论,W1 范围内);\n3. **P2**:adapter cdylib 面就绪,独立测试进程经 libloading 加载并\n   跑通 echo 往返 + resize + interrupt(模拟 Auto 侧消费形态);\n4. **P3**:`.at` 应用(a2r 产物 rustc 实编)与 Rust oracle **行为对拍**\n   门禁全绿:启动提示符/echo 往返/Ctrl+C 双投递中断(008 语义)/\n   选中三模式/色彩自证(ash 缺席显式 skip,沿 007/008 惯例);\n5. **P4**:DEBTS #8 关账;001 决策链追加 009 节;README 本仓转型\n   声明;两仓 `git diff` 证明无 Cargo 环(auto-lang 不依赖本仓 crate);\n6. **全程**:Rust oracle 版 `cargo test --workspace` 不回归\n   (冻结但门禁仍绿——它是 P3 对拍基准)。\n\n### 非目标(明确排除)\n\n- Vue/web 后端的 terminal 实现(006 未调查,虚拟桌面以 iced 轨道\n  为准;未来另立调查计划);\n- gpui 后端(同上);\n- 虚拟桌面侧集成(auto-os 侧计划,003 §5 契约已留锚点);\n- Rust oracle 版新增产品功能(P1 启动即冻结,仅修对拍阻断项);\n- ash 侧 F1/#13(auto-shell 仓事务);\n- iced 升级/字形图集等既有债务。",
+        "file": "docs/plans/archived/009-autoize-phase1.md",
+        "related": [
+          "PLAN-009"
         ],
         "status": "proposed"
       }
@@ -272,6 +294,17 @@
         "file": "docs/plans/archived/008-ctrlc-interrupt-fix.md",
         "related": [
           "PLAN-008"
+        ],
+        "status": "stable"
+      },
+      {
+        "id": "P009-3",
+        "section": "architecture",
+        "title": "AutoTerm Auto 化第一相位(分支 A:a2r 修缮 → terminal 原生组件 → 引擎 adapter → Auto 复刻对拍) — 架构方案",
+        "content": "**依赖 DAG(无环铁律的图示)**:\n\n```\n编译期 Cargo 边(单向,唯一):\n  auto-term(.at 经 a2r 转译产物)──依赖──▶ auto-lang 运行时(a2r-std 等)\n\n运行期 FFI 边(非 Cargo 边):\n  auto-lang `terminal` 组件 ──libloading──▶ autoterm-engine.cdylib(P2)\n                                         └─ 标量/opaque handle 数据面\n\n不存在:auto-lang ──Cargo──▶ auto-term(结构性禁止)\n兜底:确需共享类型 → terminal-types 叶子 crate(零依赖,双方引用)\n```\n\n**各层归属(迁移不并行,用户 2026-09-06 对齐)**:\n\n| 层 | 真身 | 本仓命运 |\n| --- | --- | --- |\n| 引擎(PTY+仿真,autoterm-core) | 本仓 cdylib adapter(P2) | **活**——未来 AutoTerm 的引擎本体 |\n| 控件(TermGrid 视口逻辑) | auto-lang `terminal` 组件(P1) | widget.rs **冻结**(真身迁走) |\n| 应用(App/消息/配置) | `.at` 代码(P3) | lib.rs App **冻结为参考** |\n\n**worktree 布局(同组双仓,/auto-plan:work 创建)**:\n\n```\n.wt/auto-009/auto-term   # plan-009-dev(P2/P3/P4 与台账)\n.wt/auto-009/auto-lang   # auto-term-dev 依赖仓 worktree(P0/P1;\n                         #   每相位 fold 回 auto-lang main 后本仓 re-sync)\n```\n\n**相位 fold 节奏**:P0 验证过 → fold auto-lang → P1 起(auto-term\n侧同步 re-sync);P1 验证过 → fold auto-lang → P2/P3(auto-term 侧,\nP2 其实可与 P1 并行——见执行步骤注);P3 对拍绿 → P4 收账。\n\n**组件数据面(P1 设计核心,两候选形态,T2 实测裁定)**:\n\n- 形态甲 props-feed:app 层(.at)每拍把行级损伤增量经组件 props 喂入,\n  组件纯渲染+输入事件上抛——贴合 code_editor 范式,绑定层走标量;\n- 形态乙 opaque-handle:app 把 adapter 的 opaque session handle 传给\n  组件,组件 draw 时直调标量 API 取脏行——少一跳,但组件持运行期\n  状态更深。\n- 裁定规则(预授权):先做甲(范式成熟、a2r 可表达性最好),实测\n  2000 行流式输出下损伤增量喂入延迟不可接受(帧预算超标)再降级乙,\n  执行记录注明数据。",
+        "file": "docs/plans/archived/009-autoize-phase1.md",
+        "related": [
+          "PLAN-009"
         ],
         "status": "stable"
       }
@@ -371,6 +404,17 @@
           "PLAN-008"
         ],
         "status": "stable"
+      },
+      {
+        "id": "P009-4",
+        "section": "designs",
+        "title": "AutoTerm Auto 化第一相位(分支 A:a2r 修缮 → terminal 原生组件 → 引擎 adapter → Auto 复刻对拍) — 详细设计",
+        "content": "### P0:auto-lang a2r 修缮(T1,worktree:auto-lang)\n\n- F1 修复:`docs/a2r-transpiler-guide.md` 所述派生组合\n  (自动派生×显式派生 → E0369)在转译器侧修(优先)或规约绕开\n  (兜底,记入 `.at` 编码规约);修复证据 = 006 S2 样本中此前\n  不可编译的构造转译后 rustc 实编通过;\n- 快照门扩档:`crates/auto-lang/test/a2r/` 快照管线增加\n  \"rustc 实编\"档(006 拆解草案原文:round-trip 快照扩一档\n  rustc 实编门)——每快照产物 `cargo check` 级验证;\n- 本仓 `spikes/autoize-roundtrip/` 重跑:diff 相对 006 NOTES.md\n  的记录,新差异(应只有 F1 修复带来的改善)归档。\n\n### P1:auto-lang `terminal` 原生组件(T2–T5,worktree:auto-lang)\n\n新目录 `crates/auto-lang/src/ui/terminal/`(mod 结构照 code_editor),\n**迁移源 = 本仓 widget.rs 逐块搬运 + 接 auto-lang 组件协议**:\n\n- T2 骨架+接线:`ui/terminal/{mod.rs,widget.rs}` 四件套\n  (Widget trait:State/Message/View/focus)+ `widget_registry.rs`/\n  `component.rs`/`a2ui/schema.rs`/`iced/renderer.rs` 四处注册\n  (View 新变体 `Terminal`),渲染占位矩形;`.at` 最小示例\n  (examples/ui 下)能挂载;\n- T3 视口+损伤:网格字形渲染(monospace cell 布局/宽字符)、\n  行级损伤门控与 RowPara 等价缓存、光标块/形状/闪烁——搬\n  widget.rs 的 draw/damage 逻辑,数据面按裁定形态接;\n- T4 交互:选中三模式+块选(列带高亮)、IME 自绘 preedit、\n  滚轮回滚/偏移指示、右键菜单——搬 004/005 的交互套件;\n- T5 测试管线:headless 断言(网格文本/选中/损伤计数)+\n  iced_test(照 selectable_text);rust-mode 示例 E0080 小修;\n- 数据面形态裁定(甲/乙)在 T2 实测后落执行记录,后续任务按\n  裁定形态实现。\n\n### P2:本仓引擎 cdylib adapter(T6–T7,worktree:auto-term)\n\n- T6 cdylib 面:`crates/autoterm-core` 加 `[lib] crate-type`\n  增补(rlib 保留),新增 `ffi.rs` 模块——opaque SessionHandle +\n  标量/字符串 C ABI:`autoterm_engine_spawn/write_input/feed_ready/\n  take_dirty_rows/row_text/row_style/resize/interrupt/kill`\n  (命名风格以现有公面为准,T6 细化);行级损伤增量导出走\n  `take_dirty_rows`(与 P1 数据面甲形态对齐);\n- T7 独立集成测试:新测试 crate 或 tests/(独立进程)经\n  libloading 加载 cdylib,跑 echo 往返 + resize + interrupt\n  (008 语义)全链断言——这就是 Auto 侧未来消费形态的预演。\n\n### P3:本仓 Auto 复刻 + 对拍(T8–T10,worktree:auto-term)\n\n- T8 `.at` 应用骨架:本仓新目录 `at/`(产品归属本仓):\n  `at/autoterm.at`(app 声明:窗口/消息/update)+ terminal 组件\n  挂载 + adapter 经 ext/FFI 绑定(use.rust 管线,006 Q2 结论);\n  a2r 转译产物 `at-gen/`(入库,对拍门禁消费)rustc 实编通过;\n- T9 对拍门禁:`crates/autoterm-parity/`(新测试 crate,或\n  autoterm-core tests——T8 时按产物形态定,执行记录注明):\n  同一场景脚本分别驱动 Rust oracle 版与 a2r 版二进制,断言\n  网格文本等价——场景矩阵 = 007/008 门禁的子集(启动提示符/\n  echo 往返/Ctrl+C 中断(timeout 主体)/resize/色彩自证/\n  选中文本);ash 缺席显式 skip;\n- T10 UI 级冒烟取证:a2r 版二进制交互冒烟(真窗口;程序化\n  dump 等价钩子若组件数据面支持,否则手动清单 + 截图补充,\n  002/003 惯例:程序化证据为主)。\n\n### P4:收账(T11,worktree:auto-term)\n\n- DEBTS #8 关账:条件回写(对拍门禁在库 + 组件真身迁移完成 +\n  本仓转型);\n- 本仓转型声明:README 定位节改写(引擎 adapter + 参考实现/\n  oracle,widget.rs/App 冻结);001 决策链追加 009 节;\n- 无环断言:两仓 `cargo tree` 交叉检查(auto-lang 不出现\n  autoterm crate;auto-term 仅经 at-gen 依赖 auto-lang 运行时);\n- 新 DEBTS 候选记录(Vue 后端留白/数据面性能余量/E0080 若未修)。",
+        "file": "docs/plans/archived/009-autoize-phase1.md",
+        "related": [
+          "PLAN-009"
+        ],
+        "status": "stable"
       }
     ],
     "tests": [
@@ -465,6 +509,17 @@
           "PLAN-008"
         ],
         "status": "verified"
+      },
+      {
+        "id": "P009-5",
+        "section": "tests",
+        "title": "AutoTerm Auto 化第一相位(分支 A:a2r 修缮 → terminal 原生组件 → 引擎 adapter → Auto 复刻对拍) — 测试设计",
+        "content": "- **自动(P0)**:a2r 快照 + rustc 实编门;本仓 spikes round-trip 重跑;\n- **自动(P1)**:组件 headless 断言 + iced_test;ui-iced 全量构建绿;\n- **自动(P2)**:libloading 独立进程集成测试(echo/resize/interrupt);\n- **自动(P3)**:对拍门禁(场景矩阵 × 双实现网格等价,缺席 skip);\n- **半自动**:a2r 版 UI 冒烟取证;\n- **回归底线**:Rust oracle 版 `cargo test --workspace` 全程绿\n  (每相位 fold 前各跑一次);auto-lang 侧其自有测试体系按其仓\n  惯例(P0/P1 fold 前在 auto-lang worktree 内跑其全量)。",
+        "file": "docs/plans/archived/009-autoize-phase1.md",
+        "related": [
+          "PLAN-009"
+        ],
+        "status": "verified"
       }
     ],
     "reviews": [
@@ -554,6 +609,28 @@
         "file": "docs/plans/archived/008-ctrlc-interrupt-fix.md",
         "related": [
           "PLAN-008"
+        ],
+        "status": "published"
+      },
+      {
+        "id": "P009-6",
+        "section": "reviews",
+        "title": "AutoTerm Auto 化第一相位(分支 A:a2r 修缮 → terminal 原生组件 → 引擎 adapter → Auto 复刻对拍) — 验收标准",
+        "content": "1. P0:a2r 快照全绿 + rustc 实编门绿;本仓 round-trip spike 重跑\n   差异归档(F1 修复证据在案);\n2. P1:auto-lang `--features ui-iced` 构建绿;terminal 组件双后端\n   测试绿;`.at` 最小示例渲染 `<terminal/>` 有取证;\n3. P2:cdylib 独立进程集成测试绿(echo 往返/resize/interrupt);\n4. P3:a2r 产物 rustc 实编 + 对拍门禁全绿(场景矩阵覆盖\n   007/008 核心语义;缺席显式 skip);UI 冒烟取证在案;\n5. P4:DEBTS #8 关账;README 转型声明 + 001 决策链 009 节;\n   **无环断言过**(auto-lang 零 Cargo 依赖 auto-term);\n6. 全程:Rust oracle `cargo test --workspace` 不回归;\n   两仓零新依赖(Cargo.toml 依赖区零新增 crate 名)。",
+        "file": "docs/plans/archived/009-autoize-phase1.md",
+        "related": [
+          "PLAN-009"
+        ],
+        "status": "published"
+      },
+      {
+        "id": "P009-7",
+        "section": "reviews",
+        "title": "AutoTerm Auto 化第一相位(分支 A:a2r 修缮 → terminal 原生组件 → 引擎 adapter → Auto 复刻对拍) — 复审记录",
+        "content": "**审阅人**:ZCode(/auto-plan:review)· **时间**:2026-09-06 ·\n**结论**:`reviewed`(全部验收过,2 项部分达标已记债,无阻塞项)\n\n### 逐条验收(全部在执行 worktree 重跑,不信勾选框)\n\n| # | 验收 | 判定 | 证据 |\n|---|---|---|---|\n| 1 | P0 a2r 快照全绿+实编门绿+spike 重跑归档 | **pass** | `cargo tt` 3817/3818(唯一失败=基线已坏 charts,主检出双证);`a2r_rustc_real_compile_gate` 在档(ledger 74 例显式豁免,文件在案);`spikes/autoize-roundtrip/T1-RERUN-PLAN009.md`+产物 diff(sample 仅派生行=修复本体,sample2 字节零差异) |\n| 2 | P1 ui-iced 构建绿+组件双后端测试+最小示例取证 | **partial→pass(记债)** | ui-iced build 绿(1m02s);headless 14/14 + 最小 .at 挂载 1/1 重跑绿;iced 像素级自动化未建(simulator 无事件注入面),以 T10 真窗口截图替代——债候选(见下) |\n| 3 | P2 cdylib 独立集成测试绿 | **pass** | `engine_ffi_integration` 1/1(2.61s)重跑绿 |\n| 4 | P3 产物实编+对拍门禁全绿+UI 取证 | **pass** | at-gen check 0 error+scenario anchor 2 处;`autoterm-parity` 5/5 重跑绿(4.35s);evidence/{ui_smoke.txt,ui_window.png} 在案 |\n| 5 | P4 收账四件+无环断言 | **pass** | grep 命中 DEBTS(4)/README(2)/001(2);cargo tree 重验:autoterm-core 0×auto-lang、auto-lang 0×autoterm、at-gen 1×auto-lang |\n| 6 | oracle 回归+零新依赖 | **pass(带注)** | workspace 61 passed 0 failed(重跑);auto-lang 009 未动任何 Cargo.toml;auto-term 侧 libloading 新声明于两个**新增** crate(at-gen/ffi-tests),lock 零新增(ash 传递已有)+T7 明示授权;parity 依赖仅仓内 rlib |\n\n### 遗漏/延后/workaround 猎查(逐项记录,不隐藏)\n\n- **延后①(记债)**:选中文本 headless 对拍——门禁显式 skip,证据未\n  落 T10(截图为初始态无选中)。组件选中面(T4)已测,缺的是 scenario\n  协议接线。计划\"场景矩阵=子集\"授权子集裁剪,但该面应补:债务候选。\n- **延后②(记债)**:terminal 组件 iced_test 像素级自动化——以 headless\n  断言+真窗口截图替代(simulator 无事件注入,选择性证据更弱)。债务候选。\n- **workaround(已记债)**:`[]` 字面量绕 a2r `List.new()` 限定 bug;\n  in-process API 绕挂起的 CLI trans(转译规程入库 at-gen/README);\n  实编门 ledger 豁免 74 例存量债(门对新破坏必红语义保留)。\n- **遗漏猎查**:11 步逐条对 diff,无丢失子项;T1/T5/T8-fix 三次\n  auto-lang fold 均完成(T1 一次顺延因主检出被并行会话占用,后补齐)。\n\n### 移交\n\n就绪 `/auto-plan:merge`(worktree `.wt/auto-009/{auto-term,auto-lang}`\n与分支 `plan-009-dev`/`auto-term-dev` 保留,清理归 merge;另注意组内\n还有 auto-down 只读 worktree 供路径解析,merge 时一并清理)。",
+        "file": "docs/plans/archived/009-autoize-phase1.md",
+        "related": [
+          "PLAN-009"
         ],
         "status": "published"
       }

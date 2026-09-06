@@ -1,6 +1,6 @@
 ---
 plan_id: PLAN-009
-status: reviewed
+status: archived
 feature_name: AutoTerm Auto 化第一相位(分支 A:a2r 修缮 → terminal 原生组件 → 引擎 adapter → Auto 复刻对拍)
 author: [衍星居士]
 created_at: 2026-09-06
