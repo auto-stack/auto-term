@@ -9,6 +9,45 @@ mod engine;
 mod shell;
 
 use app_logic::TermApp;
+use auto_lang::ui::Component;
+
+/// T10 程序化 UI 冒烟:构造真实窗口壳组件(terminal 组件挂载),驱动
+/// 引擎至锚点回显,经 headless 管线(view_to_vtree)dump 视图树取证。
+/// 不开事件循环——GUI 真窗口归交互冒烟/截图补充。
+fn ui_smoke() -> std::process::ExitCode {
+    use auto_lang::ui::vnode_converter::view_to_vtree;
+
+    let mut shell = shell::AutoTermShell::default();
+    shell.app.send_line("echo autoterm_smoke_ok");
+    let deadline = std::time::Instant::now() + std::time::Duration::from_secs(20);
+    while std::time::Instant::now() < deadline {
+        shell.on(shell::ShellMsg::Tick);
+        if shell.app.lines.iter().any(|l| l.contains("autoterm_smoke_ok")) {
+            break;
+        }
+        std::thread::sleep(std::time::Duration::from_millis(250));
+    }
+    let view = shell.view();
+    let vtree = view_to_vtree(view);
+    let dump = format!("{vtree:?}");
+    // 取证判据:terminal 节点挂载(几何可见)AND 引擎回显进入喂入行
+    // (组件 props 数据面)。
+    let node = dump.contains("terminal key=at-shell cols=80 rows=24 lines=24");
+    let echo = shell.app.lines.iter().any(|l| l.contains("autoterm_smoke_ok"));
+    println!("{dump}");
+    println!("terminal-node-mounted: {node}");
+    println!("echo-in-fed-lines: {echo}");
+    let hit = node && echo;
+    println!(
+        "UI_SMOKE_{}",
+        if hit { "OK (terminal 组件挂载 + 引擎回显入 props)" } else { "FAIL" }
+    );
+    if hit {
+        std::process::ExitCode::SUCCESS
+    } else {
+        std::process::ExitCode::FAILURE
+    }
+}
 
 fn wait_for(app: &mut TermApp, needle: &str, secs: u64) -> bool {
     let deadline = std::time::Instant::now() + std::time::Duration::from_secs(secs);
@@ -68,6 +107,9 @@ fn main() -> std::process::ExitCode {
     let args: Vec<String> = std::env::args().collect();
     if args.get(1).map(String::as_str) == Some("scenario") {
         return run_scenario(args.get(2).map(String::as_str).unwrap_or("echo"));
+    }
+    if args.get(1).map(String::as_str) == Some("smoke") {
+        return ui_smoke();
     }
     #[cfg(feature = "ui-iced")]
     {
