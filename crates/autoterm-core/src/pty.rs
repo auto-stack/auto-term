@@ -166,10 +166,12 @@ impl PtySession {
     }
 
     /// Ctrl+C 中断注入(PLAN-008,DEBTS #12/F2):Windows 经辅助进程
-    /// `autoterm-ctrlc.exe` 挂进 shell 所在 ConPTY 控制台广播
-    /// CTRL_C_EVENT,使**运行中**的命令真正可中断(裸 0x03 字节做不到,
-    /// 007 F2 坐实)。helper 缺失/失败一律降级为纯字节路径(修复前
-    /// 行为),绝不 panic。返回事件是否广播成功。
+    /// `autoterm-ctrlc.exe` 挂进 shell 所在 ConPTY 控制台,双发
+    /// CTRL_C→CTRL_BREAK 广播,使**运行中**的命令真正可中断(裸 0x03
+    /// 字节做不到,007 F2 坐实;26200 实测 C 被吞、Break 可达,健康
+    /// build 上 C 承担规范语义——见 bin/autoterm-ctrlc.rs 头注)。
+    /// helper 缺失/失败一律降级为纯字节路径(修复前行为),绝不
+    /// panic。返回事件是否广播成功。
     ///
     /// 诊断走 stderr 而非 log:core 保持零日志依赖(计划验收#5,
     /// Cargo.toml 零 diff)。
@@ -199,15 +201,22 @@ impl PtySession {
             Err(e) => return fallback(self, &format!("helper spawn 失败: {e}")),
         };
         // 有界等待 ≤3s(50ms 步进自旋,不引 wait-timeout 依赖)。
+        // exit 码判定:0 = 干净完成;0xC000013A(STATUS_CONTROL_C_EXIT,
+        // i32 = -1073741510)= helper 被自己广播的事件杀死——conhost
+        // 向 AttachConsole 进程派发 handler 存在时序竞态(注册了
+        // 免疫 handler 仍偶发走默认 handler)。被事件杀死 ⇒ 事件必然
+        // 已广播(且 helper 先发 Break,见 bin/autoterm-ctrlc.rs),
+        // 故同判成功。
+        const STATUS_CONTROL_C_EXIT: i32 = -1073741510;
         let deadline = Instant::now() + Duration::from_secs(3);
         loop {
             match child.try_wait() {
-                Ok(Some(status)) if status.code() == Some(0) => return true,
                 Ok(Some(status)) => {
-                    return fallback(
-                        self,
-                        &format!("autoterm-ctrlc exit={}", status.code().unwrap_or(-1)),
-                    );
+                    let code = status.code().unwrap_or(-1);
+                    if code == 0 || code == STATUS_CONTROL_C_EXIT {
+                        return true;
+                    }
+                    return fallback(self, &format!("autoterm-ctrlc exit={code}"));
                 }
                 Ok(None) if Instant::now() < deadline => {
                     thread::sleep(Duration::from_millis(50));
