@@ -19,6 +19,10 @@ use std::time::{Duration, Instant};
 use autoterm_core::PtySession;
 
 const ECHO_ANCHOR: &str = "autoterm_parity_ok";
+
+/// PTY 场景串行锁:同进程内三场景并发会互相干扰(时钟预算受负载挤压,
+/// 中断时序抖动)。cargo test(非 nextest)默认同进程多线程跑测试。
+static PARITY_SERIAL: std::sync::Mutex<()> = std::sync::Mutex::new(());
 const INTERRUPT_ANCHOR: &str = "alive_after_parity_interrupt";
 
 // ============================================================
@@ -38,9 +42,19 @@ fn contains(needle: &'static str) -> impl Fn(&[String]) -> bool {
     move |rows: &[String]| rows.iter().any(|l| l.contains(needle))
 }
 
-/// 归一:去行尾空白,丢全空尾行(语义等价口径;006 S2)。
+/// 归一:去行尾空白,丢全空尾行,屏蔽 timeout 倒计时行(中断落点在
+/// 倒计时文本中的位置是纯时序噪声,语义=「已中断」;006 S2 语义等价口径)。
 fn normalize(rows: &[String]) -> Vec<String> {
-    let mut out: Vec<String> = rows.iter().map(|r| r.trim_end().to_string()).collect();
+    let mut out: Vec<String> = rows
+        .iter()
+        .map(|r| {
+            if r.contains("Waiting for") {
+                "WAITING_LINE(interrupted)".to_string()
+            } else {
+                r.trim_end().to_string()
+            }
+        })
+        .collect();
     while out.last().map(|l| l.is_empty()).unwrap_or(false) {
         out.pop();
     }
@@ -199,6 +213,7 @@ impl Drop for A2r {
 /// 场景 1+2:启动提示符 + echo 往返——oracle/a2r 同命令,网格等价。
 #[test]
 fn parity_startup_and_echo() {
+    let _serial = PARITY_SERIAL.lock().unwrap();
     let mut o = Oracle::spawn();
     o.write_line(&format!("echo {ECHO_ANCHOR}"));
     let _ = o.wait_for(ECHO_ANCHOR, Duration::from_secs(20), contains(ECHO_ANCHOR));
@@ -215,6 +230,7 @@ fn parity_startup_and_echo() {
 /// 场景 3:resize——几何变更后 echo 往返仍等价。
 #[test]
 fn parity_resize() {
+    let _serial = PARITY_SERIAL.lock().unwrap();
     let mut o = Oracle::spawn();
     o.write_line("echo pre_resize");
     let _ = o.wait_for("pre_resize", Duration::from_secs(20), contains("pre_resize"));
@@ -233,6 +249,7 @@ fn parity_resize() {
 /// 双侧 echo 依旧可达。
 #[test]
 fn parity_interrupt() {
+    let _serial = PARITY_SERIAL.lock().unwrap();
     // 008 拷贝部署契约:autoterm-ctrlc.exe 须与宿主(此处为 at-gen 产物
     // exe)同目录;DLL 内 interrupt 据此解析 helper。缺失则降级 0x03 字节
     // 路径,26200 上被吞 → timeout 杀不掉 → 场景必败,故显式 skip。
