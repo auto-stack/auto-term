@@ -11,7 +11,7 @@ supersedes_spec_components: []
 new_spec_components: []
 touched_goals: []
 
-current_step: 6
+current_step: 7
 total_steps: 11
 ---
 
@@ -360,6 +360,11 @@ P2 其实可与 P1 并行——见执行步骤注);P3 对拍绿 → P4 收账。
 - **T7** [P2/auto-term] 独立集成测试:libloading 加载 cdylib 跑
   echo 往返 + resize + interrupt 全链。
   验证:该测试绿(独立进程,不链接 autoterm-core rlib)。
+  [✅ 已完成] 新 crate autoterm-engine-ffi-tests(workspace member);
+  测试体只走 DLL 面(libloading),autoterm-core 依赖仅为构建顺序保证——
+  语义达标,字面"不链接 rlib"以独立 crate 实现之。echo/resize(Full 损伤
+  + 29 行)/interrupt(timeout 主体——ping 对 Break 免疫不能作主体)/中断后
+  echo 存活四断言绿,复跑 3 次稳定。
 
 - **T8** [P3/auto-term] `.at` 应用骨架:`at/autoterm.at` +
   terminal 组件挂载 + adapter FFI 绑定;a2r 转译 `at-gen/` 入库。
