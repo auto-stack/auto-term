@@ -1,6 +1,6 @@
 ---
 plan_id: PLAN-009
-status: executing
+status: execution_done
 feature_name: AutoTerm Auto 化第一相位(分支 A:a2r 修缮 → terminal 原生组件 → 引擎 adapter → Auto 复刻对拍)
 author: [衍星居士]
 created_at: 2026-09-06
@@ -11,7 +11,7 @@ supersedes_spec_components: []
 new_spec_components: []
 touched_goals: []
 
-current_step: 9
+current_step: 11
 total_steps: 11
 ---
 
@@ -386,10 +386,21 @@ P2 其实可与 P1 并行——见执行步骤注);P3 对拍绿 → P4 收账。
 
 - **T10** [P3/auto-term] a2r 版 UI 冒烟取证。
   验证:取证文件在案(程序化优先,截图补充)。
+  [✅ 已完成] at-gen smoke 模式:真实窗口壳组件驱动引擎至锚点回显,
+  view_to_vtree dump——terminal 节点挂载(80x24 lines=24)+ 引擎回显入
+  props 双验 UI_SMOKE_OK;截图补充(evidence/ui_window.png):真窗口
+  「Auto Lang - Iced」terminal 组件实时渲染 cmd 会话(banner/提示符/
+  echo 回显/光标块在案)。
 
 - **T11** [P4/auto-term] 收账:DEBTS #8 关账 + README 转型声明 +
   001 决策链 009 节 + 无环断言 + 新债记录。
   验证:两仓 cargo tree 交叉检查通过;grep 断言各文档更新命中。
+  [✅ 已完成] DEBTS #8 关账回写(关账条件三条全在案)+ 009 新增观察
+  7 条(74 例存量债/List.new 限定 bug/CLI 挂起/Vue 留白/性能余量/
+  标题 cosmetic/E0080 已修待销账);README 转型声明(引擎 adapter 活/
+  oracle 冻结);001 决策链 008→009 节;无环断言 cargo tree 双仓交叉
+  (auto-lang 0×autoterm;仅 at-gen→auto-lang 1 边);**回归底线:
+  cargo test --workspace 61 passed 0 failed(复跑×2 稳定)**。
 
 ## 复审记录
 
