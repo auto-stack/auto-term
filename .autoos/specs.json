@@ -56,6 +56,17 @@
         ],
         "status": "published",
         "superseded_by": null
+      },
+      {
+        "id": "P005-1",
+        "section": "reports",
+        "title": "AutoTerm Phase 4 交互批(Rust 版功能齐全:自动滚动 + 块选 + 右键菜单 + 选中色 + 光标形状/闪烁) — 变更摘要",
+        "content": "Rust 参考实现的\"功能齐全\"批(总排序裁定 2026-09-05:先做齐做稳\nRust,Auto 复刻后置):①**拖选到边缘自动滚动**(004 裁定#4 归组项,\n至此 004 的 Phase 4 欠账启动清偿);②**块选(Block)**——core 公面\n现成(`SelectionType::Block`/`to_range`/`selection_to_string` 均有\nblock 分支),补 UI 触发与矩形渲染;③**右键上下文菜单**\n(复制/粘贴/全选);④**选中色可配置**(CLI `--selection-color`,\n去 25% α 硬编码);⑤**光标形状**(DECSCUSR:Block/Underline/Beam,\nSgrCursorShape 随快照已暴露)+ **闪烁**(聚焦时条件定时,保住\n\"空闲零唤醒\")。约束:全部新代码保持 **a2r 可表达形态**(DEBTS #8)。",
+        "file": "docs/plans/archived/005-phase4-interaction-batch.md",
+        "related": [
+          "PLAN-005"
+        ],
+        "status": "published"
       }
     ],
     "goals": [
@@ -114,6 +125,17 @@
         ],
         "status": "proposed",
         "superseded_by": null
+      },
+      {
+        "id": "P005-2",
+        "section": "goals",
+        "title": "AutoTerm Phase 4 交互批(Rust 版功能齐全:自动滚动 + 块选 + 右键菜单 + 选中色 + 光标形状/闪烁) — 目标",
+        "content": "1. **拖选自动滚动**:按住拖选、光标越过视口上下边缘时按拍滚动\n   (方向、速度受控);松开即停;滚动中选中随内容锚定(绝对行\n   语义,004 已有);\n2. **块选**:Alt+左键拖选(待澄清#1)触发矩形选中,高亮按列带\n   渲染,复制走 `selection_to_string` 的 block 分支(每行截断拼\n   接);\n3. **右键上下文菜单**:右键弹浮层菜单(复制/粘贴/全选,待澄清\n   #4),项动作复用 004 的 copy/paste 消息路径;菜单外点击/ESC\n   关闭;**右键原\"直接粘贴\"行为被菜单取代**;\n4. **选中色配置**:`--selection-color RRGGBB[AA]` CLI 参数(默认\n   维持现值 e8e8e8@25%),经 App 传入 TermGrid;\n5. **光标形状/闪烁**:shell 经 DECSCUSR(ESC[N q)设形——Block\n   (现状反色块)/Underline/Beam;闪烁默认开(待澄清#3,500ms\n   相位,仅窗口聚焦且光标可见时挂条件定时,空闲仍零唤醒);\n6. **决策链与台账**:001 追加 004→005 节;DEBTS #6 光标形状子项\n   清账、Phase 4 批次勾销重排;README 交互表更新。\n\n非目标:Ctrl+C 稳定版复测(债务 #7,等环境,不在本批);IME 人工\n清单(用户侧动作,非本计划交付);配置文件体系(仅 CLI 参数);\nUnix 基座(独立轨道);Auto 复刻(#7/#8,后置轨道)。",
+        "file": "docs/plans/archived/005-phase4-interaction-batch.md",
+        "related": [
+          "PLAN-005"
+        ],
+        "status": "proposed"
       }
     ],
     "architecture": [
@@ -175,6 +197,17 @@
         ],
         "status": "stable",
         "superseded_by": null
+      },
+      {
+        "id": "P005-3",
+        "section": "architecture",
+        "title": "AutoTerm Phase 4 交互批(Rust 版功能齐全:自动滚动 + 块选 + 右键菜单 + 选中色 + 光标形状/闪烁) — 架构方案",
+        "content": "```\n自动滚动:widget 拖选中检测\"越界Extend\"(clamped cell 停留边缘)\n  ──publish──▶ Message::Select(Extend{cell 在边缘行/列}) 循环\n  App 检测连续边缘 Extend → 置 drag_scroll: Option<Dir>\n  条件订阅 time::every(50ms) → Scrolled(±N) → refresh\n  (core 选中锚定绝对行,滚动自然带动;Finish 清 drag_scroll)\n\n块选:widget ButtonPressed 时按 Alt 修饰 → Begin{Block}\n  高亮:is_block=true 时逐行画同一列段(col_begin..col_last 对齐)\n  复制:core selection_to_string 的 Block 分支(现成)\n\n右键菜单:右键释放 → Message::ContextMenu(Option<(格,项集)>)\n  App.menu: Option<MenuState{at, hover}>;view 传 TermGrid\n  draw 末层画浮层(quad 底 + 文本 + hover 高亮);再点击/ESC → 关\n  菜单项动作 = publish 004 既有消息(Copy=copy_selection 同路径)\n\n选中色:Args --selection-color → AppConfig.selection_color: Color\n  → App 传入 TermGrid.selection_color → 高亮 quad 用之\n\n光标:core cursor() 扩展返回 shape(渲染快照 cursor.shape 现成)\n  Underline=底部 2px quad;Beam=左缘 2px quad;Block=现状\n  闪烁:App.cursor_visible: bool + 条件订阅 time::every(500ms)\n  (仅 focused && shape!=Hidden && !menu 时挂),取反驱动重绘\n  焦点事件:iced window focus 事件 → App.focused(新增状态)\n```",
+        "file": "docs/plans/archived/005-phase4-interaction-batch.md",
+        "related": [
+          "PLAN-005"
+        ],
+        "status": "stable"
       }
     ],
     "designs": [
@@ -239,6 +272,17 @@
         ],
         "status": "stable",
         "superseded_by": null
+      },
+      {
+        "id": "P005-4",
+        "section": "designs",
+        "title": "AutoTerm Phase 4 交互批(Rust 版功能齐全:自动滚动 + 块选 + 右键菜单 + 选中色 + 光标形状/闪烁) — 详细设计",
+        "content": "### core:块选与光标形状透传(T1)\n\n- `term.rs` `cursor()` 扩展:返回 `(row, col, CursorShape)` 或\n  新增 `cursor_shape()`(保持旧签名兼容调用点最小改);\n- sim_regression 增 1 用例:feed `ESC[4 q` 后 shape==Underline\n  (DECSCUSR 通路);Block 选中 2 用例(范围矩形语义 + 文本逐行\n  截断)。\n\n### ui:块选触发与渲染(T2)\n\n- widget `ButtonPressed(Left)` 分支:mods 含 Alt → ty=Block\n  (多击计数与 Alt 正交:Alt 按下时恒 Block,不参与 1/2/3 击);\n- 高亮渲染:`sel.is_block` 时逐行画 `col_begin..col_last` 窄带\n  (矩形对齐,不跨全行);文本层不动;\n- dev-select 解析器增 `block` 前缀(现 parser 三前缀外补一)。\n\n### ui:拖选自动滚动(T3)\n\n- App 增 `drag_scroll: Option<i32>`(方向行数);handle_select\n  的 Extend 分支检测:cell.row==0 且指针在上边缘带(由 widget\n  发布 `at_edge: Option<Vertical>` 扩展字段)→ 置 drag_scroll;\n  离开边缘/Finish → 清;\n- 条件订阅:`drag_scroll.is_some()` 时挂 `time::every(50ms)` →\n  `Message::Scrolled(delta)`(复用现滚轮回滚路径,选中随绝对行\n  锚定自动跟随);菜单打开时暂停。\n\n### ui:右键上下文菜单(T4)\n\n- `Message::ContextMenu(Option<(usize,usize)>)`(格坐标或像素,\n  存 MenuState);widget 右键释放改发 ContextMenu(原 Paste 通道\n  由菜单项\"粘贴\"承担);\n- TermGrid 增 `menu: Option<MenuState>` 字段;draw 最顶层画:\n  底 quad + 边框 + 三项文本(复制/粘贴/全选)+ hover 反色;\n- 交互:菜单开着时点击命中项 → publish 对应动作(Copy=\n  clipboard_shortcut 同函数 / Paste=现消息 / 全选=Begin{Lines,\n  视口左上}+Extend{视口右下});未命中或 ESC → 关闭;\n- 命中检测在 `pixel_to_cell` 同域(菜单矩形像素判定,纯函数\n  可单测)。\n\n### ui:选中色配置(T5)\n\n- bin 增 `--selection-color RRGGBB[AA]`(clap,默认 `e8e8e8`+\n  α0.25 硬编码值移入 AppConfig);解析 hex → iced::Color 纯函数\n  + 单测(6/8 位、非法回退默认);\n- App → TermGrid.selection_color: Color;高亮 quad 改用之。\n\n### ui:光标形状与闪烁(T6-T7)\n\n- 渲染分形:Underline=格底 2px 亮 quad;Beam=格左 2px 亮 quad\n  (不反色字形);Block 维持 004 反色块;\n- `App.focused: bool`(iced window focus 事件接入,新增消息);\n- 闪烁:`cursor_blink_on: bool`(相位),条件订阅 500ms 取反,\n  仅 `focused && shape!=Hidden && menu.is_none()`;光标不可见\n  帧跳过光标绘制(preedit 挂起时同样不闪);\n- 转储增 `cursor_shape:`/`cursor_visible:` 行(dev 取证)。\n\n### 取证与文档(T8-T9)\n\n- 冒烟矩阵:块选高亮像素扫描(列带几何)/DECSCUSR 三形转储+\n  Beam 像素(左缘亮线)/自动滚动注入(dev-select 边缘 Extend 模\n  拟 → 转储 scroll_offset>0 且 selection_text 跨滚动区)/菜单\n  开合(dev-hook 注入 ContextMenu 坐标 → 像素扫描菜单底 quad);\n- 001 追加 004→005 决策链;DEBTS 勾账(Phase 4 批次 1-4 项 +\n  光标形状早年账);README 交互表增块选/菜单/形状/闪烁。",
+        "file": "docs/plans/archived/005-phase4-interaction-batch.md",
+        "related": [
+          "PLAN-005"
+        ],
+        "status": "stable"
       }
     ],
     "tests": [
@@ -300,6 +344,17 @@
         ],
         "status": "verified",
         "superseded_by": null
+      },
+      {
+        "id": "P005-5",
+        "section": "tests",
+        "title": "AutoTerm Phase 4 交互批(Rust 版功能齐全:自动滚动 + 块选 + 右键菜单 + 选中色 + 光标形状/闪烁) — 测试设计",
+        "content": "- 自动:core TDD(DECSCUSR 1 例 + Block 2 例);ui 单测\n  (hex 解析、菜单命中矩形、Alt 修饰判定纯函数化);\n- 半自动:dev-select block 注入 + 转储断言 + 像素扫描;DECSCUSR\n  注入(dev-autotype `printf` 转义)+ 转储形状断言;边缘 Extend\n  注入断言 scroll_offset;菜单注入像素断言;\n- 手动:真鼠标 Alt 拖选/菜单手感、闪烁不刺眼(5 分钟清单);\n- 空闲零唤醒回归:静止 10s 转储 frames 增速 ≈0(闪烁条件定时\n  不泄漏);\n- 不做:性能基准、配置文件体系、Unix。",
+        "file": "docs/plans/archived/005-phase4-interaction-batch.md",
+        "related": [
+          "PLAN-005"
+        ],
+        "status": "verified"
       }
     ],
     "reviews": [
@@ -358,6 +413,17 @@
         ],
         "status": "published",
         "superseded_by": null
+      },
+      {
+        "id": "P005-6",
+        "section": "reviews",
+        "title": "AutoTerm Phase 4 交互批(Rust 版功能齐全:自动滚动 + 块选 + 右键菜单 + 选中色 + 光标形状/闪烁) — 验收标准与复审",
+        "content": "1. `cargo test --workspace` 全绿(含 core 新 3 例 + ui 新单测);\n2. Alt+拖选块选:矩形高亮像素证据(列带对齐),复制文本逐行\n   无拖尾(dev 注入断言);\n3. 拖选越上/下边缘自动滚动,选中跨滚动区锚定正确(转储\n   scroll_offset 与 selection_text 断言),松开即停;\n4. 右键菜单:三项可见(像素证据),复制/粘贴/全选动作与 004\n   快捷键同路径;ESC/外点击关闭;右键不再直接粘贴(README 更新);\n5. `--selection-color ff0000` 冒烟:高亮带色变(像素扫描命中色\n   更新),默认不传维持现色;\n6. DECSCUSR 三形:转储 shape 断言 + Beam/Underline 像素证据;\n   聚焦时闪烁、失焦/隐藏/菜单时停;静止 10s frames 增速≈0;\n7. 双构建绿(默认/dev-tools);默认构建零 dev 面不变;\n8. 001 含 004→005 决策链;DEBTS Phase 4 批次勾销;README 更新。\n\n## 复审(2026-09-06,ZCode /auto-plan:review 重验)\n\n**复审人**:ZCode(/auto-plan:review)· **时间**:2026-09-06 ·\n**基准**:worktree `plan-005-dev`,diff 7cd32a7..HEAD(39 文件\n+2436/-102,10 提交 T1-T10)。\n\n### 逐条验收(重验,不信勾选框)\n\n| # | 标准 | 判定 | 证据 |\n| --- | --- | --- | --- |\n| 1 | `cargo test --workspace` 全绿 | **pass** | 复审重跑:15 组 result-ok、37 用例 0 失败(含 sim 14、ui lib 16、live_pty 15s 实 PTY);core 新 3 例 + ui 新单测(16)在内 |\n| 2 | 块选像素 + 逐行复制 | **pass** | block-scan.txt:4 带 x52-142、spread=0、block_aligned=True ×4;block-dump.txt:selection_text \"AABBB\\nCCDDD\\nEEFFF\"、cells=15(3×5) |\n| 3 | 边缘自动滚动 + 锚定 + 松开即停 | **pass** | autoscroll-dump.txt:scroll_offset=11(顶满钳制)、selection_range (-4,0)-(5,4) 绝对坐标、text L06..L15(锚定+滚动揭露);松开即停=Finish/离缘清 drag_scroll(lib.rs:773/784,代码核) |\n| 4 | 菜单三项 + 同路径动作 + 关闭 + 右键不粘贴 | **pass**(注 a) | menu-scan.txt:panel_visible=True、close 后 34px 残留;动作 Copy=copy_selection/Paste=paste_from_clipboard/全选=视口 Lines(lib.rs:707);右键 release 改发 ContextMenu(widget.rs:316);README 表更新 |\n| 5 | --selection-color 冒烟 + 默认不变 | **pass** | selcolor-scan.txt:avg_red_rgb=76.1,15.1,18.1=理论混色、changed=True;默认 e8e8e8@25% 即 004/T3 已证灰(71,73,76)路径不变 |\n| 6 | 三形转储+像素;闪烁门控;零唤醒 | **pass** | cursor-{underline,beam,block}-scan.txt 全 True(19×4 / 4×38 / 19×38)+ 三 dump shape 断言;blink-focused-dump.txt:toggles=4(聚焦 ~2s,2Hz)、frames=5@11s 静止(基线 116@有内容) |\n| 7 | 双构建绿 + 默认零 dev 面 | **pass** | 复审重跑:default/dev-tools 两构建 0 error;默认构建 --dev-select → exit 2 \"unexpected argument\" |\n| 8 | 001 决策链 / DEBTS 勾销 / README | **pass** | grep \"004→005\"=1;DEBTS \"已清偿(005 T\"=4;README 交互表 3 关键词命中 |\n\n### 遗漏/延后/workaround 猜寻\n\n- **无遗漏**:11 任务逐项对 diff,T1-T10 子件(at_edge/订阅/门控/\n  纯函数/前缀/转储行)均在;diff 无新增 TODO/FIXME/HACK。\n- **无未批准延后**:非目标(Ctrl+C 复测/IME 人工清单/配置文件/\n  Unix/Auto)为计划声明、裁定既定;自动化不可覆盖的真机手感\n  (Alt 拖选手感/闪烁观感/菜单点击)以 5 分钟手工清单形式落于\n  evidence README——属计划声明的\"手动\"层,非缩水。\n- **待澄清 1-5**:均按计划文本预授权默认执行(Alt 手势/仅 CLI/\n  闪烁默认开/三项菜单/50ms×2 不分档),无遗留用户决策。\n\n### 债务候选(不阻塞,记录在案)\n\n- **a**:menu-scan.txt 的 `menu_closed_by_esc` 标名不准——实际由\n  dev-menu `:close`(ContextMenu(None),与外点关闭同消息路径)驱动;\n  ESC 键关闭为代码核(lib.rs Key 门),无像素证据。已入手工清单;\n  证据文件名不改(历史工件,README 已注明)。\n- **b**:拖选中失焦可能丢失 ButtonReleased → drag_scroll 残留\n  Some(50ms 订阅存活)至下次 Begin/Finish。低概率、可自愈,\n  建议后续计划加 Focused(false) 时清 drag_scroll。\n- **c**:菜单中文标签依赖 Microsoft YaHei UI(缺字体系统退豆腐块;\n  MONOSPACE 无 CJK 为 004 已知限制)。Unix 轨道需重新评估字体栈。\n- **d**:CursorShape::HollowBlock 渲染落入 Block 分支(未画空心)。\n  计划未要求,观测记录。\n\n### 判定\n\n全部 8 项验收 pass,无阻塞债务 → **status: reviewed**,可进入\n`/auto-plan:merge`。(注意:复审期间 main 已被 plan-006 并行推进,\nmerge 时需处理 worktree 落后 main 的合并。)",
+        "file": "docs/plans/archived/005-phase4-interaction-batch.md",
+        "related": [
+          "PLAN-005"
+        ],
+        "status": "published"
       }
     ]
   }
