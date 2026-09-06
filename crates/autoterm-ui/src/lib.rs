@@ -21,7 +21,7 @@ use std::hash::{Hash, Hasher};
 
 use autoterm_core::PtySession;
 use autoterm_core::{Damage, StyledChar};
-pub use autoterm_core::{SelectionRange, SelectionType, Side};
+pub use autoterm_core::{CursorShape, SelectionRange, SelectionType, Side};
 pub use widget::TermGrid;
 use metrics::GridMetrics;
 
@@ -226,6 +226,8 @@ pub struct App {
     pub snapshot_rebuilds: u64,
     /// 光标(视口相对;Hidden=None)。随快照一并刷新。
     pub cursor: Option<(usize, usize)>,
+    /// 光标形状(DECSCUSR 透传,005 T7;渲染分形用)。
+    pub cursor_shape: CursorShape,
     /// 当前选中区间(绝对坐标;高亮渲染用,随交互/内容变化刷新)。
     pub selection_range: Option<SelectionRange>,
     /// 拖选自动滚动(005 T4):Some(每拍行数,上缘正/下缘负)时挂
@@ -320,6 +322,7 @@ impl App {
             snapshot: Vec::new(),
             snapshot_rebuilds: 0,
             cursor: None,
+            cursor_shape: CursorShape::Block,
             selection_range: None,
             drag_scroll: None,
             menu: None,
@@ -778,9 +781,12 @@ impl App {
         };
         if content_changed {
             self.snapshot = self.session.term.visible_styled_lines();
-            self.cursor = self.session.term.cursor();
             self.snapshot_rebuilds += 1;
         }
+        // 光标位置/形状每次刷新都取(DECSCUSR 只改形状不产 Wakeup,
+        // 快照门控会漏;字节到达必经此处,代价一次 renderable 快照)
+        self.cursor = self.session.term.cursor();
+        self.cursor_shape = self.session.term.cursor_shape();
         // 选中锚定网格内容:滚动/新增行使绝对行漂移,区间随之重取
         let prev_selection = self.selection_range;
         self.selection_range = self.session.term.selection_range();
@@ -800,6 +806,7 @@ impl App {
             damage: self.damage.clone(),
             scroll_offset: self.session.term.display_offset(),
             cursor: self.cursor,
+            cursor_shape: self.cursor_shape,
             selection: self.selection_range,
             preedit: self.preedit.clone(),
             menu: self.menu,
@@ -948,11 +955,21 @@ impl App {
             Some((row, col)) => {
                 let _ = std::fmt::Write::write_fmt(
                     &mut out,
-                    format_args!("cursor_drawn_at: ({row},{col}) inverted=true\n"),
+                    format_args!(
+                        "cursor_drawn_at: ({row},{col}) shape={} inverted_block_only=false\n",
+                        cursor_shape_name(self.session.term.cursor_shape())
+                    ),
                 );
             }
-            None => out.push_str("cursor_drawn_at: none inverted=false\n"),
+            None => out.push_str("cursor_drawn_at: none\n"),
         }
+        let _ = std::fmt::Write::write_fmt(
+            &mut out,
+            format_args!(
+                "cursor_shape: {}\n",
+                cursor_shape_name(self.session.term.cursor_shape())
+            ),
+        );
         if let Some(t) = self.last_byte_at {
             let _ = std::fmt::Write::write_fmt(
                 &mut out,
@@ -985,6 +1002,18 @@ impl App {
         out.push_str("=== grid_text_end ===\n");
         let _ = std::fs::write(&path, out);
         log::info!("dumped: {}", path.display());
+    }
+}
+
+/// 光标形状的转储名(dev 取证,005 T7)。
+#[cfg(feature = "dev-tools")]
+fn cursor_shape_name(shape: CursorShape) -> &'static str {
+    match shape {
+        CursorShape::Block => "block",
+        CursorShape::Underline => "underline",
+        CursorShape::Beam => "beam",
+        CursorShape::HollowBlock => "hollow_block",
+        CursorShape::Hidden => "hidden",
     }
 }
 

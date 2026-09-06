@@ -1,0 +1,3 @@
+cell_band: x 353-388 y 860-916 (row 7415160 col 19)  expect_shape: underline
+bright_pixels: 76  bbox: (369,892)-(387,895)  19x4
+cursor_shape_ok: True

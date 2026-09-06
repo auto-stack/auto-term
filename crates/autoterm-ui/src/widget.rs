@@ -28,7 +28,8 @@ use iced::advanced::input_method::{InputMethod, Purpose};
 use iced::advanced::input_method;
 
 use autoterm_core::{
-    Color as TermColor, Damage, NamedColor, SelectionRange, SelectionType, Side, StyledChar,
+    Color as TermColor, CursorShape, Damage, NamedColor, SelectionRange, SelectionType, Side,
+    StyledChar,
 };
 
 use crate::metrics::GridMetrics;
@@ -102,6 +103,9 @@ pub struct TermGrid {
     pub scroll_offset: usize,
     /// 光标(视口相对;Hidden=None)→ 反色块。
     pub cursor: Option<(usize, usize)>,
+    /// 光标形状(DECSCUSR;Underline=格底 2px、Beam=格左 2px、
+    /// 其余=反色块;005 T7)。
+    pub cursor_shape: CursorShape,
     /// 选中区间(绝对网格行;配合 `scroll_offset` 回视口)→ 高亮
     /// overlay quad(文本层之下,每帧 emit,不进行缓存 digest)。
     pub selection: Option<SelectionRange>,
@@ -710,27 +714,58 @@ impl TermGrid {
         if let Some((row, col)) = self.cursor {
             if let Some(line) = self.lines.get(row) {
                 if let Some(cell) = line.get(col) {
-                    let block_bg = to_iced_color(cell.fg, true);
-                    let glyph_fg = to_iced_color(cell.bg, false);
-                    let rect = Rectangle::new(
-                        Point::new(
-                            bounds.x + col as f32 * cell_px,
-                            bounds.y + row as f32 * line_px,
-                        ),
-                        Size::new(cell_px, line_px),
-                    );
-                    renderer.fill_quad(
-                        renderer::Quad { bounds: rect, ..Default::default() },
-                        block_bg,
-                    );
-                    let mut buf = [0u8; 4];
-                    let content = cell.c.encode_utf8(&mut buf).to_string();
-                    renderer.fill_text(
-                        plain_text(content, cell_px, line_px, font_px),
-                        rect.position(),
-                        glyph_fg,
-                        viewport,
-                    );
+                    let x = bounds.x + col as f32 * cell_px;
+                    let y = bounds.y + row as f32 * line_px;
+                    let fg = to_iced_color(cell.fg, true);
+                    match self.cursor_shape {
+                        // Underline:格底 2px 亮条(不反色字形,005 T7)
+                        CursorShape::Underline => {
+                            renderer.fill_quad(
+                                renderer::Quad {
+                                    bounds: Rectangle::new(
+                                        Point::new(x, y + line_px - 3.0),
+                                        Size::new(cell_px, 2.0),
+                                    ),
+                                    ..Default::default()
+                                },
+                                fg,
+                            );
+                        }
+                        // Beam:格左缘 2px 亮条(不反色字形,005 T7)
+                        CursorShape::Beam => {
+                            renderer.fill_quad(
+                                renderer::Quad {
+                                    bounds: Rectangle::new(
+                                        Point::new(x, y),
+                                        Size::new(2.0, line_px),
+                                    ),
+                                    ..Default::default()
+                                },
+                                fg,
+                            );
+                        }
+                        // Block/HollowBlock/Hidden:现状反色块(Hidden 时
+                        // cursor() 已为 None,不会到这里)
+                        _ => {
+                            let glyph_fg = to_iced_color(cell.bg, false);
+                            let rect = Rectangle::new(
+                                Point::new(x, y),
+                                Size::new(cell_px, line_px),
+                            );
+                            renderer.fill_quad(
+                                renderer::Quad { bounds: rect, ..Default::default() },
+                                fg,
+                            );
+                            let mut buf = [0u8; 4];
+                            let content = cell.c.encode_utf8(&mut buf).to_string();
+                            renderer.fill_text(
+                                plain_text(content, cell_px, line_px, font_px),
+                                rect.position(),
+                                glyph_fg,
+                                viewport,
+                            );
+                        }
+                    }
                     #[cfg(feature = "dev-tools")]
                     {
                         cursor_state = (row as u64) * 8192 + col as u64;
