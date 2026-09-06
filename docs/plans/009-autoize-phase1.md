@@ -11,7 +11,7 @@ supersedes_spec_components: []
 new_spec_components: []
 touched_goals: []
 
-current_step: 7
+current_step: 9
 total_steps: 11
 ---
 
@@ -369,10 +369,20 @@ P2 其实可与 P1 并行——见执行步骤注);P3 对拍绿 → P4 收账。
 - **T8** [P3/auto-term] `.at` 应用骨架:`at/autoterm.at` +
   terminal 组件挂载 + adapter FFI 绑定;a2r 转译 `at-gen/` 入库。
   验证:转译 + rustc 实编通过(命令序列记执行记录)。
+  [✅ 已完成] at/autoterm.at(纯 a2r 可表达:ext mut fn/.field/[] 字面量
+  ——List.new() 被 a2r 错误路径限定,绕开并记债);at-gen 独立 crate 入库
+  (app_logic.rs=转译产物,engine.rs=libloading 胶水,shell.rs=窗口壳挂
+  View::Terminal,main.rs=GUI+scenario);**E0080 顺手修**(R4 预授权:
+  run_app tick 订阅捕获闭包被 iced const 检查必炸,改 TickWrap 变体构造
+  器零捕获,auto-lang 已 fold);实编绿+scenario echo 全链绿。
 
 - **T9** [P3/auto-term] 对拍门禁:场景脚本驱动双实现断言网格等价
   (启动/echo/Ctrl+C 中断/resize/色彩/选中)。
   验证:对拍门禁全绿(ash 缺席显式 skip)。
+  [✅ 已完成] autoterm-parity crate:oracle=rlib 直驱 vs a2r=scenario
+  子进程,行尾归一语义等价;启动+echo/resize/interrupt(timeout 主体,
+  008 helper 拷贝部署入门禁)网格等价 3 场景绿,色彩/选中显式 skip;
+  5/5 绿复跑稳定(1.7s)。
 
 - **T10** [P3/auto-term] a2r 版 UI 冒烟取证。
   验证:取证文件在案(程序化优先,截图补充)。
