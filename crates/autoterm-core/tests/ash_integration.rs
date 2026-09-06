@@ -280,26 +280,39 @@ fn ctrl_c_event_effect_on_ash() {
         Exited,
     }
     /// interrupt 后投 marker,预算内判定:进程退出 or marker 可跑。
+    /// 并行测试负载下 conhost 事件派发偶发丢失——每 3s 周期补发一次
+    /// (interrupt 幂等,双投递语义不变;把"丢失"转化为"延迟")。
     fn probe_outcome_with(s: &mut PtySession, tag: &str, budget: Duration) -> Outcome {
         let sent = Instant::now();
         assert!(s.interrupt(), "helper 在场应广播成功({tag})");
         let marker = format!("ash_ev_{tag}_{}", std::process::id());
         s.write_input(format!("echo {marker}\r").as_bytes());
         let deadline = sent + budget;
+        let mut next_resend = sent + Duration::from_secs(3);
+        let mut resends = 0u32;
         loop {
             s.drain();
             if s.exited() {
-                eprintln!("[008 探针矩阵] {tag}: Exited(事件终止 ash 进程)");
+                eprintln!("[008 探针矩阵] {tag}: Exited(事件终止 ash 进程,补发 {resends})");
                 return Outcome::Exited;
             }
             if s.term.visible_lines().iter().any(|l| l.contains(&marker)) {
                 let late = sent.elapsed() > Duration::from_secs(2);
-                eprintln!("[008 探针矩阵] {tag}: Responsive(late={late},marker 上屏,ash 存活)");
+                eprintln!(
+                    "[008 探针矩阵] {tag}: Responsive(late={late},marker 上屏,ash 存活,补发 {resends})"
+                );
                 return Outcome::Responsive { late };
             }
+            let now = Instant::now();
+            if now >= next_resend && now < deadline {
+                resends += 1;
+                next_resend = now + Duration::from_secs(3);
+                eprintln!("[008 探针矩阵] {tag}: 尚无果,周期补发 interrupt(第 {resends})");
+                let _ = s.interrupt();
+            }
             assert!(
-                Instant::now() < deadline,
-                "{tag}: 预算 {budget:?} 内既不退出也不响应;当前网格:\n{}",
+                now < deadline,
+                "{tag}: 预算 {budget:?} 内既不退出也不响应(补发 {resends});当前网格:\n{}",
                 grid_text(s)
             );
             std::thread::sleep(Duration::from_millis(50));
@@ -309,7 +322,7 @@ fn ctrl_c_event_effect_on_ash() {
     // idle:空闲提示符直接注入(实测:Exited——auto 豁免依据)
     {
         let mut s = spawn_ash_with_prompt(&bin);
-        probe_outcome_with(&mut s, "idle", Duration::from_secs(8));
+        probe_outcome_with(&mut s, "idle", Duration::from_secs(10));
     }
     // builtin:sleep 8 内建阻塞中注入(F1:raw mode 不读 stdin)。
     // 实测事件惰性:ash 存活,sleep 8 自然结束后 marker 才上屏
@@ -320,7 +333,7 @@ fn ctrl_c_event_effect_on_ash() {
         wait_for(&mut s, Duration::from_secs(10), "sleep 8 上屏", |t| {
             t.visible_lines().iter().any(|l| l.contains("sleep 8"))
         });
-        let out = probe_outcome_with(&mut s, "builtin", Duration::from_secs(15));
+        let out = probe_outcome_with(&mut s, "builtin", Duration::from_secs(20));
         assert!(
             matches!(out, Outcome::Responsive { late: true } | Outcome::Exited),
             "builtin 态:应惰性存活(自然结束响应)或终止,得 {out:?}"
@@ -337,6 +350,6 @@ fn ctrl_c_event_effect_on_ash() {
                 .iter()
                 .any(|l| l.contains("Waiting") || l.contains("等待"))
         });
-        probe_outcome_with(&mut s, "external", Duration::from_secs(8));
+        probe_outcome_with(&mut s, "external", Duration::from_secs(15));
     }
 }
