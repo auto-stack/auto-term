@@ -11,7 +11,7 @@ supersedes_spec_components: []
 new_spec_components: []
 touched_goals: []
 
-current_step: 2
+current_step: 3
 total_steps: 11
 ---
 
@@ -316,6 +316,12 @@ P2 其实可与 P1 并行——见执行步骤注);P3 对拍绿 → P4 收账。
   RowPara 等价缓存/光标三形+闪烁(搬 widget.rs draw/damage 块)。
   验证:headless 断言(喂字节流 → 网格文本/脏行计数正确,
   2000 行流式基准达标)。
+  [✅ 已完成] auto-lang auto-term-dev ee8582f57:core 标量色板/行 digest
+  门控/损伤累积去重/样式旁路 feed/光标三形+530ms 闪烁/char_width 紧凑宽块
+  表;iced 行 Paragraph 全局缓存(按 key)+span run 聚合+xterm256 全映射+
+  光标 quad。7 测试全绿:网格文本/脏行计数断言过,2000 行流式基准 debug
+  全程 <0.1s(帧预算 16ms,余量充足)→ **形态甲实测确认,不降级乙**。
+  样式经注册表旁路(View props 只携文本;对齐 P2 row_text/row_style 分面)。
 
 - **T4** [P1/auto-lang] 交互套件:选中三模式+块选/IME 自绘 preedit/
   滚轮回滚/右键菜单(搬 004/005 交互块)。
