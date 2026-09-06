@@ -94,6 +94,10 @@ pub enum Message {
     /// dev 钩子的粗定时(仅 dev-tools 构建存在;常态不存在)。
     #[cfg(feature = "dev-tools")]
     DevTick,
+    /// 窗口聚焦变化(005 T8;true=聚焦)。
+    Focused(bool),
+    /// 光标闪烁相位拍(005 T8):500ms 取反;仅聚焦+可见时挂。
+    BlinkTick,
     /// 显式空操作:订阅里非键盘/非滚轮事件的归宿(替代 PtyBytes
     /// 空唤醒复用,002 复审瑕疵清偿)。
     NoOp,
@@ -206,6 +210,16 @@ impl Hash for NotifySlot {
     }
 }
 
+/// 取证(T8):闪烁相位翻转计数(仅 dev-tools)。
+#[cfg(feature = "dev-tools")]
+static BLINK_TOGGLES: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(0);
+
+/// 读闪烁相位翻转计数(None=非 dev 构建;005 T8)。
+#[cfg(feature = "dev-tools")]
+pub fn blink_toggles() -> u64 {
+    BLINK_TOGGLES.load(std::sync::atomic::Ordering::Relaxed)
+}
+
 pub struct App {
     pub session: PtySession,
     pub config: AppConfig,
@@ -228,6 +242,11 @@ pub struct App {
     pub cursor: Option<(usize, usize)>,
     /// 光标形状(DECSCUSR 透传,005 T7;渲染分形用)。
     pub cursor_shape: CursorShape,
+    /// 窗口聚焦(005 T8;闪烁门控之一)。初值 false:收到 winit
+    /// Focused(true) 才挂闪烁(后台起窗不闪,聚焦即闪)。
+    pub focused: bool,
+    /// 闪烁相位(005 T8):true=光标亮;门控不满足时常亮。
+    pub cursor_blink_on: bool,
     /// 当前选中区间(绝对坐标;高亮渲染用,随交互/内容变化刷新)。
     pub selection_range: Option<SelectionRange>,
     /// 拖选自动滚动(005 T4):Some(每拍行数,上缘正/下缘负)时挂
@@ -323,6 +342,8 @@ impl App {
             snapshot_rebuilds: 0,
             cursor: None,
             cursor_shape: CursorShape::Block,
+            focused: false,
+            cursor_blink_on: true,
             selection_range: None,
             drag_scroll: None,
             menu: None,
@@ -409,6 +430,14 @@ impl App {
             }),
             // 窗口关闭:同步清理子进程(T8)
             iced::window::close_events().map(Message::Closed),
+            // 窗口聚焦变化(005 T8;闪烁门控)
+            iced::event::listen().map(|event| match event {
+                iced::Event::Window(iced::window::Event::Focused) => Message::Focused(true),
+                iced::Event::Window(iced::window::Event::Unfocused) => {
+                    Message::Focused(false)
+                }
+                _ => Message::NoOp,
+            }),
         ];
         // 拖选自动滚动(005 T4):仅拖选压边时挂 50ms 条件订阅——
         // 空闲/拖选中不压边均零唤醒;菜单开着时暂停(005 T5);
@@ -416,6 +445,17 @@ impl App {
         if self.drag_scroll.is_some() && self.menu.is_none() {
             subs.push(
                 time::every(Duration::from_millis(50)).map(|_| Message::DragScrollTick),
+            );
+        }
+        // 光标闪烁(005 T8):仅聚焦 + 光标可见 + 无菜单 + 无 preedit
+        // 时挂 500ms 条件订阅(空闲零唤醒:门控不满足即无定时器)。
+        if self.focused
+            && self.cursor_shape != CursorShape::Hidden
+            && self.menu.is_none()
+            && self.preedit.is_none()
+        {
+            subs.push(
+                time::every(Duration::from_millis(500)).map(|_| Message::BlinkTick),
             );
         }
         #[cfg(feature = "dev-tools")]
@@ -688,6 +728,18 @@ impl App {
                 }
                 Task::none()
             }
+            Message::Focused(focused) => {
+                self.focused = focused;
+                // 相位复位:聚焦即亮,失焦常亮(005 T8)
+                self.cursor_blink_on = true;
+                Task::none()
+            }
+            Message::BlinkTick => {
+                self.cursor_blink_on = !self.cursor_blink_on;
+                #[cfg(feature = "dev-tools")]
+                BLINK_TOGGLES.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
+                Task::none()
+            }
             Message::Resized(size) => {
                 self.last_viewport = Some(size);
                 let cols =
@@ -799,6 +851,19 @@ impl App {
         }
     }
 
+    /// 光标当前是否可见(005 T8):门控(聚焦+形状可见+无菜单+
+    /// 无 preedit)满足时随闪烁相位;否则常亮;Hidden 恒不可见。
+    fn cursor_visible(&self) -> bool {
+        if self.cursor.is_none() {
+            return false;
+        }
+        let blinking = self.focused
+            && self.cursor_shape != CursorShape::Hidden
+            && self.menu.is_none()
+            && self.preedit.is_none();
+        !blinking || self.cursor_blink_on
+    }
+
     pub fn view(&self) -> Element<'_, Message> {
         Element::new(TermGrid {
             lines: self.snapshot.clone(),
@@ -807,6 +872,7 @@ impl App {
             scroll_offset: self.session.term.display_offset(),
             cursor: self.cursor,
             cursor_shape: self.cursor_shape,
+            cursor_visible: self.cursor_visible(),
             selection: self.selection_range,
             preedit: self.preedit.clone(),
             menu: self.menu,
@@ -969,6 +1035,21 @@ impl App {
                 "cursor_shape: {}\n",
                 cursor_shape_name(self.session.term.cursor_shape())
             ),
+        );
+        let _ = std::fmt::Write::write_fmt(
+            &mut out,
+            format_args!(
+                "cursor_visible: {} (focused={} blink_phase={} menu={} preedit={})\n",
+                self.cursor_visible(),
+                self.focused,
+                self.cursor_blink_on,
+                self.menu.is_some(),
+                self.preedit.is_some()
+            ),
+        );
+        let _ = std::fmt::Write::write_fmt(
+            &mut out,
+            format_args!("blink_toggles: {}\n", blink_toggles()),
         );
         if let Some(t) = self.last_byte_at {
             let _ = std::fmt::Write::write_fmt(

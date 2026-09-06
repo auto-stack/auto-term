@@ -106,6 +106,8 @@ pub struct TermGrid {
     /// 光标形状(DECSCUSR;Underline=格底 2px、Beam=格左 2px、
     /// 其余=反色块;005 T7)。
     pub cursor_shape: CursorShape,
+    /// 光标当前帧是否可见(005 T8;闪烁相位 off 帧跳过绘制)。
+    pub cursor_visible: bool,
     /// 选中区间(绝对网格行;配合 `scroll_offset` 回视口)→ 高亮
     /// overlay quad(文本层之下,每帧 emit,不进行缓存 digest)。
     pub selection: Option<SelectionRange>,
@@ -711,7 +713,10 @@ impl TermGrid {
         viewport: Rectangle,
     ) {        #[cfg(feature = "dev-tools")]
         let mut cursor_state = u64::MAX;
-        if let Some((row, col)) = self.cursor {
+        // 闪烁相位 off 帧:跳过光标绘制(005 T8);CURSOR_DRAWN 记
+        // u64::MAX(=未画),取证即"相位灭"
+        if self.cursor_visible {
+            if let Some((row, col)) = self.cursor {
             if let Some(line) = self.lines.get(row) {
                 if let Some(cell) = line.get(col) {
                     let x = bounds.x + col as f32 * cell_px;
@@ -772,6 +777,7 @@ impl TermGrid {
                     }
                 }
             }
+        }
         }
         #[cfg(feature = "dev-tools")]
         CURSOR_DRAWN.store(cursor_state, Ordering::Relaxed);
