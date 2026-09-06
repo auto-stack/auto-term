@@ -326,3 +326,33 @@ bbox 污染两源(标题栏同域色→跳窗顶;反锯齿散点→行列 2D 阈
 (开/关);转储增 selection_range/cursor_shape/cursor_visible/
 blink_toggles。手工清单(5 分钟)挂
 evidence/005-interaction/README.md。
+
+## 008→009 决策链(PLAN-009,2026-09-06)
+
+Auto 化第一相位(用户 GO 裁定:分支 A 单计划)落地后的架构入账:
+
+1. **单一真身原则兑现**:TermGrid 控件逻辑整体迁 auto-lang
+   `src/ui/terminal/`(code_editor 分层:core 零 iced + iced 适配器),
+   数据面裁定**形态甲 props-feed**(2000 行流式基准 <0.1s,帧预算
+   16ms 余量充足);本仓 widget.rs/App 冻结为参考 oracle。
+2. **无环铁律兑现(FFI 边界)**:引擎经 cdylib(`ffi.rs` 12 符号标量面:
+   spawn/write_input/feed_ready/take_dirty_rows/row_text/row_style/
+   cursor/resize/interrupt/is_exited/kill/free)+ libloading 运行期
+   加载;cargo tree 断言 auto-lang 0×autoterm、仅 at-gen→auto-lang
+   运行时 1 边。
+3. **色彩/损伤标量面**:跨 FFI 的颜色编码 `kind<<24|value`
+   (0=Default/1=Indexed/2=RGB),行 digest(字符+fg+bg)门控与
+   损伤累积去重(TerminalDamage None/Full/Lines)为组件侧 canonical
+   形态——引擎侧 take_damage 语义与之对齐。
+4. **转译面新增事实(006 S2 清单延伸)**:F1(E0369 派生组合)已修
+   (显式派生面交集+链式递归+upgrade 防回扩);新增 `List.new()` 路径
+   限定 bug(绕开:`[]` 字面量)与 74 例快照存量编译债(ledger 显式
+   豁免,门对新破坏必红)——见 DEBTS"009 新增观察"。
+5. **E0080 根修**:002 §4"两示例同炸"实为 iced 0.14 Subscription::map
+   const 检查拒绝捕获闭包;run_app tick 改 TickWrap 包装(变体构造器
+   零捕获发内部 Tick,update 侧运行时铸造真实消息)——rust-mode
+   带 tick 的 UI 应用恢复可编译。
+6. **对拍门禁形态**:oracle(rlib 直驱)vs a2r(scenario 子进程,
+   ROW 协议),取快照统一时序点=提示符回归;等价口径=行尾归一+
+   空尾行裁剪的**语义等价**(006 S2 实证延伸);008 helper 拷贝部署
+   契约进入门禁前置。
