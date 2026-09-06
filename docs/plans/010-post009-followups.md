@@ -1,6 +1,6 @@
 ---
 plan_id: PLAN-010
-status: drafting
+status: execution_done
 feature_name: 009 后续收尾——a2r 存量编译债清偿 + 对拍门禁补全 + 契约/文档入账
 author: [衍星居士]
 created_at: 2026-09-07
@@ -11,7 +11,7 @@ supersedes_spec_components: []
 new_spec_components: []
 touched_goals: []
 
-current_step: 0
+current_step: 9
 total_steps: 9
 ---
 
@@ -252,23 +252,66 @@ DEBTS 009 新增观察逐条销账(#1 清偿率在案/#2 已修/#3 已修/#6 已
 
 - **T1** [auto-lang] List.new() 限定 bug 修复 + 快照。
   验证:新快照绿 + tt 全档绿。
+  [✅ 已完成] commit auto-lang auto-term-dev:根因=Type.method() source_crate
+  兜底限定误伤内置集合映射;修=auto_type_to_rust 命中者豁免前缀;快照
+  007_list_new 先红(exit::Vec::new())后绿;实编门绿(新例编译);
+  cargo tt 3818/3819(唯一红=master 存量 charts 红,待澄清⑤)
 - **T2** [auto-lang] 存量编译债分批清偿(≥50% 线)。
   验证:实编门 skips 递减 + tt 全绿 + 金样 diff 逐例说明。
+  [✅ 已完成] 两批 commit(批1: question 族 21 例;批2: say/std 前导/
+  委托缺省/空集合/mut 注册表/Box 免克隆/Option-get/comptime/闭包块尾
+  15 例)——ledger 74→37 行,恰 50%;金样漂移逐例审阅;tt 3818/3818
+  (唯红=master 存量 charts 红);实编门绿 0 unexpected。
+  遗留 37 例理由已记录(智能指针/interop/语法未编码/ownership-闭包族)
 - **T3** [auto-lang] CLI trans 挂起修复。
   验证:60 行样本 CLI 60s 内完成,产物与 in-process diff 一致。
+  [✅ 已完成] commit auto-lang auto-term-dev:根因=单文件 CLI 三处兄弟
+  .at 预扫无界(crate-root 无条件取 parent().parent()),任意路径下遍历
+  整棵无关树逐个 parse(实测 Temp 树 2675 个 .at)。修=src 字面名才按
+  crate 根扫+深度/数量/大小/垃圾目录统一有界;60 行样本 13.3s 完成,
+  产物 rustc 编译绿,与 in-process 逐字节一致;tt 3818/3818
 - **T4** [auto-lang] E0080 两示例复核 + 销账准备。
   验证:两示例 build 绿。
+  [✅ 已完成] 按正文 fallback:ui_counter/ui_accordion 加 tick_interval_ms
+  (Some(16))临时变体两例,cargo build --example ×2 --features ui-iced
+  双绿(1m07s,run_app TickWrap 订阅路径实编通过)——变体已按计划撤销;
+  E0080(009 观察 #7)销账证据在案
   → fold auto-lang,auto-term 侧 re-sync。
 - **T5** [auto-term] 003 §5 契约追补 + at-gen 标题。
   验证:grep 契约命中;标题断言。
+  [✅ 已完成] commit auto-term plan-010-dev:003 §5 追补第 6 条(cdylib+
+  ctrlc 分发,grep 命中);at-gen main 接 run_app_with_title(Some(
+  "AutoTerm"))(auto-lang 侧新增 application 链 title 面,HRTB 具名 fn
+  承载),at-gen build 绿
 - **T6** [auto-term] DEBTS #5/#7 关账回写。
   验证:grep 关账标注。
+  [✅ 已完成] DEBTS Phase 4 #5 关账(证据=009 parity_interrupt 真实
+  ConPTY 双投递绿 + engine_ffi_integration interrupt 分支),与旧账
+  #7 合并销账,win32 立项不再需要
 - **T7** [auto-term] 选中文本对拍接线,门禁去 skip。
   验证:parity 6 场景(5 实跑+1 ash-skip)全绿。
+  [✅ 已完成] at-gen scenario=selection(组件注册表面 terminal+
+  terminal_selection_* + terminal_selected_text,SEL 协议);parity_gate
+  parity_selection_text 去 skip(oracle TermSession begin/update_
+  selection + selection_text 对拍,行尾归一);A2r 增 spawn_with_extras;
+  cargo test -p autoterm-parity → 5 passed + 1 skip(色彩,ash 缺席)
 - **T8** [auto-term→auto-lang] iced 像素自动化。
   验证:`terminal_pixel` 测试绿。
+  [✅ 已完成] auto-lang 新 mod terminal_pixel_tests(ui-iced,
+  iced-layout-tests)三断言:bounds 精确/选中帧≠基线/光标块帧≠基线;
+  Terminal widget 增 operate 暴露 bounds;matches_image 金样 4 件入库
+  (每用例私有 base/frame);3/3 绿×2 轮稳定
+  commit auto-lang auto-term-dev
 - **T9** 收账:DEBTS 009 观察逐条销账 + 两仓终 fold + 全档回归。
   验证:tf/tt + workspace 全绿;grep 销账记录。
+  [✅ 已完成] DEBTS 009 观察 #1/#2/#3/#6/#7 销账(证据链见 DEBTS.md
+  对应条目),#4/#5 维持;at-gen README 再生成规程更新(CLI 恢复/
+  List.new 绕开废止)= 复审遗留两项闭合的消费端记录;两仓 fold 完成
+  (auto-lang auto-term-dev→master、auto-term plan-010-dev→main,
+  双侧 worktree re-sync);全档回归:tf 3465/3466 + tt 3818/3818
+  (唯红=master 存量 charts 红,待澄清⑤)+ workspace 绿 + tb 与
+  master 同集;复审遗留两项(选中 headless 对拍+iced 像素自动化)
+  经 T7/T8 闭合
 
 ## 复审记录
 
@@ -285,3 +328,8 @@ DEBTS 009 新增观察逐条销账(#1 清偿率在案/#2 已修/#3 已修/#6 已
    验收硬项。
 4. **at-gen 标题改动落点**:run_app 若无 title 面,优先最小改
    (application 链 title 参数),不动 VM 轨。
+5. **auto-lang master 存量红(非本计划引入)**:`ui_gen::vue::tests::
+   test_charts_gallery_compiles` 在 auto-lang master(1c6753a92)即红
+   (LineChart tag 缺失,vue ui_gen 域,2026-09-07 worktree 与主检出双验
+   )。"tt 全档绿"按「除该存量红外全绿」口径执行;该例不在本计划
+   范围(vue 图表 tag 生成),留给 auto-lang 侧独立修缮。
