@@ -49,8 +49,18 @@ cargo run -q -p autoterm-ui -- --shell D:/autostack/auto-shell/ash/target/releas
 cargo test -p autoterm-core --test ash_integration
 ```
 
-兼容性结论与已知限制(Ctrl+C 中断运行中命令当前不可用,见 DEBTS #12/#13):
+兼容性结论与已知限制(见 DEBTS #12/#13 与 003 §4.1):
 `docs/designs/003-ash-compatibility.md`。
+
+### Ctrl+C 中断(PLAN-008)
+
+裸 Ctrl+C 为**双投递**:控制台事件(经辅助进程 `autoterm-ctrlc.exe`
+广播,中断运行中的命令)+ 0x03 字节(raw 行编辑器废弃输入行)。
+`--ctrl-c-mode auto|byte|event|both`(默认 `auto`:ash 豁免为仅字节
+——事件会整体终止无 handler 的 ash 进程,其余 shell 双投递)。
+已知边界:ping 类(对 Ctrl+Break 免疫)与 ash 内建命令(F1)仍不可
+中断,见 003 §4.1。**部署注意:`autoterm-ctrlc.exe` 须与
+`autoterm.exe` 同目录**(缺失自动降级字节路径,不崩)。
 
 ## 交互(Phase 3/4,PLAN-004/005)
 
@@ -59,7 +69,7 @@ cargo test -p autoterm-core --test ash_integration
 | 左键拖选 | 字符级选中,松开即复制(copy-on-select,默认开);拖到视口上/下边缘自动滚动(松开或离开边缘即停) |
 | Alt+左键拖选 | 块选:矩形列带选中,复制按行截断(与多击计数正交) |
 | 双击 / 三击 | 词选(semantic)/ 整行选(lines),松开即复制 |
-| Ctrl+Shift+C / Ctrl+Shift+V | 显式复制 / 粘贴(裸 Ctrl+C 仍走 PTY 中断,不劫持) |
+| Ctrl+Shift+C / Ctrl+Shift+V | 显式复制 / 粘贴(裸 Ctrl+C 走中断双投递,不劫持;见"Ctrl+C 中断"节) |
 | 右键 | 上下文菜单(复制 / 粘贴 / 全选);ESC 或菜单外点击关闭 |
 | 滚轮 / PgUp / PgDn | 回滚浏览(键入自动回正,右上 `↑N` 偏移指示) |
 | IME | 预编辑内联显示于光标处(带下划线,不上屏);提交/上屏才写入 PTY |
@@ -74,7 +84,9 @@ cargo test -p autoterm-core --test ash_integration
 
 ## 下一步
 
-- Ctrl+C 稳定版复测(待环境,见 DEBTS #7);
+- ping 类(Break 免疫)命令中断的残留缺口待健康 build 验证
+  (DEBTS #12 清偿方向);
+- ash 装 ctrl handler(auto-shell 侧,#13)后撤 auto 豁免;
 - Unix 基座适配;
 - Auto 化(DEBTS #8,用户裁定必须项):Rust 版功能已齐全,#7 调查
   已关账(TermGrid 须以 auto-lang 内原生组件落地,rust-mode 示例

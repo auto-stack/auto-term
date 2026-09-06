@@ -123,6 +123,67 @@ ASH=D:/autostack/auto-shell/ash/target/release/ash.exe
   3. 上游 portable-pty 提 issue/PR(master 侧加 control-event 通道)。
 - **DEBTS**:见 #12;复现器已留档(`#[ignore]` 用例,修复后去 ignore)。
 
+### 4.1 修复实施(PLAN-008,2026-09-06)
+
+> F2 的修复落地记录:机制、实测矩阵、模式语义与残留缺口。
+
+- **机制**(003 §4 候选通路 #1,winpty 手法):新增辅助进程
+  `crates/autoterm-core/src/bin/autoterm-ctrlc.rs`(`FreeConsole →
+  AttachConsole(shell_pid) → 注册全事件免疫 handler →
+  GenerateConsoleCtrlEvent 广播 → 退出`,手写 kernel32 FFI,零新依赖);
+  `PtySession::interrupt()`(pty.rs)解析 helper(三级:测试 env →
+  `AUTOTERM_CTRLC_BIN` → exe 目录向上 ≤3 级)后以 CREATE_NO_WINDOW
+  拉起,缺失/失败降级纯字节路径(修复前行为,绝不 panic);
+  UI 裸 Ctrl+C 在 `key_to_bytes` 前拦截(`is_bare_ctrl_c`,
+  Ctrl+Shift+C 复制路径不受影响)→ `handle_ctrl_c` 按有效模式投递。
+- **T3 诊断矩阵**(OS build 26200.9168,决定最终形态):
+
+  | 通道 | 实测效果 |
+  | --- | --- |
+  | 主端写 0x03 字节 | 无事件(=F2 原判);仅 raw 行编辑器自读(reedline/PSReadLine 废弃行) |
+  | CTRL_C_EVENT 广播(AttachConsole helper) | **被 ConPTY 客户端吞掉,零可见效果** |
+  | CTRL_BREAK_EVENT 广播 | **可达**:cmd 打 `Control-Break`、ping 打统计(按其设计继续跑) |
+  | CONIN$ KEY_EVENT 记录注入 | 零效果 |
+
+  ⇒ `interrupt()` = **Break→C 双发**(Break 先落:对默认 handler 进程
+  普遍有效,且是本类 build 的唯一通道;健康 build 上 C 承担规范语义,
+  Break 多余但无害)。helper 被自己广播的事件杀死(exit=
+  0xC000013A)是 conhost 对 AttachConsole 进程 handler 派发的时序
+  竞态——**被事件杀死 ⇒ 事件必然已广播**,interrupt() 同判成功
+  (Break 先发保证被杀前有效通道已落地)。
+- **T4 ash×事件三态矩阵**(`ctrl_c_event_effect_on_ash`,析取断言):
+
+  | 态 | 命令 | 实测 | 含义 |
+  | --- | --- | --- | --- |
+  | idle | (提示符) | **Exited**(事件整体终止 ash 进程) | ash 无 ctrl handler,默认 handler 生效 → **auto 模式 ash 豁免为仅字节的直接依据** |
+  | builtin | `sleep 8` | **Responsive-late**(事件惰性,ash 存活至内建自然结束才响应 marker) | F1 数据扩展:**真事件也不打断内建**(raw mode 阻塞在 `std::thread::sleep`) |
+  | external | `timeout /t 30` | **Responsive-fast**(Break 终止子进程,ash 即回提示符) | ash 外部子进程路径(frontend/subprocess.rs 临时退 raw mode)中断正常 |
+
+- **`--ctrl-c-mode` 语义**(auto|byte|event|both,默认 auto):
+  `byte`=仅 0x03(修复前行为);`event`=仅 interrupt();
+  `both`=事件+字节(推荐:两消费方不重叠——事件中断运行中命令,
+  字节供 raw 行编辑器废弃行);`auto`=按 shell 判定(**ash → byte**
+  (文件名 stem 判定,#13 落地后撤豁免),其余 → both)。
+- **UI 级证据**(cmd 主体,`for /l 1,1,10000000` 死循环 = 输入不
+  敏感 + cmd 处理 Break 中止循环;`target/cmd-smoke-{both,byte}.txt`):
+  - **both(=auto for cmd)**:`after_c` 2 命中,`last_tick=45580`
+    (恰为 7s 注入 `\x03` 处停)——**中断生效,后续命令可跑**;
+  - **byte 对照**:`after_c` 0 命中,`last_tick=137585`(跑到 13s
+    dump,F2 行为原样)。
+  - ash×UI 取证**四连否**(如实记录):builtin `sleep 30` 惰性 /
+    `ping` 免疫 Break / 外部 `pwsh -c Start-Sleep 30` 对 Break 存活
+    (ash-smoke-c2-both.txt,after_c 0)/ `timeout` 对任意按键提前
+    退出(取证污染源,不能作证据)——ash 下无"输入不敏感+Break
+    可终止"的干净挂死样本,ash-auto 豁免以单测+T4 矩阵支撑。
+- **残留缺口**(26200 类 build):ping 类对 CTRL_BREAK 特殊处理
+  (打统计后**继续**)的命令仍不可中断——`ctrl_event.rs` 的
+  `#[ignore]` 复现器 `ping_class_survives_dual_send_on_quirky_build`
+  留档,**健康 build 上该用例转红即 C 通道修复面到位,可去 ignore**。
+- **门禁接棒**:007 的两个 F2 `#[ignore]` 复现器退役,语义由
+  `tests/ctrl_event.rs` 转正(①cmd/timeout ≤5s 退出、②pwsh 回提示符
+  (挂死命令同为 timeout——实测 pwsh 不杀 Break 免疫的 ping 子进程)、
+  ③helper 缺失降级);ash_integration 回归 0 ignored 并新增三态探针。
+
 ## 5. 虚拟桌面接入契约(给 auto-os 侧的锚点)
 
 1. **拉起**:显式绝对路径(如 `D:/autostack/auto-shell/ash/target/
@@ -130,16 +191,24 @@ ASH=D:/autostack/auto-shell/ash/target/release/ash.exe
 2. **环境**:AutoTerm 自报 `TERM=alacritty` + `COLORTERM=truecolor`
    (`autoterm-core/src/pty.rs:62-64`),ash 判 24-bit 真彩,无需额外配置。
 3. **退出**:`exit` / Ctrl+D 均可靠;关闭窗口杀子进程(002 已验)。
-4. **中断**:**当前不可用**(F1/F2 见 §4)——虚拟桌面若依赖"打断挂死
-   命令"的运维动作,需先修 DEBTS #12,或在 auto-os 层用进程级
-   kill(整会话重启)兜底。
-5. **回归门禁**:任何 auto-term 变更后跑
+4. **中断**:**可用**(008 修复,机制/矩阵/残留缺口见 §4.1)——
+   `--ctrl-c-mode`(默认 auto:ash=仅字节、其他 shell=事件+字节双投递)。
+   已知边界:ping 类(Break 免疫)与 ash 内建(F1)仍不可中断;
+   虚拟桌面对这两类挂死仍需进程级 kill 兜底。
+5. **部署**:autoterm.exe 与 autoterm-ctrlc.exe **同目录**分发
+   (008 Ctrl+C 事件注入的辅助进程;缺失时自动降级字节路径,
+   修复前行为,不崩)。
+6. **回归门禁**:任何 auto-term 变更后跑
    `cargo test -p autoterm-core --test ash_integration`
    (ash 在场即全量断言,缺席即显式 skip)。
 
 ## 6. 遗留
 
-- F1(auto-shell 侧)/ F2(本仓 DEBTS #12)→ 修复另立;
+- ~~F2(本仓 DEBTS #12)~~ **已修复(PLAN-008,2026-09-06)**:见 §4.1
+  (Break→C 双发 + auto 豁免;残留缺口 = ping 类 Break 免疫命令,
+  `#[ignore]` 复现器留档待健康 build 验证);
+- F1(auto-shell 侧,#13)→ 修复归 auto-shell(008 探针矩阵已供三态
+  实测数据;ash 装 ctrl handler 后可撤 auto 豁免);
 - R1 深按键矩阵、R2 滚动区专项视觉取证 → 可挂 Phase 4 批(005)或另立;
 - ash 冷启动首启(`~/.ashrc` 创建)未单独计时(本机已有 rc;新装机
   预算 15s 已在门禁留足,实测远低于此)。
