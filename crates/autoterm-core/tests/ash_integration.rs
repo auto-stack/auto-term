@@ -119,3 +119,86 @@ fn echo_roundtrip() {
         t.visible_lines().iter().any(|l| l.contains(&marker))
     });
 }
+
+/// ③ Ctrl+C(0x03)废弃当前输入行:空闲提示符下键入未回车的文本,
+/// reedline 自渲染;发 0x03 后出现**新的提示符行**(❯ 计数 +1),shell
+/// 存活且继续执行后续命令。这守的是终端层可负责的语义:0x03 字节
+/// 如实转发、raw-mode 应用(reedline)能消费。
+///
+/// [发现 F2 → 003/DEBTS] "Ctrl+C 中断**运行中**命令"在此通路不可用
+/// 且**与 shell 无关**:向 portable-pty ConPTY 主端写 0x03 不会触发
+/// conhost 的 CTRL_C_EVENT(cmd/pwsh 对照探针同样失败,见下方
+/// `#[ignore]` 复现器)。与 [发现 F1](内建命令)叠加,当前 ash 下
+/// 任何长命令都无法用 Ctrl+C 打断。修复通路在 portable-pty/OS
+/// conhost 层,非本仓代码。
+#[test]
+fn ctrl_c_aborts_input_line() {
+    let Some(bin) = ensure_ash() else { return };
+    let mut s = spawn_ash_with_prompt(&bin);
+    let prompt_count = |s: &PtySession| {
+        s.term
+            .visible_lines()
+            .iter()
+            .filter(|l| l.contains('❯'))
+            .count()
+    };
+    s.write_input(b"echo should_not_run_123");
+    wait_for(&mut s, Duration::from_secs(10), "已键入文本上屏", |t| {
+        t.visible_lines()
+            .iter()
+            .any(|l| l.contains("should_not_run_123"))
+    });
+    let before = prompt_count(&s);
+    s.write_input(b"\x03");
+    wait_for(&mut s, Duration::from_secs(10), "Ctrl+C 后新提示符", |t| {
+        t.visible_lines().iter().filter(|l| l.contains('❯')).count() > before
+    });
+    // shell 存活且继续响应:紧跟的命令必须能跑
+    let marker = format!("after_c_{}", std::process::id());
+    s.write_input(format!("echo {marker}\r").as_bytes());
+    wait_for(&mut s, Duration::from_secs(10), "废弃行后 marker 上屏", |t| {
+        t.visible_lines().iter().any(|l| l.contains(&marker))
+    });
+    assert!(!s.exited(), "空闲提示符的 Ctrl+C 不应杀死 shell");
+}
+
+/// [F2 复现器,修 DEBTS 该条后去掉 ignore 验证] `cmd /c ping -n 30`
+/// 是纯 cooked-mode 对照:0x03 若被 conhost 翻译成 CTRL_C_EVENT,cmd
+/// 会打印 ^C 并随 ping 终止而退出。当前观测:5s 内 cmd 不退出、无 ^C
+/// ——主端写字节不触发事件。pwsh 版见 `f2_repro_pwsh_interrupt`。
+#[test]
+#[ignore = "F2 已知缺陷复现器(见 docs/designs/003-ash-compatibility.md 与 DEBTS);修复后去 ignore 验证"]
+fn f2_repro_cmd_interrupt() {
+    let mut s =
+        PtySession::spawn("cmd", ["/c", "ping", "-n", "30", "127.0.0.1"], 80, 24).expect("spawn");
+    wait_for(&mut s, Duration::from_secs(10), "ping 输出", |t| {
+        t.visible_lines().iter().any(|l| l.contains("Reply from"))
+    });
+    s.write_input(b"\x03");
+    wait_for(&mut s, Duration::from_secs(5), "cmd 随 CTRL_C_EVENT 退出", |_| false);
+}
+
+/// [F2 复现器(pwsh 版)] 交互 pwsh 跑 ping,0x03 后 marker 应在 10s
+/// 内上屏(ping 30s 不可能自然结束)。当前观测:超时——pwsh 基于
+/// PSReadLine,空闲提示符的 Ctrl+C 可用(自读 0x03),运行中命令的
+/// 中断与 cmd 一样依赖 conhost 事件,同样断裂。
+#[test]
+#[ignore = "F2 已知缺陷复现器(见 docs/designs/003-ash-compatibility.md 与 DEBTS);修复后去 ignore 验证"]
+fn f2_repro_pwsh_interrupt() {
+    let mut s = PtySession::spawn("pwsh", std::iter::empty::<&str>(), 80, 24).expect("spawn");
+    wait_for(&mut s, Duration::from_secs(15), "pwsh 提示符", |t| {
+        t.visible_lines()
+            .iter()
+            .any(|l| l.contains("PS") && l.trim().ends_with('>'))
+    });
+    s.write_input(b"ping -n 30 127.0.0.1\r");
+    wait_for(&mut s, Duration::from_secs(10), "ping 输出", |t| {
+        t.visible_lines().iter().any(|l| l.contains("Reply from"))
+    });
+    s.write_input(b"\x03");
+    let marker = format!("probe_marker_{}", std::process::id());
+    s.write_input(format!("echo {marker}\r").as_bytes());
+    wait_for(&mut s, Duration::from_secs(10), "中断后 marker 上屏", |t| {
+        t.visible_lines().iter().any(|l| l.contains(&marker))
+    });
+}
