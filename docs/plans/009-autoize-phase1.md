@@ -7,9 +7,20 @@ created_at: 2026-09-06
 updated_at: 2026-09-06
 
 # /auto-plan:review 时填写
-supersedes_spec_components: []
-new_spec_components: []
-touched_goals: []
+supersedes_spec_components:
+  - "DEBTS.md #8(Auto 化必须项): 关账回写——第一相位落地,遗留面转 009 新增观察 7 条"
+  - "docs/designs/001-phase1-architecture.md: 追加 008→009 决策链节(真身迁移/无环兑现/标量面/E0080 根修/对拍形态)"
+  - "README.md 定位节: 转型声明(引擎 adapter 活 / widget.rs+App 冻结为参考 oracle / at-gen 复刻)"
+new_spec_components:
+  - "auto-lang crates/auto-lang/src/ui/terminal/: terminal 原生组件真身(core 零 iced + iced 适配器;视口/损伤/选中/IME/滚动/菜单)"
+  - "auto-lang test/a2r/compile_gate_known_broken.txt + a2r_rustc_real_compile_gate: rustc 实编门(74 例存量债 ledger 显式豁免)"
+  - "auto-lang test/ui/terminal_min/: 最小 <terminal/> 挂载示例 + headless 断言"
+  - "crates/autoterm-core/src/ffi.rs: 引擎 cdylib FFI 面(12 符号标量 ABI,色编码 kind<<24|value)"
+  - "crates/autoterm-engine-ffi-tests: libloading 独立进程集成测试(echo/resize/interrupt)"
+  - "at/autoterm.at + at-gen/: Auto 复刻应用(转译产物入库 + libloading 胶水 + 窗口壳 + scenario/smoke 协议)"
+  - "crates/autoterm-parity: 行为对拍门禁(oracle vs a2r 网格语义等价,显式 skip 惯例)"
+touched_goals:
+  - "DEBTS #8 Auto 化: 第一相位(P0–P4)全链落地——a2r 修缮/组件真身/引擎 adapter/复刻+对拍/收账转型;无环铁律过(auto-lang 0×autoterm,仅 at-gen→auto-lang 1 边)"
 
 current_step: 11
 total_steps: 11
@@ -404,7 +415,38 @@ P2 其实可与 P1 并行——见执行步骤注);P3 对拍绿 → P4 收账。
 
 ## 复审记录
 
-(留 /auto-plan:review 填写)
+**审阅人**:ZCode(/auto-plan:review)· **时间**:2026-09-06 ·
+**结论**:`reviewed`(全部验收过,2 项部分达标已记债,无阻塞项)
+
+### 逐条验收(全部在执行 worktree 重跑,不信勾选框)
+
+| # | 验收 | 判定 | 证据 |
+|---|---|---|---|
+| 1 | P0 a2r 快照全绿+实编门绿+spike 重跑归档 | **pass** | `cargo tt` 3817/3818(唯一失败=基线已坏 charts,主检出双证);`a2r_rustc_real_compile_gate` 在档(ledger 74 例显式豁免,文件在案);`spikes/autoize-roundtrip/T1-RERUN-PLAN009.md`+产物 diff(sample 仅派生行=修复本体,sample2 字节零差异) |
+| 2 | P1 ui-iced 构建绿+组件双后端测试+最小示例取证 | **partial→pass(记债)** | ui-iced build 绿(1m02s);headless 14/14 + 最小 .at 挂载 1/1 重跑绿;iced 像素级自动化未建(simulator 无事件注入面),以 T10 真窗口截图替代——债候选(见下) |
+| 3 | P2 cdylib 独立集成测试绿 | **pass** | `engine_ffi_integration` 1/1(2.61s)重跑绿 |
+| 4 | P3 产物实编+对拍门禁全绿+UI 取证 | **pass** | at-gen check 0 error+scenario anchor 2 处;`autoterm-parity` 5/5 重跑绿(4.35s);evidence/{ui_smoke.txt,ui_window.png} 在案 |
+| 5 | P4 收账四件+无环断言 | **pass** | grep 命中 DEBTS(4)/README(2)/001(2);cargo tree 重验:autoterm-core 0×auto-lang、auto-lang 0×autoterm、at-gen 1×auto-lang |
+| 6 | oracle 回归+零新依赖 | **pass(带注)** | workspace 61 passed 0 failed(重跑);auto-lang 009 未动任何 Cargo.toml;auto-term 侧 libloading 新声明于两个**新增** crate(at-gen/ffi-tests),lock 零新增(ash 传递已有)+T7 明示授权;parity 依赖仅仓内 rlib |
+
+### 遗漏/延后/workaround 猎查(逐项记录,不隐藏)
+
+- **延后①(记债)**:选中文本 headless 对拍——门禁显式 skip,证据未
+  落 T10(截图为初始态无选中)。组件选中面(T4)已测,缺的是 scenario
+  协议接线。计划"场景矩阵=子集"授权子集裁剪,但该面应补:债务候选。
+- **延后②(记债)**:terminal 组件 iced_test 像素级自动化——以 headless
+  断言+真窗口截图替代(simulator 无事件注入,选择性证据更弱)。债务候选。
+- **workaround(已记债)**:`[]` 字面量绕 a2r `List.new()` 限定 bug;
+  in-process API 绕挂起的 CLI trans(转译规程入库 at-gen/README);
+  实编门 ledger 豁免 74 例存量债(门对新破坏必红语义保留)。
+- **遗漏猎查**:11 步逐条对 diff,无丢失子项;T1/T5/T8-fix 三次
+  auto-lang fold 均完成(T1 一次顺延因主检出被并行会话占用,后补齐)。
+
+### 移交
+
+就绪 `/auto-plan:merge`(worktree `.wt/auto-009/{auto-term,auto-lang}`
+与分支 `plan-009-dev`/`auto-term-dev` 保留,清理归 merge;另注意组内
+还有 auto-down 只读 worktree 供路径解析,merge 时一并清理)。
 
 ## 待澄清事项
 
