@@ -2,7 +2,7 @@
 
 > PLAN-001 盘点 · PLAN-002 勾账 · PLAN-003(Phase 2 性能与输入)勾账 ·
 > PLAN-004(Phase 3 交互完备)勾账 · PLAN-005(Phase 4 交互批)勾账 ·
-> PLAN-006(#7 调查关账)· 2026-09-06。
+> PLAN-006(#7 调查关账)· PLAN-007(ash 门禁,#12/#13 新增)· 2026-09-06。
 
 ## 债务账本(PLAN-004 后状态)
 
@@ -14,11 +14,13 @@
 | 4 | 16ms 轮询驱动 | time::every tick | **已清偿**:唤醒通道事件驱动(6s 59 次更新 vs 372 轮询),常态零定时器 | — |
 | 5 | 无滚动回滚 UI | — | **已清偿**:滚轮/PgUp/PgDn/键入回正/↑N(offset=171 回顶实证) | 滚动条可选 |
 | 6 | 无光标块/选中/IME | 键盘只回写 | **已清偿(004)**:选中三模式(拖选/双击词/三击行)+ 高亮(像素证据)+ copy-on-select + Ctrl+Shift+C/V/右键粘贴(剪贴板读回断言);IME 管线全通 + 自绘 preedit(像素证据);**残留:人工拼音清单待用户执行**(001 附录跑法) | 人工清单跑完即全关 |
-| 7 | Ctrl+C / 关闭语义 | 未验证 | 关闭已清偿(002);003 矩阵完结 + 004 裁定:**无稳定版环境,复测待环境**(矩阵脚本就绪,001 附录决策树不变);经典控制台程序真事件仍需 win32 GenerateConsoleCtrlEvent | 稳定版环境到位补测即关;复现则 win32 直调立项 |
+| 7 | Ctrl+C / 关闭语义 | 未验证 | 关闭已清偿(002);003 矩阵完结 + 004 裁定:**无稳定版环境,复测待环境**(矩阵脚本就绪,001 附录决策树不变);经典控制台程序真事件仍需 win32 GenerateConsoleCtrlEvent | 稳定版环境到位补测即关;复现则 win32 直调立项;**007 注:事件断裂已由 #12 坐实,win32 直调方向即 #12 修复通路** |
 | 8 | 仅 Windows 基座 | 同 | 未动 | Linux/macOS 计划 |
 | 9 | spike 无统一文档 | 同 | **已清偿**:crates/* 正式结构 + 001 设计文档 | — |
 | 10 | 颜色表硬编码 | 16 色/xterm256 内置 | **已清偿**:palette.rs 全 NamedColor 映射(Dim×8/Bright/Dim 前景,TDD) | 主题系统可选;选中色已清偿(005 `--selection-color`) |
 | 11 | IME over-the-spot 运行时覆盖层不落屏(新) | — | 004 实测:iced_winit main-events 相相位丢弃 `State::Updated{input_method}`(381 次请求埋点实证),redraw 相相位应用链在本机不出画面;已按裁定降级自绘(可用) | 升级 iced 版本时重试 `Enabled{preedit: Some}` 路线,成则删自绘 |
+| 12 | **Ctrl+C 无法中断运行中命令(通路层,影响所有 shell)**(007 F2) | — | 007 实测坐实:0x03 经 portable-pty ConPTY 主端写入**不触发** CTRL_C_EVENT——`cmd /c ping`+0x03 五秒不退无 ^C、交互 pwsh+ping 同样断裂、UI 级配方 C 复现;portable-pty 0.9.0 spawn 无 CREATE_NEW_PROCESS_GROUP(嫌疑排除),主端写管道无事件注入 API;根因=OS conhost 对 VT 输入 0x03 的控制事件翻译(MS Q&A/wintty#155/winpty#116 灰色地带);证据链+候选修复通路(helper 进程 GenerateConsoleCtrlEvent / conhost 版本调查 / 上游 portable-pty)见 `docs/designs/003-ash-compatibility.md` §4 F2;复现器留档为 `ash_integration.rs` 两个 `#[ignore]` 用例 | 修复另立计划(虚拟桌面"打断挂死命令"依赖此);与 #7 的 win32 GenerateConsoleCtrlEvent 备注同源,007 已从"待复测"坐实为"确认缺陷" |
+| 13 | ash 内建命令不可被 Ctrl+C 中断(ash 侧,跨仓协调) | — | 007 F1:内建全程 raw mode、ash 阻塞在 `std::thread::sleep`(auto-shell `cmd/commands/sleep.rs:35`)不读 stdin,0x03 排队到内建结束;Windows Terminal 下同样如此,与终端无关;外部子进程路径正常(ash `frontend/subprocess.rs:43` 临时退 raw mode)。归属 auto-shell 仓,本仓只记证不修复 | auto-shell 侧评估内建执行期读 stdin/轮询;与 #12 叠加构成"ash 长命令全不可中断"现状 |
 
 ## 新增观察(PLAN-004 实测,设计输入)
 

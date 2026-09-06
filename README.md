@@ -41,6 +41,17 @@ cargo test --workspace                            # 全量回归
 # 取证钩子(--dev-autotype/--dev-select 等)需 --features dev-tools 构建
 ```
 
+### 用 ash 跑(虚拟桌面目标形态,PLAN-007)
+
+```powershell
+cargo run -q -p autoterm-ui -- --shell D:/autostack/auto-shell/ash/target/release/ash.exe
+# ash 门禁回归(ash 在场即全量断言;AUTOTERM_ASH_BIN 可显式指定产物路径):
+cargo test -p autoterm-core --test ash_integration
+```
+
+兼容性结论与已知限制(Ctrl+C 中断运行中命令当前不可用,见 DEBTS #12/#13):
+`docs/designs/003-ash-compatibility.md`。
+
 ## 交互(Phase 3/4,PLAN-004/005)
 
 | 操作 | 行为 |
