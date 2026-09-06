@@ -44,6 +44,18 @@
           "PLAN-004"
         ],
         "status": "published"
+      },
+      {
+        "id": "P006-1",
+        "section": "reports",
+        "title": "AutoTerm Auto 化前提调查(AutoUI 组件模型表达力 + a2r 往返一致性 + Rust 绑定通路) — 变更摘要",
+        "content": "DEBTS #8(Auto 化——必须项)的前置调查(DEBTS #7),为 #8 复刻\n计划产出 go/no-go 裁定材料。**纯调查型计划**(同 PLAN-001 的 spike\n性质):跨仓只读调查 `../auto-lang`(AutoUI 实现与 a2r 转译器的\n真正所在地——**注意:../auto-ui 独立仓已废弃合并入 auto-lang,\nDEBTS 旧引用一并修正**),产出可行性设计文档 + 差距清单 + 工作量\n估计;唯一动代码的是两个 spike(auto-lang 只读构建 + 最小 .at\nround-trip),不改任何仓的产品代码。与并行执行的 PLAN-005\n(Rust 交互批,另一会话)零冲突——本计划不碰 auto-term 产品代码。",
+        "file": "docs/plans/archived/006-autoize-feasibility.md",
+        "related": [
+          "PLAN-006"
+        ],
+        "status": "published",
+        "superseded_by": null
       }
     ],
     "goals": [
@@ -90,6 +102,18 @@
           "PLAN-004"
         ],
         "status": "proposed"
+      },
+      {
+        "id": "P006-2",
+        "section": "goals",
+        "title": "AutoTerm Auto 化前提调查(AutoUI 组件模型表达力 + a2r 往返一致性 + Rust 绑定通路) — 目标",
+        "content": "1. **Q1 组件模型表达力**:AutoUI(`auto-lang/src/ui/`)能否表达\n   \"实现 iced `Widget` trait 的自定义 widget\"(TermGrid 命门:\n   选中/IME/损伤门控全在其 `update/draw`),还是只能组合既有\n   组件?iced 后端(`ui/iced/`)的扩展点在哪;\n2. **Q2 Rust 绑定通路**:Auto 调用 Rust crate(iced/\n   alacritty_terminal/portable-pty)的机制(auto-bindgen?ext\n   imports/use.web?custom-lib-paths?)与边界;\n3. **Q3 a2r 往返一致性**:转译器产出子集(能否 emit trait impl/\n   extern 绑定?idiomatic 程度)与 DEBTS #8 的\"a2r 产出 ≈ 手写\n   Rust\"约束的差距;以 TermSession 薄封装为样本做最小 round-trip;\n4. **Q4 iced 后端可构建性**:ui-iced feature 在本机可构建/可跑\n   demo,记录构建面貌;\n5. **Q5 产出**:可行性设计文档(含差距清单 + 工作量分级 +\n   go/no-go 建议 + #8 立项拆解草案);DEBTS #7 关账或转立项,\n   #8 补齐启动条件;修正 DEBTS/001 的 auto-ui 旧仓引用。\n\n非目标:不改 auto-term/auto-lang 产品代码;不做完整复刻(那是\n#8);不做 gpui/Vue 后端调查(虚拟桌面 iced 轨道为准);不替用户\n做 go/no-go 裁定(只交材料)。",
+        "file": "docs/plans/archived/006-autoize-feasibility.md",
+        "related": [
+          "PLAN-006"
+        ],
+        "status": "proposed",
+        "superseded_by": null
       }
     ],
     "architecture": [
@@ -139,6 +163,18 @@
           "PLAN-004"
         ],
         "status": "stable"
+      },
+      {
+        "id": "P006-3",
+        "section": "architecture",
+        "title": "AutoTerm Auto 化前提调查(AutoUI 组件模型表达力 + a2r 往返一致性 + Rust 绑定通路) — 架构方案",
+        "content": "```\n调查(只读)               产出(spikes/ + docs/designs/)\n──────────────           ─────────────────────────────\nauto-lang/src/ui/     ▶   002-autoize-feasibility.md\n  ├ a2ui/schema.rs          ├ Q1-Q4 答案(每条带源码 file:line 证据)\n  ├ ui/iced/(renderer…)     ├ 差距清单(按 #8 复刻面映射)\n  ├ ui/ext_stubs.rs         ├ 工作量分级(核心封装/UI 层/引擎绑定)\n  └ auto-bindgen/           ├ go/no-go 裁定材料(三分支)\n                           └ #8 立项拆解草案\ndocs/a2r-*.md + 组件注册表   evidence/006-autoize/(spike 产物)\n```\n\nspike 两个:\n- **S1 只读构建**:在 `../auto-lang` 主检出跑\n  `cargo build -p auto-lang --features ui-iced`(产物仅 target/,\n  零 tracked 改动);\n- **S2 round-trip**:写最小 `.at` 样本(struct + enum message +\n  方法,TermSession 子集形态)→ `auto.exe transpile rust` → 与\n  手写 Rust 风格 diff → 差距记录。样本落本仓\n  `spikes/autoize-roundtrip/`,不进 auto-lang。",
+        "file": "docs/plans/archived/006-autoize-feasibility.md",
+        "related": [
+          "PLAN-006"
+        ],
+        "status": "stable",
+        "superseded_by": null
       }
     ],
     "designs": [
@@ -191,6 +227,18 @@
           "PLAN-004"
         ],
         "status": "stable"
+      },
+      {
+        "id": "P006-4",
+        "section": "designs",
+        "title": "AutoTerm Auto 化前提调查(AutoUI 组件模型表达力 + a2r 往返一致性 + Rust 绑定通路) — 详细设计",
+        "content": "### T1 AutoUI 组件模型(只读)\n\n读 `src/ui/component.rs`/`dynamic.rs`/`a2ui/schema.rs`/组件注册\n表:组件定义形态、能否注册新组件、有无\"原生/自定义 widget 挂载\n点\"。产出 Q1 前半(模型侧)+ file:line 证据。\n\n### T2 iced 后端扩展点(只读)\n\n读 `src/ui/iced/{renderer,mod,selectable_text,pointer_area,\nvirtual_window}.rs`:renderer 如何把组件树映射到 iced;内置组件\n是\"手写 Rust Widget 实现\"还是\"iced 既有组件包装\";**从 .at 层\n触达自定义 Widget 的路径存在与否**。产出 Q1 后半(后端侧)。\n\n### T3 绑定通路(只读)\n\n读 `crates/auto-bindgen`、`docs/custom-lib-paths-*.md`、\n`src/ui/ext_stubs.rs`:Auto→Rust crate 的调用机制、类型封送、\n限制(如 stub arity 约束)。产出 Q2。\n\n### T4 a2r 能力面(只读)\n\n读 a2r 三篇文档的 Implementation Status + `a2r-std` 公面:产出\n子集清单(struct/enum/trait impl?/extern?),对照 DEBTS #8 的\n往返约束。产出 Q3 前半。\n\n### T5 S2 round-trip spike(动手,本仓内)\n\n`spikes/autoize-roundtrip/sample.at`:TermSession 子集形态\n(GridSize struct + Damage enum + begin/update/clear_selection\n方法签名级)+ 运行 `auto.exe transpile rust`;人工 diff 产出 vs\n`autoterm-core/src/term.rs` 风格,记录:哪些构造 1:1、哪些变形、\n哪些不可表达。产出 Q3 后半(实证)。\n\n### T6 S1 只读构建 spike(动手,auto-lang 不改)\n\n`cargo build -p auto-lang --features ui-iced`(+ 若有 ui-iced\n示例则跑一个);记录构建时长/警告面貌/示例可运行性。产出 Q4。\n\n### T7 可行性文档汇总\n\n`docs/designs/002-autoize-feasibility.md`:Q1-Q4 答案(带源码\n证据)、**差距清单按 #8 复刻面映射**(core 封装/ui App/\nTermGrid/引擎绑定四档)、工作量分级(人日量级)、go/no-go 三分\n支材料(能表达→#8 直立;缺能力→auto-lang 补齐计划草案;短期\n不可达→降级路线如宿主壳+Auto 面板)、#8 立项拆解草案。\n\n### T8 台账回写\n\nDEBTS:#7 关账(结论一句话+指向 002 文档);#8 启动条件按结论\n更新;**修正 auto-ui 旧仓引用为 auto-lang 内 ui 模块**(含 001\n附录相关表述);README 定位节同步。",
+        "file": "docs/plans/archived/006-autoize-feasibility.md",
+        "related": [
+          "PLAN-006"
+        ],
+        "status": "stable",
+        "superseded_by": null
       }
     ],
     "tests": [
@@ -240,6 +288,18 @@
           "PLAN-004"
         ],
         "status": "verified"
+      },
+      {
+        "id": "P006-5",
+        "section": "tests",
+        "title": "AutoTerm Auto 化前提调查(AutoUI 组件模型表达力 + a2r 往返一致性 + Rust 绑定通路) — 测试设计",
+        "content": "- 调查型计划:验证=每任务的产出物存在且含指定内容(grep 断言);\n- S2 spike:output.rs 生成成功 + diff 记录入档;\n- S1 spike:构建成功输出(或失败面貌也是结论,如实记录);\n- 不做:本仓 cargo test 不动(零产品代码改动,\n  `cargo test --workspace` 收尾跑一次确认无意外)。",
+        "file": "docs/plans/archived/006-autoize-feasibility.md",
+        "related": [
+          "PLAN-006"
+        ],
+        "status": "verified",
+        "superseded_by": null
       }
     ],
     "reviews": [
@@ -286,6 +346,18 @@
           "PLAN-004"
         ],
         "status": "published"
+      },
+      {
+        "id": "P006-6",
+        "section": "reviews",
+        "title": "AutoTerm Auto 化前提调查(AutoUI 组件模型表达力 + a2r 往返一致性 + Rust 绑定通路) — 验收标准",
+        "content": "1. `docs/designs/002-autoize-feasibility.md` 存在,含 Q1-Q4 各\n   一节(每节 ≥3 条 file:line 源码证据)+ 差距清单 + 工作量分级\n   + go/no-go 材料 + #8 拆解草案;\n2. `spikes/autoize-roundtrip/` 含 sample.at + transpile 产物 +\n   diff 记录(或失败面貌记录);\n3. ui-iced 构建结论在案(成功时长或失败原因);\n4. DEBTS #7 关账、#8 条件更新、auto-ui 旧引用修正(grep\n   \"auto-ui 仓\" 无残留误引);\n5. 本仓 `cargo test --workspace` 仍绿(零改动自证);\n6. 与 005 无文件交集(改动仅 docs/ + spikes/ + DEBTS/README)。",
+        "file": "docs/plans/archived/006-autoize-feasibility.md",
+        "related": [
+          "PLAN-006"
+        ],
+        "status": "published",
+        "superseded_by": null
       }
     ]
   }

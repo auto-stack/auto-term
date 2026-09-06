@@ -1,17 +1,23 @@
 ---
 plan_id: PLAN-006
-status: drafting
+status: archived
 feature_name: AutoTerm Auto 化前提调查(AutoUI 组件模型表达力 + a2r 往返一致性 + Rust 绑定通路)
 author: [zhaopuming]
 created_at: 2026-09-05T21:20:00+08:00
-updated_at: 2026-09-05T21:20:00+08:00
+updated_at: 2026-09-05T18:50:00+08:00
 
 # Leave these EMPTY here — /auto-plan:review fills them:
 supersedes_spec_components: []
-new_spec_components: []
-touched_goals: []
+new_spec_components:
+  - "docs/designs/002-autoize-feasibility.md: 新增"
+touched_goals:
+  - "goal-1: Q1 裁定——.at 组件模型不承载自定义渲染(View 封闭 28 变体),TermGrid 唯一路径 = auto-lang 原生组件(code_editor 范式四件套接线)"
+  - "goal-2: Q2 裁定——auto-bindgen 立项假设不成立(系 C 头 manifest 生成器);真通路 FFI 边界 = 固有 impl+标量/字符串+≤3 arity+无闭包/泛型/trait;引擎复用形态 = Rust adapter(portable-pty 部分自动,alacritty_terminal 手写)"
+  - "goal-3: Q3 定性——往返约束口径修正为'语义等价 + rustc 实编 + 行为对拍'(S2 实证 F1-F6:F1 派生组合缺陷 E0369、int→i64、字段强制 pub;字节级往返不成立)"
+  - "goal-4: Q4 基线——ui-iced lib 一键可构建(dev 1m38s,224 警告 0 错误);rust-mode 示例系统性 E0080 编译失败(renderer.rs:18432,已入差距清单 3.6)"
+  - "goal-5: 台账——DEBTS #7 关账、#8 启动条件/往返口径更新;W1-W4 工作量分级(25-50 人日)与 P0-P4 拆解草案就绪(go/no-go 建议分支 A,终裁留用户)"
 
-current_step: 0
+current_step: 8
 total_steps: 8
 ---
 
@@ -188,42 +194,92 @@ DEBTS:#7 关账(结论一句话+指向 002 文档);#8 启动条件按结论
 
 ## 执行步骤
 
-- [ ] **T1** 组件模型调查:读
+- [x] **T1** 组件模型调查:读
       `../auto-lang/crates/auto-lang/src/ui/{component,dynamic}.rs`
       + `a2ui/schema.rs` + `docs/components/core.md`,答案与
       file:line 证据写入 002 文档 Q1 节(草)。
       验证:`grep -c "component.rs" docs/designs/002-autoize-feasibility.md` ≥1
-- [ ] **T2** iced 后端调查:读
+      [✅ 已完成] View 封闭 28 变体/component_registry 三源注册/注册表 iced 状态分布(unknown 37·none 32)入 Q1 §1.1;grep=3 通过
+- [x] **T2** iced 后端调查:读
       `src/ui/iced/{renderer,mod,selectable_text,pointer_area,
       virtual_window}.rs`,自定义 Widget 路径结论入 Q1 节。
       验证:`grep -c "ui/iced/renderer" 002 文档` ≥1
-- [ ] **T3** 绑定通路:读 `crates/auto-bindgen` +
+      [✅ 已完成] 5 处手写 Widget 先例 + code_editor 四件套接线点(view 变体/renderer 臂 2823-4600/aura_view_builder 臂/mod.rs)入 Q1 §1.2;grep=1 通过
+- [x] **T3** 绑定通路:读 `crates/auto-bindgen` +
       `docs/custom-lib-paths-{api,implementation}.md` +
       `ui/ext_stubs.rs`,Q2 节成文。
       验证:`grep -c "auto-bindgen" 002 文档` ≥1
-- [ ] **T4** a2r 能力面:读 a2r 三篇 + a2r-std 公面,Q3 前半
+      [✅ 已完成] 关键修正:auto-bindgen 是 C 头 manifest 生成器与 Rust crate 无关;真通路=dep/use.rust/方法包 FFI(固有 impl+标量+≤3 arity 边界);三 crate 判定表入 Q2;grep=3 通过
+- [x] **T4** a2r 能力面:读 a2r 三篇 + a2r-std 公面,Q3 前半
       (产出子集清单)成文。
       验证:`grep -c "Implementation Status\|a2r-std" 002 文档` ≥1
-- [ ] **T5** S2 round-trip:写
+      [✅ 已完成] 构造面清单(trait 定义+impl/泛型/match/闭包/actor 全支持)+ CLI 文档不符发现入 Q3 §3.1;grep=3 通过
+- [x] **T5** S2 round-trip:写
       `spikes/autoize-roundtrip/sample.at`(TermSession 子集),
       `auto.exe transpile rust` 生成 + diff 记录入
       `spikes/autoize-roundtrip/NOTES.md`。
       验证:`spikes/autoize-roundtrip/` 含 .at + .rs + NOTES.md
-- [ ] **T6** S1 只读构建:在 `../auto-lang` 跑
+      [✅ 已完成] sample.at + sample.a2r.rs + 变体 B + NOTES.md(F1-F6 六发现:E0369 派生组合缺陷/rustc 实编+运行通过/CLI 实为 `auto trans -p … rust`);实际命令 `auto.exe trans -p sample.at rust -o output.rs`(`-o` 未生效,产物落 `<stem>.a2r.rs`)
+- [x] **T6** S1 只读构建:在 `../auto-lang` 跑
       `cargo build -p auto-lang --features ui-iced`,结论(时长/
       警告/失败面貌)入 002 文档 Q4 节。
       验证:002 文档含构建结论(grep "ui-iced 构建" ≥1)
-- [ ] **T7** 汇总 002 文档:差距清单(按 #8 复刻面四档映射)+
+      [✅ 已完成] dev 1m38s 成功/224 警告 0 错误/零 tracked 改动;示例补测:rust-mode 示例系统性 E0080 编译失败(renderer.rs:18432 单态化超限,ui_hello_loader+ui_counter 同炸)——如实入档为存量问题;grep=1 通过
+- [x] **T7** 汇总 002 文档:差距清单(按 #8 复刻面四档映射)+
       工作量分级 + go/no-go 材料 + #8 拆解草案。
       验证:`grep -c "go/no-go" 002 文档` ≥1 且四档各有小节
-- [ ] **T8** 台账回写:DEBTS #7 关账/#8 更新/auto-ui 旧引用
+      [✅ 已完成] §5 差距清单四档(core/ui App/TermGrid/引擎绑定,🔴3🟡8🟢6)+ W1-W4 工作量(25–50 人日)+ §6 三分支 go/no-go(建议 A)+ P0-P4 拆解草案;grep=3 通过
+- [x] **T8** 台账回写:DEBTS #7 关账/#8 更新/auto-ui 旧引用
       修正;README 定位同步;收尾 `cargo test --workspace`。
       验证:`grep -A2 "Phase 4 候选清单" DEBTS.md` 含 006 结论;
       `cargo test --workspace` 绿
+      [✅ 已完成] DEBTS:#7 关账(结论+指向 002)、#8 启动条件按 006 更新(语义等价口径/Rust adapter 形态/W1-W2 一相位/25-50 人日);auto-ui 旧引用修正(DEBTS/001/README,活文档零误引;归档计划为历史记录不动);README 定位/布局/下一步同步;`cargo test --workspace` 绿(24 passed,CARGO_EXIT=0);worktree 提交 babe2dc + bf6c983
 
 ## 复审记录
 
-(待 /auto-plan:review 填写)
+- **复审人**:auto-plan:review(ZCode 会话,2026-09-05 18:40 +08:00)
+- **复审对象**:worktree `.wt/auto-term-006/auto-term` @ `plan-006-dev`
+  (babe2dc + bf6c983,base f3185a7;diff = 9 文件,+752/-15,
+  全部在 docs/ + spikes/ + DEBTS/README,worktree 干净)
+
+**逐条验收复验(worktree 内重跑,不信任执行期勾选)**:
+
+1. **PASS** — `docs/designs/002-autoize-feasibility.md` 存在(408 行);
+   Q1-Q4 每节 file:line 源码证据计数 = 28/12/12/5(≥3);差距清单四档
+   小节齐(`grep -c "^### 档"` = 4)+ 工作量分级(W1-W4)+ go/no-go
+   三分支(grep=3)+ P0-P4 拆解草案均在;
+2. **PASS** — `spikes/autoize-roundtrip/` 含 sample.at + sample.a2r.rs +
+   变体 B(sample2.at/.a2r.rs)+ NOTES.md(F1-F6 六发现含 diff 表);
+3. **PASS** — ui-iced 构建结论在案(grep "ui-iced 构建"=1):lib 成功
+   (dev 1m38s,224 警告 0 错误)+ rust-mode 示例系统性 E0080 失败
+   (ui_hello_loader/ui_counter 同炸 renderer.rs:18432)——失败面貌
+   如实记录,符合"调查型计划"的验收口径;
+4. **PASS** — DEBTS #7 关账(候选清单条目改写+结论+指向 002)、#8
+   启动条件按 006 结论重写(往返口径/adapter 形态/W1-W2 一相位/
+   25-50 人日);grep "auto-ui 仓" 活文档零误引——残留仅:归档计划
+   001/002(冻结的历史记录,有意不动)、计划文件自身(引用验证命令)、
+   DEBTS 修正性表述("原独立 auto-ui 仓已废弃");
+5. **PASS** — 复审门禁重跑 `cargo test --workspace`:24 passed /
+   0 failed,CARGO_EXIT=0(热缓存二次运行,与执行期收尾一致);
+6. **PASS** — 与 005 零文件交集:006 分支改动 = docs/designs/002+001、
+   spikes/、DEBTS.md、README.md;005 分支(plan-005-dev,已推进至其 T3)
+   改动 = crates/* + docs/designs/evidence/005-interaction/*;无重合文件。
+
+**遗漏/延后/workaround 排查**:
+
+- 遗漏:8 个任务均有对应 diff;目标 5(DEBTS #7/#8/旧引用/README)全兑现;
+  非目标(产品代码/gpui/Vue 调查/替用户裁定)全部守住;
+- 延后:无未经批准的延后——W1/W2/P0-P4 等"后续"即本计划 Q5 的交付物
+  (拆解草案),非偷工;
+- Workaround:CLI `-o` 失效→接受默认产物位置(发现 F6,上游问题已档);
+  F1 E0369 绕法(显式派生)已实证并记录;无隐藏式糊弄;
+- 计划图示与步骤的小分歧:架构图把 spike 产物画在 `evidence/006-autoize/`,
+  执行步骤 T5 明确写 `spikes/autoize-roundtrip/`——以步骤为准执行,
+  记录备查;
+- 新增债务候选(auto-lang 侧,均已入 002 §5 差距清单,无本仓动作):
+  3.6 rust-mode E0080、F1 a2r 派生组合、F6 CLI 文档漂移+未知类型静默透传。
+
+**裁定:PASS → status: reviewed**。可执行 `/auto-plan:merge`。
 
 ## 待澄清事项
 
