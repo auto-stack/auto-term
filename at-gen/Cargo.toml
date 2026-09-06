@@ -1,0 +1,26 @@
+[package]
+name = "autoterm-at"
+version = "0.1.0"
+edition = "2021"
+license = "Apache-2.0"
+publish = false
+
+# 独立于 auto-term workspace(见上注释)。
+[workspace]
+
+# PLAN-009 T8/T9: Auto 复刻应用产物 crate(a2r 转译产物 + 手写壳)。
+# 刻意不进 auto-term workspace:T9 门禁按需构建;auto-lang 以组内相对路径
+# 引用(.wt/auto-009 组布局与主检出布局均为 ../../auto-lang)——无环铁律
+# 允许的唯一 Cargo 边(auto-term 侧 at-gen → auto-lang 运行时)。
+
+[dependencies]
+auto-lang = { path = "../../auto-lang/crates/auto-lang", default-features = false }
+libloading = "0.8"
+
+[[bin]]
+name = "autoterm-at"
+path = "src/main.rs"
+
+[features]
+default = ["ui-iced"]
+ui-iced = ["auto-lang/ui-iced"]

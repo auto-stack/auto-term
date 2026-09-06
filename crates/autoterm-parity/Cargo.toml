@@ -1,0 +1,13 @@
+[package]
+name = "autoterm-parity"
+version = "0.1.0"
+edition.workspace = true
+license.workspace = true
+publish = false
+
+# PLAN-009 T9: 对拍门禁——同一场景脚本分别驱动 Rust oracle 版(rlib 直驱)
+# 与 a2r 版(at-gen scenario 子进程),断言网格文本等价(006 S2 实证口径:
+# 语义等价 + 编译通过,非字节等价)。ash 缺席场景显式 skip(007/008 惯例)。
+
+[dependencies]
+autoterm-core = { path = "../autoterm-core" }

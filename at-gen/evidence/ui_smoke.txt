@@ -1,0 +1,4 @@
+VTree { nodes: [VNode { id: VNodeId(1), kind: Text, parent: None, children: [], props: Text { content: "terminal key=at-shell cols=80 rows=24 lines=24", selectable: false }, label: "Text", path: [], source_span: None }], root: Some(VNodeId(1)), next_id: 2 }
+terminal-node-mounted: true
+echo-in-fed-lines: true
+UI_SMOKE_OK (terminal 组件挂载 + 引擎回显入 props)

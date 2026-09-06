@@ -4,6 +4,20 @@ AutoOS 的通用终端基础设施。产品名 **AutoTerm**;仓库 `auto-term`�
 
 ## 定位
 
+> **PLAN-009 转型声明(2026-09-06)**:Auto 化第一相位落地后,本仓
+> 双重身份——
+> - **引擎 adapter(活)**:`autoterm-core`(PTY + alacritty 仿真)是
+>   未来 AutoTerm 的引擎本体,经 cdylib FFI 面(`ffi.rs`,libloading
+>   运行期加载)供 Auto 侧消费;这是本仓的主产品形态。
+> - **Rust 参考实现 / 验收 oracle(冻结)**:`autoterm-ui` 的 widget.rs
+>   与 App **冻结**——真身已迁 auto-lang `src/ui/terminal/`(terminal
+>   组件);Rust 版仅作对拍基准(`crates/autoterm-parity` 门禁的
+>   oracle 侧),只修对拍阻断项,不加产品功能。
+> - **Auto 复刻应用**:`at/autoterm.at`(Auto 源)→ a2r 转译 →
+>   `at-gen/`(产物 crate,挂 terminal 组件的真窗口应用)。
+> - **无环铁律**:auto-lang 对本仓零 Cargo 依赖;本仓仅 `at-gen` 一处
+>   依赖 auto-lang 运行时(cargo tree 断言在案,PLAN-009 T11)。
+
 - **AutoOS 虚拟桌面的通用终端**:一个长得在宿主桌面里的普通进程,经
   基座 OS 的 PTY 服务(Windows: ConPTY / Unix: openpty)驱动任意
   shell 子进程,以 `alacritty_terminal` 为仿真核心渲染 VT 字节流。

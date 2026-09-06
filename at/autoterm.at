@@ -1,0 +1,71 @@
+// PLAN-009 T8: AutoTerm Auto 复刻应用——.at 源(a2r 可表达形态,005 约束)。
+//
+// 分工(T8 执行记录,与 at-gen/README.md 同文):
+//   - 本文件:app 状态机 + 引擎驱动逻辑(引擎调用/视口快照拉取),纯
+//     a2r 可表达构造(type/ext/enum/List/use.rs——006 S2 spike + 语料
+//     验证面:mut fn 接收者/`.field` 访问/List.new()/use.rs 透传);
+//   - at-gen/src/app_logic.rs:本文件经 a2r 转译的产物(入库);
+//   - at-gen/src/engine.rs:手写 libloading 胶水(加载 autoterm_core.dll,
+//     P2 FFI 面的安全 Rust 包装;快照存 glue 侧,经 engine_rows 回读);
+//   - at-gen/src/shell.rs:手写窗口壳(auto-lang ui Component,挂
+//     terminal 组件,每拍调 .tick() 喂 View::Terminal props)。
+// 无环铁律:at-gen 依赖 auto-lang 运行时(转译产物单向依赖),引擎经
+// DLL 运行期加载——auto-lang 对 auto-term 零 Cargo 依赖不变。
+
+use.rs crate::engine::{engine_spawn, engine_write_line, engine_rows, engine_resize, engine_interrupt, engine_is_exited, engine_free}
+
+enum AppMsg {
+    EngineTick
+    SendLine(str)
+    Resized(int, int)
+    Interrupted
+}
+
+#[derive(Clone, Debug)]
+pub type TermApp {
+    handle int
+    cols int
+    rows int
+    lines List<str>
+    exited bool
+}
+
+ext TermApp {
+    pub fn new(cols int, rows int) TermApp {
+        let h = engine_spawn(cols, rows)
+        return TermApp(handle: h, cols: cols, rows: rows, lines: [], exited: false)
+    }
+
+    /// 每拍驱动:收割引擎输出并拉取视口快照(形态甲 props 数据源;
+    /// engine_rows 内联 feed+快照)。
+    mut fn tick() {
+        .lines = engine_rows(.handle)
+        .exited = engine_is_exited(.handle)
+    }
+
+    mut fn send_line(line str) {
+        engine_write_line(.handle, line)
+    }
+
+    mut fn resize(cols int, rows int) {
+        engine_resize(.handle, cols, rows)
+        .cols = cols
+        .rows = rows
+    }
+
+    fn interrupt() {
+        engine_interrupt(.handle)
+    }
+
+    fn dispose() {
+        engine_free(.handle)
+    }
+}
+
+/// headless 冒烟(T9 对拍门禁 a2r 侧驱动核):spawn → echo → tick 拉取。
+fn main() {
+    var app = TermApp.new(80, 24)
+    app.send_line("echo autoterm_at_ok")
+    app.tick()
+    print("at-app ready")
+}

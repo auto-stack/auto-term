@@ -87,3 +87,38 @@
    - **启动条件**:Rust 版功能齐全 + 测试完备(1-5 及收尾)之后;
      总工作量级 25–50 人日(两仓,002 §5);go/no-go 建议分支 A,
      终裁留给用户。
+   - **第一相位关账(PLAN-009,2026-09-06,分支 A 单计划)**:#8 的
+     P0–P4 落地——a2r F1 修复 + rustc 实编门(auto-lang)、`terminal`
+     组件真身迁移(视口/损伤/选中/IME/滚动/菜单,iced 双端测试)、
+     引擎 cdylib adapter(12 符号 FFI 面 + libloading 集成测试)、
+     `.at` 复刻应用 + **行为对拍门禁**(启动/echo/resize/Ctrl+C 中断
+     网格等价 5/5,色彩/选中显式 skip)+ UI 冒烟取证(程序化 vtree +
+     真窗口截图);无环断言过(auto-lang 0×autoterm;仅 at-gen→
+     auto-lang 运行时 1 边)。关账条件三条全数在案:**对拍门禁在库**
+     (crates/autoterm-parity)+ **组件真身迁移完成**(auto-lang
+     src/ui/terminal/,本仓 widget.rs 冻结为参考 oracle)+ **本仓转型**
+     (README 定位节)。遗留 → 见下方"009 新增观察"。
+
+## 009 新增观察(PLAN-009 T11 收账,2026-09-06)
+
+1. **a2r 快照存量编译债(74 例)**:rustc 实编门(auto-lang
+   `a2r_rustc_real_compile_gate`)首跑暴露 006 时代文本金样管线的存量
+   编译炸裂(错误码逐例在 auto-lang `test/a2r/compile_gate_known_broken.txt`
+   ledger);门对新破坏必红,ledger 变绿即报 obsolete。修复属 a2r codegen
+   缺陷账(建议以 question 族为首批)。
+2. **a2r `List.new()` 路径限定 bug**:`List.new()` 会被错误限定为
+   `<最后 use.rs 符号>::Vec::new()`(T8 实证);绕开:空列表用 `[]`
+   字面量(at-gen/README.md)。
+3. **CLI `auto trans` 挂起**:master 存量回归(f3185a7 时代可用);
+   in-process `transpile_rust` 同源正常,转译规程走库面(at-gen README)。
+4. **Vue/web terminal 后端留白**(非目标确认):未来虚拟桌面需 web 形态
+   时另立调查(xterm.js 类渲染 + 引擎桥可行性;PLAN-009 待澄清4)。
+5. **terminal 组件数据面性能余量**:形态甲(props-feed)2000 行流式
+   基准 <0.1s(debug,帧预算 16ms),无降级需要;超大规模流式如遇帧
+   预算压力再评估形态乙(预授权规则在案)。
+6. **at-gen 窗口标题 cosmetic**:"Auto Lang - Iced" 为 iced application
+   缺省标题;复刻应用应暴露自定义标题(iced .title() 一行)。
+7. **E0080 已顺手修(T8,R4 预授权内)**:run_app tick 订阅捕获闭包被
+   iced 0.14 const 检查必炸——TickWrap 变体构造器零捕获方案
+   (auto-lang renderer.rs);002 §4 记录的"两示例同炸"应已解除,
+   建议_auto-lang 侧复跑当年两个示例复核后销账。
