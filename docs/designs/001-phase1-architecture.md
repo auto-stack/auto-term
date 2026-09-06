@@ -283,3 +283,45 @@ T7 按"待环境"执行:
   pwsh/ash 各 5 分钟——拼音组句/上屏/中英切换/Esc 取消;通过后
   截图归档。清单跑法:启动 autoterm → Win+Space 切微软拼音 →
   提示符组句 → Enter 上屏 → Shift 切中英 → Esc 取消预编辑。
+
+## 004→005 决策链(PLAN-005,2026-09-05/06)
+
+Phase 4"功能齐全"批(总排序裁定:Rust 先做齐做稳,Auto 复刻
+后置),五件套全量落地,新代码保持 a2r 可表达形态(DEBTS #8):
+
+1. **块选(Alt+拖选)**:core Block 分支现成(004 已核),UI 侧
+   GridInteraction 增 ModifiersChanged 跟踪,按下经纯函数
+   `begin_selection_type(count, mods)`——Alt 恒 Block 且不参与
+   多击计数(正交);渲染 `is_block` 逐行同列带;像素几何
+   block_aligned(4 带 x52-142 spread=0,band_cells≈5);
+2. **拖选自动滚动**:Extend 增 `at_edge`(纯函数 edge_band),
+   App `drag_scroll` + **条件订阅** 50ms(DragScrollTick 模式:
+   Subscription::map 禁捕获,载荷经状态中转,与 DevTick 同构);
+   锚定由 core 绝对行语义自然承接(转储:锚绝对行不动,视口行
+   随滚动漂移);待澄清#5 采纳默认 50ms×2 行不分档;
+3. **右键上下文菜单**:右键直接粘贴废止(菜单项"粘贴"承担);
+   MenuState 像素锚点 + draw 末层浮层 + 命中纯函数
+   `menu_item_at`(TDD 抓出负 y `as usize` 饱和 cast bug);动作接
+   004 路径(Copy=copy_selection/Paste=两拍读回/全选=视口
+   Lines);CJK 标签走 YaHei(MONOSPACE 豆腐块为 004 已知,
+   preedit 同);菜单开着时暂停自动滚动;
+4. **选中色**:`--selection-color RRGGBB[AA]`(纯函数
+   parse_hex_color:6 位维持 25% 默认 α、8 位显式、非法回退),
+   默认 e8e8e8@25% 移入 DEFAULT_SELECTION_COLOR;ff0000 冒烟混色
+   (76,15,18)与理论逐通道一致;
+5. **光标形状/闪烁**:DECSCUSR 透传 `cursor_shape()`(T1 sim 3 例,
+   三形像素证据:Underline 19×4 底条/Beam 4×38 左条/Block 满格);
+   闪烁四重门控(focused && shape!=Hidden && !menu && !preedit)
+   条件订阅 500ms——**focused 初值 false**(后台起窗不闪,真聚焦
+   才挂定时),失焦常亮,相位 off 帧跳过光标绘制;零唤醒回归:
+   frames=5@11s 静止(基线 116@有内容)。
+
+取证方法学增量(005):**PSReadLine 吞键入转义**——DECSCUSR/
+DECTCEM 等设备控制序列须由 shell 输出(`Write-Host "`e[4 q"
+-NoNewline`),autotype 直写 PTY 主端会被当输入吃掉;截图编排
+竞态(构建与 app 同链后台化 → 脚本时间轴前移拍位错窗);像素
+bbox 污染两源(标题栏同域色→跳窗顶;反锯齿散点→行列 2D 阈值)。
+注入工具面新增 `dev-select :up/:down`(边缘保持)、`--dev-menu`
+(开/关);转储增 selection_range/cursor_shape/cursor_visible/
+blink_toggles。手工清单(5 分钟)挂
+evidence/005-interaction/README.md。

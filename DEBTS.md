@@ -1,7 +1,8 @@
 # DEBTS.md — 已知债务
 
 > PLAN-001 盘点 · PLAN-002 勾账 · PLAN-003(Phase 2 性能与输入)勾账 ·
-> PLAN-004(Phase 3 交互完备)勾账 · 2026-09-05。
+> PLAN-004(Phase 3 交互完备)勾账 · PLAN-005(Phase 4 交互批)勾账 ·
+> 2026-09-06。
 
 ## 债务账本(PLAN-004 后状态)
 
@@ -16,7 +17,7 @@
 | 7 | Ctrl+C / 关闭语义 | 未验证 | 关闭已清偿(002);003 矩阵完结 + 004 裁定:**无稳定版环境,复测待环境**(矩阵脚本就绪,001 附录决策树不变);经典控制台程序真事件仍需 win32 GenerateConsoleCtrlEvent | 稳定版环境到位补测即关;复现则 win32 直调立项 |
 | 8 | 仅 Windows 基座 | 同 | 未动 | Linux/macOS 计划 |
 | 9 | spike 无统一文档 | 同 | **已清偿**:crates/* 正式结构 + 001 设计文档 | — |
-| 10 | 颜色表硬编码 | 16 色/xterm256 内置 | **已清偿**:palette.rs 全 NamedColor 映射(Dim×8/Bright/Dim 前景,TDD) | 主题系统可选;选中色配置见 Phase 4 候选 |
+| 10 | 颜色表硬编码 | 16 色/xterm256 内置 | **已清偿**:palette.rs 全 NamedColor 映射(Dim×8/Bright/Dim 前景,TDD) | 主题系统可选;选中色已清偿(005 `--selection-color`) |
 | 11 | IME over-the-spot 运行时覆盖层不落屏(新) | — | 004 实测:iced_winit main-events 相相位丢弃 `State::Updated{input_method}`(381 次请求埋点实证),redraw 相相位应用链在本机不出画面;已按裁定降级自绘(可用) | 升级 iced 版本时重试 `Enabled{preedit: Some}` 路线,成则删自绘 |
 
 ## 新增观察(PLAN-004 实测,设计输入)
@@ -35,14 +36,27 @@
 > **总排序裁定:先把 Rust 版功能做齐全、测试完备(下述 1-5 及收尾),
 > 然后才做 Auto 复刻(#7 调研 → #8 复刻)**——参考实现一次性做稳,
 > 复刻只做一轮,oracle 不漂移。#6 不在本轨。
+>
+> **进度更新(PLAN-005,2026-09-06):1-4 已全部清偿**(证据:
+> docs/designs/evidence/005-interaction/,README 有索引与手工
+> 清单)——**"Rust 功能齐全"启动条件达成,#8 Auto 化可启动**
+> (前置 #7 调研仍待做)。
 
-1. **拖选到边缘自动滚动**(004 裁定#4:与块选/右键菜单同批);
-2. **块选(Block)**+ 右键上下文菜单;
-3. 选中主题色配置(现 DEFAULT_FG 25% α 硬编码);
-4. 光标形状(Underline/Beam)与闪烁;
+1. ~~拖选到边缘自动滚动~~ **已清偿(005 T4)**:Extend at_edge +
+   drag_scroll 条件订阅 50ms×2 行(菜单开着暂停);转储证锚定
+   绝对行 + scroll_offset 顶满钳制;
+2. ~~块选(Block)+ 右键上下文菜单~~ **已清偿(005 T2/T3/T5)**:
+   Alt+拖选恒 Block(与多击正交)+ is_block 列带渲染
+   (block_aligned 像素证);右键改菜单(复制/粘贴/全选,动作接
+   004 路径,直接粘贴废止);
+3. ~~选中主题色配置~~ **已清偿(005 T6)**:`--selection-color
+   RRGGBB[AA]`,默认 e8e8e8@25%(理论混色像素级吻合);
+4. ~~光标形状(Underline/Beam)与闪烁~~ **已清偿(005 T7/T8)**:
+   DECSCUSR 三形分形渲染(像素证据);闪烁四重门控条件订阅
+   500ms,失焦/隐藏/菜单/preedit 均不闪;零唤醒回归 frames=5@11s;
 5. Ctrl+C 稳定版复测(债务 #7,待环境后关账或立项 win32);
 6. Unix 基座适配(独立轨道,不属"功能齐全"批);
-7. iced↔auto-ui 生态对齐(`.at` 组件模型承载原生 widget 调查);
+7. iced↔auto-ui 生态对齐(`.at` 组件模型承载原生 widget 调查;#8 前置);
 8. **Auto 化——必须项**(用户裁定 2026-09-05,升级自"候选"):
    虚拟桌面当前**只支持以 AutoUI 代码加载 app**(auto-ui = Auto
    描述层 + iced/gpui 后端),AutoTerm 入驻虚拟桌面的唯一路径就是
