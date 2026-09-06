@@ -1,15 +1,26 @@
 ---
 plan_id: PLAN-010
-status: execution_done
+status: reviewed
 feature_name: 009 后续收尾——a2r 存量编译债清偿 + 对拍门禁补全 + 契约/文档入账
 author: [衍星居士]
 created_at: 2026-09-07
 updated_at: 2026-09-07
 
 # /auto-plan:review 时填写
-supersedes_spec_components: []
-new_spec_components: []
-touched_goals: []
+supersedes_spec_components:
+  - "auto-lang test/a2r/compile_gate_known_broken.txt: 74→37 清偿(批1 question 族 21/批2 codegen 根修 15;遗留理由逐批在案)"
+  - "auto-lang crates/auto-lang/src/lib.rs trans_rust_with_session: 兄弟 .at 预扫有界化(src 字面名才按 crate 根扫+深度/数量/大小上限)——CLI trans 恢复"
+  - "auto-lang crates/auto-lang/src/trans/rust.rs: a2r codegen 根修批(Type.method 内置集合豁免/Option 尾包裹/say 内建/std 前导注入/委托组件缺省/空集合字面量/mut 方法注册表/Result<Box> 免克隆/Option-get 克隆/comptime 物化/闭包块尾值)"
+  - "auto-term DEBTS.md: Phase 4 #5 关账(与旧账 #7 合并)+ 009 新增观察 7 条逐条销账(#1/#2/#3/#6/#7 销,#4/#5 维持)"
+  - "auto-term docs/designs/003-ash-compatibility.md §5: 追补第 6 条——Auto 复刻应用形态 cdylib+ctrlc 同目录分发"
+  - "auto-term at-gen/README.md: 转译再生成规程更新(CLI 恢复为主路径,List.new 绕开写法废止)"
+new_spec_components:
+  - "auto-lang test/a2r/10_collections/007_list_new/: List.new() 语料快照(限定 bug 回归锚,先红后绿)"
+  - "auto-lang crates/auto-lang/src/ui/iced/terminal_pixel_tests.rs + test/ui/terminal_pixel/ 金样 4 件: terminal 组件像素级 headless 自动化(bounds 精确/选中帧/光标块帧,iced_test matches_image)"
+  - "auto-lang crates/auto-lang/src/ui/iced/renderer.rs run_app_with_title(Option<&str>): iced application 链标题面(复刻应用去缺省标题)"
+  - "auto-term at-gen scenario=selection + crates/autoterm-parity parity_selection_text(去 skip): 选中文本对拍(组件注册表面 SEL 协议 vs TermSession 选中,spawn_with_extras 载荷回收)"
+touched_goals:
+  - "DEBTS #8 Auto 化: 补全收尾相位(PLAN-010)——a2r 编译债 50% 清偿/CLI trans 恢复/E0080 销账/选中对拍+像素自动化两门禁补齐;无环铁律保持(at-gen→auto-lang 单边)
 
 current_step: 9
 total_steps: 9
@@ -315,7 +326,66 @@ DEBTS 009 新增观察逐条销账(#1 清偿率在案/#2 已修/#3 已修/#6 已
 
 ## 复审记录
 
-(留 /auto-plan:review 填写)
+**复审人**: ZCode(/auto-plan:review);**时间**: 2026-09-07
+**验证面**: 两仓折后 master(并行 plan-576 已在折内),默认检出重跑
+
+### 验收标准逐条复核(9/9 pass)
+
+1. **List.new() 快照绿 + 实编门含该例** — pass。`cargo tt
+   test_10_collections_007` PASS(0.87s);ledger 37 行中无 007。
+2. **实编门清偿率 ≥50%(74→≤37),门全绿** — pass。ledger 实测
+   `grep -c "^a2r/"` = 37(恰 50.0%);批 1/批 2 commit 记录理由;
+   实编门绿(0 unexpected,142-143 compiled);失败清单逐例输出设施
+   已并入门禁。
+3. **CLI trans 60s 内完成且产物编译通过** — pass。折后 master 重建
+   CLI:20.4s(<60s,冷缓存;含预算内 stray 解析);产物 rustc 编译
+   绿;与 in-process transpile_rust 逐字节一致(diff 空)。
+4. **E0080 两示例 build 绿 + DEBTS #7 销账** — pass。折后重建
+   ui_counter+tick_interval_ms 变体 --features ui-iced 绿(55s,验证
+   后撤销,worktree 无残留);DEBTS.md:134 观察 #7 销账记录在案。
+5. **003 §5 含 cdylib 分发条;at-gen 标题非缺省** — pass。003:202
+   cdylib 条 grep 命中;**实窗取证**:autoterm-at.exe 启动 →
+   PowerShell MainWindowTitle = `AutoTerm`(非 "Auto Lang - Iced")。
+6. **DEBTS #5/#7 关账标注在案** — pass。DEBTS.md:63 #5 关账(证据=
+   parity_interrupt 真实 ConPTY 双投递绿 + engine_ffi_integration)。
+7. **对拍门禁:选中文本实跑等价(去 skip),全门禁绿(色彩保留
+   ash-skip)** — pass。折后 `cargo test -p autoterm-parity`:
+   5 passed + 0 failed(色彩 ash 缺席显式 skip,惯例保持);SEL
+   hello world 双侧一致(行尾归一)。
+8. **iced 像素自动化测试在案且绿** — pass。折后 `--features
+   ui-iced,iced-layout-tests --lib terminal_pixel` 3/3 绿(1.01s);
+   金样 4 件入库。
+9. **两仓全档回归绿(tf/tt + workspace),零新依赖** — pass。
+   auto-lang 四层(折后 master,含并行 576):tf 3468/3469、tt
+   3821/3822、tb 3516/3524、tv 3609/3610——红全部为 master 既有基线
+   (charts + 7 book listing,与 master 主检出逐一相同,无新增);
+   auto-term `cargo test --workspace` exit 0 全绿;两仓 Cargo.toml
+   diff 零新增依赖。
+
+### 遗漏/延后/workaround 猎查
+
+- **遗漏**: 无。9 步均有对应 diff 与验证;temp 变体验证后撤销无残留。
+- **延后**: 计划正文「非目标」四项(Vue/web、auto-os、形态乙、a2r
+  风格变形)均为用户裁定的显式排除,非执行期私设;遗留 37 ledger 例
+  为计划预授权(≥50% 线达成),理由逐批在案。
+- **workaround**: T3 口径「修至不挂起」的扫描有界化即计划批准的修复
+  形态,非遮盖;无 TODO/hack 残留(diff 猎查无新增 TODO)。
+
+### 债候选(记录,均不阻塞)
+
+- charts 红 + 7 book 红:master 存量(非 010 引入,基线双验),留
+  auto-lang 侧独立修缮。
+- 遗留 37 ledger 例:智能指针自动解包族/interop 外部框架族/语法未
+  编码族/ownership-闭包耦合族/singles。
+- **merge 时提醒**:auto-lang `temp_plan009_t8_transpile_at_app` 现
+  指向 .wt/auto-010 工作树路径,merge 清理 worktree 前须改回主检出
+  (009 merge 前置同款约定)。
+
+### 协议注记
+
+两仓分支 fold 已按 /auto-plan:work 多相位协议在执行期落主(T4 阶段
+折 + T9 终折),worktree 在位未清——/auto-plan:merge 只做收尾清理与
+沉淀,无分支落地动作残留。
 
 ## 待澄清事项
 
