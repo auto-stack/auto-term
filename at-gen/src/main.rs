@@ -154,6 +154,45 @@ fn run_scenario(name: &str) -> std::process::ExitCode {
             app.dispose();
             finish(hit)
         }
+        "selection" => {
+            // PLAN-010 T7: 选中文本对拍——echo hello world 后,headless
+            // 直接驱动 auto-lang 组件注册表面(terminal_registry 核心 +
+            // terminal_selection_* 纯函数),Simple 选中 "hello world"
+            // 行内区间,SEL 协议输出选中文本;oracle 侧以 TermSession
+            // begin/update_selection 同区间选中,parity 门禁对拍。
+            let mut app = TermApp::new(80, 24);
+            app.send_line("echo hello world");
+            wait_prompt(&mut app, 10);
+            let lines: Vec<String> = app.lines.clone();
+
+            // 组件注册表面:注册核心,喂入与组件 props 数据面一致的网格。
+            let core = auto_lang::ui::terminal::terminal("at-shell", 80, 24);
+            auto_lang::ui::terminal::terminal_feed(core, &lines);
+            let (row, start) = lines
+                .iter()
+                .enumerate()
+                .find_map(|(i, l)| l.find("hello world").map(|c| (i, c)))
+                .expect("selection: hello world 行缺失");
+            let end = start + "hello world".len() - 1;
+            auto_lang::ui::terminal::terminal_selection_begin(
+                core,
+                auto_lang::ui::terminal::TermSelectionType::Simple,
+                row,
+                start,
+            );
+            auto_lang::ui::terminal::terminal_selection_extend(core, row, end);
+            auto_lang::ui::terminal::terminal_selection_finish(core);
+            let sel = auto_lang::ui::terminal::terminal_selected_text(core)
+                .unwrap_or_default();
+
+            for (i, l) in lines.iter().enumerate() {
+                println!("ROW {i} {l}");
+            }
+            println!("SEL {sel}");
+            app.dispose();
+            let hit = sel.contains("hello world");
+            finish(hit)
+        }
         "interrupt" => {
             // T9: timeout 主体 → interrupt(008)→ 存活 echo。
             let mut app = TermApp::new(80, 24);

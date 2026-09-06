@@ -163,6 +163,13 @@ struct A2r {
 impl A2r {
     /// 启动 scenario 子进程并回收 ROW 快照(SCENARIO_* 终止行不入网格)。
     fn spawn(scenario: &str) -> (Self, Vec<String>) {
+        let (a2r, rows, _) = Self::spawn_with_extras(scenario);
+        (a2r, rows)
+    }
+
+    /// PLAN-010 T7: 同 spawn,另回收非 ROW 协议行(如 `SEL <text>`)——
+    /// 场景级取证载荷(选中文本等)与网格取证分行输出。
+    fn spawn_with_extras(scenario: &str) -> (Self, Vec<String>, Vec<String>) {
         let bin = at_bin();
         assert!(
             bin.is_file(),
@@ -178,19 +185,24 @@ impl A2r {
             .expect("a2r scenario 子进程启动失败");
         let stdin = child.stdin.take().expect("stdin");
         let stdout = child.stdout.take().expect("stdout");
-        let rows: Vec<String> = BufRead::lines(std::io::BufReader::new(stdout))
-            .map_while(|l| l.ok())
-            .take_while(|l| l != "SCENARIO_OK" && l != "SCENARIO_FAIL")
-            .filter_map(|l| {
-                // ROW 协议:ROW <idx> <text> —— 剥掉行号,只留文本。
-                l.strip_prefix("ROW ")
-                    .and_then(|rest| rest.split_once(' '))
-                    .map(|(_, text)| text.to_string())
-            })
-            .collect();
+        let mut rows: Vec<String> = Vec::new();
+        let mut extras: Vec<String> = Vec::new();
+        for l in BufRead::lines(std::io::BufReader::new(stdout)).map_while(|l| l.ok()) {
+            if l == "SCENARIO_OK" || l == "SCENARIO_FAIL" {
+                break;
+            }
+            // ROW 协议:ROW <idx> <text> —— 剥掉行号,只留文本。
+            if let Some(rest) = l.strip_prefix("ROW ") {
+                if let Some((_, text)) = rest.split_once(' ') {
+                    rows.push(text.to_string());
+                    continue;
+                }
+            }
+            extras.push(l);
+        }
         let status = child.wait().expect("wait a2r");
         assert!(status.success(), "a2r scenario '{scenario}' 非零退出");
-        (Self { child, stdin }, rows)
+        (Self { child, stdin }, rows, extras)
     }
 
     /// 对拍驱动面:经 stdin 向驱动核注入后续命令(场景扩展用)。
@@ -299,8 +311,59 @@ fn parity_color_attestation() {
     panic!("ash 在案但色彩对拍场景未实现——本相位留白,见 PLAN-009 待澄清4");
 }
 
-/// 场景 6(显式 skip):选中文本——UI 级取证归 T10 冒烟。
+/// 场景 6(PLAN-010 T7 接线,去 skip):选中文本——oracle 侧
+/// TermSession::begin/update_selection 对 "hello world" 行内区间
+/// Simple 选中,a2r 侧 scenario=selection 经组件注册表面
+/// (terminal_selection_* + terminal_selected_text)同区间选中;
+/// 双侧选中文本语义等价(行尾归一沿用)。
 #[test]
 fn parity_selection_text() {
-    eprintln!("SKIP 选中文本: UI 级取证归 T10(组件选中文本 headless 面待接)");
+    use autoterm_core::{Column, Line, Point, SelectionType, Side};
+    let _serial = PARITY_SERIAL.lock().unwrap();
+
+    // oracle:真实 PTY 会话,锚点行命中 + 提示符回归后取网格时序点。
+    let mut o = Oracle::spawn();
+    o.write_line("echo hello world");
+    let _ = o.wait_for("hello world", Duration::from_secs(20), contains("hello world"));
+    o.wait_prompt(Duration::from_secs(10));
+    o.session.drain();
+    let lines = o.session.term.visible_lines();
+    let (row, start) = lines
+        .iter()
+        .enumerate()
+        .find_map(|(i, l)| l.find("hello world").map(|c| (i, c)))
+        .expect("oracle: hello world 行缺失");
+    let end = start + "hello world".len() - 1;
+    // alacritty Point = 视口绝对网格坐标(display_offset=0),Side 区
+    // 起讫半格:Left=含本格,Right=含本格(Simple 闭区间语义)。
+    o.session.term.begin_selection(
+        SelectionType::Simple,
+        Point::new(Line(row as i32), Column(start)),
+        Side::Left,
+    );
+    o.session.term.update_selection(
+        Point::new(Line(row as i32), Column(end)),
+        Side::Right,
+    );
+    let oracle_sel = o.session.term.selection_text().unwrap_or_default();
+    assert!(
+        oracle_sel.contains("hello world"),
+        "oracle 选中文本应含锚点词,实际: {oracle_sel:?}"
+    );
+
+    // a2r:组件注册表面同区间选中,SEL 协议取选中文本。
+    let (a2r, _rows, extras) = A2r::spawn_with_extras("selection");
+    let sel = extras
+        .iter()
+        .find_map(|l| l.strip_prefix("SEL ").map(|s| s.to_string()))
+        .unwrap_or_else(|| panic!("a2r selection 场景缺 SEL 行;extras={extras:?}"));
+
+    // 语义等价归一:行尾裁剪(alacritty 会把行尾空白格计入选中)。
+    let norm = |s: &str| s.lines().map(|l| l.trim_end()).collect::<Vec<_>>().join("
+");
+    assert_eq!(
+        norm(&sel),
+        norm(&oracle_sel),
+        "选中文本对拍:a2r(组件表面) vs oracle(TermSession)"
+    );
 }
