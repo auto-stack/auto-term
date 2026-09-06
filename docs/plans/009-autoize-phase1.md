@@ -11,7 +11,7 @@ supersedes_spec_components: []
 new_spec_components: []
 touched_goals: []
 
-current_step: 3
+current_step: 5
 total_steps: 11
 ---
 
@@ -327,11 +327,25 @@ P2 其实可与 P1 并行——见执行步骤注);P3 对拍绿 → P4 收账。
   滚轮回滚/右键菜单(搬 004/005 交互块)。
   验证:headless/iced_test 断言(选中范围与文本/像素级菜单
   证据按 selectable_text 管线)。
+  [✅ 已完成] auto-lang auto-term-dev 9581aa008(+补测 commit):core
+  TermSelection 态机(Alt=Block/双击词扩/三击行选,端点含包规范化)+
+  selected_text 抽取(Simple/Lines/Semantic/Block 列带)+ scroll clamp 回环
+  + 菜单载荷 take 语义;View::Terminal 增 scroll_offset/preedit/on_select/
+  on_menu(props+固定消息,载荷读注册表);iced update()(IME 幂等声明/
+  多击 500ms/拖选/滚轮 ±3 行)+draw(选中列带/badge/preedit 覆盖层/菜单
+  浮层悬停反色)。headless 断言 13 测全绿;菜单像素级取证移 T10 UI 冒烟
+  (iced_test simulator 无事件注入面,截图更直接)。
 
 - **T5** [P1/auto-lang] 测试管线补全 + rust-mode E0080 小修。
   验证:ui-iced 全量构建 + 组件测试套绿;E0080 修复或 DEBTS
   记录(预授权:超 1 人日记债不阻塞)。
   → fold auto-lang,auto-term 侧 re-sync。
+  [✅ 已完成] auto-lang auto-term-dev 6d61adc0b:E0080 按 435 台账录为
+  master 预存(iced Subscription×feature 组合),按预授权记 DEBTS;
+  schema/文档围栏对齐(element terminal 手工入 aura.at——重生成会冲 master
+  手工条目/render_support full 臂/baseline +4 注明理由/coverage 登记/
+  DOC_EXCLUDE/core.md+kitchen-sink.at 再生成);tf+tt 全档仅剩基线 charts。
+  **P0+P1 已 fold auto-lang master(926ffe679),auto-term 侧 re-sync(195f054)**。
 
 - **T6** [P2/auto-term] cdylib 面:autoterm-core crate-type 增补 +
   `ffi.rs`(opaque handle + 标量 C ABI,数据面对齐 P1 裁定形态)。
