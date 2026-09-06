@@ -10,6 +10,60 @@ mod shell;
 
 use app_logic::TermApp;
 
+fn wait_for(app: &mut TermApp, needle: &str, secs: u64) -> bool {
+    let deadline = std::time::Instant::now() + std::time::Duration::from_secs(secs);
+    while std::time::Instant::now() < deadline {
+        app.tick();
+        if app.lines.iter().any(|l| l.contains(needle)) {
+            return true;
+        }
+        std::thread::sleep(std::time::Duration::from_millis(250));
+    }
+    false
+}
+
+fn poll_for(app: &mut TermApp, needle: &str, secs: u64) -> bool {
+    wait_for(app, needle, secs)
+}
+
+/// 等提示符回归(末个非空行以 '>' 结尾)——与 oracle 侧统一的取快照时序点。
+fn wait_prompt(app: &mut TermApp, secs: u64) {
+    let deadline = std::time::Instant::now() + std::time::Duration::from_secs(secs);
+    loop {
+        app.tick();
+        if app
+            .lines
+            .iter()
+            .rev()
+            .find(|l| !l.trim_end().is_empty())
+            .map(|l| l.trim_end().ends_with('>'))
+            .unwrap_or(false)
+        {
+            return;
+        }
+        if std::time::Instant::now() > deadline {
+            return;
+        }
+        std::thread::sleep(std::time::Duration::from_millis(250));
+    }
+}
+
+fn dump_rows(app: &TermApp) {
+    for (i, l) in app.lines.iter().enumerate() {
+        println!("ROW {i} {l}");
+    }
+}
+
+fn finish(hit: bool) -> std::process::ExitCode {
+    if hit {
+        println!("SCENARIO_OK");
+        std::process::ExitCode::SUCCESS
+    } else {
+        println!("SCENARIO_FAIL");
+        std::process::ExitCode::FAILURE
+    }
+}
+
 fn main() -> std::process::ExitCode {
     let args: Vec<String> = std::env::args().collect();
     if args.get(1).map(String::as_str) == Some("scenario") {
@@ -38,27 +92,37 @@ fn run_scenario(name: &str) -> std::process::ExitCode {
         "echo" => {
             let mut app = TermApp::new(80, 24);
             app.send_line("echo autoterm_parity_ok");
-            let deadline = std::time::Instant::now() + std::time::Duration::from_secs(20);
-            let mut hit = false;
-            while std::time::Instant::now() < deadline {
-                app.tick();
-                if app.lines.iter().any(|l| l.contains("autoterm_parity_ok")) {
-                    hit = true;
-                    break;
-                }
-                std::thread::sleep(std::time::Duration::from_millis(250));
-            }
-            for (i, l) in app.lines.iter().enumerate() {
-                println!("ROW {i} {l}");
-            }
+            let hit = poll_for(&mut app, "autoterm_parity_ok", 20);
+            wait_prompt(&mut app, 10);
+            dump_rows(&app);
             app.dispose();
-            if hit {
-                println!("SCENARIO_OK");
-                std::process::ExitCode::SUCCESS
-            } else {
-                println!("SCENARIO_FAIL");
-                std::process::ExitCode::FAILURE
-            }
+            finish(hit)
+        }
+        "resize" => {
+            // T9: pre → resize(100x30) → parity echo;几何变更后等价。
+            let mut app = TermApp::new(80, 24);
+            app.send_line("echo pre_resize");
+            wait_for(&mut app, "pre_resize", 20);
+            app.resize(100, 30);
+            app.send_line("echo autoterm_parity_ok");
+            let hit = poll_for(&mut app, "autoterm_parity_ok", 20);
+            wait_prompt(&mut app, 10);
+            dump_rows(&app);
+            app.dispose();
+            finish(hit)
+        }
+        "interrupt" => {
+            // T9: timeout 主体 → interrupt(008)→ 存活 echo。
+            let mut app = TermApp::new(80, 24);
+            app.send_line("timeout /t 60");
+            wait_for(&mut app, "60", 10);
+            let _ = engine::engine_interrupt(app.handle);
+            app.send_line("echo alive_after_parity_interrupt");
+            let hit = poll_for(&mut app, "alive_after_parity_interrupt", 20);
+            wait_prompt(&mut app, 10);
+            dump_rows(&app);
+            app.dispose();
+            finish(hit)
         }
         _ => {
             eprintln!("unknown scenario: {name}");

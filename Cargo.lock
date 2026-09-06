@@ -352,6 +352,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "autoterm-parity"
+version = "0.1.0"
+dependencies = [
+ "autoterm-core",
+]
+
+[[package]]
 name = "autoterm-ui"
 version = "0.1.0"
 dependencies = [
