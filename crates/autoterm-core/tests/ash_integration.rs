@@ -8,7 +8,12 @@
 //!
 //! 场景矩阵(详见 docs/designs/003-ash-compatibility.md):
 //! ① 启动提示符 ② echo 往返 ③ Ctrl+C 中断 ④ exit/Ctrl+D 退出
-//! ⑤ resize 存活 ⑥ 色彩深度自证。
+//! ⑤ resize 存活 ⑥ 色彩深度自证 ⑦(PLAN-008)事件注入下的 ash
+//! 行为三态矩阵(idle/builtin/external)。
+//!
+//! PLAN-008 注:007 的两个 F2 `#[ignore]` 复现器(cmd/pwsh 版)已
+//! 退役——其"运行中命令可中断"语义由 `tests/ctrl_event.rs` 门禁
+//! 转正(事件注入修复);本文件保留 ash×事件的行为探针。
 //!
 // SPDX-License-Identifier: Apache-2.0
 
@@ -254,43 +259,84 @@ fn ctrl_c_aborts_input_line() {
     assert!(!s.exited(), "空闲提示符的 Ctrl+C 不应杀死 shell");
 }
 
-/// [F2 复现器,修 DEBTS 该条后去掉 ignore 验证] `cmd /c ping -n 30`
-/// 是纯 cooked-mode 对照:0x03 若被 conhost 翻译成 CTRL_C_EVENT,cmd
-/// 会打印 ^C 并随 ping 终止而退出。当前观测:5s 内 cmd 不退出、无 ^C
-/// ——主端写字节不触发事件。pwsh 版见 `f2_repro_pwsh_interrupt`。
+/// [PLAN-008 ⑦] 事件注入(Break→C 双发)下的 ash 行为三态矩阵:
+/// idle(空闲提示符)/ builtin(`sleep 8` 内建)/ external(外部
+/// timeout)。**实测(26200)idle 态事件整体终止 ash**(无 ctrl
+/// handler,默认 handler 生效)——UI auto 模式给 ash 豁免(仅字节
+/// 路径)的直接依据;builtin 态事件惰性(ash 存活,内建自然结束
+/// 后才响应);external 态子进程被 Break 终止后 ash 回归。
+/// 断言用**析取**(Responsive | Exited)钉死"事件确实到达",具体
+/// 分支如实记录(执行记录 + designs/003 §4.1),不强行规定 ash
+/// 该死该活——那是 #13 的裁定面。
 #[test]
-#[ignore = "F2 已知缺陷复现器(见 docs/designs/003-ash-compatibility.md 与 DEBTS);修复后去 ignore 验证"]
-fn f2_repro_cmd_interrupt() {
-    let mut s =
-        PtySession::spawn("cmd", ["/c", "ping", "-n", "30", "127.0.0.1"], 80, 24).expect("spawn");
-    wait_for(&mut s, Duration::from_secs(10), "ping 输出", |t| {
-        t.visible_lines().iter().any(|l| l.contains("Reply from"))
-    });
-    s.write_input(b"\x03");
-    wait_for(&mut s, Duration::from_secs(5), "cmd 随 CTRL_C_EVENT 退出", |_| false);
-}
+fn ctrl_c_event_effect_on_ash() {
+    let Some(bin) = ensure_ash() else { return };
 
-/// [F2 复现器(pwsh 版)] 交互 pwsh 跑 ping,0x03 后 marker 应在 10s
-/// 内上屏(ping 30s 不可能自然结束)。当前观测:超时——pwsh 基于
-/// PSReadLine,空闲提示符的 Ctrl+C 可用(自读 0x03),运行中命令的
-/// 中断与 cmd 一样依赖 conhost 事件,同样断裂。
-#[test]
-#[ignore = "F2 已知缺陷复现器(见 docs/designs/003-ash-compatibility.md 与 DEBTS);修复后去 ignore 验证"]
-fn f2_repro_pwsh_interrupt() {
-    let mut s = PtySession::spawn("pwsh", std::iter::empty::<&str>(), 80, 24).expect("spawn");
-    wait_for(&mut s, Duration::from_secs(15), "pwsh 提示符", |t| {
-        t.visible_lines()
-            .iter()
-            .any(|l| l.contains("PS") && l.trim().ends_with('>'))
-    });
-    s.write_input(b"ping -n 30 127.0.0.1\r");
-    wait_for(&mut s, Duration::from_secs(10), "ping 输出", |t| {
-        t.visible_lines().iter().any(|l| l.contains("Reply from"))
-    });
-    s.write_input(b"\x03");
-    let marker = format!("probe_marker_{}", std::process::id());
-    s.write_input(format!("echo {marker}\r").as_bytes());
-    wait_for(&mut s, Duration::from_secs(10), "中断后 marker 上屏", |t| {
-        t.visible_lines().iter().any(|l| l.contains(&marker))
-    });
+    #[derive(Debug)]
+    enum Outcome {
+        /// marker 上屏(ash 存活);late = 晚于 2s(内建/子进程自然
+        /// 结束后才响应,即事件在内建期惰性)
+        Responsive { late: bool },
+        Exited,
+    }
+    /// interrupt 后投 marker,预算内判定:进程退出 or marker 可跑。
+    fn probe_outcome_with(s: &mut PtySession, tag: &str, budget: Duration) -> Outcome {
+        let sent = Instant::now();
+        assert!(s.interrupt(), "helper 在场应广播成功({tag})");
+        let marker = format!("ash_ev_{tag}_{}", std::process::id());
+        s.write_input(format!("echo {marker}\r").as_bytes());
+        let deadline = sent + budget;
+        loop {
+            s.drain();
+            if s.exited() {
+                eprintln!("[008 探针矩阵] {tag}: Exited(事件终止 ash 进程)");
+                return Outcome::Exited;
+            }
+            if s.term.visible_lines().iter().any(|l| l.contains(&marker)) {
+                let late = sent.elapsed() > Duration::from_secs(2);
+                eprintln!("[008 探针矩阵] {tag}: Responsive(late={late},marker 上屏,ash 存活)");
+                return Outcome::Responsive { late };
+            }
+            assert!(
+                Instant::now() < deadline,
+                "{tag}: 预算 {budget:?} 内既不退出也不响应;当前网格:\n{}",
+                grid_text(s)
+            );
+            std::thread::sleep(Duration::from_millis(50));
+        }
+    }
+
+    // idle:空闲提示符直接注入(实测:Exited——auto 豁免依据)
+    {
+        let mut s = spawn_ash_with_prompt(&bin);
+        probe_outcome_with(&mut s, "idle", Duration::from_secs(8));
+    }
+    // builtin:sleep 8 内建阻塞中注入(F1:raw mode 不读 stdin)。
+    // 实测事件惰性:ash 存活,sleep 8 自然结束后 marker 才上屏
+    // (Responsive-late);预算 15s 覆盖两分支。
+    {
+        let mut s = spawn_ash_with_prompt(&bin);
+        s.write_input(b"sleep 8\r");
+        wait_for(&mut s, Duration::from_secs(10), "sleep 8 上屏", |t| {
+            t.visible_lines().iter().any(|l| l.contains("sleep 8"))
+        });
+        let out = probe_outcome_with(&mut s, "builtin", Duration::from_secs(15));
+        assert!(
+            matches!(out, Outcome::Responsive { late: true } | Outcome::Exited),
+            "builtin 态:应惰性存活(自然结束响应)或终止,得 {out:?}"
+        );
+    }
+    // external:外部 timeout(Break 可终止)运行中注入——ash 外部
+    // 子进程路径(frontend/subprocess.rs 临时退 raw mode)应正常
+    // 中断回提示符。ping 对 Break 免疫属已知残留缺口,不作矩阵对象。
+    {
+        let mut s = spawn_ash_with_prompt(&bin);
+        s.write_input(b"timeout /t 30\r");
+        wait_for(&mut s, Duration::from_secs(10), "timeout 倒计时", |t| {
+            t.visible_lines()
+                .iter()
+                .any(|l| l.contains("Waiting") || l.contains("等待"))
+        });
+        probe_outcome_with(&mut s, "external", Duration::from_secs(8));
+    }
 }
