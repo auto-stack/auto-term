@@ -202,7 +202,9 @@ ASH=D:/autostack/auto-shell/ash/target/release/ash.exe
    随包分发 `autoterm_engine` cdylib(`autoterm_core.dll`,debug/
    release 后缀随目标),与宿主同目录;以及与宿主同目录的
    `autoterm-ctrlc.exe`(interrupt 契约不变)。窗口标题为复刻侧
-   自有("AutoTerm"),不复用 ash 标题。
+   自有("AutoTerm"),不复用 ash 标题。打包以 `scripts/package-at.cmd`
+   一键产出 `dist/` 三件套(release 口径:`--release` 后缀随构建
+   目标,dist 内布局冒烟内置;PLAN-011 T2)。
 6. **回归门禁**:任何 auto-term 变更后跑
    `cargo test -p autoterm-core --test ash_integration`
    (ash 在场即全量断言,缺席即显式 skip)。

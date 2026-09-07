@@ -24,6 +24,26 @@ cargo build                            # bin = autoterm-at(GUI,ui-iced 默认开
 ./target/debug/autoterm-at scenario echo   # stdout 按 ROW <n> <text> 打网格
 ```
 
+## 打包(PLAN-011 T2)
+
+```bash
+scripts\package-at.cmd   # 仓库根;cmd 脚本(纯 ASCII,双击可用)
+```
+
+一键产出 release 态 `dist/` 三件套(契约:003 §5,同目录分发):
+
+| 文件 | 来源 |
+|---|---|
+| `autoterm-at.exe` | at-gen `cargo build --release`(独立 workspace,release profile 缺省) |
+| `autoterm_core.dll` | autoterm-core `cargo build -p autoterm-core --release`(cdylib) |
+| `autoterm-ctrlc.exe` | 同上(helper bin;interrupt 契约,缺失自动降级) |
+
+DLL 解析顺序(glue `engine.rs`):`AUTOTERM_ENGINE_DLL` env → **exe 同目录
+(dist 布局)** → exe 目录向上 4 级 `target/debug`(开发布局)。脚本
+内置布局冒烟:dist 目录内跑 `autoterm-at.exe scenario echo`,回显
+`SCENARIO_OK` 即证三件套在真实解析顺序下可跑;`autoterm-at smoke`
+亦可在 dist 内复跑(UI_SMOKE_OK)。
+
 ## 转译再生成规程
 
 CLI 已恢复(PLAN-010 T3:兄弟扫描有界化;亦可用 in-process 同源 API):
