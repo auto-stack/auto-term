@@ -145,3 +145,11 @@
    (计划 011 原引「009 新增观察 #4 色彩自证 ash 依赖」实为此处
    补账:#4 原条为 Vue/web 留白,无关色彩;归档 009 正文的 skip
    表述为历史记录,不改。)
+9. **桌面集成面回执(auto-os OS-013,2026-09-07)**:003 §5 契约执行核对
+   ——①cdylib+ctrlc 同目录分发 ✓(auto-os scripts/deploy-autoterm.sh,
+   幂等,来源解析 env→组兄弟→主检出);②中断可用 ✓(桌面会话 Control-
+   Break+中文统计证据在案,smoke 重试口径);③遗留观察:宿主桌面窗口
+   直接关闭时的引擎子进程清理未显式验证(Close=free 在案);④auto-lang
+   侧配套已落地待折:VM 动态轨 Terminal 真渲染两臂(convert_view_messages
+   显式臂+convert_terminal 堆 ListData 物化,`.wt/auto-os-013/auto-lang`
+   分支 auto-os-config-dev)。引擎契约面(12 符号 FFI/语义)零改动。
