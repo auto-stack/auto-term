@@ -1,3 +1,4 @@
 target/
 *.log
 at-gen/target/
+dist/

@@ -1,8 +1,8 @@
 //! PLAN-009 T8 手写胶水(**不转译**):libloading 包装 autoterm_core.dll
 //! (P2 FFI 面的安全 Rust 化)。快照缓存在 glue 侧,`engine_rows` 回读。
 //!
-//! DLL 解析顺序:AUTOTERM_ENGINE_DLL 环境变量 → ../target/debug →
-//! ../../target/debug(组内两仓布局均覆盖)。
+//! DLL 解析顺序:AUTOTERM_ENGINE_DLL 环境变量 → exe 同目录(dist 布局)
+//! → ../target/debug → ../../target/debug(组内两仓布局均覆盖)。
 
 use libloading::Library;
 use std::ffi::{c_char, c_int, CStr, CString};
@@ -15,14 +15,16 @@ static SNAPSHOTS: std::sync::LazyLock<Mutex<SnapMap>> = std::sync::LazyLock::new
 
 fn lib() -> &'static Library {
     LIB.get_or_init(|| {
-        // 解析顺序:env → 当前 exe 目录向上 4 级的 target/debug(组内布局
-        // 稳健,不受 CWD 影响;仿 autoterm-ctrlc 的 helper 解析)。
+        // 解析顺序:env → exe 目录同目录(003 §5 dist 布局:三件套同
+        // 目录分发,PLAN-011 T2)→ 当前 exe 目录向上 4 级的 target/debug
+        // (组内布局稳健,不受 CWD 影响;仿 autoterm-ctrlc 的 helper 解析)。
         let mut candidates: Vec<std::path::PathBuf> = Vec::new();
         if let Ok(p) = std::env::var("AUTOTERM_ENGINE_DLL") {
             candidates.push(std::path::PathBuf::from(p));
         }
         if let Ok(exe) = std::env::current_exe() {
             if let Some(dir) = exe.parent() {
+                candidates.push(dir.join("autoterm_core.dll"));
                 for anc in dir.ancestors().take(4) {
                     candidates.push(anc.join("target/debug/autoterm_core.dll"));
                 }
