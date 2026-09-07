@@ -1,639 +1,716 @@
 {
-  "sections": {
-    "reports": [
-      {
-        "id": "P001-1",
-        "section": "reports",
-        "title": "AutoTerm 建仓与全链路 spike(PTY→仿真核心→渲染) — 变更摘要",
-        "content": "新建独立工程 `D:\\autostack\\auto-term`(产品名 **AutoTerm**),作为 AutoOS\n虚拟桌面的**通用终端**基础设施。本计划只做两件事:\n\n1. **建仓骨架**——README(定位声明:与 auto-shell 零构建依赖)、Cargo\n   workspace、DEBTS.md;\n2. **三个 spike 打通全链路**——`pty-probe`(宿主 PTY 申请 + VT 字节流)、\n   `term-probe`(alacritty_terminal 仿真核心嵌入,headless)、\n   `render-probe`(最小 iced 窗口渲染网格 + 键盘回写),外加 ash 冒烟与\n   大输出粗测,最终产出**渲染路线决策文档**(方案 A:iced 一等应用\n   vs 方案 B:winit/wgpu 独立原生)。\n\n不修改 auto-shell 仓任何代码。ash 只作为**运行时配置**(默认 shell 路径),\n不进依赖树。",
-        "file": "docs/plans/archived/001-autoterm-bootstrap.md",
-        "related": [
-          "PLAN-001"
-        ],
-        "status": "published"
-      },
-      {
-        "id": "P002-1",
-        "section": "reports",
-        "title": "AutoTerm Phase 1 单窗口 MVP — 变更摘要",
-        "content": "把 PLAN-001 的三个 spike 升格为**正式架构**:`crates/autoterm-core`\n(PTY 会话 + alacritty_terminal 封装,含仿真回归测试)与\n`crates/autoterm-ui`(iced 单窗口终端,事件驱动 + 损伤重绘 + 实测字形\n度量 + 滚动回滚 + 光标块)。spike 三 crate 保留为归档不动。清偿\nDEBTS #1/#3/#4(整帧重拼→损伤重绘、固定度量→实测、轮询→事件驱动)\n与 #5/#7 部分(回滚 UI、关闭语义),并产出 Phase 1 设计文档\n`docs/designs/001-phase1-architecture.md`(正式架构的耐久记录,\n000 决策链的延续)。",
-        "file": "docs/plans/archived/002-phase1-mvp.md",
-        "related": [
-          "PLAN-002"
-        ],
-        "status": "published"
-      },
-      {
-        "id": "P003-1",
-        "section": "reports",
-        "title": "AutoTerm Phase 2 性能与输入完备性 — 变更摘要",
-        "content": "兑现 PLAN-002 路由到 Phase 2 的三件事:①**保留式画布**——widget\n每行缓存 iced `Paragraph`,`Paragraph::compare` 判异、仅脏行重建\n形状、`fill_paragraph` 绘制,达成计划002 验收#4 的绘制级 run 不等式;\n②**Ctrl+C/Ctrl+Break/关闭语义矩阵**——三 shell × 中断路径的自动化\n冒烟;③**IME 最小调查与落地**——iced `input_method` 模块可用性\nPoC,行则做光标处 preedit 下划线显示,阻则 blocker 记录。顺带清偿\n三尾巴:`--dev-*` 收进 `dev-tools` feature、log+env_logger 替换\neprintln、`Message::NoOp` 替换空唤醒复用。",
-        "file": "docs/plans/archived/003-phase2-perf-input.md",
-        "related": [
-          "PLAN-003"
-        ],
-        "status": "published"
-      },
-      {
-        "id": "P004-1",
-        "section": "reports",
-        "title": "AutoTerm Phase 3 交互完备(选中/复制粘贴 + Ctrl+C 稳定版复测 + IME) — 变更摘要",
-        "content": "补齐日用刚需的交互闭环:①**选中/复制/粘贴**(DEBTS #6 存量,用户\n2026-09-05 直接反馈\"无法选择文字和复制\")——`Widget::update` 事件\n地基 + alacritty_terminal 自带 Selection 状态机(Simple/Semantic/\nLines)+ 高亮渲染 + copy-on-select/Ctrl+Shift+C/V;②**Ctrl+C 稳定版\n复测**(003 复审裁定的第一步:26200 内部版 WT 同病,先在稳定 OS 上\n复测再定 win32 与否);③**IME 落地**(003 路由项,共享同一事件地基,\nover-the-spot 预编辑,人工清单验收)。",
-        "file": "docs/plans/archived/004-phase3-interaction.md",
-        "related": [
-          "PLAN-004"
-        ],
-        "status": "published"
-      },
-      {
-        "id": "P006-1",
-        "section": "reports",
-        "title": "AutoTerm Auto 化前提调查(AutoUI 组件模型表达力 + a2r 往返一致性 + Rust 绑定通路) — 变更摘要",
-        "content": "DEBTS #8(Auto 化——必须项)的前置调查(DEBTS #7),为 #8 复刻\n计划产出 go/no-go 裁定材料。**纯调查型计划**(同 PLAN-001 的 spike\n性质):跨仓只读调查 `../auto-lang`(AutoUI 实现与 a2r 转译器的\n真正所在地——**注意:../auto-ui 独立仓已废弃合并入 auto-lang,\nDEBTS 旧引用一并修正**),产出可行性设计文档 + 差距清单 + 工作量\n估计;唯一动代码的是两个 spike(auto-lang 只读构建 + 最小 .at\nround-trip),不改任何仓的产品代码。与并行执行的 PLAN-005\n(Rust 交互批,另一会话)零冲突——本计划不碰 auto-term 产品代码。",
-        "file": "docs/plans/archived/006-autoize-feasibility.md",
-        "related": [
-          "PLAN-006"
-        ],
-        "status": "published",
-        "superseded_by": null
-      },
-      {
-        "id": "P005-1",
-        "section": "reports",
-        "title": "AutoTerm Phase 4 交互批(Rust 版功能齐全:自动滚动 + 块选 + 右键菜单 + 选中色 + 光标形状/闪烁) — 变更摘要",
-        "content": "Rust 参考实现的\"功能齐全\"批(总排序裁定 2026-09-05:先做齐做稳\nRust,Auto 复刻后置):①**拖选到边缘自动滚动**(004 裁定#4 归组项,\n至此 004 的 Phase 4 欠账启动清偿);②**块选(Block)**——core 公面\n现成(`SelectionType::Block`/`to_range`/`selection_to_string` 均有\nblock 分支),补 UI 触发与矩形渲染;③**右键上下文菜单**\n(复制/粘贴/全选);④**选中色可配置**(CLI `--selection-color`,\n去 25% α 硬编码);⑤**光标形状**(DECSCUSR:Block/Underline/Beam,\nSgrCursorShape 随快照已暴露)+ **闪烁**(聚焦时条件定时,保住\n\"空闲零唤醒\")。约束:全部新代码保持 **a2r 可表达形态**(DEBTS #8)。",
-        "file": "docs/plans/archived/005-phase4-interaction-batch.md",
-        "related": [
-          "PLAN-005"
-        ],
-        "status": "published"
-      },
-      {
-        "id": "P007-1",
-        "section": "reports",
-        "title": "AutoTerm ash(AutoShell)独立运行验证与测试门禁 — 变更摘要",
-        "content": "AutoTerm 的既定使命是**在 AutoOS 虚拟桌面里跑 ash**(README 定位声明;PLAN-001\n\"ash 只作为运行时配置\"),但至今的自动化验证实际落在 **cmd 与 pwsh** 上:\n`live_pty.rs` 只 spawn `cmd`,dev 冒烟钩子默认 `--shell pwsh`\n(`crates/autoterm-ui/src/bin/autoterm.rs:15`),ash 仅出现在 002/003 的\n**手动**试用清单与 003 的三 shell 中断冒烟转储里——没有一道**必跑的自动门禁**。\n\n本计划补上这道门禁:在 `autoterm-core` 新增 **ash 专属集成测试**\n(`tests/ash_integration.rs`,env 门控 + 兄弟仓路径自动探测,ash 缺失时明确\nskip 而非静默通过),覆盖启动提示符、echo 回显、Ctrl+C 中断、exit/Ctrl+D\n退出、resize 存活、色彩深度自证六个场景;外加三条 UI 级半自动冒烟配方\n(含 `color rainbow` 真彩取证);结论沉淀为\n`docs/designs/003-ash-compatibility.md`(R1–R6 风险逐项结论)。**不改\nautoterm-core/ui 产品代码**——测试暴露的缺陷按证据记 DEBTS,修复另立\n(≤5 行 trivial 例外,见待澄清#2)。",
-        "file": "docs/plans/archived/007-ash-shell-support.md",
-        "related": [
-          "PLAN-007"
-        ],
-        "status": "published"
-      },
-      {
-        "id": "P008-1",
-        "section": "reports",
-        "title": "AutoTerm Ctrl+C 中断通路修复(DEBTS #12,F2:win32 控制台事件注入) — 变更摘要",
-        "content": "PLAN-007 坐实 F2:向 portable-pty ConPTY 主端写 0x03 **不触发**\nconhost 的 CTRL_C_EVENT——Ctrl+C 无法中断**运行中**的命令,且与\nshell 无关(cmd/pwsh 对照探针同样断裂),AutoTerm 现有代码层无法\n就地修复(DEBTS #12)。虚拟桌面场景\"AI/用户打断挂死命令\"是刚需\n(003 §5 契约第 4 条明示此依赖),且 #8 Auto 复刻 P3 的行为对拍\n也需要中断语义可用。\n\n本计划按 003 §4 候选通路 #1(winpty 经典手法)实施修复:\n**新增零依赖辅助进程 `autoterm-ctrlc.exe`**(手写 kernel32 FFI:\n`AttachConsole(shell_pid)` 挂进 ConPTY 隐藏控制台后\n`GenerateConsoleCtrlEvent(CTRL_C_EVENT, 0)` 广播),\n`PtySession` 新增 `interrupt()` 注入事件,UI 层裸 Ctrl+C 改为\n**事件 + 0x03 字节双投递**(事件管运行中命令,字节管 raw 行编辑器\n如 reedline/PSReadLine)。验收门禁 = 新建 `tests/ctrl_event.rs`\n(cmd 恒可得:5s 内真实中断)接棒 007 留档的两个 `#[ignore]`\n复现器,外加 ash×事件三态探针矩阵(裁定 UI auto 模式对 ash 的\n豁免门——F1/#13 协调点)。**这是 002 以来首个动产品代码的修复\n计划**;#7(win32 直调方向)随本案关账。",
-        "file": "docs/plans/archived/008-ctrlc-interrupt-fix.md",
-        "related": [
-          "PLAN-008"
-        ],
-        "status": "published"
-      },
-      {
-        "id": "P009-1",
-        "section": "reports",
-        "title": "AutoTerm Auto 化第一相位(分支 A:a2r 修缮 → terminal 原生组件 → 引擎 adapter → Auto 复刻对拍) — 变更摘要",
-        "content": "兑现用户 2026-09-06 的 **GO 裁定(分支 A,单计划管理)**:AutoTerm 从\n\"Rust 参考实现\"走向真身——**Auto 代码应用层 + auto-lang 内 `terminal`\n原生组件 + 本仓 Rust 引擎 adapter**。这是 DEBTS 候选清单 #8(必须项,\n总工作量 25–50 人日跨两仓)的第一相位落地,拆解草案源自\n`docs/designs/002-autoize-feasibility.md` §6(P006 调查结论,四问全正面)。\n\n四相位(每相位验证过即 fold,worktree 常驻):\n\n- **P0 auto-lang:a2r 修缮**(小,先行):F1 组合缺陷(E0369)+ 快照门\n  扩\"rustc 实编\"档——复刻的转译地基;\n- **P1 auto-lang:`terminal` 原生组件**(大,关键路径):本仓\n  TermGrid 控件逻辑(视口渲染/损伤门控/选中三模式+块选/IME/光标)\n  **整体迁移**进 `crates/auto-lang/src/ui/`,code_editor 范式接线;\n  **单一真身原则**:迁移完成后本仓 widget.rs 冻结;\n- **P2 本仓:引擎 cdylib adapter**(中,与 P1 并行可):autoterm-core\n  包成 FFI 友好标量面(spawn/feed/drain/resize/interrupt/…),\n  运行期 libloading 加载;\n- **P3 本仓:Auto 复刻 + 行为对拍**:`.at` 应用层 → a2r 转译 →\n  rustc 实编,与 Rust oracle 对拍(场景矩阵复用 007/008 门禁形态);\n- **P4 收账**:DEBTS #8 关账条件回写 + 本仓转型声明\n  (**引擎 adapter 活 / 参考实现 oracle 冻结**)。\n\n**无环铁律**(用户 2026-09-06 对齐):auto-lang 对 auto-term **零\nCargo 依赖**——引擎经 cdylib 运行期加载(FFI 边界切断环);`.at`\n经 a2r 转译产物单向依赖 auto-lang 运行时。兜底:若 P1 发现组件确需\n引擎侧类型,抽零依赖 `terminal-types` 叶子 crate 双方共用(仍无环)。",
-        "file": "docs/plans/archived/009-autoize-phase1.md",
-        "related": [
-          "PLAN-009"
-        ],
-        "status": "published"
-      }
+ "sections": {
+  "reports": [
+   {
+    "id": "P001-1",
+    "section": "reports",
+    "title": "AutoTerm 建仓与全链路 spike(PTY→仿真核心→渲染) — 变更摘要",
+    "content": "新建独立工程 `D:\\autostack\\auto-term`(产品名 **AutoTerm**),作为 AutoOS\n虚拟桌面的**通用终端**基础设施。本计划只做两件事:\n\n1. **建仓骨架**——README(定位声明:与 auto-shell 零构建依赖)、Cargo\n   workspace、DEBTS.md;\n2. **三个 spike 打通全链路**——`pty-probe`(宿主 PTY 申请 + VT 字节流)、\n   `term-probe`(alacritty_terminal 仿真核心嵌入,headless)、\n   `render-probe`(最小 iced 窗口渲染网格 + 键盘回写),外加 ash 冒烟与\n   大输出粗测,最终产出**渲染路线决策文档**(方案 A:iced 一等应用\n   vs 方案 B:winit/wgpu 独立原生)。\n\n不修改 auto-shell 仓任何代码。ash 只作为**运行时配置**(默认 shell 路径),\n不进依赖树。",
+    "file": "docs/plans/archived/001-autoterm-bootstrap.md",
+    "related": [
+     "PLAN-001"
     ],
-    "goals": [
-      {
-        "id": "P001-2",
-        "section": "goals",
-        "title": "AutoTerm 建仓与全链路 spike(PTY→仿真核心→渲染) — 目标",
-        "content": "1. 验证硬前提:宿主基座(Windows ConPTY / Unix PTY)经 `portable-pty`\n   可申请、可读写字节流——在 Windows 基座上当天可证;\n2. 验证 `alacritty_terminal` 作为库嵌入的可行性(VT 状态机 + 网格读取 +\n   回滚),不写 GUI 即可测;\n3. 验证渲染最小闭环:iced 窗口里网格→字形、键盘→PTY 回写,能交互跑\n   `echo` 级命令;\n4. 用 ash 这个\"苛刻 VT 客户端\"冒烟:tail 动态重绘不糊、find 表格不错位、\n   真彩色正确;\n5. 大输出压测取得第一手数字(ConPTY 吞吐 + 渲染帧行为),支撑渲染路线\n   A/B 拍板,结论沉淀为 `docs/designs/000-render-route.md`。\n\n非目标(明确排除):tabs / splits / tmux 式持久会话(Phase 2+ 另立计划);\n`.at`/auto-lang VM 集成(AutoUI 一等应用形态是路线 A 拍板**之后**的事);\nmacOS/Linux 基座适配(spike 仅 Windows,Unix 路径由 portable-pty 承诺,\n后续计划验证)。",
-        "file": "docs/plans/archived/001-autoterm-bootstrap.md",
-        "related": [
-          "PLAN-001"
-        ],
-        "status": "proposed"
-      },
-      {
-        "id": "P002-2",
-        "section": "goals",
-        "title": "AutoTerm Phase 1 单窗口 MVP — 目标",
-        "content": "1. **正式 crate 结构**:`autoterm-core`(可独立测试的终端会话层)+\n   `autoterm-ui`(窗口层),层间单向依赖,spikes/ 原样归档;\n2. **仿真回归种子化**:纯 VT 字节级断言套件(光标/颜色/备用屏幕/\n   宽字符/回滚/DSR 应答)+ 真 PTY 集成测试,双轨回归;\n3. **渲染管线三项清偿**:损伤重绘(Term::damage 驱动)、实测字形\n   advance(cosmic-text,含宽字符双格判定)、事件驱动 PTY→UI\n   (reader 线程唤醒,替换 16ms 轮询);\n4. **MVP 可日用**:滚动回滚(滚轮/PgUp/PgDn)、光标块、窗口关闭\n   杀子进程、Ctrl+C;\n5. **设计沉淀**:`docs/designs/001-phase1-architecture.md` 记录正式\n   架构与 000→002 决策链。\n\n非目标(排除):tabs/splits(Phase 2+);字形图集级 GPU 优化\n(损伤重绘+事件驱动已获主要收益,图集留性能专项);IME/选中/主题\n系统;Unix 基座适配(仍 Windows-only,另立计划);`.at`/auto-lang\nVM 集成(路线 A 生态对齐,待 auto-ui 仓前置调查)。",
-        "file": "docs/plans/archived/002-phase1-mvp.md",
-        "related": [
-          "PLAN-002"
-        ],
-        "status": "proposed"
-      },
-      {
-        "id": "P003-2",
-        "section": "goals",
-        "title": "AutoTerm Phase 2 性能与输入完备性 — 目标",
-        "content": "1. **绘制级损伤剪裁**(计划002 验收#4 兑现):单行改动帧的\n   Paragraph 重建数 < 全网格行数(dev 转储计数断言),Full 损伤退化为\n   全量重建;\n2. **语义矩阵自动化**:pwsh/ash/cmd × {Ctrl+C 字节, 窗口关闭}\n   中断运行中命令 → 提示符回归/无孤儿断言;Ctrl+Break 调查并给出\n   映射或平台结论;\n3. **IME**:PoC iced 0.14 `input_method`/Ime 事件管道;可用则\n   preedit 在光标处下划线渲染(最小),不可用则 blocker 记入 DEBTS\n   与 001 附录;\n4. **三尾巴清偿**:dev-tools feature flag(002 待澄清#5)、\n   log+env_logger(002 复审债务候选)、Message::NoOp(002 复审瑕疵);\n5. **决策链沉淀**:001 设计文档追加 002→003 节(Paragraph 路线/\n   矩阵结论/IME 结论),DEBTS 勾账。\n\n非目标(Phase 3+):Unix 基座;iced↔auto-ui 对齐;选中/主题;光标\n闪烁与形状(IME 顺手才带);列级损伤剪裁(行级已够)。",
-        "file": "docs/plans/archived/003-phase2-perf-input.md",
-        "related": [
-          "PLAN-003"
-        ],
-        "status": "proposed"
-      },
-      {
-        "id": "P004-2",
-        "section": "goals",
-        "title": "AutoTerm Phase 3 交互完备(选中/复制粘贴 + Ctrl+C 稳定版复测 + IME) — 目标",
-        "content": "1. **选中/复制/粘贴**:拖选(字符级)、双击词选(semantic)、三击行选\n   (lines);高亮渲染;松开即复制(copy-on-select)+ Ctrl+Shift+C 显式\n   复制 + Ctrl+Shift+V/右键粘贴;\n2. **取证无人值守**:`--dev-select` 注入钩子(模拟拖选)+ 转储断言选中\n   文本与像素高亮(程序化像素扫描);\n3. **Ctrl+C 稳定版复测**:003 的最小管道矩阵在稳定版 Windows 上复跑,\n   结论回填(正常→内部版回归关账;复现→win32 直调立项);\n4. **IME**:`Shell::request_input_method` + `Event::InputMethod`,\n   over-the-spot 预编辑显示;人工中文输入验收清单;\n5. **决策链沉淀**:001 追加 003→004 节;DEBTS #6/#7 勾账与重排。\n\n非目标(Phase 4+):拖选到边缘的自动滚动;块选(Block);右键上下文\n菜单;选中主题色配置;Unix 基座;auto-ui 对齐。",
-        "file": "docs/plans/archived/004-phase3-interaction.md",
-        "related": [
-          "PLAN-004"
-        ],
-        "status": "proposed"
-      },
-      {
-        "id": "P006-2",
-        "section": "goals",
-        "title": "AutoTerm Auto 化前提调查(AutoUI 组件模型表达力 + a2r 往返一致性 + Rust 绑定通路) — 目标",
-        "content": "1. **Q1 组件模型表达力**:AutoUI(`auto-lang/src/ui/`)能否表达\n   \"实现 iced `Widget` trait 的自定义 widget\"(TermGrid 命门:\n   选中/IME/损伤门控全在其 `update/draw`),还是只能组合既有\n   组件?iced 后端(`ui/iced/`)的扩展点在哪;\n2. **Q2 Rust 绑定通路**:Auto 调用 Rust crate(iced/\n   alacritty_terminal/portable-pty)的机制(auto-bindgen?ext\n   imports/use.web?custom-lib-paths?)与边界;\n3. **Q3 a2r 往返一致性**:转译器产出子集(能否 emit trait impl/\n   extern 绑定?idiomatic 程度)与 DEBTS #8 的\"a2r 产出 ≈ 手写\n   Rust\"约束的差距;以 TermSession 薄封装为样本做最小 round-trip;\n4. **Q4 iced 后端可构建性**:ui-iced feature 在本机可构建/可跑\n   demo,记录构建面貌;\n5. **Q5 产出**:可行性设计文档(含差距清单 + 工作量分级 +\n   go/no-go 建议 + #8 立项拆解草案);DEBTS #7 关账或转立项,\n   #8 补齐启动条件;修正 DEBTS/001 的 auto-ui 旧仓引用。\n\n非目标:不改 auto-term/auto-lang 产品代码;不做完整复刻(那是\n#8);不做 gpui/Vue 后端调查(虚拟桌面 iced 轨道为准);不替用户\n做 go/no-go 裁定(只交材料)。",
-        "file": "docs/plans/archived/006-autoize-feasibility.md",
-        "related": [
-          "PLAN-006"
-        ],
-        "status": "proposed",
-        "superseded_by": null
-      },
-      {
-        "id": "P005-2",
-        "section": "goals",
-        "title": "AutoTerm Phase 4 交互批(Rust 版功能齐全:自动滚动 + 块选 + 右键菜单 + 选中色 + 光标形状/闪烁) — 目标",
-        "content": "1. **拖选自动滚动**:按住拖选、光标越过视口上下边缘时按拍滚动\n   (方向、速度受控);松开即停;滚动中选中随内容锚定(绝对行\n   语义,004 已有);\n2. **块选**:Alt+左键拖选(待澄清#1)触发矩形选中,高亮按列带\n   渲染,复制走 `selection_to_string` 的 block 分支(每行截断拼\n   接);\n3. **右键上下文菜单**:右键弹浮层菜单(复制/粘贴/全选,待澄清\n   #4),项动作复用 004 的 copy/paste 消息路径;菜单外点击/ESC\n   关闭;**右键原\"直接粘贴\"行为被菜单取代**;\n4. **选中色配置**:`--selection-color RRGGBB[AA]` CLI 参数(默认\n   维持现值 e8e8e8@25%),经 App 传入 TermGrid;\n5. **光标形状/闪烁**:shell 经 DECSCUSR(ESC[N q)设形——Block\n   (现状反色块)/Underline/Beam;闪烁默认开(待澄清#3,500ms\n   相位,仅窗口聚焦且光标可见时挂条件定时,空闲仍零唤醒);\n6. **决策链与台账**:001 追加 004→005 节;DEBTS #6 光标形状子项\n   清账、Phase 4 批次勾销重排;README 交互表更新。\n\n非目标:Ctrl+C 稳定版复测(债务 #7,等环境,不在本批);IME 人工\n清单(用户侧动作,非本计划交付);配置文件体系(仅 CLI 参数);\nUnix 基座(独立轨道);Auto 复刻(#7/#8,后置轨道)。",
-        "file": "docs/plans/archived/005-phase4-interaction-batch.md",
-        "related": [
-          "PLAN-005"
-        ],
-        "status": "proposed"
-      },
-      {
-        "id": "P007-2",
-        "section": "goals",
-        "title": "AutoTerm ash(AutoShell)独立运行验证与测试门禁 — 目标",
-        "content": "1. **ash 集成测试门禁**:`cargo test -p autoterm-core --test ash_integration`\n   在 ash.exe 可得时是必绿回归的一部分(6 用例),不可得时输出明确 skip\n   说明——不再依赖\"记得手动试一下 ash\";\n2. **六个核心场景硬断言**(真 PTY → 仿真核心 → 网格):\n   ① 裸 `ash` 启动后提示符渲染(网格出现非空行;间接行使 DSR/DA 应答\n   路径 `term.pump` 回写);② `echo <marker>` 往返出现在网格;\n   ③ Ctrl+C(0x03)中断 `sleep 30` 后提示符回归、子进程存活;\n   ④ `exit` 命令与 Ctrl+D(0x04)均令 `exited()` 为真(无孤儿);\n   ⑤ resize 80x24→120x40 后会话存活且继续响应;\n   ⑥ `color info` 在 TERM=alacritty + COLORTERM=truecolor 下自证\n   \"24-bit truecolor\"(ash 的色彩判定落在网格文本里,可直接断言);\n3. **UI 级半自动取证**:三条 `--shell <ash>` dev 冒烟配方(echo 往返 /\n   真彩彩虹 + 深度报告 / Ctrl+C 中断),`--dev-dump` 证据引述进设计文档;\n4. **结论沉淀**:`docs/designs/003-ash-compatibility.md` 记录场景矩阵\n   结果与 R1–R6 风险逐项结论,发现的缺陷全部进 DEBTS(带 file:line);\n5. **全量回归**:`cargo test --workspace` 绿(ash 缺席环境无回归)。\n\n### 非目标(明确排除)\n\n- 不改 auto-shell 仓任何代码(ash 侧问题记 DEBTS,由该仓处理);\n- 不做虚拟桌面侧集成(ash 作为默认 shell 的拉起配置是 auto-os 侧计划);\n- 不做性能基准、Unix 基座、tabs/splits;\n- 不重写 live_pty.rs 为多 shell 矩阵(cmd 基线保留,ash 门禁独立成文件,\n  避免把\"永远可得\"与\"需环境\"两类测试耦死)。",
-        "file": "docs/plans/archived/007-ash-shell-support.md",
-        "related": [
-          "PLAN-007"
-        ],
-        "status": "proposed"
-      },
-      {
-        "id": "P008-2",
-        "section": "goals",
-        "title": "AutoTerm Ctrl+C 中断通路修复(DEBTS #12,F2:win32 控制台事件注入) — 目标",
-        "content": "1. **核心能力**:`PtySession::interrupt()` 在 Windows 上经辅助进程\n   向 shell 所在 ConPTY 控制台广播 CTRL_C_EVENT,使 `cmd /c\n   ping -n 30` 这类运行中命令在 **≤5s** 内真正中断(cmd 恒在场的\n   自动门禁,不依赖 ash);\n2. **双投递语义**:UI 裸 Ctrl+C = 事件(中断运行中命令)+ 0x03\n   字节(废弃输入行,raw 行编辑器消费)——007 门禁 ③\n   (`ctrl_c_aborts_input_line`)语义保留不回归;\n3. **模式可配**:`--ctrl-c-mode <auto|byte|event|both>`(默认\n   auto);auto 下按 shell 豁免(ash 在 #13 落地前豁免为 byte,\n   依据 T4 探针矩阵按预授权规则裁定);\n4. **门禁接棒**:007 两个 `#[ignore]` 复现器退役(语义转正由\n   ctrl_event.rs 门禁承担),`ash_integration.rs` 回归 0 ignored;\n5. **台账关账**:DEBTS #12 清账、#7 关账(win32 直调落地)、\n   #13 追注 ash 实测行为与协调请求;003 §4 增\"修复实施\"小节、\n   §5 契约第 4 条更新(\"中断:可用\");\n6. **零新依赖**:手写 extern \"system\" FFI,Cargo.toml/Cargo.lock\n   零改动(验收断言);新代码保持 a2r 可表达形态(DEBTS #8 约束,\n   006 结论:引擎绑定侧留 Rust adapter,helper 属 adapter 域)。\n\n### 非目标(明确排除)\n\n- **F1 / #13 修复**(ash 内建不可中断、装 ctrl handler)——归\n  auto-shell 仓,本仓只出探针矩阵与协调请求;\n- Unix 的 interrupt 语义(SIGINT/进程组)——Unix 基座独立轨道,\n  非 Windows 分支走现有字节路径占位;\n- Ctrl+Break(CTRL_BREAK_EVENT)映射——helper 已留位但本计划\n  不接线(003/003 号计划已有结论记录,无用户反馈驱动);\n- 上游 portable-pty 提 issue/PR(候选通路 #3)——修复验证后\n  另起轻量动作,不阻塞本案;\n- conhost 稳定版差异调查(候选通路 #2)——事件注入后不再依赖\n  conhost 翻译行为,调查失去必要性,#7 据此关账。",
-        "file": "docs/plans/archived/008-ctrlc-interrupt-fix.md",
-        "related": [
-          "PLAN-008"
-        ],
-        "status": "proposed"
-      },
-      {
-        "id": "P009-2",
-        "section": "goals",
-        "title": "AutoTerm Auto 化第一相位(分支 A:a2r 修缮 → terminal 原生组件 → 引擎 adapter → Auto 复刻对拍) — 目标",
-        "content": "1. **P0**:a2r 快照目录(`crates/auto-lang/test/a2r/`)全绿 + 新增\n   \"rustc 实编\"门(转译产物能过 cargo check/build)全绿;本仓\n   `spikes/autoize-roundtrip/` 重跑,差异相对 006 记录归档;\n2. **P1**:`terminal` 组件在 auto-lang 落地——`ui-iced` feature 构建绿,\n   headless/iced 双后端测试绿(照 selectable_text 的测试管线),\n   最小 `.at` 示例可渲染 `<terminal/>`;rust-mode 示例 E0080 存量\n   编译炸裂顺手小修(006 §4 结论,W1 范围内);\n3. **P2**:adapter cdylib 面就绪,独立测试进程经 libloading 加载并\n   跑通 echo 往返 + resize + interrupt(模拟 Auto 侧消费形态);\n4. **P3**:`.at` 应用(a2r 产物 rustc 实编)与 Rust oracle **行为对拍**\n   门禁全绿:启动提示符/echo 往返/Ctrl+C 双投递中断(008 语义)/\n   选中三模式/色彩自证(ash 缺席显式 skip,沿 007/008 惯例);\n5. **P4**:DEBTS #8 关账;001 决策链追加 009 节;README 本仓转型\n   声明;两仓 `git diff` 证明无 Cargo 环(auto-lang 不依赖本仓 crate);\n6. **全程**:Rust oracle 版 `cargo test --workspace` 不回归\n   (冻结但门禁仍绿——它是 P3 对拍基准)。\n\n### 非目标(明确排除)\n\n- Vue/web 后端的 terminal 实现(006 未调查,虚拟桌面以 iced 轨道\n  为准;未来另立调查计划);\n- gpui 后端(同上);\n- 虚拟桌面侧集成(auto-os 侧计划,003 §5 契约已留锚点);\n- Rust oracle 版新增产品功能(P1 启动即冻结,仅修对拍阻断项);\n- ash 侧 F1/#13(auto-shell 仓事务);\n- iced 升级/字形图集等既有债务。",
-        "file": "docs/plans/archived/009-autoize-phase1.md",
-        "related": [
-          "PLAN-009"
-        ],
-        "status": "proposed"
-      }
+    "status": "published"
+   },
+   {
+    "id": "P002-1",
+    "section": "reports",
+    "title": "AutoTerm Phase 1 单窗口 MVP — 变更摘要",
+    "content": "把 PLAN-001 的三个 spike 升格为**正式架构**:`crates/autoterm-core`\n(PTY 会话 + alacritty_terminal 封装,含仿真回归测试)与\n`crates/autoterm-ui`(iced 单窗口终端,事件驱动 + 损伤重绘 + 实测字形\n度量 + 滚动回滚 + 光标块)。spike 三 crate 保留为归档不动。清偿\nDEBTS #1/#3/#4(整帧重拼→损伤重绘、固定度量→实测、轮询→事件驱动)\n与 #5/#7 部分(回滚 UI、关闭语义),并产出 Phase 1 设计文档\n`docs/designs/001-phase1-architecture.md`(正式架构的耐久记录,\n000 决策链的延续)。",
+    "file": "docs/plans/archived/002-phase1-mvp.md",
+    "related": [
+     "PLAN-002"
     ],
-    "architecture": [
-      {
-        "id": "P001-3",
-        "section": "architecture",
-        "title": "AutoTerm 建仓与全链路 spike(PTY→仿真核心→渲染) — 架构方案",
-        "content": "四层结构,层间单向依赖:\n\n```\n应用层   tabs / splits / 会话(Phase 2+,不在本计划)\n渲染层   候选 A:iced 自定义 widget 承载终端网格 ← 本计划拍板\n         候选 B:winit + wgpu 字形图集自绘(逃生口)\n仿真层   alacritty_terminal(Apache-2.0):VT 状态机、回滚缓冲、\n         resize/真彩色/备用屏幕语义 —— 直接复用,不自写\nPTY 层   portable-pty:Windows=CreatePseudoConsole(ConPTY),\n         Unix=openpty —— 基座 OS 服务,本仓只消费\n```\n\n与外部系统的关系:\n\n- **ash**(`D:\\autostack\\auto-shell`):仅运行时配置耦合(spawn 的默认\n  shell 路径,经 `ASH_BIN`/配置传入)。验收含\"依赖树无 ash-core\"断言;\n- **auto-ui / auto-lang VM**:路线 A 成立时,后续以 iced/`.at` 生态一等\n  应用形态集成,由后续计划处理;本计划 spike 阶段直接依赖上游 iced;\n- **AutoOS 虚拟桌面**:本仓产出的可执行文件是宿主普通进程,窗口长在\n  桌面里,无 OS 层依赖(PTY 由基座内核/console 服务提供)。\n\nspike 三 probe 的数据流(单向,渲染帧驱动):\n\n```\n子进程(bash/pwsh/ash) ─ConPTY─▶ 字节流 ─feed─▶ alacritty_terminal 网格\n     ▲                                              │\n     └── 写主端 ◀── 键盘事件 ◀── iced 窗口(每帧读网格渲染)◀─┘\n```",
-        "file": "docs/plans/archived/001-autoterm-bootstrap.md",
-        "related": [
-          "PLAN-001"
-        ],
-        "status": "stable",
-        "superseded_by": [
-          "P002-3"
-        ]
-      },
-      {
-        "id": "P002-3",
-        "section": "architecture",
-        "title": "AutoTerm Phase 1 单窗口 MVP — 架构方案",
-        "content": "```\ncrates/autoterm-ui    iced 单窗口:widget(损伤感知)、键盘/滚轮、\n                      字形度量、窗口生命周期        ──仅依赖──┐\ncrates/autoterm-core  PtySession(portable-pty:spawn/reader 线程/\n                      答案回写/resize/kill 语义)+\n                      TermSession(alacritty_terminal 封装:\n                      feed/pump/damage/scroll/快照)  ←────┘\nspikes/               PLAN-001 归档,不再演进\n```\n\n数据流(事件驱动,替换 spike 的 16ms 轮询):\n\n```\n子进程 ─ConPTY→ reader 线程 ─channel→ iced subscription(唤醒)\n   ▲                                        │ feed/pump\n   └─ 写主端(答案/键盘) ←─ update() ←────┘\ndraw():damage(行级) → 只重画脏行;光标块反色;回滚经 scroll_display\n```\n\n与外部系统:ash 仍仅运行时配置耦合(`--shell`,默认 pwsh);\niced 升级沿 0.14(与 auto-ui 同栈,集成路径见待澄清 #2)。",
-        "file": "docs/plans/archived/002-phase1-mvp.md",
-        "related": [
-          "PLAN-002"
-        ],
-        "status": "stable"
-      },
-      {
-        "id": "P003-3",
-        "section": "architecture",
-        "title": "AutoTerm Phase 2 性能与输入完备性 — 架构方案",
-        "content": "```\n保留式画布(在现有 TermGrid 内演进,不新增 crate):\n  Vec<Option<RowPara>>  ── compare(snapshot 行文本) ──▶\n    未变:复用 Paragraph(fill_paragraph 直接绘制)\n    变化/缺失:重建(with_text+load)→ 计数 paragraph_rebuilds\n  damage: Lines(脏行集)→ 只对脏行做 compare;Full → 全部 compare\n  (iced 即时模式限制就此绕开:形状/布局缓存归我们,场景 emit 仍全量)\n```\n\n语义矩阵与 IME 均为 autoterm-ui 侧增量,core 不动(除 unescape\n转义扩展在 ui lib)。",
-        "file": "docs/plans/archived/003-phase2-perf-input.md",
-        "related": [
-          "PLAN-003"
-        ],
-        "status": "stable"
-      },
-      {
-        "id": "P004-3",
-        "section": "architecture",
-        "title": "AutoTerm Phase 3 交互完备(选中/复制粘贴 + Ctrl+C 稳定版复测 + IME) — 架构方案",
-        "content": "```\n事件地基(新增):TermGrid 实现 Widget::update\n  鼠标按下/移动/释放 ─像素→格子(metrics 换算)→ shell.publish\n      │                                      ▼\n      │                    Message::Select{Start/Update/End}(cell, side)\n      │                                      ▼\n      │       App.update ─▶ TermSession 封装:begin/update/clear_selection\n      │                        (驱动 core 的 Term.selection 公有字段)\n      ▼\n渲染:term.selection_to_range() → 视口高亮 quad overlay(文本层之下)\n复制:松开/快捷键 → term.selection_to_string() → iced clipboard\n粘贴:Ctrl+Shift+V/右键 → clipboard::read → write_input(去 \\r→\\r 规整)\nIME:聚焦时 Shell::request_input_method(光标矩形,purpose=Terminal)\n     Event::InputMethod::{Preedit,Commit} → 预编辑挂起显示/提交直写\n```",
-        "file": "docs/plans/archived/004-phase3-interaction.md",
-        "related": [
-          "PLAN-004"
-        ],
-        "status": "stable"
-      },
-      {
-        "id": "P006-3",
-        "section": "architecture",
-        "title": "AutoTerm Auto 化前提调查(AutoUI 组件模型表达力 + a2r 往返一致性 + Rust 绑定通路) — 架构方案",
-        "content": "```\n调查(只读)               产出(spikes/ + docs/designs/)\n──────────────           ─────────────────────────────\nauto-lang/src/ui/     ▶   002-autoize-feasibility.md\n  ├ a2ui/schema.rs          ├ Q1-Q4 答案(每条带源码 file:line 证据)\n  ├ ui/iced/(renderer…)     ├ 差距清单(按 #8 复刻面映射)\n  ├ ui/ext_stubs.rs         ├ 工作量分级(核心封装/UI 层/引擎绑定)\n  └ auto-bindgen/           ├ go/no-go 裁定材料(三分支)\n                           └ #8 立项拆解草案\ndocs/a2r-*.md + 组件注册表   evidence/006-autoize/(spike 产物)\n```\n\nspike 两个:\n- **S1 只读构建**:在 `../auto-lang` 主检出跑\n  `cargo build -p auto-lang --features ui-iced`(产物仅 target/,\n  零 tracked 改动);\n- **S2 round-trip**:写最小 `.at` 样本(struct + enum message +\n  方法,TermSession 子集形态)→ `auto.exe transpile rust` → 与\n  手写 Rust 风格 diff → 差距记录。样本落本仓\n  `spikes/autoize-roundtrip/`,不进 auto-lang。",
-        "file": "docs/plans/archived/006-autoize-feasibility.md",
-        "related": [
-          "PLAN-006"
-        ],
-        "status": "stable",
-        "superseded_by": null
-      },
-      {
-        "id": "P005-3",
-        "section": "architecture",
-        "title": "AutoTerm Phase 4 交互批(Rust 版功能齐全:自动滚动 + 块选 + 右键菜单 + 选中色 + 光标形状/闪烁) — 架构方案",
-        "content": "```\n自动滚动:widget 拖选中检测\"越界Extend\"(clamped cell 停留边缘)\n  ──publish──▶ Message::Select(Extend{cell 在边缘行/列}) 循环\n  App 检测连续边缘 Extend → 置 drag_scroll: Option<Dir>\n  条件订阅 time::every(50ms) → Scrolled(±N) → refresh\n  (core 选中锚定绝对行,滚动自然带动;Finish 清 drag_scroll)\n\n块选:widget ButtonPressed 时按 Alt 修饰 → Begin{Block}\n  高亮:is_block=true 时逐行画同一列段(col_begin..col_last 对齐)\n  复制:core selection_to_string 的 Block 分支(现成)\n\n右键菜单:右键释放 → Message::ContextMenu(Option<(格,项集)>)\n  App.menu: Option<MenuState{at, hover}>;view 传 TermGrid\n  draw 末层画浮层(quad 底 + 文本 + hover 高亮);再点击/ESC → 关\n  菜单项动作 = publish 004 既有消息(Copy=copy_selection 同路径)\n\n选中色:Args --selection-color → AppConfig.selection_color: Color\n  → App 传入 TermGrid.selection_color → 高亮 quad 用之\n\n光标:core cursor() 扩展返回 shape(渲染快照 cursor.shape 现成)\n  Underline=底部 2px quad;Beam=左缘 2px quad;Block=现状\n  闪烁:App.cursor_visible: bool + 条件订阅 time::every(500ms)\n  (仅 focused && shape!=Hidden && !menu 时挂),取反驱动重绘\n  焦点事件:iced window focus 事件 → App.focused(新增状态)\n```",
-        "file": "docs/plans/archived/005-phase4-interaction-batch.md",
-        "related": [
-          "PLAN-005"
-        ],
-        "status": "stable"
-      },
-      {
-        "id": "P007-3",
-        "section": "architecture",
-        "title": "AutoTerm ash(AutoShell)独立运行验证与测试门禁 — 架构方案",
-        "content": "**零产品代码改动的纯测试增项**,落在既有分层内:\n\n```\ncrates/autoterm-core/tests/\n├── live_pty.rs          # 既有 cmd 基线,不动\n├── sim_regression.rs    # 既有纯 VT 回归,不动\n└── ash_integration.rs   # 新增:ash 专属门禁(env 门控)\n```\n\n- **二进制定位**(`ash_bin()`):`AUTOTERM_ASH_BIN` 环境变量优先 →\n  兄弟仓约定路径探测 `../auto-shell/ash/target/{release,debug}/ash.exe`\n  (相对 auto-term 仓根)→ 皆无则用例体首行 `eprintln!` skip 说明 +\n  `return`(不是 `#[ignore]`,保留\"跑过即验证过\"的语义);\n- **断言通路**:复用 `PtySession::spawn/drain/write_input/exited/resize`\n  与 `TermSession::visible_lines()`(term.rs:213,PLAN-002 已公开),\n  不新增公共 API;\n- **等待原语**:`wait_for(session, timeout, pred)` 轮询 `drain()` +\n  50ms 小睡,超时 panic 并附当前网格文本(诊断友好);统一超时:首提示符\n  ≤15s(ash 首启会建 `~/.ashrc`,冷启动偏慢),命令级 ≤10s;\n- **UI 半自动**:既有 `--dev-autotype/--dev-exit-after/--dev-dump`\n  钩子原样使用,证据文件落 `target/`(gitignore 内),关键行引述进\n  设计文档。",
-        "file": "docs/plans/archived/007-ash-shell-support.md",
-        "related": [
-          "PLAN-007"
-        ],
-        "status": "stable"
-      },
-      {
-        "id": "P008-3",
-        "section": "architecture",
-        "title": "AutoTerm Ctrl+C 中断通路修复(DEBTS #12,F2:win32 控制台事件注入) — 架构方案",
-        "content": "四层中动两层(core 新增 helper bin + 方法;ui 一处拦截),分层\n职责不变:\n\n```\ncrates/autoterm-core\n├── src/pty.rs                    # +shell_pid 字段、+interrupt()、\n│                                 #  +resolve_helper_bin()(三级解析)\n├── src/bin/autoterm-ctrlc.rs     # 新增辅助进程(手写 FFI,~70 行)\n├── tests/ctrl_event.rs           # 新增:cmd 恒在场的中断门禁\n└── tests/ash_integration.rs      # 复现器退役 + ash×事件探针矩阵\ncrates/autoterm-ui\n├── src/lib.rs                    # 裸 Ctrl+C 拦截(handle_ctrl_c)、\n│                                 #  DevTick 注入 0x03 同路、mode 纯函数\n└── src/bin/autoterm.rs           # --ctrl-c-mode 参数\n```\n\n**辅助进程数据流**(winpty 经典手法,003 §4 通路 #1):\n\n```\nUI 裸 Ctrl+C ──▶ App::handle_ctrl_c(按 mode)\n                   │ ① write_input([0x03])      ──▶ 主端字节(reedline 消费)\n                   │ ② session.interrupt()\n                   │     ├─ resolve_helper_bin()  ──▶ autoterm-ctrlc.exe 路径\n                   │     └─ spawn(CREATE_NO_WINDOW, wait ≤3s)\n                   ▼\nautoterm-ctrlc.exe <shell_pid>\n  FreeConsole → AttachConsole(pid)          # 挂进 ConPTY 隐藏控制台\n  → SetConsoleCtrlHandler(None, TRUE)       # helper 自身免疫\n  → GenerateConsoleCtrlEvent(CTRL_C_EVENT, 0)  # 广播同控制台全部进程\n  → FreeConsole → exit 0\n                   ▼\nconhost 派发 CTRL_C_EVENT ──▶ 运行中子进程(ping 等)终止,\n                              cmd/pwsh 各自 handler 存活回提示符\n```\n\n要点:\n- 广播安全性:ConPTY 隐藏控制台是本会话私有的,挂着的只有 shell\n  及其子进程——广播(进程组 0)无外溢面;\n- helper 缺失/失败(AutoTerm 部署不完整、attach 失败):\n  `interrupt()` 降级 `write_input([0x03])` + `log::warn`,行为\n  回到修复前,绝不 panic;\n- 解析三级(与 007 `ash_bin()` 同风格):运行时 env\n  `CARGO_BIN_EXE_AUTOTERM_CTRLC`(cargo 为本 crate 集成测试注入)\n  → env `AUTOTERM_CTRLC_BIN`(人工/部署覆盖)→ `current_exe()`\n  向上 ≤3 级父目录找同名 exe(测试布局 target/debug/deps →\n  target/debug;安装布局同目录)。",
-        "file": "docs/plans/archived/008-ctrlc-interrupt-fix.md",
-        "related": [
-          "PLAN-008"
-        ],
-        "status": "stable"
-      },
-      {
-        "id": "P009-3",
-        "section": "architecture",
-        "title": "AutoTerm Auto 化第一相位(分支 A:a2r 修缮 → terminal 原生组件 → 引擎 adapter → Auto 复刻对拍) — 架构方案",
-        "content": "**依赖 DAG(无环铁律的图示)**:\n\n```\n编译期 Cargo 边(单向,唯一):\n  auto-term(.at 经 a2r 转译产物)──依赖──▶ auto-lang 运行时(a2r-std 等)\n\n运行期 FFI 边(非 Cargo 边):\n  auto-lang `terminal` 组件 ──libloading──▶ autoterm-engine.cdylib(P2)\n                                         └─ 标量/opaque handle 数据面\n\n不存在:auto-lang ──Cargo──▶ auto-term(结构性禁止)\n兜底:确需共享类型 → terminal-types 叶子 crate(零依赖,双方引用)\n```\n\n**各层归属(迁移不并行,用户 2026-09-06 对齐)**:\n\n| 层 | 真身 | 本仓命运 |\n| --- | --- | --- |\n| 引擎(PTY+仿真,autoterm-core) | 本仓 cdylib adapter(P2) | **活**——未来 AutoTerm 的引擎本体 |\n| 控件(TermGrid 视口逻辑) | auto-lang `terminal` 组件(P1) | widget.rs **冻结**(真身迁走) |\n| 应用(App/消息/配置) | `.at` 代码(P3) | lib.rs App **冻结为参考** |\n\n**worktree 布局(同组双仓,/auto-plan:work 创建)**:\n\n```\n.wt/auto-009/auto-term   # plan-009-dev(P2/P3/P4 与台账)\n.wt/auto-009/auto-lang   # auto-term-dev 依赖仓 worktree(P0/P1;\n                         #   每相位 fold 回 auto-lang main 后本仓 re-sync)\n```\n\n**相位 fold 节奏**:P0 验证过 → fold auto-lang → P1 起(auto-term\n侧同步 re-sync);P1 验证过 → fold auto-lang → P2/P3(auto-term 侧,\nP2 其实可与 P1 并行——见执行步骤注);P3 对拍绿 → P4 收账。\n\n**组件数据面(P1 设计核心,两候选形态,T2 实测裁定)**:\n\n- 形态甲 props-feed:app 层(.at)每拍把行级损伤增量经组件 props 喂入,\n  组件纯渲染+输入事件上抛——贴合 code_editor 范式,绑定层走标量;\n- 形态乙 opaque-handle:app 把 adapter 的 opaque session handle 传给\n  组件,组件 draw 时直调标量 API 取脏行——少一跳,但组件持运行期\n  状态更深。\n- 裁定规则(预授权):先做甲(范式成熟、a2r 可表达性最好),实测\n  2000 行流式输出下损伤增量喂入延迟不可接受(帧预算超标)再降级乙,\n  执行记录注明数据。",
-        "file": "docs/plans/archived/009-autoize-phase1.md",
-        "related": [
-          "PLAN-009"
-        ],
-        "status": "stable"
-      }
+    "status": "published"
+   },
+   {
+    "id": "P003-1",
+    "section": "reports",
+    "title": "AutoTerm Phase 2 性能与输入完备性 — 变更摘要",
+    "content": "兑现 PLAN-002 路由到 Phase 2 的三件事:①**保留式画布**——widget\n每行缓存 iced `Paragraph`,`Paragraph::compare` 判异、仅脏行重建\n形状、`fill_paragraph` 绘制,达成计划002 验收#4 的绘制级 run 不等式;\n②**Ctrl+C/Ctrl+Break/关闭语义矩阵**——三 shell × 中断路径的自动化\n冒烟;③**IME 最小调查与落地**——iced `input_method` 模块可用性\nPoC,行则做光标处 preedit 下划线显示,阻则 blocker 记录。顺带清偿\n三尾巴:`--dev-*` 收进 `dev-tools` feature、log+env_logger 替换\neprintln、`Message::NoOp` 替换空唤醒复用。",
+    "file": "docs/plans/archived/003-phase2-perf-input.md",
+    "related": [
+     "PLAN-003"
     ],
-    "designs": [
-      {
-        "id": "P001-4",
-        "section": "designs",
-        "title": "AutoTerm 建仓与全链路 spike(PTY→仿真核心→渲染) — 详细设计",
-        "content": "### spikes/pty-probe(bin)\n\n- `--shell <exe>`(默认 `pwsh`,回退 `powershell`)、`--duration <秒>`\n  (默认 3)、`--hexdump`;\n- 流程:`portable-pty` 申请 PTY → spawn 子进程 → 主端读到超时为止,\n  字节原样落 stderr(hexdump 可读形态)+ 统计字节率;\n- 预期证据:输出含 `1b 5b`(ESC [)序列、字节率非零。\n\n### spikes/term-probe(lib + bin + 集成测试)\n\n- 封装 `Term::new` + 自定义 `EventListener`,`feed()` 喂字节流,定时\n  快照网格可见文本(`renderable_content` 或等价 API)打印;\n- 集成测试(真 PTY,非录制流):spawn `cmd /c echo hello_term_probe`\n  (或 pwsh 等价),读到 EOF→feed→断言网格含 `hello_term_probe`;\n- 这是仿真核心嵌入体验的第一手记录:API 是否顺手、resize 语义如何\n  触发,写入决策文档附录。\n\n### spikes/render-probe(bin,路线 A 探针)\n\n- iced `Application`/新 API 等价物,自定义 widget:每帧从 term-probe\n  封装读网格 → 按行列拼 monospace 文本渲染(spike 允许整帧重拼,不做\n  字形图集——链路正确性优先,性能留给决策后的正式实现);\n- 键盘:可打印字符/Enter/Backspace → 写 PTY 主端;resize → 通知仿真\n  核心(观察 ConPTY resize 怪癖);\n- `--shell <exe>` 必填,ash 冒烟经此入口:`--shell %ASH_BIN%`。\n\n### 渲染路线判据(决策标准,写入 000 决策文档)\n\n- **A 判据**:iced 下能以可接受代价实现——网格整帧渲染的延迟肉眼可\n  接受、resize 无可感知撕裂、输入回显无粘滞;且自定义 widget API 无\n  结构性障碍(能拿到每帧绘制权);\n- **B 触发**:上述任一不成立,或 iced 帧调度/文本管线与终端需求冲突\n  到需要 fork 上游才能解决;\n- 决策文档记录:三 probe 证据、大输出数字(字节率、帧表现)、A/B 结论\n  与理由、对 auto-ui 的反哺清单(等宽字形、损伤重绘、低延迟输入)。\n\n### ash 冒烟清单(手动,render-probe 里完成)\n\n- [x] `ash` 交互启动,提示符/补全正常;\n- [x] 跑产生 tail 动态渲染的命令(如长输出外部命令),重绘不糊屏;\n- [x] `find` 渐进表格不错位、冻结表格完整;\n- [x] 真彩色/256 色样本正确(如 ash 内置着色输出)。\n\n> 证据:`docs/designs/evidence/001-smoke/`(终态转储 + 流式快照序列 +\n> PrintWindow 截图)。四项全部通过:提示符 `❯`+状态行正常;Tab 补全触发\n> (补出历史命令);2000 行 0.37s 流式输出干净无糊屏、长输出摘要冻结生效\n> (61–63+80 折叠);find 表格三行对齐、边框连续;截图验证 256 色/真彩\n> run 渲染正确(find 绿/-name 蓝/*.md 琥珀/边框 240 灰/提示符绿),\n> 修复右缘裁剪后边框与时钟完整。",
-        "file": "docs/plans/archived/001-autoterm-bootstrap.md",
-        "related": [
-          "PLAN-001"
-        ],
-        "status": "stable",
-        "superseded_by": [
-          "P002-4"
-        ]
-      },
-      {
-        "id": "P002-4",
-        "section": "designs",
-        "title": "AutoTerm Phase 1 单窗口 MVP — 详细设计",
-        "content": "### crates/autoterm-core(lib)\n\n- `term.rs`:TermSession 迁移自 spikes/term-probe/src/lib.rs,新增\n  `take_damage()`(透传 `Term::damage()`/`reset_damage()`)与\n  `scroll(delta_lines)`(透传 `scroll_display`);\n- `pty.rs`:PtySession —— openpty(PtySize 由 ui 侧传入)、spawn、\n  reader 线程→`Receiver<Vec<u8>>`(EOF 哨兵空 vec)、\n  `pump_and_answer(writer)`:feed 后取 PtyWrite 应答写回主端、\n  resize(先 TermSession 后 master)、`kill()`;\n- `tests/live_pty.rs`:迁移 spike 集成测试(`cmd /c echo\n  hello_term_probe` → 网格断言);\n- `tests/sim_regression.rs`:**纯 VT 字节**(不经 PTY)的回归矩阵:\n  - 光标/ED/EL:清屏+定位+写入 → 指定行列文本;\n  - SGR 38;2 真彩与 38;5 256 色 → StyledChar 色值断言;\n  - DECSET 1049 备用屏幕:切入→写入→切出,主屏原内容保留;\n  - CJK 宽字符:占两格(第二格 spacer);\n  - 回滚:超屏输出后 scroll_display 回看历史行;\n  - DSR:`ESC[6n` → pump 输出匹配 `\\x1b[...;...R`;\n- `tests/pty_lifecycle.rs`:spawn→EOF→`exited()` 真;drop(kill)\n  后 `wait()` 拿到退出状态。\n\n### crates/autoterm-ui(bin `autoterm`)\n\n- `main.rs`:iced application(boot 闭包建 PtySession+TermSession,\n  `window::oldest()` 记 Id);`--shell <exe>`(默认 pwsh)、\n  `--dev-exit-after/--dev-autotype/--dev-dump`(冒烟取证钩子);\n- 事件驱动订阅:reader 线程字节经 iced 订阅通道(0.14 实际 API,\n  候选 `Subscription::run` + stream channel)发 `Message::PtyBytes`,\n  替换 `time::every`;键盘 `keyboard::listen`、窗口\n  `resize_events`;\n- `metrics.rs`:启动时 cosmic-text 测 `advance('M')` 得 cell 宽,\n  行高取字体 ascent+descent;`is_wide(c)` = advance≥1.9×cell;\n- `widget.rs`:网格 widget 迁移自 render-probe,改动:\n  - draw 按 `take_damage()` 只重画脏行(Full 退化为整帧);\n  - 光标块:`renderable_content().cursor` 反色渲染;\n  - 滚轮/Shift+滚轮 → `scroll(delta)`;PgUp/PgDn 翻页;\n    回滚偏移>0 时顶行显示 `↑N` 指示;\n  - NamedColor 全枚举映射(Dim/Bright 前景),16/256/真彩表\n    收敛到 `palette.rs`;\n- 关闭语义:窗口 `Event::Closed` → `PtySession::kill()` + wait,\n  退出 app;\n- 顶层 `src/lib.rs`(便于 ui 单测)+ `src/bin/autoterm.rs` 入口。\n\n### docs/designs/001-phase1-architecture.md(T9 交付)\n\n章节:正式 crate 结构图、事件驱动数据流时序、损伤重绘协议\n(damage 语义→脏行集合→draw 剪裁)、字形度量与宽字符策略、\n回滚模型(display_offset 与状态指示)、000→002 决策链与残留缺口\n(引 DEBTS 未清项)。终态含\"结论\"节。",
-        "file": "docs/plans/archived/002-phase1-mvp.md",
-        "related": [
-          "PLAN-002"
-        ],
-        "status": "stable",
-        "superseded_by": [
-          "P003-4"
-        ]
-      },
-      {
-        "id": "P003-4",
-        "section": "designs",
-        "title": "AutoTerm Phase 2 性能与输入完备性 — 详细设计",
-        "content": "### 保留式画布(T1-T4)\n\n- `widget.rs`:`RowPara` 封装 `<iced::Renderer as text::Renderer>::\n  Paragraph`,TermGrid 增 `rows: Vec<Option<RowPara>>`(与快照行\n  等长,damage 剪裁后惰性补齐);\n- 绘制协议:底 quad 全量;每行——`compare(Text{当前行内容})` 为\n  `Difference::None` → 直接 `fill_paragraph`;否则 `with_text` 重建\n  +`load` 后绘制并 `paragraph_rebuilds += 1`;行内背景色块仍按 run\n  画(颜色变化经 compare 的 Shape 差异覆盖);\n- 光标行:上游 damage 恒含光标行,自然走重建路径,反色块绘制不变;\n- dev 转储增 `paragraph_rebuilds_last/prev`;\n- **T1 PoC 前置**:独立测试构造 Paragraph(shaping 'HELLO' →\n  `min_bounds().width > 0`)证明公面构造可行;若构造受阻,记\n  blocker 于待澄清并停 T2-T4(计划其余部分不受影响)。\n\n### 语义矩阵(T5-T7)\n\n- `unescape` 增 `\\xHH` 转义(TDD 单测),Ctrl+C 注入即\n  `--dev-autotype \"N:...\\x03\"`;\n- 冒烟脚本(手工执行,证据存档):三 shell 各跑长命令\n  (pwsh `Start-Sleep 30` / ash 内 pwsh / cmd `timeout 30`),+2s 注入\n  \\x03,断言:网格 10s 内回提示符、无孤儿进程(tasklist 计数);\n- Ctrl+Break:查 iced `key::Named` 是否有 Break 变体与 ConPTY 下\n  的字节/事件形态,结论记 001 附录,能映射则并入 key_to_bytes。\n\n### IME(T8)\n\n- PoC:iced 0.14 Ime 事件(Event 枚举形态)与 `InputMethod` 是否\n  对自定义 widget 开放;可用 → 光标处 preedit 下划线渲染(内容\n  经 Message::Ime(String) 进状态);受阻 → blocker 记录(DEBTS\n  +001 附录),不阻塞计划。\n\n### 三尾巴(T9-T10)\n\n- `dev-tools` feature:`--dev-*` 参数与 DevTick 订阅/取证静态量\n  统一进 `#[cfg(feature = \"dev-tools\")]`;默认构建零 dev 面;\n- log+env_logger:`dump_state`/resize 错误路径换 `log::info!/\n  warn!`,bin 入口 `env_logger::init()`;\n- `Message::NoOp` 变体:键盘非按键/鼠标非滚轮事件改映射 NoOp\n  (update 显式忽略)。",
-        "file": "docs/plans/archived/003-phase2-perf-input.md",
-        "related": [
-          "PLAN-003"
-        ],
-        "status": "stable"
-      },
-      {
-        "id": "P004-4",
-        "section": "designs",
-        "title": "AutoTerm Phase 3 交互完备(选中/复制粘贴 + Ctrl+C 稳定版复测 + IME) — 详细设计",
-        "content": "### core:TermSession 选择封装(T1)\n\n`term.rs` 新增(经 `Term.selection` 公有字段,保持 feed/pump 不变):\n- `begin_selection(ty, cell)`:置 `Some(Selection::new(ty, 点, side))`;\n- `update_selection(cell, side)`:`selection.update`;\n- `clear_selection()`;`selection_range() -> Option<SelectionRange>`\n  (`to_range` 透传);`selection_text() -> Option<String>`\n  (`selection_to_string` 透传);\n- 点坐标用 core 的 `Point{line, column}`(视口相对转绝对由 ui 侧\n  `+display_offset` 完成,或按 to_range 语义实测校正——T1 测试钉死)。\n\n### ui:事件地基与消息(T2)\n\n- `Message::Select(SelectMsg)`,`SelectMsg::{Begin{ty, cell, side},\n  Extend{cell, side}, Finish}`;`Message::Copy`/`Paste`/`SetPreedit`…\n- `TermGrid::update`:左键按下→Begin(带点击计数:1=Simple、2=\n  Semantic、3=Lines);移动且按住→Extend;释放→Finish;\n  右键释放→Paste;`Interaction::Text`/拖选中 `AllScroll`?MVP:\n  `Interaction::Text` 即可;\n- `App.update`:Begin→`term.begin_selection`;Extend→`update_selection`\n  + 刷新快照(display/高亮不进快照,仅刷新 overlay 字段);Finish→\n  copy-on-select(空选清除);键盘 Ctrl+Shift+C/V 走 key_to_bytes\n  前拦截。\n\n### ui:高亮渲染与复制粘贴(T3-T4)\n\n- TermGrid 增 `selection: Option<SelectionRange>`(App 传入);draw\n  在 bg quad 层之后、Paragraph 文本层之前画高亮矩形(选中色=前景色\n  20% 透明叠底 or 反转?用 `DEFAULT_FG` 25% alpha 叠加,保证不破坏\n  行缓存 digest);\n- 复制:`selection_text()` → `iced::clipboard::write`(Task,update 返\n  回);粘贴:`clipboard::read` → 内容 `\\r\\n|\\n` → `\\r` 规整后\n  `write_input`;\n- 拖选越界不动(自动滚动非目标),超视口 Extend 由 clamp 到边缘格。\n\n### 取证钩子(T5)\n\n- `--dev-select \"ms:<start_row>:<start_col>-<end_row>:<end_col>\"`:\n  到时注入 Begin/Extend/Finish 序列;dev 转储输出 `selection_text:`\n  行与 `selection_cells: N`(高亮格数);像素高亮用程序化扫描\n  (选中色亮度差)存 evidence。\n\n### Ctrl+C 稳定版复测(T7)\n\n- 复用 003 最小管道矩阵(裸 0x03/win32 编码/WT 实测三通道)在\n  稳定版 Windows(非 26200 内部版)环境执行——本机不具备则记录\n  \"待环境\"并挂 DEBTS(不阻塞本计划其余交付);\n- 结论回填 001 附录与 DEBTS #7。\n\n### IME(T8)\n\n- `TermGrid::update` 聚焦/点击时 `shell.request_input_method(\n  cursor_rect, purpose=Terminal)`;`Event::InputMethod::Preedit` →\n  `Message::SetPreedit(String)`(App 挂起显示:光标行尾下划线文本,\n  不写 PTY);`Commit` → 清 preedit + `write_input`;\n- over-the-spot(`InputMethod::Enabled{preedit}`)优先,落不下再自绘;\n- 验收:人工中文输入清单(pwsh/ash 各 5 分钟:拼音组句、上屏、\n  中英切换、取消),截图留档。",
-        "file": "docs/plans/archived/004-phase3-interaction.md",
-        "related": [
-          "PLAN-004"
-        ],
-        "status": "stable"
-      },
-      {
-        "id": "P006-4",
-        "section": "designs",
-        "title": "AutoTerm Auto 化前提调查(AutoUI 组件模型表达力 + a2r 往返一致性 + Rust 绑定通路) — 详细设计",
-        "content": "### T1 AutoUI 组件模型(只读)\n\n读 `src/ui/component.rs`/`dynamic.rs`/`a2ui/schema.rs`/组件注册\n表:组件定义形态、能否注册新组件、有无\"原生/自定义 widget 挂载\n点\"。产出 Q1 前半(模型侧)+ file:line 证据。\n\n### T2 iced 后端扩展点(只读)\n\n读 `src/ui/iced/{renderer,mod,selectable_text,pointer_area,\nvirtual_window}.rs`:renderer 如何把组件树映射到 iced;内置组件\n是\"手写 Rust Widget 实现\"还是\"iced 既有组件包装\";**从 .at 层\n触达自定义 Widget 的路径存在与否**。产出 Q1 后半(后端侧)。\n\n### T3 绑定通路(只读)\n\n读 `crates/auto-bindgen`、`docs/custom-lib-paths-*.md`、\n`src/ui/ext_stubs.rs`:Auto→Rust crate 的调用机制、类型封送、\n限制(如 stub arity 约束)。产出 Q2。\n\n### T4 a2r 能力面(只读)\n\n读 a2r 三篇文档的 Implementation Status + `a2r-std` 公面:产出\n子集清单(struct/enum/trait impl?/extern?),对照 DEBTS #8 的\n往返约束。产出 Q3 前半。\n\n### T5 S2 round-trip spike(动手,本仓内)\n\n`spikes/autoize-roundtrip/sample.at`:TermSession 子集形态\n(GridSize struct + Damage enum + begin/update/clear_selection\n方法签名级)+ 运行 `auto.exe transpile rust`;人工 diff 产出 vs\n`autoterm-core/src/term.rs` 风格,记录:哪些构造 1:1、哪些变形、\n哪些不可表达。产出 Q3 后半(实证)。\n\n### T6 S1 只读构建 spike(动手,auto-lang 不改)\n\n`cargo build -p auto-lang --features ui-iced`(+ 若有 ui-iced\n示例则跑一个);记录构建时长/警告面貌/示例可运行性。产出 Q4。\n\n### T7 可行性文档汇总\n\n`docs/designs/002-autoize-feasibility.md`:Q1-Q4 答案(带源码\n证据)、**差距清单按 #8 复刻面映射**(core 封装/ui App/\nTermGrid/引擎绑定四档)、工作量分级(人日量级)、go/no-go 三分\n支材料(能表达→#8 直立;缺能力→auto-lang 补齐计划草案;短期\n不可达→降级路线如宿主壳+Auto 面板)、#8 立项拆解草案。\n\n### T8 台账回写\n\nDEBTS:#7 关账(结论一句话+指向 002 文档);#8 启动条件按结论\n更新;**修正 auto-ui 旧仓引用为 auto-lang 内 ui 模块**(含 001\n附录相关表述);README 定位节同步。",
-        "file": "docs/plans/archived/006-autoize-feasibility.md",
-        "related": [
-          "PLAN-006"
-        ],
-        "status": "stable",
-        "superseded_by": null
-      },
-      {
-        "id": "P005-4",
-        "section": "designs",
-        "title": "AutoTerm Phase 4 交互批(Rust 版功能齐全:自动滚动 + 块选 + 右键菜单 + 选中色 + 光标形状/闪烁) — 详细设计",
-        "content": "### core:块选与光标形状透传(T1)\n\n- `term.rs` `cursor()` 扩展:返回 `(row, col, CursorShape)` 或\n  新增 `cursor_shape()`(保持旧签名兼容调用点最小改);\n- sim_regression 增 1 用例:feed `ESC[4 q` 后 shape==Underline\n  (DECSCUSR 通路);Block 选中 2 用例(范围矩形语义 + 文本逐行\n  截断)。\n\n### ui:块选触发与渲染(T2)\n\n- widget `ButtonPressed(Left)` 分支:mods 含 Alt → ty=Block\n  (多击计数与 Alt 正交:Alt 按下时恒 Block,不参与 1/2/3 击);\n- 高亮渲染:`sel.is_block` 时逐行画 `col_begin..col_last` 窄带\n  (矩形对齐,不跨全行);文本层不动;\n- dev-select 解析器增 `block` 前缀(现 parser 三前缀外补一)。\n\n### ui:拖选自动滚动(T3)\n\n- App 增 `drag_scroll: Option<i32>`(方向行数);handle_select\n  的 Extend 分支检测:cell.row==0 且指针在上边缘带(由 widget\n  发布 `at_edge: Option<Vertical>` 扩展字段)→ 置 drag_scroll;\n  离开边缘/Finish → 清;\n- 条件订阅:`drag_scroll.is_some()` 时挂 `time::every(50ms)` →\n  `Message::Scrolled(delta)`(复用现滚轮回滚路径,选中随绝对行\n  锚定自动跟随);菜单打开时暂停。\n\n### ui:右键上下文菜单(T4)\n\n- `Message::ContextMenu(Option<(usize,usize)>)`(格坐标或像素,\n  存 MenuState);widget 右键释放改发 ContextMenu(原 Paste 通道\n  由菜单项\"粘贴\"承担);\n- TermGrid 增 `menu: Option<MenuState>` 字段;draw 最顶层画:\n  底 quad + 边框 + 三项文本(复制/粘贴/全选)+ hover 反色;\n- 交互:菜单开着时点击命中项 → publish 对应动作(Copy=\n  clipboard_shortcut 同函数 / Paste=现消息 / 全选=Begin{Lines,\n  视口左上}+Extend{视口右下});未命中或 ESC → 关闭;\n- 命中检测在 `pixel_to_cell` 同域(菜单矩形像素判定,纯函数\n  可单测)。\n\n### ui:选中色配置(T5)\n\n- bin 增 `--selection-color RRGGBB[AA]`(clap,默认 `e8e8e8`+\n  α0.25 硬编码值移入 AppConfig);解析 hex → iced::Color 纯函数\n  + 单测(6/8 位、非法回退默认);\n- App → TermGrid.selection_color: Color;高亮 quad 改用之。\n\n### ui:光标形状与闪烁(T6-T7)\n\n- 渲染分形:Underline=格底 2px 亮 quad;Beam=格左 2px 亮 quad\n  (不反色字形);Block 维持 004 反色块;\n- `App.focused: bool`(iced window focus 事件接入,新增消息);\n- 闪烁:`cursor_blink_on: bool`(相位),条件订阅 500ms 取反,\n  仅 `focused && shape!=Hidden && menu.is_none()`;光标不可见\n  帧跳过光标绘制(preedit 挂起时同样不闪);\n- 转储增 `cursor_shape:`/`cursor_visible:` 行(dev 取证)。\n\n### 取证与文档(T8-T9)\n\n- 冒烟矩阵:块选高亮像素扫描(列带几何)/DECSCUSR 三形转储+\n  Beam 像素(左缘亮线)/自动滚动注入(dev-select 边缘 Extend 模\n  拟 → 转储 scroll_offset>0 且 selection_text 跨滚动区)/菜单\n  开合(dev-hook 注入 ContextMenu 坐标 → 像素扫描菜单底 quad);\n- 001 追加 004→005 决策链;DEBTS 勾账(Phase 4 批次 1-4 项 +\n  光标形状早年账);README 交互表增块选/菜单/形状/闪烁。",
-        "file": "docs/plans/archived/005-phase4-interaction-batch.md",
-        "related": [
-          "PLAN-005"
-        ],
-        "status": "stable"
-      },
-      {
-        "id": "P007-4",
-        "section": "designs",
-        "title": "AutoTerm ash(AutoShell)独立运行验证与测试门禁 — 详细设计",
-        "content": "### `crates/autoterm-core/tests/ash_integration.rs` 结构\n\n```rust\n//! ash (AutoShell) 集成门禁:真 PTY → 仿真核心 → 网格断言。\n//! 门控:AUTOTERM_ASH_BIN 优先,兄弟仓约定路径兜底,皆无则 skip。\n\nfn ash_bin() -> Option<PathBuf>;           // env → ../auto-shell/.../ash.exe 探测\nfn grid_text(s: &PtySession) -> String;    // visible_lines().join(\"\\n\")\nfn wait_for<F: Fn(&TermSession) -> bool>(  // 轮询 drain + 判定\n    s: &mut PtySession, timeout: Duration, what: &str, pred: F,\n);  // 超时 panic 附 grid_text 快照\n\n#[test] fn spawn_prompt_renders()          // ① 非空行出现 + bytes_fed > 0\n#[test] fn echo_roundtrip()                // ② marker 出现于网格\n#[test] fn ctrl_c_interrupt_returns_prompt() // ③ sleep 30 + 0x03 + after-marker ≤10s\n#[test] fn exit_command_terminates()       // ④a \"exit\\r\" → exited() ≤10s\n#[test] fn ctrl_d_eof_terminates()         // ④b 0x04(至多两次)→ exited()\n#[test] fn resize_survives()               // ⑤ 120x40 + marker2 响应\n#[test] fn color_info_reports_truecolor()  // ⑥ 网格含 \"24-bit truecolor\"\n```\n\n要点:\n\n- 每个用例独立 `PtySession::spawn(bin, [], 80, 24)`(ash 裸跑即 REPL,\n  无需参数;`--shell` 只收程序名的设计不受影响);`Drop` 兜底杀进程,\n  用例内不显式清理也安全;\n- marker 用随机后缀(如 `ash_probe_{pid}`)防串扰;\n- 场景③判定逻辑:`sleep 30` 阻塞下,后续 `echo after_c` 的 marker 若能\n  在 ≤10s 内出现,即证明中断生效(sleep 30 不可能自然结束);\n- 场景⑥若实测**不是** 24-bit:不静默改断言迎合——原样断言失败,\n  执行记录里按发现处理(进 open-questions + DEBTS + 设计文档 R4 结论),\n  断言修正为实测值时必须附注释引用 DEBTS 条目号。\n\n### UI 半自动冒烟配方(T7 执行时落成三条可复制命令)\n\n```bash\nASH=D:/autostack/auto-shell/ash/target/release/ash.exe\n# A echo 往返\ncargo run -p autoterm-ui --features dev-tools -- --shell $ASH \\\n  --dev-autotype \"4000:echo ash_ui_probe\\r\" --dev-exit-after 12 \\\n  --dev-dump target/ash-smoke-a.txt\n# B 真彩取证(color rainbow + color info)\ncargo run -p autoterm-ui --features dev-tools -- --shell $ASH \\\n  --dev-autotype \"4000:color rainbow\\r\" \"6500:color info\\r\" \\\n  --dev-exit-after 14 --dev-dump target/ash-smoke-b.txt\n# C Ctrl+C 中断(sleep 30 + \\x03 + 复验 marker)\ncargo run -p autoterm-ui --features dev-tools -- --shell $ASH \\\n  --dev-autotype \"4000:sleep 30\\r\" \"6000:\\x03\" \"8000:echo after_c\\r\" \\\n  --dev-exit-after 16 --dev-dump target/ash-smoke-c.txt\n```\n\n证据核对面(dump 含网格文本 + 损伤/帧计数,lib.rs:597-654):\nA 含 `ash_ui_probe`;B 含 `Ash 24-bit Truecolor Rainbow!` 与\n`Color depth: 24-bit truecolor`;C 含 `after_c` 且 uptime < 15s。\n首提示符延迟超 4s 时按 dump 实况回调各段延迟(执行记录里注明)。\n\n### `docs/designs/003-ash-compatibility.md` 骨架\n\n场景矩阵表(6+3 场景 × 结果/证据)、R1–R6 逐项结论、ash 冷启动数字、\n遗留问题(→ DEBTS 编号)、虚拟桌面接入契约提醒(显式绝对路径)。",
-        "file": "docs/plans/archived/007-ash-shell-support.md",
-        "related": [
-          "PLAN-007"
-        ],
-        "status": "stable"
-      },
-      {
-        "id": "P008-4",
-        "section": "designs",
-        "title": "AutoTerm Ctrl+C 中断通路修复(DEBTS #12,F2:win32 控制台事件注入) — 详细设计",
-        "content": "### `crates/autoterm-core/src/bin/autoterm-ctrlc.rs`(T1)\n\n```rust\n//! Ctrl+C 注入辅助:挂进目标进程的控制台后广播 CTRL_C_EVENT。\n//! 用法: autoterm-ctrlc <pid>;exit 0=成功,2=attach 失败,3=用法。\n// SPDX-License-Identifier: Apache-2.0\n// 非 windows 目标:占位 main,打印不支持后 exit 1(保持可编译)。\n\n#[cfg(windows)]\nmod imp {\n    // 手写 kernel32 FFI(零新依赖):BOOL=i32,全部标量签名\n    #[link(name = \"kernel32\")]\n    extern \"system\" {\n        fn FreeConsole() -> i32;\n        fn AttachConsole(dwProcessId: u32) -> i32;\n        fn SetConsoleCtrlHandler(handler: Option<unsafe extern \"system\" fn(u32) -> i32>, add: i32) -> i32;\n        fn GenerateConsoleCtrlEvent(dwCtrlEvent: u32, dwProcessGroupId: u32) -> i32;\n    }\n    const CTRL_C_EVENT: u32 = 0;\n\n    pub fn run(pid: u32) -> i32 {\n        unsafe {\n            let _ = FreeConsole();                       // 脱离宿主(若挂)控制台\n            if AttachConsole(pid) == 0 { return 2; }     // 挂进 ConPTY 隐藏控制台\n            let _ = SetConsoleCtrlHandler(None, 1);      // 自身免疫本事件\n            let ok = GenerateConsoleCtrlEvent(CTRL_C_EVENT, 0); // 广播\n            let _ = FreeConsole();\n            if ok == 0 { 2 } else { 0 }\n        }\n    }\n}\n```\n\n### `pty.rs` 增量(T2)\n\n- 字段:`shell_pid: Option<u32>`(spawn 后 `child.process_id()`\n  存副本)、`program: String`(:57 既有变量,供 UI 侧 ash 判定,\n  `pub fn program(&self) -> &str` 暴露);\n- `pub fn interrupt(&mut self) -> bool`:windows → pid 缺席(已\n  reap)返 false;`resolve_helper_bin()` 取路径 →\n  `std::process::Command::new(path).arg(pid)` +\n  `creation_flags(0x08000000)`(CREATE_NO_WINDOW,防控制台窗口\n  闪烁)spawn,`wait_timeout ≤3s`(自旋 try_wait 50ms 步进,不引\n  wait-timeout crate);失败/超时/缺席 → `log::warn!` +\n  `write_input(&[0x03])` 返 false;成功返 true;\n- `fn resolve_helper_bin_from(exe: &Path) -> Option<PathBuf>`:\n  exe 起 1..=3 级父目录寻 `autoterm-ctrlc.exe`(纯函数可单测);\n  外壳 `resolve_helper_bin()` 依次查 env\n  `CARGO_BIN_EXE_AUTOTERM_CTRLC` → env `AUTOTERM_CTRLC_BIN` →\n  `resolve_helper_bin_from(&current_exe())`;\n- `#[cfg(not(windows))]` 的 interrupt() = `write_input(&[0x03])`\n  返 true(占位,Unix 轨道另立)。\n\n### `tests/ctrl_event.rs`(T3)\n\n- 自带 `grid_text`/`wait_for` 助手(与 ash_integration.rs:62-79\n  同源,注释注明;不建 tests/common,保持各门禁文件自包含);\n- ① `interrupt_terminates_cmd_child`:spawn `cmd /c ping -n 30\n  127.0.0.1` → 等 \"Reply from\" → `interrupt()` 返 true →\n  轮询 `exited()` ≤5s(**#12 的直接门禁,cmd 恒在场**);\n- ② `interrupt_returns_pwsh_prompt`:`where pwsh` 探测缺席即\n  eprintln skip + return;在场:提示符 → `ping -n 30\n  127.0.0.1\\r` → 等 \"Reply from\" → `interrupt()` → `echo\n  marker\\r` ≤10s 上屏 + `!exited()`;\n- ③ `interrupt_helper_missing_falls_back`:`AUTOTERM_CTRLC_BIN=\n  Z:/nonexistent.exe`(std::env::set_var,测试串行;两级 env 先于\n  walk-up,故指向不存在即缺席)→ cmd /c ping 会话 → `interrupt()`\n  返 false、不 panic、2s 内 `!exited()`(降级=修复前行为)。\n\n### ash 探针矩阵与复现器退役(T4)\n\n- 删除 `f2_repro_cmd_interrupt`/`f2_repro_pwsh_interrupt`\n  (ash_integration.rs:261-296)——cmd/pwsh 语义已由 ctrl_event.rs\n  转正,复现器使命完成;文件头注释同步(引用 PLAN-008);\n- 新增 `ctrl_c_event_effect_on_ash`(ash 缺席 skip),三态:\n  - **idle**:提示符下 `interrupt()` → 析取断言\"存活且 marker\n    可跑\"或 `exited()`,记录实际分支;\n  - **builtin**:`sleep 30\\r` 上屏后 `interrupt()` → 同析取;\n  - **external**:`ping -n 30 127.0.0.1\\r`(ash 跑外部 ping)→\n    `interrupt()` → ping 输出停止且提示符回归/`exited()` 析取。\n- **预授权裁定规则**(执行记录落矩阵后即时裁定,不回询):\n  idle 态 ash 被 exit(默认 handler)→ auto 模式保留 ash 豁免;\n  idle 态存活(handler 已在)→ 不引入豁免门,ash 同享 both;\n  矩阵结论同步 DEBTS #13 行(auto-shell 协调请求)。\n\n### UI 接线(T5)\n\n- `pub fn is_bare_ctrl_c(key: &Key, mods: &Modifiers) -> bool`\n  纯函数(Character 'c' + CONTROL 且非 SHIFT);\n- `Message::Keyboard` 分支在剪贴板拦截(lib.rs:651-656)之后、\n  `key_to_bytes`(:658)之前:`if is_bare_ctrl_c(&key,&mods) {\n  return self.handle_ctrl_c(); }`;\n- `fn handle_ctrl_c(&mut self) -> Task<Message>`:按\n  `self.config.ctrl_c_mode`——byte=仅 `write_input([0x03])`;\n  event=仅 `session.interrupt()`;both=两者;auto=\n  `resolve_effective_mode(&self.config.shell)`(stem eq_ignore_case\n  \"ash\" → byte,#13 落地后撤,否则 both);函数纯化便于单测;\n- DevTick 注入(lib.rs:491-493):`bytes == [0x03]` 时改调\n  `handle_ctrl_c()` 同路(保配方 C 的 dev 证据 = 真实按键语义);\n- `AppConfig.ctrl_c_mode` + bin `--ctrl-c-mode <auto|byte|event|\n  both>`(clap ValueEnum,默认 auto,autoterm.rs:23 旁);\n- 单测:is_bare_ctrl_c 三例(裸=真/Ctrl+Shift=假/无 Ctrl=假,\n  既有 :1388 断言迁移对齐)、resolve_effective_mode 两例\n  (ash→byte、cmd/pwsh→both)。\n\n### UI 取证(T6)\n\n007 配方 C 原样复跑(`--dev-autotype` 重复传参语义,003 §2.2):\n\n```bash\ncargo run -p autoterm-ui --features dev-tools -- --shell $ASH \\\n  --dev-autotype \"4000:sleep 30\\r\" --dev-autotype \"6000:\\x03\" \\\n  --dev-autotype \"8000:echo after_c\\r\" --dev-exit-after 16 \\\n  --dev-dump target/ash-smoke-c2.txt\n```\n\n- T4 裁定 ash 豁免生效时:上命令加 `--ctrl-c-mode both` 取证\n  (dump 含 `after_c`,对照 007 的 0 命中即修复生效),另补默认\n  auto 一条对照 dump(after_c 0 命中 = 豁免证据);\n- 无豁免时:默认 auto 即含 after_c。\n\n### 文档与台账(T7)\n\n- designs/003 追加 §4.1 修复实施(机制/双投递/ash 三态矩阵/\n  ctrl-c-mode 表);§5 第 4 条改\"中断:可用(默认 auto,见 §4.1)\";\n- DEBTS:#12 清账(门禁①证据)、#7 关账(win32 直调落地,稳定版\n  conhost 调查随事件注入失去必要性)、#13 追注矩阵 + 协调请求、\n  头部账期;\n- README:交互表 Ctrl+C 行为一句(双投递 + helper 部署说明:\n  拷贝部署需 autoterm.exe 与 autoterm-ctrlc.exe 同目录)。",
-        "file": "docs/plans/archived/008-ctrlc-interrupt-fix.md",
-        "related": [
-          "PLAN-008"
-        ],
-        "status": "stable"
-      },
-      {
-        "id": "P009-4",
-        "section": "designs",
-        "title": "AutoTerm Auto 化第一相位(分支 A:a2r 修缮 → terminal 原生组件 → 引擎 adapter → Auto 复刻对拍) — 详细设计",
-        "content": "### P0:auto-lang a2r 修缮(T1,worktree:auto-lang)\n\n- F1 修复:`docs/a2r-transpiler-guide.md` 所述派生组合\n  (自动派生×显式派生 → E0369)在转译器侧修(优先)或规约绕开\n  (兜底,记入 `.at` 编码规约);修复证据 = 006 S2 样本中此前\n  不可编译的构造转译后 rustc 实编通过;\n- 快照门扩档:`crates/auto-lang/test/a2r/` 快照管线增加\n  \"rustc 实编\"档(006 拆解草案原文:round-trip 快照扩一档\n  rustc 实编门)——每快照产物 `cargo check` 级验证;\n- 本仓 `spikes/autoize-roundtrip/` 重跑:diff 相对 006 NOTES.md\n  的记录,新差异(应只有 F1 修复带来的改善)归档。\n\n### P1:auto-lang `terminal` 原生组件(T2–T5,worktree:auto-lang)\n\n新目录 `crates/auto-lang/src/ui/terminal/`(mod 结构照 code_editor),\n**迁移源 = 本仓 widget.rs 逐块搬运 + 接 auto-lang 组件协议**:\n\n- T2 骨架+接线:`ui/terminal/{mod.rs,widget.rs}` 四件套\n  (Widget trait:State/Message/View/focus)+ `widget_registry.rs`/\n  `component.rs`/`a2ui/schema.rs`/`iced/renderer.rs` 四处注册\n  (View 新变体 `Terminal`),渲染占位矩形;`.at` 最小示例\n  (examples/ui 下)能挂载;\n- T3 视口+损伤:网格字形渲染(monospace cell 布局/宽字符)、\n  行级损伤门控与 RowPara 等价缓存、光标块/形状/闪烁——搬\n  widget.rs 的 draw/damage 逻辑,数据面按裁定形态接;\n- T4 交互:选中三模式+块选(列带高亮)、IME 自绘 preedit、\n  滚轮回滚/偏移指示、右键菜单——搬 004/005 的交互套件;\n- T5 测试管线:headless 断言(网格文本/选中/损伤计数)+\n  iced_test(照 selectable_text);rust-mode 示例 E0080 小修;\n- 数据面形态裁定(甲/乙)在 T2 实测后落执行记录,后续任务按\n  裁定形态实现。\n\n### P2:本仓引擎 cdylib adapter(T6–T7,worktree:auto-term)\n\n- T6 cdylib 面:`crates/autoterm-core` 加 `[lib] crate-type`\n  增补(rlib 保留),新增 `ffi.rs` 模块——opaque SessionHandle +\n  标量/字符串 C ABI:`autoterm_engine_spawn/write_input/feed_ready/\n  take_dirty_rows/row_text/row_style/resize/interrupt/kill`\n  (命名风格以现有公面为准,T6 细化);行级损伤增量导出走\n  `take_dirty_rows`(与 P1 数据面甲形态对齐);\n- T7 独立集成测试:新测试 crate 或 tests/(独立进程)经\n  libloading 加载 cdylib,跑 echo 往返 + resize + interrupt\n  (008 语义)全链断言——这就是 Auto 侧未来消费形态的预演。\n\n### P3:本仓 Auto 复刻 + 对拍(T8–T10,worktree:auto-term)\n\n- T8 `.at` 应用骨架:本仓新目录 `at/`(产品归属本仓):\n  `at/autoterm.at`(app 声明:窗口/消息/update)+ terminal 组件\n  挂载 + adapter 经 ext/FFI 绑定(use.rust 管线,006 Q2 结论);\n  a2r 转译产物 `at-gen/`(入库,对拍门禁消费)rustc 实编通过;\n- T9 对拍门禁:`crates/autoterm-parity/`(新测试 crate,或\n  autoterm-core tests——T8 时按产物形态定,执行记录注明):\n  同一场景脚本分别驱动 Rust oracle 版与 a2r 版二进制,断言\n  网格文本等价——场景矩阵 = 007/008 门禁的子集(启动提示符/\n  echo 往返/Ctrl+C 中断(timeout 主体)/resize/色彩自证/\n  选中文本);ash 缺席显式 skip;\n- T10 UI 级冒烟取证:a2r 版二进制交互冒烟(真窗口;程序化\n  dump 等价钩子若组件数据面支持,否则手动清单 + 截图补充,\n  002/003 惯例:程序化证据为主)。\n\n### P4:收账(T11,worktree:auto-term)\n\n- DEBTS #8 关账:条件回写(对拍门禁在库 + 组件真身迁移完成 +\n  本仓转型);\n- 本仓转型声明:README 定位节改写(引擎 adapter + 参考实现/\n  oracle,widget.rs/App 冻结);001 决策链追加 009 节;\n- 无环断言:两仓 `cargo tree` 交叉检查(auto-lang 不出现\n  autoterm crate;auto-term 仅经 at-gen 依赖 auto-lang 运行时);\n- 新 DEBTS 候选记录(Vue 后端留白/数据面性能余量/E0080 若未修)。",
-        "file": "docs/plans/archived/009-autoize-phase1.md",
-        "related": [
-          "PLAN-009"
-        ],
-        "status": "stable"
-      }
+    "status": "published"
+   },
+   {
+    "id": "P004-1",
+    "section": "reports",
+    "title": "AutoTerm Phase 3 交互完备(选中/复制粘贴 + Ctrl+C 稳定版复测 + IME) — 变更摘要",
+    "content": "补齐日用刚需的交互闭环:①**选中/复制/粘贴**(DEBTS #6 存量,用户\n2026-09-05 直接反馈\"无法选择文字和复制\")——`Widget::update` 事件\n地基 + alacritty_terminal 自带 Selection 状态机(Simple/Semantic/\nLines)+ 高亮渲染 + copy-on-select/Ctrl+Shift+C/V;②**Ctrl+C 稳定版\n复测**(003 复审裁定的第一步:26200 内部版 WT 同病,先在稳定 OS 上\n复测再定 win32 与否);③**IME 落地**(003 路由项,共享同一事件地基,\nover-the-spot 预编辑,人工清单验收)。",
+    "file": "docs/plans/archived/004-phase3-interaction.md",
+    "related": [
+     "PLAN-004"
     ],
-    "tests": [
-      {
-        "id": "P001-5",
-        "section": "tests",
-        "title": "AutoTerm 建仓与全链路 spike(PTY→仿真核心→渲染) — 测试设计",
-        "content": "- 自动:term-probe 集成测试(真 PTY→仿真核心→网格断言)是本计划唯一\n  自动断言,也是后续正式工程的回归种子;\n- 半自动:pty-probe 字节率统计(人工核对非零 + ESC 序列存在);\n- 手动:render-probe 交互冒烟 + ash 冒烟清单 + 大输出粗测记录数字;\n- 明确不做:性能自动化基准(Phase 1+ 另立)、跨平台矩阵(仅 Windows)。",
-        "file": "docs/plans/archived/001-autoterm-bootstrap.md",
-        "related": [
-          "PLAN-001"
-        ],
-        "status": "verified",
-        "superseded_by": [
-          "P002-5"
-        ]
-      },
-      {
-        "id": "P002-5",
-        "section": "tests",
-        "title": "AutoTerm Phase 1 单窗口 MVP — 测试设计",
-        "content": "- 自动:autoterm-core 三套测试(live_pty/sim_regression/\n  pty_lifecycle)+ metrics 单测 + workspace 全量 `cargo test`;\n- 半自动:`--dev-*` 钩子冒烟(echo 回显、2000 行流式、滚轮回滚\n  快照、光标块绘制证据)——**以程序化证据为主**(网格转储、度量\n  数值断言、draw 状态转储),截图仅作人工复核补充,不构成验收\n  依赖(计划执行不依赖多模态会话);\n- 手动:日常试用清单(pwsh/ash 各 10 分钟:补全/表格/真彩/\n  Ctrl+C/关闭无残留进程 + 光标块/对齐目测);\n- 不做:性能基准自动化(字形图集专项时另立)、Unix 矩阵。",
-        "file": "docs/plans/archived/002-phase1-mvp.md",
-        "related": [
-          "PLAN-002"
-        ],
-        "status": "verified"
-      },
-      {
-        "id": "P003-5",
-        "section": "tests",
-        "title": "AutoTerm Phase 2 性能与输入完备性 — 测试设计",
-        "content": "- 自动:unescape \\xHH 单测;RowCache compare 语义单测(同行内容\n  None/变行 Shape/尺寸变 Bounds);矩阵断言脚本化进 dev 冒烟;\n  全量 `cargo test --workspace`;\n- 半自动:保留式画布性能取证(20000 行流式期间 rebuilds 曲线 +\n  单行改动帧 rebuilds < rows)、三 shell Ctrl+C 冒烟转储;\n- 手动:IME 中文输入试用(pwsh/ash 各 5 分钟,若 T8 落地);\n- 不做:性能基准自动化、列级损伤、Unix。",
-        "file": "docs/plans/archived/003-phase2-perf-input.md",
-        "related": [
-          "PLAN-003"
-        ],
-        "status": "verified"
-      },
-      {
-        "id": "P004-5",
-        "section": "tests",
-        "title": "AutoTerm Phase 3 交互完备(选中/复制粘贴 + Ctrl+C 稳定版复测 + IME) — 测试设计",
-        "content": "- 自动:core 选中 TDD(sim_regression 增 3 用例:Simple 范围/文本、\n  Semantic 词扩、Lines 行扩+滚动后 range 语义);ui 像素扫描脚本;\n  全量 `cargo test --workspace`;\n- 半自动:`--dev-select` 拖选注入 + 转储断言 + 高亮像素扫描;\n  Ctrl+Shift+V 粘贴冒烟;\n- 手动:IME 中文输入清单;真实鼠标拖选手感(视口内);\n- 不做:自动滚动拖选、块选、性能基准。",
-        "file": "docs/plans/archived/004-phase3-interaction.md",
-        "related": [
-          "PLAN-004"
-        ],
-        "status": "verified"
-      },
-      {
-        "id": "P006-5",
-        "section": "tests",
-        "title": "AutoTerm Auto 化前提调查(AutoUI 组件模型表达力 + a2r 往返一致性 + Rust 绑定通路) — 测试设计",
-        "content": "- 调查型计划:验证=每任务的产出物存在且含指定内容(grep 断言);\n- S2 spike:output.rs 生成成功 + diff 记录入档;\n- S1 spike:构建成功输出(或失败面貌也是结论,如实记录);\n- 不做:本仓 cargo test 不动(零产品代码改动,\n  `cargo test --workspace` 收尾跑一次确认无意外)。",
-        "file": "docs/plans/archived/006-autoize-feasibility.md",
-        "related": [
-          "PLAN-006"
-        ],
-        "status": "verified",
-        "superseded_by": null
-      },
-      {
-        "id": "P005-5",
-        "section": "tests",
-        "title": "AutoTerm Phase 4 交互批(Rust 版功能齐全:自动滚动 + 块选 + 右键菜单 + 选中色 + 光标形状/闪烁) — 测试设计",
-        "content": "- 自动:core TDD(DECSCUSR 1 例 + Block 2 例);ui 单测\n  (hex 解析、菜单命中矩形、Alt 修饰判定纯函数化);\n- 半自动:dev-select block 注入 + 转储断言 + 像素扫描;DECSCUSR\n  注入(dev-autotype `printf` 转义)+ 转储形状断言;边缘 Extend\n  注入断言 scroll_offset;菜单注入像素断言;\n- 手动:真鼠标 Alt 拖选/菜单手感、闪烁不刺眼(5 分钟清单);\n- 空闲零唤醒回归:静止 10s 转储 frames 增速 ≈0(闪烁条件定时\n  不泄漏);\n- 不做:性能基准、配置文件体系、Unix。",
-        "file": "docs/plans/archived/005-phase4-interaction-batch.md",
-        "related": [
-          "PLAN-005"
-        ],
-        "status": "verified"
-      },
-      {
-        "id": "P007-5",
-        "section": "tests",
-        "title": "AutoTerm ash(AutoShell)独立运行验证与测试门禁 — 测试设计",
-        "content": "- **自动**(必跑门禁):`ash_integration.rs` 七个用例;ash 缺席时输出\n  `skip: AUTOTERM_ASH_BIN unset, sibling ash.exe not found`(用例体\n  return,测试仍算过——skip 语义显式打印,不假绿:断言只可能因\n  \"ash 在场且行为不符\"而失败);\n- **半自动**:三条 UI 配方,证据引述进 003 文档(002/003 惯例:\n  程序化证据为主,截图不作验收依赖);\n- **手动**:保留\"ash 日用 5 分钟\"清单(补全/表格/Ctrl+C/关闭无残留),\n  仅作发布前人工复核,不构成本计划验收;\n- **不做**:性能基准、多 shell 参数化矩阵重构、Unix。",
-        "file": "docs/plans/archived/007-ash-shell-support.md",
-        "related": [
-          "PLAN-007"
-        ],
-        "status": "verified"
-      },
-      {
-        "id": "P008-5",
-        "section": "tests",
-        "title": "AutoTerm Ctrl+C 中断通路修复(DEBTS #12,F2:win32 控制台事件注入) — 测试设计",
-        "content": "- **自动**(必跑):ctrl_event.rs ①③(cmd 恒在场=门禁本体)+\n  ②(pwsh 缺席显式 skip);ash_integration 原有 7 门禁不回归 +\n  `ctrl_c_event_effect_on_ash`(缺席 skip,在场析取断言);\n  ui 单测(is_bare_ctrl_c/resolve_effective_mode);\n- **半自动**:配方 C 复跑 dump(事件生效)+ auto 豁免对照 dump;\n  证据引述进 003 §4.1;\n- **手动**:真机 Ctrl+C 手感(pwsh 跑长命令/ash 外部命令各一次,\n  观察伪影 R3)——5 分钟清单,不构成本计划验收;\n- **回归底线**:`cargo test --workspace` 双构建绿;零新依赖\n  (Cargo.toml/lock 零 diff);空闲零唤醒不受影响(interrupt 仅\n  按键时触发,无新增常驻订阅)。",
-        "file": "docs/plans/archived/008-ctrlc-interrupt-fix.md",
-        "related": [
-          "PLAN-008"
-        ],
-        "status": "verified"
-      },
-      {
-        "id": "P009-5",
-        "section": "tests",
-        "title": "AutoTerm Auto 化第一相位(分支 A:a2r 修缮 → terminal 原生组件 → 引擎 adapter → Auto 复刻对拍) — 测试设计",
-        "content": "- **自动(P0)**:a2r 快照 + rustc 实编门;本仓 spikes round-trip 重跑;\n- **自动(P1)**:组件 headless 断言 + iced_test;ui-iced 全量构建绿;\n- **自动(P2)**:libloading 独立进程集成测试(echo/resize/interrupt);\n- **自动(P3)**:对拍门禁(场景矩阵 × 双实现网格等价,缺席 skip);\n- **半自动**:a2r 版 UI 冒烟取证;\n- **回归底线**:Rust oracle 版 `cargo test --workspace` 全程绿\n  (每相位 fold 前各跑一次);auto-lang 侧其自有测试体系按其仓\n  惯例(P0/P1 fold 前在 auto-lang worktree 内跑其全量)。",
-        "file": "docs/plans/archived/009-autoize-phase1.md",
-        "related": [
-          "PLAN-009"
-        ],
-        "status": "verified"
-      }
+    "status": "published"
+   },
+   {
+    "id": "P006-1",
+    "section": "reports",
+    "title": "AutoTerm Auto 化前提调查(AutoUI 组件模型表达力 + a2r 往返一致性 + Rust 绑定通路) — 变更摘要",
+    "content": "DEBTS #8(Auto 化——必须项)的前置调查(DEBTS #7),为 #8 复刻\n计划产出 go/no-go 裁定材料。**纯调查型计划**(同 PLAN-001 的 spike\n性质):跨仓只读调查 `../auto-lang`(AutoUI 实现与 a2r 转译器的\n真正所在地——**注意:../auto-ui 独立仓已废弃合并入 auto-lang,\nDEBTS 旧引用一并修正**),产出可行性设计文档 + 差距清单 + 工作量\n估计;唯一动代码的是两个 spike(auto-lang 只读构建 + 最小 .at\nround-trip),不改任何仓的产品代码。与并行执行的 PLAN-005\n(Rust 交互批,另一会话)零冲突——本计划不碰 auto-term 产品代码。",
+    "file": "docs/plans/archived/006-autoize-feasibility.md",
+    "related": [
+     "PLAN-006"
     ],
-    "reviews": [
-      {
-        "id": "P001-6",
-        "section": "reviews",
-        "title": "AutoTerm 建仓与全链路 spike(PTY→仿真核心→渲染) — 验收标准",
-        "content": "1. 仓骨架存在:README(含定位与\"零构建依赖\"声明)、.gitignore、\n   Cargo workspace、DEBTS.md、docs/plans、docs/designs;\n2. `cargo tree --workspace` 无 `ash-core`/`auto-shell` 任何路径依赖;\n3. pty-probe 在 Windows 基座读到非零字节率且含 ESC 序列;\n4. term-probe 集成测试通过(网格中出现子进程输出);\n5. render-probe 可交互:键入 `echo hi` 得到回显;resize 不崩;\n6. ash 冒烟清单全勾;\n7. `docs/designs/000-render-route.md` 存在且含 A/B 结论与证据数字;\n8. spike 代码明确标注\"非正式架构,允许整体重写\"(README 或代码头注)。",
-        "file": "docs/plans/archived/001-autoterm-bootstrap.md",
-        "related": [
-          "PLAN-001"
-        ],
-        "status": "published"
-      },
-      {
-        "id": "P002-6",
-        "section": "reviews",
-        "title": "AutoTerm Phase 1 单窗口 MVP — 验收标准",
-        "content": "1. `crates/autoterm-core`、`crates/autoterm-ui` 存在且\n   `cargo test --workspace` 全绿(spikes/ 原样未动);\n2. sim_regression ≥ 6 个断言用例全过(光标/真彩/256 色/备用屏/\n   宽字符/回滚/DSR 至少各一);\n3. 事件驱动生效:常态空闲不触发重绘帧(日志/计数证据),\n   字节到达即醒;\n4. 损伤重绘:单行改动帧的重画 run 数 < 全网格 run 数(计数断言);\n5. 实测度量:cell 宽来自 cosmic-text 实测(单测断言 >0 且与\n   0.55em 量级一致);右缘无裁剪由**度量断言**保证\n   (dev 转储含 cols×cell_w ≤ 视口宽 数值,程序化核验);\n6. 滚轮回滚可用:大输出后回滚快照含历史行,顶行有偏移指示;\n7. 光标块**绘制证据**:dev 转储含 `cursor_drawn_at`(行列)+\n   反色标志(draw 状态),人工目测为可选补充;窗口关闭后无残留\n   子进程(tasklist 验证);\n8. `docs/designs/001-phase1-architecture.md` 存在且含\"结论\"节;\n9. README 更新(Win10 1809+ 支持声明、autoterm 运行段);\n   DEBTS 勾账(#1/#3/#4 清偿,#5/#7/#10 部分清偿并注明);\n10. `cargo tree --workspace` 无 `ash-core`/`auto-shell` 路径依赖。",
-        "file": "docs/plans/archived/002-phase1-mvp.md",
-        "related": [
-          "PLAN-002"
-        ],
-        "status": "published"
-      },
-      {
-        "id": "P003-6",
-        "section": "reviews",
-        "title": "AutoTerm Phase 2 性能与输入完备性 — 验收标准",
-        "content": "1. `cargo test --workspace` 全绿,无 ash-core/auto-shell 路径;\n2. **绘制级不等式达成**(002 验收#4 兑现):单行改动帧\n   `paragraph_rebuilds < rows`(dev 转储计数断言),Full 帧仍全量;\n3. Ctrl+C 矩阵:pwhs/ash/cmd 三 shell 中断断言全过(提示符回归+\n   无孤儿),证据存档;\n4. Ctrl+Break 有明确结论(映射落地或平台 blocker 记录);\n5. IME 有明确结论(最小 preedit 落地或 blocker 记录);\n6. `--dev-*` 收进 `dev-tools` feature:默认构建 `--help` 无 dev\n   参数(或 cargo tree 无 env_logger 差异断言);\n7. 001 设计文档含 002→003 决策链节;DEBTS 勾账(#1/#2/#7 关闭\n   或降级,#6 部分推进);\n8. log 替换完成:源内无面向用户的 eprintln(grep 断言,panic 除外)。",
-        "file": "docs/plans/archived/003-phase2-perf-input.md",
-        "related": [
-          "PLAN-003"
-        ],
-        "status": "published"
-      },
-      {
-        "id": "P004-6",
-        "section": "reviews",
-        "title": "AutoTerm Phase 3 交互完备(选中/复制粘贴 + Ctrl+C 稳定版复测 + IME) — 验收标准",
-        "content": "1. `cargo test --workspace` 全绿;无 ash-core/auto-shell 路径;\n2. 拖选/双击/三击选中,高亮可见(像素扫描证据),`selection_text`\n   断言正确(dev-select 注入);\n3. copy-on-select + Ctrl+Shift+C 写入剪贴板(读回断言);Ctrl+Shift+V\n   粘贴回显;\n4. Ctrl+C 稳定版复测有结论(数据回填 001/DEBTS,或\"待环境\"挂账);\n5. IME:预编辑可见、提交上屏(人工清单全过+截图),或 blocker 记录;\n6. 001 含 003→004 决策链;DEBTS #6 清账、重排并注明;\n7. 默认构建零 dev 面(`--dev-select` 在 dev-tools feature 内)。",
-        "file": "docs/plans/archived/004-phase3-interaction.md",
-        "related": [
-          "PLAN-004"
-        ],
-        "status": "published"
-      },
-      {
-        "id": "P006-6",
-        "section": "reviews",
-        "title": "AutoTerm Auto 化前提调查(AutoUI 组件模型表达力 + a2r 往返一致性 + Rust 绑定通路) — 验收标准",
-        "content": "1. `docs/designs/002-autoize-feasibility.md` 存在,含 Q1-Q4 各\n   一节(每节 ≥3 条 file:line 源码证据)+ 差距清单 + 工作量分级\n   + go/no-go 材料 + #8 拆解草案;\n2. `spikes/autoize-roundtrip/` 含 sample.at + transpile 产物 +\n   diff 记录(或失败面貌记录);\n3. ui-iced 构建结论在案(成功时长或失败原因);\n4. DEBTS #7 关账、#8 条件更新、auto-ui 旧引用修正(grep\n   \"auto-ui 仓\" 无残留误引);\n5. 本仓 `cargo test --workspace` 仍绿(零改动自证);\n6. 与 005 无文件交集(改动仅 docs/ + spikes/ + DEBTS/README)。",
-        "file": "docs/plans/archived/006-autoize-feasibility.md",
-        "related": [
-          "PLAN-006"
-        ],
-        "status": "published",
-        "superseded_by": null
-      },
-      {
-        "id": "P005-6",
-        "section": "reviews",
-        "title": "AutoTerm Phase 4 交互批(Rust 版功能齐全:自动滚动 + 块选 + 右键菜单 + 选中色 + 光标形状/闪烁) — 验收标准与复审",
-        "content": "1. `cargo test --workspace` 全绿(含 core 新 3 例 + ui 新单测);\n2. Alt+拖选块选:矩形高亮像素证据(列带对齐),复制文本逐行\n   无拖尾(dev 注入断言);\n3. 拖选越上/下边缘自动滚动,选中跨滚动区锚定正确(转储\n   scroll_offset 与 selection_text 断言),松开即停;\n4. 右键菜单:三项可见(像素证据),复制/粘贴/全选动作与 004\n   快捷键同路径;ESC/外点击关闭;右键不再直接粘贴(README 更新);\n5. `--selection-color ff0000` 冒烟:高亮带色变(像素扫描命中色\n   更新),默认不传维持现色;\n6. DECSCUSR 三形:转储 shape 断言 + Beam/Underline 像素证据;\n   聚焦时闪烁、失焦/隐藏/菜单时停;静止 10s frames 增速≈0;\n7. 双构建绿(默认/dev-tools);默认构建零 dev 面不变;\n8. 001 含 004→005 决策链;DEBTS Phase 4 批次勾销;README 更新。\n\n## 复审(2026-09-06,ZCode /auto-plan:review 重验)\n\n**复审人**:ZCode(/auto-plan:review)· **时间**:2026-09-06 ·\n**基准**:worktree `plan-005-dev`,diff 7cd32a7..HEAD(39 文件\n+2436/-102,10 提交 T1-T10)。\n\n### 逐条验收(重验,不信勾选框)\n\n| # | 标准 | 判定 | 证据 |\n| --- | --- | --- | --- |\n| 1 | `cargo test --workspace` 全绿 | **pass** | 复审重跑:15 组 result-ok、37 用例 0 失败(含 sim 14、ui lib 16、live_pty 15s 实 PTY);core 新 3 例 + ui 新单测(16)在内 |\n| 2 | 块选像素 + 逐行复制 | **pass** | block-scan.txt:4 带 x52-142、spread=0、block_aligned=True ×4;block-dump.txt:selection_text \"AABBB\\nCCDDD\\nEEFFF\"、cells=15(3×5) |\n| 3 | 边缘自动滚动 + 锚定 + 松开即停 | **pass** | autoscroll-dump.txt:scroll_offset=11(顶满钳制)、selection_range (-4,0)-(5,4) 绝对坐标、text L06..L15(锚定+滚动揭露);松开即停=Finish/离缘清 drag_scroll(lib.rs:773/784,代码核) |\n| 4 | 菜单三项 + 同路径动作 + 关闭 + 右键不粘贴 | **pass**(注 a) | menu-scan.txt:panel_visible=True、close 后 34px 残留;动作 Copy=copy_selection/Paste=paste_from_clipboard/全选=视口 Lines(lib.rs:707);右键 release 改发 ContextMenu(widget.rs:316);README 表更新 |\n| 5 | --selection-color 冒烟 + 默认不变 | **pass** | selcolor-scan.txt:avg_red_rgb=76.1,15.1,18.1=理论混色、changed=True;默认 e8e8e8@25% 即 004/T3 已证灰(71,73,76)路径不变 |\n| 6 | 三形转储+像素;闪烁门控;零唤醒 | **pass** | cursor-{underline,beam,block}-scan.txt 全 True(19×4 / 4×38 / 19×38)+ 三 dump shape 断言;blink-focused-dump.txt:toggles=4(聚焦 ~2s,2Hz)、frames=5@11s 静止(基线 116@有内容) |\n| 7 | 双构建绿 + 默认零 dev 面 | **pass** | 复审重跑:default/dev-tools 两构建 0 error;默认构建 --dev-select → exit 2 \"unexpected argument\" |\n| 8 | 001 决策链 / DEBTS 勾销 / README | **pass** | grep \"004→005\"=1;DEBTS \"已清偿(005 T\"=4;README 交互表 3 关键词命中 |\n\n### 遗漏/延后/workaround 猜寻\n\n- **无遗漏**:11 任务逐项对 diff,T1-T10 子件(at_edge/订阅/门控/\n  纯函数/前缀/转储行)均在;diff 无新增 TODO/FIXME/HACK。\n- **无未批准延后**:非目标(Ctrl+C 复测/IME 人工清单/配置文件/\n  Unix/Auto)为计划声明、裁定既定;自动化不可覆盖的真机手感\n  (Alt 拖选手感/闪烁观感/菜单点击)以 5 分钟手工清单形式落于\n  evidence README——属计划声明的\"手动\"层,非缩水。\n- **待澄清 1-5**:均按计划文本预授权默认执行(Alt 手势/仅 CLI/\n  闪烁默认开/三项菜单/50ms×2 不分档),无遗留用户决策。\n\n### 债务候选(不阻塞,记录在案)\n\n- **a**:menu-scan.txt 的 `menu_closed_by_esc` 标名不准——实际由\n  dev-menu `:close`(ContextMenu(None),与外点关闭同消息路径)驱动;\n  ESC 键关闭为代码核(lib.rs Key 门),无像素证据。已入手工清单;\n  证据文件名不改(历史工件,README 已注明)。\n- **b**:拖选中失焦可能丢失 ButtonReleased → drag_scroll 残留\n  Some(50ms 订阅存活)至下次 Begin/Finish。低概率、可自愈,\n  建议后续计划加 Focused(false) 时清 drag_scroll。\n- **c**:菜单中文标签依赖 Microsoft YaHei UI(缺字体系统退豆腐块;\n  MONOSPACE 无 CJK 为 004 已知限制)。Unix 轨道需重新评估字体栈。\n- **d**:CursorShape::HollowBlock 渲染落入 Block 分支(未画空心)。\n  计划未要求,观测记录。\n\n### 判定\n\n全部 8 项验收 pass,无阻塞债务 → **status: reviewed**,可进入\n`/auto-plan:merge`。(注意:复审期间 main 已被 plan-006 并行推进,\nmerge 时需处理 worktree 落后 main 的合并。)",
-        "file": "docs/plans/archived/005-phase4-interaction-batch.md",
-        "related": [
-          "PLAN-005"
-        ],
-        "status": "published"
-      },
-      {
-        "id": "P007-6",
-        "section": "reviews",
-        "title": "AutoTerm ash(AutoShell)独立运行验证与测试门禁 — 验收标准与复审",
-        "content": "1. `AUTOTERM_ASH_BIN` 指向 ash.exe 时\n   `cargo test -p autoterm-core --test ash_integration` 全绿(7 用例);\n   指向不存在路径或未设且兄弟仓无产物时,7 用例均打印 skip 说明后通过;\n2. 场景覆盖齐:①②③④a④b⑤⑥ 各自独立断言,不互相掩盖;\n3. `cargo test --workspace` 绿(ash 缺席环境复跑确认无回归);\n4. `docs/designs/003-ash-compatibility.md` 存在:场景矩阵 + R1–R6 逐项\n   结论 + UI 配方证据引述;\n5. 执行中发现的所有 ash×AutoTerm 缺陷均已记入 DEBTS.md(file:line\n   证据),没有\"口头发现\";\n6. 零产品代码改动(trivial 修复除外,且须在复审记录列明 diff 行数)。\n\n### 复审记录\n**Reviewer**:ZCode(auto-plan:review)· 2026-09-06 · 复验全部在 worktree\n`.wt/auto-term-007/auto-term`(branch `plan-007-dev`,5 commits)内重跑,\n不信勾选框。\n\n### 验收逐条(全部 pass)\n\n| # | 验收 | 裁定 | 证据 |\n| --- | --- | --- | --- |\n| 1 | env 指向 ash 全绿 / 缺席显式 skip | **pass** | `AUTOTERM_ASH_BIN=<release/ash.exe>` → 7 passed, 0 failed, 2 ignored(0.37s);`AUTOTERM_ASH_BIN=Z:/nonexistent.exe` → 7 用例各打印 1 行 skip 后通过(0 fail) |\n| 2 | ①②③④a④b⑤⑥ 独立断言 | **pass**(③语义重构,见下) | 9 个 `#[test]` = 7 门禁 + 2 复现器;每用例独立 spawn + pid 后缀 marker,互不掩盖 |\n| 3 | workspace 绿 + 缺席无回归 | **pass** | `cargo test --workspace`(worktree,ash 自动探测在场):全 suite 0 FAILED(合计 31 passed);缺席模拟即验收#1b |\n| 4 | 003 文档三要件 | **pass** | `docs/designs/003-ash-compatibility.md` 六节俱全(速览/矩阵 2.1+2.2/R1-R6/F1+F2/接入契约/遗留),UI 证据行原文引述 |\n| 5 | 缺陷全记 DEBTS(file:line) | **pass** | #12(F2,通路层)+ #13(F1,ash 侧,`cmd/commands/sleep.rs:35` 等);#7 行加交叉引用;无口头发现 |\n| 6 | 零产品代码改动 | **pass** | `git diff 937d094..HEAD --stat`:仅 4 文件(DEBTS/README/tests/003),无 src/ 改动;无 trivial 修复需要列明 |\n\n文件编码复核:003 与 DEBTS 经 Python 字节级校验为合法 UTF-8(管道乱码\n为显示层伪象,未改动的原始行同样乱码可证)。\n\n### 计划↔实现分歧(全部已在执行记录/003 中明示,无静默)\n\n1. **T3 语义重构**(最重要):原\"Ctrl+C 中断运行中命令\"在通路层以下断裂\n   (F2),AutoTerm 代码层不可修;门禁改守终端层语义(0x03 转发/废弃\n   输入行),原语义复现器留档 `#[ignore]`。**待用户裁定(待澄清#5),\n   修复另立计划(DEBTS #12)** —— 若用户不认可此重构,回 /auto-plan:work\n   改回原语义(则该用例将常红直至 #12 修复)。\n2. `ash_bin()` 探测三级(`../`、`../../`、`../../../`)vs 草稿一级:\n   覆盖主仓+worktree 双布局,T1 证据已注明。\n3. UI 配方多段注入需重复 `--dev-autotype` 标志(clap Vec 语义),003\n   §2.2 已按实况修正命令文本。\n4. 场景⑥\"非 24-bit 则按发现流程\"分支未触发(实测即 truecolor)。\n\n### 遗漏/延后/workaround 猎查\n\n- 遗漏:无——9 任务均有对应 diff 与验证输出。\n- 延后(均有记录、经计划规则允许):F1 修复归 auto-shell 仓(计划非目标\n  \"不改 auto-shell\");R1 深按键矩阵、R2 滚动区视觉专项在计划目标之外,\n  003 §6 列为候选;F2 修复另立(待澄清#5 明示待裁定,非静默)。\n- Workaround:产品代码零改动、零 TODO/魔改;唯一\"降级\"即分歧#1,已\n  显式记录并留复现器。\n\n### 债务候选(复审新增,无)\n\n#12/#13 已在 T8 记档;R1/R2 深度覆盖为候选改进非债务。\n\n**路由:pass → status: reviewed**,可 `/auto-plan:merge`。",
-        "file": "docs/plans/archived/007-ash-shell-support.md",
-        "related": [
-          "PLAN-007"
-        ],
-        "status": "published"
-      },
-      {
-        "id": "P008-6",
-        "section": "reviews",
-        "title": "AutoTerm Ctrl+C 中断通路修复(DEBTS #12,F2:win32 控制台事件注入) — 验收标准与复审",
-        "content": "1. `cargo test -p autoterm-core --test ctrl_event` 全绿:①cmd\n   会话 interrupt 后 ≤5s `exited()`;②pwsh 在场绿/缺席显式\n   skip;③helper 缺席降级(返 false、不 panic、会话存活);\n2. ash_integration:0 个 ignored(复现器退役),原 7 门禁全绿\n   (含\"空闲 Ctrl+C 不杀 shell\"),`ctrl_c_event_effect_on_ash`\n   按析取绿且矩阵落执行记录;\n3. UI:单测绿(拦截排除 Ctrl+Shift+C 剪贴板路径);配方 C dump\n   含 `after_c` 且 uptime < 15s;auto 豁免(若引入)有对照 dump;\n4. DEBTS #12 清账、#7 关账、#13 追注;003 含 §4.1;README 更新;\n5. 零新依赖:`git diff` 不含 Cargo.toml/Cargo.lock;\n   `cargo tree --workspace` 无 ash-core/auto-shell;\n6. 双构建绿(默认/dev-tools);ash 缺席环境复跑 ctrl_event 仍\n   全绿(①③仅依赖 cmd)。\n\n## 复审(2026-09-06,ZCode /auto-plan:review 重验)\n**Reviewer**:ZCode(/auto-plan:review)· 2026-09-06 · 复验全部在 worktree\n`.wt/auto-008/auto-term`(branch `plan-008-dev`,8 commits 含复审 salvage)\n内重跑,不信勾选框。\n\n### 验收逐条(全部 pass)\n\n| # | 验收 | 裁定 | 证据 |\n| --- | --- | --- | --- |\n| 1 | ctrl_event 全绿(cmd≤5s/pwsh skip-gate/降级) | **pass**(挂死命令 timeout 替代 ping = 计划内实证改写,见分歧#1) | 复跑 3 passed + 1 ignored(3.08s);cmd 会话 interrupt 后 ≤5s `exited()`;pwsh 提示符回归且存活;where.exe 伪 helper → 返 false、不 panic、会话存活 |\n| 2 | ash_integration 0 ignored,7 门禁+探针绿 | **pass** | 复跑 8 passed 0 failed 0 ignored(14.73s);缺席模拟 8 行 skip + result ok;探针三态析取绿(本次 external 实测 Exited(补发 2)——首派发被负载吞、补发命中已回 idle 的 ash,与三态状态机自洽,析取覆盖) |\n| 3 | UI 单测+dump 证据+零唤醒 | **pass** | ui lib 23 passed(含 7 新);cmd-smoke-both:after_c×2、last_tick=45580(恰 7s 注入点);cmd-smoke-byte:after_c×0、last_tick=137585(跑满);uptime 13.0s<15;零唤醒 idle 10s 无注入 frames=8(005 基线 5@11s 同量级,无新增常驻订阅) |\n| 4 | DEBTS/#12/#7/#13 + 003 §4.1 + README | **pass**(复审补 3 处陈旧行,见分歧#4) | DEBTS #12/#7 标已清偿(008)、#13 补证;003 §4.1+契约第 4/5 条;README Ctrl+C 节+部署约束;三文件 UTF-8 校验过 |\n| 5 | 零新依赖 | **pass** | diff vs 0d82334 共 9 文件(+887/−53),无 Cargo.toml/Cargo.lock;`cargo tree -p autoterm-core` 无 ash-core/auto-shell;diff 无新增 TODO/FIXME |\n| 6 | 双构建绿 + ash 缺席 ctrl_event 绿 | **pass** | 复审全量套件(门禁唯一一次):18 套件 result-ok、0 FAILED;默认构建绿且 `--dev-select` 拒(exit 2)、`--ctrl-c-mode bogus` 警告回退 auto;`AUTOTERM_ASH_BIN=Z:/nonexistent.exe` 下 ctrl_event 仍 3 passed |\n\n### 代码级抽查(trust code over plan)\n\n- 拦截顺序:clipboard_shortcut(lib.rs:665)→ is_bare_ctrl_c(:673)→\n  key_to_bytes(:677)——Ctrl+Shift+C 复制路径优先,裸 Ctrl+C 截住;\n- helper 双发顺序:Break(autoterm-ctrlc.rs:92)先于 C(:94)——\n  被派发竞态杀死时有效通道已落地;\n- pty.rs:216 `code == 0 || code == STATUS_CONTROL_C_EXIT` 同判成功;\n- DevTick(lib.rs:506)与键盘(:674)两路均走 handle_ctrl_c。\n\n### 计划↔实现分歧(全部已明示,无静默)\n\n1. **修复形态重构**(最重要,待澄清#5 用户裁定):草稿\"广播\n   CTRL_C_EVENT\"在本 build(26200.9168)对 ConPTY 客户端零效果,\n   T3 诊断矩阵(C 吞/Break 达/CONIN$ 无效)→ 落地为 Break→C 双发;\n   门禁挂死命令由 ping 换 timeout(ping 对 Break 免疫 = 残留缺口,\n   #[ignore] 复现器留档,健康 build 转红即 C 通道到位)。\n2. 双投递默认 both(计划即如此);ash auto 豁免按 T4 预授权规则引入\n   (idle 态事件整体终止 ash 的实测),#13 落地后撤。\n3. UI 取证主体由 ash 换 cmd:ash 下无\"输入不敏感+Break 可终止\"干净\n   样本(四连否,T6 记录);ash-auto 豁免以单测+T4 矩阵+cmd-byte\n   对照支撑。\n4. 复审 salvage(3f98330):003 §1 速览行/§2.1 复现器行/§2.2 配方 C\n   行三处陈旧(仍述\"不可用/已退役复现器\"),已同步为修复后语义。\n\n### 遗漏/延后/workaround 猎查\n\n- 遗漏:无——9 任务对 diff 逐项核;既有 :1388 剪贴板断言保留且语义\n  仍成立;手动 5 分钟手感清单按计划测试设计\"不构成验收\"(用户侧)。\n- 延后(均有记录、计划规则允许):F1 修复归 auto-shell(#13,非目标);\n  上游 portable-pty issue(待澄清#3,可选);残留缺口闭环待健康\n  build(#[ignore] 复现器在位)。\n- Workaround(均文档化):eprintln 代 log(零依赖验收#5 约束优先,\n  T2 证据行注明);interrupt 接受 0xC000013A(派发竞态的语义化,\n  helper 头注);探针 3s 周期补发(测试稳健性,产品面无此逻辑)。\n\n### 债务候选(复审新增)\n\n- **a**:探针 external 态实测有 Responsive(0 补发)与 Exited(补发 2)\n  两种落点——补发机制命中\"已回 idle 的 ash\"会终止之;属探针自身\n  观测行为非产品缺陷,003 §4.1 矩阵可补一行\"external 落点受补发\n  时序影响\"(不阻塞,记录在案)。\n- **b**:UI 层 idle 提示符下 cmd/pwsh 收到双投递会打 ^C/\n  Control-Break 标记(R3 化妆性,真实终端同表现)——手动清单\n  (用户侧)覆盖观感确认。\n\n**路由:pass → status: reviewed**,可 `/auto-plan:merge`。\n待澄清#5(双发形态 + #12 以\"双发+残留缺口\"关账)为用户裁定项,\nmerge 前用户可否决改走\"维持开账待稳定版 OS\"分支。",
-        "file": "docs/plans/archived/008-ctrlc-interrupt-fix.md",
-        "related": [
-          "PLAN-008"
-        ],
-        "status": "published"
-      },
-      {
-        "id": "P009-6",
-        "section": "reviews",
-        "title": "AutoTerm Auto 化第一相位(分支 A:a2r 修缮 → terminal 原生组件 → 引擎 adapter → Auto 复刻对拍) — 验收标准",
-        "content": "1. P0:a2r 快照全绿 + rustc 实编门绿;本仓 round-trip spike 重跑\n   差异归档(F1 修复证据在案);\n2. P1:auto-lang `--features ui-iced` 构建绿;terminal 组件双后端\n   测试绿;`.at` 最小示例渲染 `<terminal/>` 有取证;\n3. P2:cdylib 独立进程集成测试绿(echo 往返/resize/interrupt);\n4. P3:a2r 产物 rustc 实编 + 对拍门禁全绿(场景矩阵覆盖\n   007/008 核心语义;缺席显式 skip);UI 冒烟取证在案;\n5. P4:DEBTS #8 关账;README 转型声明 + 001 决策链 009 节;\n   **无环断言过**(auto-lang 零 Cargo 依赖 auto-term);\n6. 全程:Rust oracle `cargo test --workspace` 不回归;\n   两仓零新依赖(Cargo.toml 依赖区零新增 crate 名)。",
-        "file": "docs/plans/archived/009-autoize-phase1.md",
-        "related": [
-          "PLAN-009"
-        ],
-        "status": "published"
-      },
-      {
-        "id": "P009-7",
-        "section": "reviews",
-        "title": "AutoTerm Auto 化第一相位(分支 A:a2r 修缮 → terminal 原生组件 → 引擎 adapter → Auto 复刻对拍) — 复审记录",
-        "content": "**审阅人**:ZCode(/auto-plan:review)· **时间**:2026-09-06 ·\n**结论**:`reviewed`(全部验收过,2 项部分达标已记债,无阻塞项)\n\n### 逐条验收(全部在执行 worktree 重跑,不信勾选框)\n\n| # | 验收 | 判定 | 证据 |\n|---|---|---|---|\n| 1 | P0 a2r 快照全绿+实编门绿+spike 重跑归档 | **pass** | `cargo tt` 3817/3818(唯一失败=基线已坏 charts,主检出双证);`a2r_rustc_real_compile_gate` 在档(ledger 74 例显式豁免,文件在案);`spikes/autoize-roundtrip/T1-RERUN-PLAN009.md`+产物 diff(sample 仅派生行=修复本体,sample2 字节零差异) |\n| 2 | P1 ui-iced 构建绿+组件双后端测试+最小示例取证 | **partial→pass(记债)** | ui-iced build 绿(1m02s);headless 14/14 + 最小 .at 挂载 1/1 重跑绿;iced 像素级自动化未建(simulator 无事件注入面),以 T10 真窗口截图替代——债候选(见下) |\n| 3 | P2 cdylib 独立集成测试绿 | **pass** | `engine_ffi_integration` 1/1(2.61s)重跑绿 |\n| 4 | P3 产物实编+对拍门禁全绿+UI 取证 | **pass** | at-gen check 0 error+scenario anchor 2 处;`autoterm-parity` 5/5 重跑绿(4.35s);evidence/{ui_smoke.txt,ui_window.png} 在案 |\n| 5 | P4 收账四件+无环断言 | **pass** | grep 命中 DEBTS(4)/README(2)/001(2);cargo tree 重验:autoterm-core 0×auto-lang、auto-lang 0×autoterm、at-gen 1×auto-lang |\n| 6 | oracle 回归+零新依赖 | **pass(带注)** | workspace 61 passed 0 failed(重跑);auto-lang 009 未动任何 Cargo.toml;auto-term 侧 libloading 新声明于两个**新增** crate(at-gen/ffi-tests),lock 零新增(ash 传递已有)+T7 明示授权;parity 依赖仅仓内 rlib |\n\n### 遗漏/延后/workaround 猎查(逐项记录,不隐藏)\n\n- **延后①(记债)**:选中文本 headless 对拍——门禁显式 skip,证据未\n  落 T10(截图为初始态无选中)。组件选中面(T4)已测,缺的是 scenario\n  协议接线。计划\"场景矩阵=子集\"授权子集裁剪,但该面应补:债务候选。\n- **延后②(记债)**:terminal 组件 iced_test 像素级自动化——以 headless\n  断言+真窗口截图替代(simulator 无事件注入,选择性证据更弱)。债务候选。\n- **workaround(已记债)**:`[]` 字面量绕 a2r `List.new()` 限定 bug;\n  in-process API 绕挂起的 CLI trans(转译规程入库 at-gen/README);\n  实编门 ledger 豁免 74 例存量债(门对新破坏必红语义保留)。\n- **遗漏猎查**:11 步逐条对 diff,无丢失子项;T1/T5/T8-fix 三次\n  auto-lang fold 均完成(T1 一次顺延因主检出被并行会话占用,后补齐)。\n\n### 移交\n\n就绪 `/auto-plan:merge`(worktree `.wt/auto-009/{auto-term,auto-lang}`\n与分支 `plan-009-dev`/`auto-term-dev` 保留,清理归 merge;另注意组内\n还有 auto-down 只读 worktree 供路径解析,merge 时一并清理)。",
-        "file": "docs/plans/archived/009-autoize-phase1.md",
-        "related": [
-          "PLAN-009"
-        ],
-        "status": "published"
-      }
+    "status": "published",
+    "superseded_by": null
+   },
+   {
+    "id": "P005-1",
+    "section": "reports",
+    "title": "AutoTerm Phase 4 交互批(Rust 版功能齐全:自动滚动 + 块选 + 右键菜单 + 选中色 + 光标形状/闪烁) — 变更摘要",
+    "content": "Rust 参考实现的\"功能齐全\"批(总排序裁定 2026-09-05:先做齐做稳\nRust,Auto 复刻后置):①**拖选到边缘自动滚动**(004 裁定#4 归组项,\n至此 004 的 Phase 4 欠账启动清偿);②**块选(Block)**——core 公面\n现成(`SelectionType::Block`/`to_range`/`selection_to_string` 均有\nblock 分支),补 UI 触发与矩形渲染;③**右键上下文菜单**\n(复制/粘贴/全选);④**选中色可配置**(CLI `--selection-color`,\n去 25% α 硬编码);⑤**光标形状**(DECSCUSR:Block/Underline/Beam,\nSgrCursorShape 随快照已暴露)+ **闪烁**(聚焦时条件定时,保住\n\"空闲零唤醒\")。约束:全部新代码保持 **a2r 可表达形态**(DEBTS #8)。",
+    "file": "docs/plans/archived/005-phase4-interaction-batch.md",
+    "related": [
+     "PLAN-005"
+    ],
+    "status": "published"
+   },
+   {
+    "id": "P007-1",
+    "section": "reports",
+    "title": "AutoTerm ash(AutoShell)独立运行验证与测试门禁 — 变更摘要",
+    "content": "AutoTerm 的既定使命是**在 AutoOS 虚拟桌面里跑 ash**(README 定位声明;PLAN-001\n\"ash 只作为运行时配置\"),但至今的自动化验证实际落在 **cmd 与 pwsh** 上:\n`live_pty.rs` 只 spawn `cmd`,dev 冒烟钩子默认 `--shell pwsh`\n(`crates/autoterm-ui/src/bin/autoterm.rs:15`),ash 仅出现在 002/003 的\n**手动**试用清单与 003 的三 shell 中断冒烟转储里——没有一道**必跑的自动门禁**。\n\n本计划补上这道门禁:在 `autoterm-core` 新增 **ash 专属集成测试**\n(`tests/ash_integration.rs`,env 门控 + 兄弟仓路径自动探测,ash 缺失时明确\nskip 而非静默通过),覆盖启动提示符、echo 回显、Ctrl+C 中断、exit/Ctrl+D\n退出、resize 存活、色彩深度自证六个场景;外加三条 UI 级半自动冒烟配方\n(含 `color rainbow` 真彩取证);结论沉淀为\n`docs/designs/003-ash-compatibility.md`(R1–R6 风险逐项结论)。**不改\nautoterm-core/ui 产品代码**——测试暴露的缺陷按证据记 DEBTS,修复另立\n(≤5 行 trivial 例外,见待澄清#2)。",
+    "file": "docs/plans/archived/007-ash-shell-support.md",
+    "related": [
+     "PLAN-007"
+    ],
+    "status": "published"
+   },
+   {
+    "id": "P008-1",
+    "section": "reports",
+    "title": "AutoTerm Ctrl+C 中断通路修复(DEBTS #12,F2:win32 控制台事件注入) — 变更摘要",
+    "content": "PLAN-007 坐实 F2:向 portable-pty ConPTY 主端写 0x03 **不触发**\nconhost 的 CTRL_C_EVENT——Ctrl+C 无法中断**运行中**的命令,且与\nshell 无关(cmd/pwsh 对照探针同样断裂),AutoTerm 现有代码层无法\n就地修复(DEBTS #12)。虚拟桌面场景\"AI/用户打断挂死命令\"是刚需\n(003 §5 契约第 4 条明示此依赖),且 #8 Auto 复刻 P3 的行为对拍\n也需要中断语义可用。\n\n本计划按 003 §4 候选通路 #1(winpty 经典手法)实施修复:\n**新增零依赖辅助进程 `autoterm-ctrlc.exe`**(手写 kernel32 FFI:\n`AttachConsole(shell_pid)` 挂进 ConPTY 隐藏控制台后\n`GenerateConsoleCtrlEvent(CTRL_C_EVENT, 0)` 广播),\n`PtySession` 新增 `interrupt()` 注入事件,UI 层裸 Ctrl+C 改为\n**事件 + 0x03 字节双投递**(事件管运行中命令,字节管 raw 行编辑器\n如 reedline/PSReadLine)。验收门禁 = 新建 `tests/ctrl_event.rs`\n(cmd 恒可得:5s 内真实中断)接棒 007 留档的两个 `#[ignore]`\n复现器,外加 ash×事件三态探针矩阵(裁定 UI auto 模式对 ash 的\n豁免门——F1/#13 协调点)。**这是 002 以来首个动产品代码的修复\n计划**;#7(win32 直调方向)随本案关账。",
+    "file": "docs/plans/archived/008-ctrlc-interrupt-fix.md",
+    "related": [
+     "PLAN-008"
+    ],
+    "status": "published"
+   },
+   {
+    "id": "P009-1",
+    "section": "reports",
+    "title": "AutoTerm Auto 化第一相位(分支 A:a2r 修缮 → terminal 原生组件 → 引擎 adapter → Auto 复刻对拍) — 变更摘要",
+    "content": "兑现用户 2026-09-06 的 **GO 裁定(分支 A,单计划管理)**:AutoTerm 从\n\"Rust 参考实现\"走向真身——**Auto 代码应用层 + auto-lang 内 `terminal`\n原生组件 + 本仓 Rust 引擎 adapter**。这是 DEBTS 候选清单 #8(必须项,\n总工作量 25–50 人日跨两仓)的第一相位落地,拆解草案源自\n`docs/designs/002-autoize-feasibility.md` §6(P006 调查结论,四问全正面)。\n\n四相位(每相位验证过即 fold,worktree 常驻):\n\n- **P0 auto-lang:a2r 修缮**(小,先行):F1 组合缺陷(E0369)+ 快照门\n  扩\"rustc 实编\"档——复刻的转译地基;\n- **P1 auto-lang:`terminal` 原生组件**(大,关键路径):本仓\n  TermGrid 控件逻辑(视口渲染/损伤门控/选中三模式+块选/IME/光标)\n  **整体迁移**进 `crates/auto-lang/src/ui/`,code_editor 范式接线;\n  **单一真身原则**:迁移完成后本仓 widget.rs 冻结;\n- **P2 本仓:引擎 cdylib adapter**(中,与 P1 并行可):autoterm-core\n  包成 FFI 友好标量面(spawn/feed/drain/resize/interrupt/…),\n  运行期 libloading 加载;\n- **P3 本仓:Auto 复刻 + 行为对拍**:`.at` 应用层 → a2r 转译 →\n  rustc 实编,与 Rust oracle 对拍(场景矩阵复用 007/008 门禁形态);\n- **P4 收账**:DEBTS #8 关账条件回写 + 本仓转型声明\n  (**引擎 adapter 活 / 参考实现 oracle 冻结**)。\n\n**无环铁律**(用户 2026-09-06 对齐):auto-lang 对 auto-term **零\nCargo 依赖**——引擎经 cdylib 运行期加载(FFI 边界切断环);`.at`\n经 a2r 转译产物单向依赖 auto-lang 运行时。兜底:若 P1 发现组件确需\n引擎侧类型,抽零依赖 `terminal-types` 叶子 crate 双方共用(仍无环)。",
+    "file": "docs/plans/archived/009-autoize-phase1.md",
+    "related": [
+     "PLAN-009"
+    ],
+    "status": "published"
+   },
+   {
+    "id": "P010-1",
+    "section": "reports",
+    "title": "009 后续收尾——a2r 存量编译债清偿 + 对拍门禁补全 + 契约/文档入账 — 变更摘要",
+    "content": "兑现用户 2026-09-07 裁定:先立项清偿 PLAN-009 分析出的后续补充项,\n**虚拟桌面集成(auto-os 侧)单独立项,不在本计划**。本计划是纯\n修缮/接线/入账相位,无新架构,两仓(同 009 布局)作业:\n\n- **auto-lang 侧**:\n  - a2r 快照 74 例存量编译债清偿(009 实编门 ledger 显式豁免的存量,\n    按错误码分批修复,ledger 逐例摘除;预授权:个别例超出本计划可留\n    ledger 并记录理由,但清偿率须过半);\n  - a2r `List.new()` 路径限定 bug 修复(009 T8 实证:`List.new()` 被\n    错误限定为 `<最后 use.rs 符号>::Vec::new()`);\n  - CLI `auto trans` 挂起修复(master 存量回归,f3185a7 时代可用);\n  - E0080 销账复核:复跑 002 §4 所指两 rust-mode 示例(TickWrap 根修后\n    应已解除),复核通过即销 009 新增观察第 7 条;\n- **auto-term 侧**:\n  - 003 §5 部署契约追补一条(`autoterm_engine` cdylib 随包分发;\n    009 待澄清③授权、T11 漏项);\n  - at-gen 窗口标题 cosmetic(iced `.title()`,去缺省\n    \"Auto Lang - Iced\");\n  - DEBTS #5/#7 关账回写(Ctrl+C 双投递已经 009 对拍门禁\n    `parity_interrupt` 真实 ConPTY 实测有效,关账条件满足);\n  - **对拍门禁补全**:选中文本场景去 skip(组件选中面经 scenario\n    协议接线,oracle 侧 `TermSession::selection_text` 对比);\n  - **iced 像素级自动化**:terminal 组件进 selectable_text 同款\n    iced_test 管线(bounds/绘制证据),补齐 009 复审记的两项债候选。\n\n明确不做(边界):Vue/web 后端留白(另行调查)、数据面形态乙\n(未触发)、虚拟桌面集成(auto-os 侧单独立项)。",
+    "file": "docs/plans/archived/010-post009-followups.md",
+    "related": [
+     "PLAN-010"
+    ],
+    "status": "published"
+   }
+  ],
+  "goals": [
+   {
+    "id": "P001-2",
+    "section": "goals",
+    "title": "AutoTerm 建仓与全链路 spike(PTY→仿真核心→渲染) — 目标",
+    "content": "1. 验证硬前提:宿主基座(Windows ConPTY / Unix PTY)经 `portable-pty`\n   可申请、可读写字节流——在 Windows 基座上当天可证;\n2. 验证 `alacritty_terminal` 作为库嵌入的可行性(VT 状态机 + 网格读取 +\n   回滚),不写 GUI 即可测;\n3. 验证渲染最小闭环:iced 窗口里网格→字形、键盘→PTY 回写,能交互跑\n   `echo` 级命令;\n4. 用 ash 这个\"苛刻 VT 客户端\"冒烟:tail 动态重绘不糊、find 表格不错位、\n   真彩色正确;\n5. 大输出压测取得第一手数字(ConPTY 吞吐 + 渲染帧行为),支撑渲染路线\n   A/B 拍板,结论沉淀为 `docs/designs/000-render-route.md`。\n\n非目标(明确排除):tabs / splits / tmux 式持久会话(Phase 2+ 另立计划);\n`.at`/auto-lang VM 集成(AutoUI 一等应用形态是路线 A 拍板**之后**的事);\nmacOS/Linux 基座适配(spike 仅 Windows,Unix 路径由 portable-pty 承诺,\n后续计划验证)。",
+    "file": "docs/plans/archived/001-autoterm-bootstrap.md",
+    "related": [
+     "PLAN-001"
+    ],
+    "status": "proposed"
+   },
+   {
+    "id": "P002-2",
+    "section": "goals",
+    "title": "AutoTerm Phase 1 单窗口 MVP — 目标",
+    "content": "1. **正式 crate 结构**:`autoterm-core`(可独立测试的终端会话层)+\n   `autoterm-ui`(窗口层),层间单向依赖,spikes/ 原样归档;\n2. **仿真回归种子化**:纯 VT 字节级断言套件(光标/颜色/备用屏幕/\n   宽字符/回滚/DSR 应答)+ 真 PTY 集成测试,双轨回归;\n3. **渲染管线三项清偿**:损伤重绘(Term::damage 驱动)、实测字形\n   advance(cosmic-text,含宽字符双格判定)、事件驱动 PTY→UI\n   (reader 线程唤醒,替换 16ms 轮询);\n4. **MVP 可日用**:滚动回滚(滚轮/PgUp/PgDn)、光标块、窗口关闭\n   杀子进程、Ctrl+C;\n5. **设计沉淀**:`docs/designs/001-phase1-architecture.md` 记录正式\n   架构与 000→002 决策链。\n\n非目标(排除):tabs/splits(Phase 2+);字形图集级 GPU 优化\n(损伤重绘+事件驱动已获主要收益,图集留性能专项);IME/选中/主题\n系统;Unix 基座适配(仍 Windows-only,另立计划);`.at`/auto-lang\nVM 集成(路线 A 生态对齐,待 auto-ui 仓前置调查)。",
+    "file": "docs/plans/archived/002-phase1-mvp.md",
+    "related": [
+     "PLAN-002"
+    ],
+    "status": "proposed"
+   },
+   {
+    "id": "P003-2",
+    "section": "goals",
+    "title": "AutoTerm Phase 2 性能与输入完备性 — 目标",
+    "content": "1. **绘制级损伤剪裁**(计划002 验收#4 兑现):单行改动帧的\n   Paragraph 重建数 < 全网格行数(dev 转储计数断言),Full 损伤退化为\n   全量重建;\n2. **语义矩阵自动化**:pwsh/ash/cmd × {Ctrl+C 字节, 窗口关闭}\n   中断运行中命令 → 提示符回归/无孤儿断言;Ctrl+Break 调查并给出\n   映射或平台结论;\n3. **IME**:PoC iced 0.14 `input_method`/Ime 事件管道;可用则\n   preedit 在光标处下划线渲染(最小),不可用则 blocker 记入 DEBTS\n   与 001 附录;\n4. **三尾巴清偿**:dev-tools feature flag(002 待澄清#5)、\n   log+env_logger(002 复审债务候选)、Message::NoOp(002 复审瑕疵);\n5. **决策链沉淀**:001 设计文档追加 002→003 节(Paragraph 路线/\n   矩阵结论/IME 结论),DEBTS 勾账。\n\n非目标(Phase 3+):Unix 基座;iced↔auto-ui 对齐;选中/主题;光标\n闪烁与形状(IME 顺手才带);列级损伤剪裁(行级已够)。",
+    "file": "docs/plans/archived/003-phase2-perf-input.md",
+    "related": [
+     "PLAN-003"
+    ],
+    "status": "proposed"
+   },
+   {
+    "id": "P004-2",
+    "section": "goals",
+    "title": "AutoTerm Phase 3 交互完备(选中/复制粘贴 + Ctrl+C 稳定版复测 + IME) — 目标",
+    "content": "1. **选中/复制/粘贴**:拖选(字符级)、双击词选(semantic)、三击行选\n   (lines);高亮渲染;松开即复制(copy-on-select)+ Ctrl+Shift+C 显式\n   复制 + Ctrl+Shift+V/右键粘贴;\n2. **取证无人值守**:`--dev-select` 注入钩子(模拟拖选)+ 转储断言选中\n   文本与像素高亮(程序化像素扫描);\n3. **Ctrl+C 稳定版复测**:003 的最小管道矩阵在稳定版 Windows 上复跑,\n   结论回填(正常→内部版回归关账;复现→win32 直调立项);\n4. **IME**:`Shell::request_input_method` + `Event::InputMethod`,\n   over-the-spot 预编辑显示;人工中文输入验收清单;\n5. **决策链沉淀**:001 追加 003→004 节;DEBTS #6/#7 勾账与重排。\n\n非目标(Phase 4+):拖选到边缘的自动滚动;块选(Block);右键上下文\n菜单;选中主题色配置;Unix 基座;auto-ui 对齐。",
+    "file": "docs/plans/archived/004-phase3-interaction.md",
+    "related": [
+     "PLAN-004"
+    ],
+    "status": "proposed"
+   },
+   {
+    "id": "P006-2",
+    "section": "goals",
+    "title": "AutoTerm Auto 化前提调查(AutoUI 组件模型表达力 + a2r 往返一致性 + Rust 绑定通路) — 目标",
+    "content": "1. **Q1 组件模型表达力**:AutoUI(`auto-lang/src/ui/`)能否表达\n   \"实现 iced `Widget` trait 的自定义 widget\"(TermGrid 命门:\n   选中/IME/损伤门控全在其 `update/draw`),还是只能组合既有\n   组件?iced 后端(`ui/iced/`)的扩展点在哪;\n2. **Q2 Rust 绑定通路**:Auto 调用 Rust crate(iced/\n   alacritty_terminal/portable-pty)的机制(auto-bindgen?ext\n   imports/use.web?custom-lib-paths?)与边界;\n3. **Q3 a2r 往返一致性**:转译器产出子集(能否 emit trait impl/\n   extern 绑定?idiomatic 程度)与 DEBTS #8 的\"a2r 产出 ≈ 手写\n   Rust\"约束的差距;以 TermSession 薄封装为样本做最小 round-trip;\n4. **Q4 iced 后端可构建性**:ui-iced feature 在本机可构建/可跑\n   demo,记录构建面貌;\n5. **Q5 产出**:可行性设计文档(含差距清单 + 工作量分级 +\n   go/no-go 建议 + #8 立项拆解草案);DEBTS #7 关账或转立项,\n   #8 补齐启动条件;修正 DEBTS/001 的 auto-ui 旧仓引用。\n\n非目标:不改 auto-term/auto-lang 产品代码;不做完整复刻(那是\n#8);不做 gpui/Vue 后端调查(虚拟桌面 iced 轨道为准);不替用户\n做 go/no-go 裁定(只交材料)。",
+    "file": "docs/plans/archived/006-autoize-feasibility.md",
+    "related": [
+     "PLAN-006"
+    ],
+    "status": "proposed",
+    "superseded_by": null
+   },
+   {
+    "id": "P005-2",
+    "section": "goals",
+    "title": "AutoTerm Phase 4 交互批(Rust 版功能齐全:自动滚动 + 块选 + 右键菜单 + 选中色 + 光标形状/闪烁) — 目标",
+    "content": "1. **拖选自动滚动**:按住拖选、光标越过视口上下边缘时按拍滚动\n   (方向、速度受控);松开即停;滚动中选中随内容锚定(绝对行\n   语义,004 已有);\n2. **块选**:Alt+左键拖选(待澄清#1)触发矩形选中,高亮按列带\n   渲染,复制走 `selection_to_string` 的 block 分支(每行截断拼\n   接);\n3. **右键上下文菜单**:右键弹浮层菜单(复制/粘贴/全选,待澄清\n   #4),项动作复用 004 的 copy/paste 消息路径;菜单外点击/ESC\n   关闭;**右键原\"直接粘贴\"行为被菜单取代**;\n4. **选中色配置**:`--selection-color RRGGBB[AA]` CLI 参数(默认\n   维持现值 e8e8e8@25%),经 App 传入 TermGrid;\n5. **光标形状/闪烁**:shell 经 DECSCUSR(ESC[N q)设形——Block\n   (现状反色块)/Underline/Beam;闪烁默认开(待澄清#3,500ms\n   相位,仅窗口聚焦且光标可见时挂条件定时,空闲仍零唤醒);\n6. **决策链与台账**:001 追加 004→005 节;DEBTS #6 光标形状子项\n   清账、Phase 4 批次勾销重排;README 交互表更新。\n\n非目标:Ctrl+C 稳定版复测(债务 #7,等环境,不在本批);IME 人工\n清单(用户侧动作,非本计划交付);配置文件体系(仅 CLI 参数);\nUnix 基座(独立轨道);Auto 复刻(#7/#8,后置轨道)。",
+    "file": "docs/plans/archived/005-phase4-interaction-batch.md",
+    "related": [
+     "PLAN-005"
+    ],
+    "status": "proposed"
+   },
+   {
+    "id": "P007-2",
+    "section": "goals",
+    "title": "AutoTerm ash(AutoShell)独立运行验证与测试门禁 — 目标",
+    "content": "1. **ash 集成测试门禁**:`cargo test -p autoterm-core --test ash_integration`\n   在 ash.exe 可得时是必绿回归的一部分(6 用例),不可得时输出明确 skip\n   说明——不再依赖\"记得手动试一下 ash\";\n2. **六个核心场景硬断言**(真 PTY → 仿真核心 → 网格):\n   ① 裸 `ash` 启动后提示符渲染(网格出现非空行;间接行使 DSR/DA 应答\n   路径 `term.pump` 回写);② `echo <marker>` 往返出现在网格;\n   ③ Ctrl+C(0x03)中断 `sleep 30` 后提示符回归、子进程存活;\n   ④ `exit` 命令与 Ctrl+D(0x04)均令 `exited()` 为真(无孤儿);\n   ⑤ resize 80x24→120x40 后会话存活且继续响应;\n   ⑥ `color info` 在 TERM=alacritty + COLORTERM=truecolor 下自证\n   \"24-bit truecolor\"(ash 的色彩判定落在网格文本里,可直接断言);\n3. **UI 级半自动取证**:三条 `--shell <ash>` dev 冒烟配方(echo 往返 /\n   真彩彩虹 + 深度报告 / Ctrl+C 中断),`--dev-dump` 证据引述进设计文档;\n4. **结论沉淀**:`docs/designs/003-ash-compatibility.md` 记录场景矩阵\n   结果与 R1–R6 风险逐项结论,发现的缺陷全部进 DEBTS(带 file:line);\n5. **全量回归**:`cargo test --workspace` 绿(ash 缺席环境无回归)。\n\n### 非目标(明确排除)\n\n- 不改 auto-shell 仓任何代码(ash 侧问题记 DEBTS,由该仓处理);\n- 不做虚拟桌面侧集成(ash 作为默认 shell 的拉起配置是 auto-os 侧计划);\n- 不做性能基准、Unix 基座、tabs/splits;\n- 不重写 live_pty.rs 为多 shell 矩阵(cmd 基线保留,ash 门禁独立成文件,\n  避免把\"永远可得\"与\"需环境\"两类测试耦死)。",
+    "file": "docs/plans/archived/007-ash-shell-support.md",
+    "related": [
+     "PLAN-007"
+    ],
+    "status": "proposed"
+   },
+   {
+    "id": "P008-2",
+    "section": "goals",
+    "title": "AutoTerm Ctrl+C 中断通路修复(DEBTS #12,F2:win32 控制台事件注入) — 目标",
+    "content": "1. **核心能力**:`PtySession::interrupt()` 在 Windows 上经辅助进程\n   向 shell 所在 ConPTY 控制台广播 CTRL_C_EVENT,使 `cmd /c\n   ping -n 30` 这类运行中命令在 **≤5s** 内真正中断(cmd 恒在场的\n   自动门禁,不依赖 ash);\n2. **双投递语义**:UI 裸 Ctrl+C = 事件(中断运行中命令)+ 0x03\n   字节(废弃输入行,raw 行编辑器消费)——007 门禁 ③\n   (`ctrl_c_aborts_input_line`)语义保留不回归;\n3. **模式可配**:`--ctrl-c-mode <auto|byte|event|both>`(默认\n   auto);auto 下按 shell 豁免(ash 在 #13 落地前豁免为 byte,\n   依据 T4 探针矩阵按预授权规则裁定);\n4. **门禁接棒**:007 两个 `#[ignore]` 复现器退役(语义转正由\n   ctrl_event.rs 门禁承担),`ash_integration.rs` 回归 0 ignored;\n5. **台账关账**:DEBTS #12 清账、#7 关账(win32 直调落地)、\n   #13 追注 ash 实测行为与协调请求;003 §4 增\"修复实施\"小节、\n   §5 契约第 4 条更新(\"中断:可用\");\n6. **零新依赖**:手写 extern \"system\" FFI,Cargo.toml/Cargo.lock\n   零改动(验收断言);新代码保持 a2r 可表达形态(DEBTS #8 约束,\n   006 结论:引擎绑定侧留 Rust adapter,helper 属 adapter 域)。\n\n### 非目标(明确排除)\n\n- **F1 / #13 修复**(ash 内建不可中断、装 ctrl handler)——归\n  auto-shell 仓,本仓只出探针矩阵与协调请求;\n- Unix 的 interrupt 语义(SIGINT/进程组)——Unix 基座独立轨道,\n  非 Windows 分支走现有字节路径占位;\n- Ctrl+Break(CTRL_BREAK_EVENT)映射——helper 已留位但本计划\n  不接线(003/003 号计划已有结论记录,无用户反馈驱动);\n- 上游 portable-pty 提 issue/PR(候选通路 #3)——修复验证后\n  另起轻量动作,不阻塞本案;\n- conhost 稳定版差异调查(候选通路 #2)——事件注入后不再依赖\n  conhost 翻译行为,调查失去必要性,#7 据此关账。",
+    "file": "docs/plans/archived/008-ctrlc-interrupt-fix.md",
+    "related": [
+     "PLAN-008"
+    ],
+    "status": "proposed"
+   },
+   {
+    "id": "P009-2",
+    "section": "goals",
+    "title": "AutoTerm Auto 化第一相位(分支 A:a2r 修缮 → terminal 原生组件 → 引擎 adapter → Auto 复刻对拍) — 目标",
+    "content": "1. **P0**:a2r 快照目录(`crates/auto-lang/test/a2r/`)全绿 + 新增\n   \"rustc 实编\"门(转译产物能过 cargo check/build)全绿;本仓\n   `spikes/autoize-roundtrip/` 重跑,差异相对 006 记录归档;\n2. **P1**:`terminal` 组件在 auto-lang 落地——`ui-iced` feature 构建绿,\n   headless/iced 双后端测试绿(照 selectable_text 的测试管线),\n   最小 `.at` 示例可渲染 `<terminal/>`;rust-mode 示例 E0080 存量\n   编译炸裂顺手小修(006 §4 结论,W1 范围内);\n3. **P2**:adapter cdylib 面就绪,独立测试进程经 libloading 加载并\n   跑通 echo 往返 + resize + interrupt(模拟 Auto 侧消费形态);\n4. **P3**:`.at` 应用(a2r 产物 rustc 实编)与 Rust oracle **行为对拍**\n   门禁全绿:启动提示符/echo 往返/Ctrl+C 双投递中断(008 语义)/\n   选中三模式/色彩自证(ash 缺席显式 skip,沿 007/008 惯例);\n5. **P4**:DEBTS #8 关账;001 决策链追加 009 节;README 本仓转型\n   声明;两仓 `git diff` 证明无 Cargo 环(auto-lang 不依赖本仓 crate);\n6. **全程**:Rust oracle 版 `cargo test --workspace` 不回归\n   (冻结但门禁仍绿——它是 P3 对拍基准)。\n\n### 非目标(明确排除)\n\n- Vue/web 后端的 terminal 实现(006 未调查,虚拟桌面以 iced 轨道\n  为准;未来另立调查计划);\n- gpui 后端(同上);\n- 虚拟桌面侧集成(auto-os 侧计划,003 §5 契约已留锚点);\n- Rust oracle 版新增产品功能(P1 启动即冻结,仅修对拍阻断项);\n- ash 侧 F1/#13(auto-shell 仓事务);\n- iced 升级/字形图集等既有债务。",
+    "file": "docs/plans/archived/009-autoize-phase1.md",
+    "related": [
+     "PLAN-009"
+    ],
+    "status": "proposed"
+   },
+   {
+    "id": "P010-2",
+    "section": "goals",
+    "title": "009 后续收尾——a2r 存量编译债清偿 + 对拍门禁补全 + 契约/文档入账 — 目标",
+    "content": "1. a2r 实编门 ledger 清偿率 ≥50%,清零为理想;每批修复附快照回归\n   (现有金样文本不得无故漂移,漂移须逐例说明);\n2. a2r `List.new()` 转译正确(at 语料新增快照:构造含 `List.new()`\n   的 .at,产物含 `Vec::new()` 且无错误路径限定);\n3. `auto trans -p <at> rust` 恢复可用(60 行样本秒级完成,产物与\n   in-process 一致);\n4. E0080 两示例复跑通过,009 新增观察 #7 销账;\n5. 003 §5 含 cdylib 分发条目;at-gen 窗口标题非缺省;\n6. DEBTS #5/#7 关账回写;\n7. 对拍门禁 7 场景全实跑(去全部 skip):既有 3 实跑 + 选中文本新场景\n   + 色彩自证(仍 ash 缺席 skip 则保留其 skip 语义,但注明与选中的\n   区别);iced 像素自动化在案;\n8. 两仓回归底线:auto-lang `cargo tf`+`cargo tt`、auto-term\n   `cargo test --workspace` 全绿。\n\n### 非目标(明确排除)\n\n- Vue/web terminal 后端(另行调查计划);\n- 虚拟桌面加载 AutoTerm(auto-os 侧单独立项,用户 2026-09-07 裁定);\n- 数据面形态乙降级(基准未触发);\n- a2r 其余变形类(F2 int 宽度/F3 可见性/F4 冗余出口等风格变形,\n  非编译炸裂,不在本计划)。",
+    "file": "docs/plans/archived/010-post009-followups.md",
+    "related": [
+     "PLAN-010"
+    ],
+    "status": "proposed"
+   }
+  ],
+  "architecture": [
+   {
+    "id": "P001-3",
+    "section": "architecture",
+    "title": "AutoTerm 建仓与全链路 spike(PTY→仿真核心→渲染) — 架构方案",
+    "content": "四层结构,层间单向依赖:\n\n```\n应用层   tabs / splits / 会话(Phase 2+,不在本计划)\n渲染层   候选 A:iced 自定义 widget 承载终端网格 ← 本计划拍板\n         候选 B:winit + wgpu 字形图集自绘(逃生口)\n仿真层   alacritty_terminal(Apache-2.0):VT 状态机、回滚缓冲、\n         resize/真彩色/备用屏幕语义 —— 直接复用,不自写\nPTY 层   portable-pty:Windows=CreatePseudoConsole(ConPTY),\n         Unix=openpty —— 基座 OS 服务,本仓只消费\n```\n\n与外部系统的关系:\n\n- **ash**(`D:\\autostack\\auto-shell`):仅运行时配置耦合(spawn 的默认\n  shell 路径,经 `ASH_BIN`/配置传入)。验收含\"依赖树无 ash-core\"断言;\n- **auto-ui / auto-lang VM**:路线 A 成立时,后续以 iced/`.at` 生态一等\n  应用形态集成,由后续计划处理;本计划 spike 阶段直接依赖上游 iced;\n- **AutoOS 虚拟桌面**:本仓产出的可执行文件是宿主普通进程,窗口长在\n  桌面里,无 OS 层依赖(PTY 由基座内核/console 服务提供)。\n\nspike 三 probe 的数据流(单向,渲染帧驱动):\n\n```\n子进程(bash/pwsh/ash) ─ConPTY─▶ 字节流 ─feed─▶ alacritty_terminal 网格\n     ▲                                              │\n     └── 写主端 ◀── 键盘事件 ◀── iced 窗口(每帧读网格渲染)◀─┘\n```",
+    "file": "docs/plans/archived/001-autoterm-bootstrap.md",
+    "related": [
+     "PLAN-001"
+    ],
+    "status": "stable",
+    "superseded_by": [
+     "P002-3"
     ]
-  }
+   },
+   {
+    "id": "P002-3",
+    "section": "architecture",
+    "title": "AutoTerm Phase 1 单窗口 MVP — 架构方案",
+    "content": "```\ncrates/autoterm-ui    iced 单窗口:widget(损伤感知)、键盘/滚轮、\n                      字形度量、窗口生命周期        ──仅依赖──┐\ncrates/autoterm-core  PtySession(portable-pty:spawn/reader 线程/\n                      答案回写/resize/kill 语义)+\n                      TermSession(alacritty_terminal 封装:\n                      feed/pump/damage/scroll/快照)  ←────┘\nspikes/               PLAN-001 归档,不再演进\n```\n\n数据流(事件驱动,替换 spike 的 16ms 轮询):\n\n```\n子进程 ─ConPTY→ reader 线程 ─channel→ iced subscription(唤醒)\n   ▲                                        │ feed/pump\n   └─ 写主端(答案/键盘) ←─ update() ←────┘\ndraw():damage(行级) → 只重画脏行;光标块反色;回滚经 scroll_display\n```\n\n与外部系统:ash 仍仅运行时配置耦合(`--shell`,默认 pwsh);\niced 升级沿 0.14(与 auto-ui 同栈,集成路径见待澄清 #2)。",
+    "file": "docs/plans/archived/002-phase1-mvp.md",
+    "related": [
+     "PLAN-002"
+    ],
+    "status": "stable"
+   },
+   {
+    "id": "P003-3",
+    "section": "architecture",
+    "title": "AutoTerm Phase 2 性能与输入完备性 — 架构方案",
+    "content": "```\n保留式画布(在现有 TermGrid 内演进,不新增 crate):\n  Vec<Option<RowPara>>  ── compare(snapshot 行文本) ──▶\n    未变:复用 Paragraph(fill_paragraph 直接绘制)\n    变化/缺失:重建(with_text+load)→ 计数 paragraph_rebuilds\n  damage: Lines(脏行集)→ 只对脏行做 compare;Full → 全部 compare\n  (iced 即时模式限制就此绕开:形状/布局缓存归我们,场景 emit 仍全量)\n```\n\n语义矩阵与 IME 均为 autoterm-ui 侧增量,core 不动(除 unescape\n转义扩展在 ui lib)。",
+    "file": "docs/plans/archived/003-phase2-perf-input.md",
+    "related": [
+     "PLAN-003"
+    ],
+    "status": "stable"
+   },
+   {
+    "id": "P004-3",
+    "section": "architecture",
+    "title": "AutoTerm Phase 3 交互完备(选中/复制粘贴 + Ctrl+C 稳定版复测 + IME) — 架构方案",
+    "content": "```\n事件地基(新增):TermGrid 实现 Widget::update\n  鼠标按下/移动/释放 ─像素→格子(metrics 换算)→ shell.publish\n      │                                      ▼\n      │                    Message::Select{Start/Update/End}(cell, side)\n      │                                      ▼\n      │       App.update ─▶ TermSession 封装:begin/update/clear_selection\n      │                        (驱动 core 的 Term.selection 公有字段)\n      ▼\n渲染:term.selection_to_range() → 视口高亮 quad overlay(文本层之下)\n复制:松开/快捷键 → term.selection_to_string() → iced clipboard\n粘贴:Ctrl+Shift+V/右键 → clipboard::read → write_input(去 \\r→\\r 规整)\nIME:聚焦时 Shell::request_input_method(光标矩形,purpose=Terminal)\n     Event::InputMethod::{Preedit,Commit} → 预编辑挂起显示/提交直写\n```",
+    "file": "docs/plans/archived/004-phase3-interaction.md",
+    "related": [
+     "PLAN-004"
+    ],
+    "status": "stable"
+   },
+   {
+    "id": "P006-3",
+    "section": "architecture",
+    "title": "AutoTerm Auto 化前提调查(AutoUI 组件模型表达力 + a2r 往返一致性 + Rust 绑定通路) — 架构方案",
+    "content": "```\n调查(只读)               产出(spikes/ + docs/designs/)\n──────────────           ─────────────────────────────\nauto-lang/src/ui/     ▶   002-autoize-feasibility.md\n  ├ a2ui/schema.rs          ├ Q1-Q4 答案(每条带源码 file:line 证据)\n  ├ ui/iced/(renderer…)     ├ 差距清单(按 #8 复刻面映射)\n  ├ ui/ext_stubs.rs         ├ 工作量分级(核心封装/UI 层/引擎绑定)\n  └ auto-bindgen/           ├ go/no-go 裁定材料(三分支)\n                           └ #8 立项拆解草案\ndocs/a2r-*.md + 组件注册表   evidence/006-autoize/(spike 产物)\n```\n\nspike 两个:\n- **S1 只读构建**:在 `../auto-lang` 主检出跑\n  `cargo build -p auto-lang --features ui-iced`(产物仅 target/,\n  零 tracked 改动);\n- **S2 round-trip**:写最小 `.at` 样本(struct + enum message +\n  方法,TermSession 子集形态)→ `auto.exe transpile rust` → 与\n  手写 Rust 风格 diff → 差距记录。样本落本仓\n  `spikes/autoize-roundtrip/`,不进 auto-lang。",
+    "file": "docs/plans/archived/006-autoize-feasibility.md",
+    "related": [
+     "PLAN-006"
+    ],
+    "status": "stable",
+    "superseded_by": null
+   },
+   {
+    "id": "P005-3",
+    "section": "architecture",
+    "title": "AutoTerm Phase 4 交互批(Rust 版功能齐全:自动滚动 + 块选 + 右键菜单 + 选中色 + 光标形状/闪烁) — 架构方案",
+    "content": "```\n自动滚动:widget 拖选中检测\"越界Extend\"(clamped cell 停留边缘)\n  ──publish──▶ Message::Select(Extend{cell 在边缘行/列}) 循环\n  App 检测连续边缘 Extend → 置 drag_scroll: Option<Dir>\n  条件订阅 time::every(50ms) → Scrolled(±N) → refresh\n  (core 选中锚定绝对行,滚动自然带动;Finish 清 drag_scroll)\n\n块选:widget ButtonPressed 时按 Alt 修饰 → Begin{Block}\n  高亮:is_block=true 时逐行画同一列段(col_begin..col_last 对齐)\n  复制:core selection_to_string 的 Block 分支(现成)\n\n右键菜单:右键释放 → Message::ContextMenu(Option<(格,项集)>)\n  App.menu: Option<MenuState{at, hover}>;view 传 TermGrid\n  draw 末层画浮层(quad 底 + 文本 + hover 高亮);再点击/ESC → 关\n  菜单项动作 = publish 004 既有消息(Copy=copy_selection 同路径)\n\n选中色:Args --selection-color → AppConfig.selection_color: Color\n  → App 传入 TermGrid.selection_color → 高亮 quad 用之\n\n光标:core cursor() 扩展返回 shape(渲染快照 cursor.shape 现成)\n  Underline=底部 2px quad;Beam=左缘 2px quad;Block=现状\n  闪烁:App.cursor_visible: bool + 条件订阅 time::every(500ms)\n  (仅 focused && shape!=Hidden && !menu 时挂),取反驱动重绘\n  焦点事件:iced window focus 事件 → App.focused(新增状态)\n```",
+    "file": "docs/plans/archived/005-phase4-interaction-batch.md",
+    "related": [
+     "PLAN-005"
+    ],
+    "status": "stable"
+   },
+   {
+    "id": "P007-3",
+    "section": "architecture",
+    "title": "AutoTerm ash(AutoShell)独立运行验证与测试门禁 — 架构方案",
+    "content": "**零产品代码改动的纯测试增项**,落在既有分层内:\n\n```\ncrates/autoterm-core/tests/\n├── live_pty.rs          # 既有 cmd 基线,不动\n├── sim_regression.rs    # 既有纯 VT 回归,不动\n└── ash_integration.rs   # 新增:ash 专属门禁(env 门控)\n```\n\n- **二进制定位**(`ash_bin()`):`AUTOTERM_ASH_BIN` 环境变量优先 →\n  兄弟仓约定路径探测 `../auto-shell/ash/target/{release,debug}/ash.exe`\n  (相对 auto-term 仓根)→ 皆无则用例体首行 `eprintln!` skip 说明 +\n  `return`(不是 `#[ignore]`,保留\"跑过即验证过\"的语义);\n- **断言通路**:复用 `PtySession::spawn/drain/write_input/exited/resize`\n  与 `TermSession::visible_lines()`(term.rs:213,PLAN-002 已公开),\n  不新增公共 API;\n- **等待原语**:`wait_for(session, timeout, pred)` 轮询 `drain()` +\n  50ms 小睡,超时 panic 并附当前网格文本(诊断友好);统一超时:首提示符\n  ≤15s(ash 首启会建 `~/.ashrc`,冷启动偏慢),命令级 ≤10s;\n- **UI 半自动**:既有 `--dev-autotype/--dev-exit-after/--dev-dump`\n  钩子原样使用,证据文件落 `target/`(gitignore 内),关键行引述进\n  设计文档。",
+    "file": "docs/plans/archived/007-ash-shell-support.md",
+    "related": [
+     "PLAN-007"
+    ],
+    "status": "stable"
+   },
+   {
+    "id": "P008-3",
+    "section": "architecture",
+    "title": "AutoTerm Ctrl+C 中断通路修复(DEBTS #12,F2:win32 控制台事件注入) — 架构方案",
+    "content": "四层中动两层(core 新增 helper bin + 方法;ui 一处拦截),分层\n职责不变:\n\n```\ncrates/autoterm-core\n├── src/pty.rs                    # +shell_pid 字段、+interrupt()、\n│                                 #  +resolve_helper_bin()(三级解析)\n├── src/bin/autoterm-ctrlc.rs     # 新增辅助进程(手写 FFI,~70 行)\n├── tests/ctrl_event.rs           # 新增:cmd 恒在场的中断门禁\n└── tests/ash_integration.rs      # 复现器退役 + ash×事件探针矩阵\ncrates/autoterm-ui\n├── src/lib.rs                    # 裸 Ctrl+C 拦截(handle_ctrl_c)、\n│                                 #  DevTick 注入 0x03 同路、mode 纯函数\n└── src/bin/autoterm.rs           # --ctrl-c-mode 参数\n```\n\n**辅助进程数据流**(winpty 经典手法,003 §4 通路 #1):\n\n```\nUI 裸 Ctrl+C ──▶ App::handle_ctrl_c(按 mode)\n                   │ ① write_input([0x03])      ──▶ 主端字节(reedline 消费)\n                   │ ② session.interrupt()\n                   │     ├─ resolve_helper_bin()  ──▶ autoterm-ctrlc.exe 路径\n                   │     └─ spawn(CREATE_NO_WINDOW, wait ≤3s)\n                   ▼\nautoterm-ctrlc.exe <shell_pid>\n  FreeConsole → AttachConsole(pid)          # 挂进 ConPTY 隐藏控制台\n  → SetConsoleCtrlHandler(None, TRUE)       # helper 自身免疫\n  → GenerateConsoleCtrlEvent(CTRL_C_EVENT, 0)  # 广播同控制台全部进程\n  → FreeConsole → exit 0\n                   ▼\nconhost 派发 CTRL_C_EVENT ──▶ 运行中子进程(ping 等)终止,\n                              cmd/pwsh 各自 handler 存活回提示符\n```\n\n要点:\n- 广播安全性:ConPTY 隐藏控制台是本会话私有的,挂着的只有 shell\n  及其子进程——广播(进程组 0)无外溢面;\n- helper 缺失/失败(AutoTerm 部署不完整、attach 失败):\n  `interrupt()` 降级 `write_input([0x03])` + `log::warn`,行为\n  回到修复前,绝不 panic;\n- 解析三级(与 007 `ash_bin()` 同风格):运行时 env\n  `CARGO_BIN_EXE_AUTOTERM_CTRLC`(cargo 为本 crate 集成测试注入)\n  → env `AUTOTERM_CTRLC_BIN`(人工/部署覆盖)→ `current_exe()`\n  向上 ≤3 级父目录找同名 exe(测试布局 target/debug/deps →\n  target/debug;安装布局同目录)。",
+    "file": "docs/plans/archived/008-ctrlc-interrupt-fix.md",
+    "related": [
+     "PLAN-008"
+    ],
+    "status": "stable"
+   },
+   {
+    "id": "P009-3",
+    "section": "architecture",
+    "title": "AutoTerm Auto 化第一相位(分支 A:a2r 修缮 → terminal 原生组件 → 引擎 adapter → Auto 复刻对拍) — 架构方案",
+    "content": "**依赖 DAG(无环铁律的图示)**:\n\n```\n编译期 Cargo 边(单向,唯一):\n  auto-term(.at 经 a2r 转译产物)──依赖──▶ auto-lang 运行时(a2r-std 等)\n\n运行期 FFI 边(非 Cargo 边):\n  auto-lang `terminal` 组件 ──libloading──▶ autoterm-engine.cdylib(P2)\n                                         └─ 标量/opaque handle 数据面\n\n不存在:auto-lang ──Cargo──▶ auto-term(结构性禁止)\n兜底:确需共享类型 → terminal-types 叶子 crate(零依赖,双方引用)\n```\n\n**各层归属(迁移不并行,用户 2026-09-06 对齐)**:\n\n| 层 | 真身 | 本仓命运 |\n| --- | --- | --- |\n| 引擎(PTY+仿真,autoterm-core) | 本仓 cdylib adapter(P2) | **活**——未来 AutoTerm 的引擎本体 |\n| 控件(TermGrid 视口逻辑) | auto-lang `terminal` 组件(P1) | widget.rs **冻结**(真身迁走) |\n| 应用(App/消息/配置) | `.at` 代码(P3) | lib.rs App **冻结为参考** |\n\n**worktree 布局(同组双仓,/auto-plan:work 创建)**:\n\n```\n.wt/auto-009/auto-term   # plan-009-dev(P2/P3/P4 与台账)\n.wt/auto-009/auto-lang   # auto-term-dev 依赖仓 worktree(P0/P1;\n                         #   每相位 fold 回 auto-lang main 后本仓 re-sync)\n```\n\n**相位 fold 节奏**:P0 验证过 → fold auto-lang → P1 起(auto-term\n侧同步 re-sync);P1 验证过 → fold auto-lang → P2/P3(auto-term 侧,\nP2 其实可与 P1 并行——见执行步骤注);P3 对拍绿 → P4 收账。\n\n**组件数据面(P1 设计核心,两候选形态,T2 实测裁定)**:\n\n- 形态甲 props-feed:app 层(.at)每拍把行级损伤增量经组件 props 喂入,\n  组件纯渲染+输入事件上抛——贴合 code_editor 范式,绑定层走标量;\n- 形态乙 opaque-handle:app 把 adapter 的 opaque session handle 传给\n  组件,组件 draw 时直调标量 API 取脏行——少一跳,但组件持运行期\n  状态更深。\n- 裁定规则(预授权):先做甲(范式成熟、a2r 可表达性最好),实测\n  2000 行流式输出下损伤增量喂入延迟不可接受(帧预算超标)再降级乙,\n  执行记录注明数据。",
+    "file": "docs/plans/archived/009-autoize-phase1.md",
+    "related": [
+     "PLAN-009"
+    ],
+    "status": "stable"
+   },
+   {
+    "id": "P010-3",
+    "section": "architecture",
+    "title": "009 后续收尾——a2r 存量编译债清偿 + 对拍门禁补全 + 契约/文档入账 — 架构方案",
+    "content": "无新架构。三条作业原则:\n\n1. **实编门为准**:存量债修复以 ledger 摘除为进度单位;修复不得\n   借机重生成金样(`SCHEMA_DRIFT_GENERATE_AT` 式全量再生成的教训\n   见 009 T5——文本金样漂移须逐例人工确认);\n2. **对拍口径不变**:语义等价(行尾归一/空尾行裁剪/易变行屏蔽\n   既有三类)+ 提示符回归时序点;选中文本场景沿用同协议,仅增\n   「选中→抽取→输出」一跳;\n3. **像素证据管线复用**:iced-layout-tests feature 的\n   `iced_test::simulator`(selectable_text/414 先例),terminal\n   组件按同款写 bounds/绘制断言,不新建管线。",
+    "file": "docs/plans/archived/010-post009-followups.md",
+    "related": [
+     "PLAN-010"
+    ],
+    "status": "stable"
+   }
+  ],
+  "designs": [
+   {
+    "id": "P001-4",
+    "section": "designs",
+    "title": "AutoTerm 建仓与全链路 spike(PTY→仿真核心→渲染) — 详细设计",
+    "content": "### spikes/pty-probe(bin)\n\n- `--shell <exe>`(默认 `pwsh`,回退 `powershell`)、`--duration <秒>`\n  (默认 3)、`--hexdump`;\n- 流程:`portable-pty` 申请 PTY → spawn 子进程 → 主端读到超时为止,\n  字节原样落 stderr(hexdump 可读形态)+ 统计字节率;\n- 预期证据:输出含 `1b 5b`(ESC [)序列、字节率非零。\n\n### spikes/term-probe(lib + bin + 集成测试)\n\n- 封装 `Term::new` + 自定义 `EventListener`,`feed()` 喂字节流,定时\n  快照网格可见文本(`renderable_content` 或等价 API)打印;\n- 集成测试(真 PTY,非录制流):spawn `cmd /c echo hello_term_probe`\n  (或 pwsh 等价),读到 EOF→feed→断言网格含 `hello_term_probe`;\n- 这是仿真核心嵌入体验的第一手记录:API 是否顺手、resize 语义如何\n  触发,写入决策文档附录。\n\n### spikes/render-probe(bin,路线 A 探针)\n\n- iced `Application`/新 API 等价物,自定义 widget:每帧从 term-probe\n  封装读网格 → 按行列拼 monospace 文本渲染(spike 允许整帧重拼,不做\n  字形图集——链路正确性优先,性能留给决策后的正式实现);\n- 键盘:可打印字符/Enter/Backspace → 写 PTY 主端;resize → 通知仿真\n  核心(观察 ConPTY resize 怪癖);\n- `--shell <exe>` 必填,ash 冒烟经此入口:`--shell %ASH_BIN%`。\n\n### 渲染路线判据(决策标准,写入 000 决策文档)\n\n- **A 判据**:iced 下能以可接受代价实现——网格整帧渲染的延迟肉眼可\n  接受、resize 无可感知撕裂、输入回显无粘滞;且自定义 widget API 无\n  结构性障碍(能拿到每帧绘制权);\n- **B 触发**:上述任一不成立,或 iced 帧调度/文本管线与终端需求冲突\n  到需要 fork 上游才能解决;\n- 决策文档记录:三 probe 证据、大输出数字(字节率、帧表现)、A/B 结论\n  与理由、对 auto-ui 的反哺清单(等宽字形、损伤重绘、低延迟输入)。\n\n### ash 冒烟清单(手动,render-probe 里完成)\n\n- [x] `ash` 交互启动,提示符/补全正常;\n- [x] 跑产生 tail 动态渲染的命令(如长输出外部命令),重绘不糊屏;\n- [x] `find` 渐进表格不错位、冻结表格完整;\n- [x] 真彩色/256 色样本正确(如 ash 内置着色输出)。\n\n> 证据:`docs/designs/evidence/001-smoke/`(终态转储 + 流式快照序列 +\n> PrintWindow 截图)。四项全部通过:提示符 `❯`+状态行正常;Tab 补全触发\n> (补出历史命令);2000 行 0.37s 流式输出干净无糊屏、长输出摘要冻结生效\n> (61–63+80 折叠);find 表格三行对齐、边框连续;截图验证 256 色/真彩\n> run 渲染正确(find 绿/-name 蓝/*.md 琥珀/边框 240 灰/提示符绿),\n> 修复右缘裁剪后边框与时钟完整。",
+    "file": "docs/plans/archived/001-autoterm-bootstrap.md",
+    "related": [
+     "PLAN-001"
+    ],
+    "status": "stable",
+    "superseded_by": [
+     "P002-4"
+    ]
+   },
+   {
+    "id": "P002-4",
+    "section": "designs",
+    "title": "AutoTerm Phase 1 单窗口 MVP — 详细设计",
+    "content": "### crates/autoterm-core(lib)\n\n- `term.rs`:TermSession 迁移自 spikes/term-probe/src/lib.rs,新增\n  `take_damage()`(透传 `Term::damage()`/`reset_damage()`)与\n  `scroll(delta_lines)`(透传 `scroll_display`);\n- `pty.rs`:PtySession —— openpty(PtySize 由 ui 侧传入)、spawn、\n  reader 线程→`Receiver<Vec<u8>>`(EOF 哨兵空 vec)、\n  `pump_and_answer(writer)`:feed 后取 PtyWrite 应答写回主端、\n  resize(先 TermSession 后 master)、`kill()`;\n- `tests/live_pty.rs`:迁移 spike 集成测试(`cmd /c echo\n  hello_term_probe` → 网格断言);\n- `tests/sim_regression.rs`:**纯 VT 字节**(不经 PTY)的回归矩阵:\n  - 光标/ED/EL:清屏+定位+写入 → 指定行列文本;\n  - SGR 38;2 真彩与 38;5 256 色 → StyledChar 色值断言;\n  - DECSET 1049 备用屏幕:切入→写入→切出,主屏原内容保留;\n  - CJK 宽字符:占两格(第二格 spacer);\n  - 回滚:超屏输出后 scroll_display 回看历史行;\n  - DSR:`ESC[6n` → pump 输出匹配 `\\x1b[...;...R`;\n- `tests/pty_lifecycle.rs`:spawn→EOF→`exited()` 真;drop(kill)\n  后 `wait()` 拿到退出状态。\n\n### crates/autoterm-ui(bin `autoterm`)\n\n- `main.rs`:iced application(boot 闭包建 PtySession+TermSession,\n  `window::oldest()` 记 Id);`--shell <exe>`(默认 pwsh)、\n  `--dev-exit-after/--dev-autotype/--dev-dump`(冒烟取证钩子);\n- 事件驱动订阅:reader 线程字节经 iced 订阅通道(0.14 实际 API,\n  候选 `Subscription::run` + stream channel)发 `Message::PtyBytes`,\n  替换 `time::every`;键盘 `keyboard::listen`、窗口\n  `resize_events`;\n- `metrics.rs`:启动时 cosmic-text 测 `advance('M')` 得 cell 宽,\n  行高取字体 ascent+descent;`is_wide(c)` = advance≥1.9×cell;\n- `widget.rs`:网格 widget 迁移自 render-probe,改动:\n  - draw 按 `take_damage()` 只重画脏行(Full 退化为整帧);\n  - 光标块:`renderable_content().cursor` 反色渲染;\n  - 滚轮/Shift+滚轮 → `scroll(delta)`;PgUp/PgDn 翻页;\n    回滚偏移>0 时顶行显示 `↑N` 指示;\n  - NamedColor 全枚举映射(Dim/Bright 前景),16/256/真彩表\n    收敛到 `palette.rs`;\n- 关闭语义:窗口 `Event::Closed` → `PtySession::kill()` + wait,\n  退出 app;\n- 顶层 `src/lib.rs`(便于 ui 单测)+ `src/bin/autoterm.rs` 入口。\n\n### docs/designs/001-phase1-architecture.md(T9 交付)\n\n章节:正式 crate 结构图、事件驱动数据流时序、损伤重绘协议\n(damage 语义→脏行集合→draw 剪裁)、字形度量与宽字符策略、\n回滚模型(display_offset 与状态指示)、000→002 决策链与残留缺口\n(引 DEBTS 未清项)。终态含\"结论\"节。",
+    "file": "docs/plans/archived/002-phase1-mvp.md",
+    "related": [
+     "PLAN-002"
+    ],
+    "status": "stable",
+    "superseded_by": [
+     "P003-4"
+    ]
+   },
+   {
+    "id": "P003-4",
+    "section": "designs",
+    "title": "AutoTerm Phase 2 性能与输入完备性 — 详细设计",
+    "content": "### 保留式画布(T1-T4)\n\n- `widget.rs`:`RowPara` 封装 `<iced::Renderer as text::Renderer>::\n  Paragraph`,TermGrid 增 `rows: Vec<Option<RowPara>>`(与快照行\n  等长,damage 剪裁后惰性补齐);\n- 绘制协议:底 quad 全量;每行——`compare(Text{当前行内容})` 为\n  `Difference::None` → 直接 `fill_paragraph`;否则 `with_text` 重建\n  +`load` 后绘制并 `paragraph_rebuilds += 1`;行内背景色块仍按 run\n  画(颜色变化经 compare 的 Shape 差异覆盖);\n- 光标行:上游 damage 恒含光标行,自然走重建路径,反色块绘制不变;\n- dev 转储增 `paragraph_rebuilds_last/prev`;\n- **T1 PoC 前置**:独立测试构造 Paragraph(shaping 'HELLO' →\n  `min_bounds().width > 0`)证明公面构造可行;若构造受阻,记\n  blocker 于待澄清并停 T2-T4(计划其余部分不受影响)。\n\n### 语义矩阵(T5-T7)\n\n- `unescape` 增 `\\xHH` 转义(TDD 单测),Ctrl+C 注入即\n  `--dev-autotype \"N:...\\x03\"`;\n- 冒烟脚本(手工执行,证据存档):三 shell 各跑长命令\n  (pwsh `Start-Sleep 30` / ash 内 pwsh / cmd `timeout 30`),+2s 注入\n  \\x03,断言:网格 10s 内回提示符、无孤儿进程(tasklist 计数);\n- Ctrl+Break:查 iced `key::Named` 是否有 Break 变体与 ConPTY 下\n  的字节/事件形态,结论记 001 附录,能映射则并入 key_to_bytes。\n\n### IME(T8)\n\n- PoC:iced 0.14 Ime 事件(Event 枚举形态)与 `InputMethod` 是否\n  对自定义 widget 开放;可用 → 光标处 preedit 下划线渲染(内容\n  经 Message::Ime(String) 进状态);受阻 → blocker 记录(DEBTS\n  +001 附录),不阻塞计划。\n\n### 三尾巴(T9-T10)\n\n- `dev-tools` feature:`--dev-*` 参数与 DevTick 订阅/取证静态量\n  统一进 `#[cfg(feature = \"dev-tools\")]`;默认构建零 dev 面;\n- log+env_logger:`dump_state`/resize 错误路径换 `log::info!/\n  warn!`,bin 入口 `env_logger::init()`;\n- `Message::NoOp` 变体:键盘非按键/鼠标非滚轮事件改映射 NoOp\n  (update 显式忽略)。",
+    "file": "docs/plans/archived/003-phase2-perf-input.md",
+    "related": [
+     "PLAN-003"
+    ],
+    "status": "stable"
+   },
+   {
+    "id": "P004-4",
+    "section": "designs",
+    "title": "AutoTerm Phase 3 交互完备(选中/复制粘贴 + Ctrl+C 稳定版复测 + IME) — 详细设计",
+    "content": "### core:TermSession 选择封装(T1)\n\n`term.rs` 新增(经 `Term.selection` 公有字段,保持 feed/pump 不变):\n- `begin_selection(ty, cell)`:置 `Some(Selection::new(ty, 点, side))`;\n- `update_selection(cell, side)`:`selection.update`;\n- `clear_selection()`;`selection_range() -> Option<SelectionRange>`\n  (`to_range` 透传);`selection_text() -> Option<String>`\n  (`selection_to_string` 透传);\n- 点坐标用 core 的 `Point{line, column}`(视口相对转绝对由 ui 侧\n  `+display_offset` 完成,或按 to_range 语义实测校正——T1 测试钉死)。\n\n### ui:事件地基与消息(T2)\n\n- `Message::Select(SelectMsg)`,`SelectMsg::{Begin{ty, cell, side},\n  Extend{cell, side}, Finish}`;`Message::Copy`/`Paste`/`SetPreedit`…\n- `TermGrid::update`:左键按下→Begin(带点击计数:1=Simple、2=\n  Semantic、3=Lines);移动且按住→Extend;释放→Finish;\n  右键释放→Paste;`Interaction::Text`/拖选中 `AllScroll`?MVP:\n  `Interaction::Text` 即可;\n- `App.update`:Begin→`term.begin_selection`;Extend→`update_selection`\n  + 刷新快照(display/高亮不进快照,仅刷新 overlay 字段);Finish→\n  copy-on-select(空选清除);键盘 Ctrl+Shift+C/V 走 key_to_bytes\n  前拦截。\n\n### ui:高亮渲染与复制粘贴(T3-T4)\n\n- TermGrid 增 `selection: Option<SelectionRange>`(App 传入);draw\n  在 bg quad 层之后、Paragraph 文本层之前画高亮矩形(选中色=前景色\n  20% 透明叠底 or 反转?用 `DEFAULT_FG` 25% alpha 叠加,保证不破坏\n  行缓存 digest);\n- 复制:`selection_text()` → `iced::clipboard::write`(Task,update 返\n  回);粘贴:`clipboard::read` → 内容 `\\r\\n|\\n` → `\\r` 规整后\n  `write_input`;\n- 拖选越界不动(自动滚动非目标),超视口 Extend 由 clamp 到边缘格。\n\n### 取证钩子(T5)\n\n- `--dev-select \"ms:<start_row>:<start_col>-<end_row>:<end_col>\"`:\n  到时注入 Begin/Extend/Finish 序列;dev 转储输出 `selection_text:`\n  行与 `selection_cells: N`(高亮格数);像素高亮用程序化扫描\n  (选中色亮度差)存 evidence。\n\n### Ctrl+C 稳定版复测(T7)\n\n- 复用 003 最小管道矩阵(裸 0x03/win32 编码/WT 实测三通道)在\n  稳定版 Windows(非 26200 内部版)环境执行——本机不具备则记录\n  \"待环境\"并挂 DEBTS(不阻塞本计划其余交付);\n- 结论回填 001 附录与 DEBTS #7。\n\n### IME(T8)\n\n- `TermGrid::update` 聚焦/点击时 `shell.request_input_method(\n  cursor_rect, purpose=Terminal)`;`Event::InputMethod::Preedit` →\n  `Message::SetPreedit(String)`(App 挂起显示:光标行尾下划线文本,\n  不写 PTY);`Commit` → 清 preedit + `write_input`;\n- over-the-spot(`InputMethod::Enabled{preedit}`)优先,落不下再自绘;\n- 验收:人工中文输入清单(pwsh/ash 各 5 分钟:拼音组句、上屏、\n  中英切换、取消),截图留档。",
+    "file": "docs/plans/archived/004-phase3-interaction.md",
+    "related": [
+     "PLAN-004"
+    ],
+    "status": "stable"
+   },
+   {
+    "id": "P006-4",
+    "section": "designs",
+    "title": "AutoTerm Auto 化前提调查(AutoUI 组件模型表达力 + a2r 往返一致性 + Rust 绑定通路) — 详细设计",
+    "content": "### T1 AutoUI 组件模型(只读)\n\n读 `src/ui/component.rs`/`dynamic.rs`/`a2ui/schema.rs`/组件注册\n表:组件定义形态、能否注册新组件、有无\"原生/自定义 widget 挂载\n点\"。产出 Q1 前半(模型侧)+ file:line 证据。\n\n### T2 iced 后端扩展点(只读)\n\n读 `src/ui/iced/{renderer,mod,selectable_text,pointer_area,\nvirtual_window}.rs`:renderer 如何把组件树映射到 iced;内置组件\n是\"手写 Rust Widget 实现\"还是\"iced 既有组件包装\";**从 .at 层\n触达自定义 Widget 的路径存在与否**。产出 Q1 后半(后端侧)。\n\n### T3 绑定通路(只读)\n\n读 `crates/auto-bindgen`、`docs/custom-lib-paths-*.md`、\n`src/ui/ext_stubs.rs`:Auto→Rust crate 的调用机制、类型封送、\n限制(如 stub arity 约束)。产出 Q2。\n\n### T4 a2r 能力面(只读)\n\n读 a2r 三篇文档的 Implementation Status + `a2r-std` 公面:产出\n子集清单(struct/enum/trait impl?/extern?),对照 DEBTS #8 的\n往返约束。产出 Q3 前半。\n\n### T5 S2 round-trip spike(动手,本仓内)\n\n`spikes/autoize-roundtrip/sample.at`:TermSession 子集形态\n(GridSize struct + Damage enum + begin/update/clear_selection\n方法签名级)+ 运行 `auto.exe transpile rust`;人工 diff 产出 vs\n`autoterm-core/src/term.rs` 风格,记录:哪些构造 1:1、哪些变形、\n哪些不可表达。产出 Q3 后半(实证)。\n\n### T6 S1 只读构建 spike(动手,auto-lang 不改)\n\n`cargo build -p auto-lang --features ui-iced`(+ 若有 ui-iced\n示例则跑一个);记录构建时长/警告面貌/示例可运行性。产出 Q4。\n\n### T7 可行性文档汇总\n\n`docs/designs/002-autoize-feasibility.md`:Q1-Q4 答案(带源码\n证据)、**差距清单按 #8 复刻面映射**(core 封装/ui App/\nTermGrid/引擎绑定四档)、工作量分级(人日量级)、go/no-go 三分\n支材料(能表达→#8 直立;缺能力→auto-lang 补齐计划草案;短期\n不可达→降级路线如宿主壳+Auto 面板)、#8 立项拆解草案。\n\n### T8 台账回写\n\nDEBTS:#7 关账(结论一句话+指向 002 文档);#8 启动条件按结论\n更新;**修正 auto-ui 旧仓引用为 auto-lang 内 ui 模块**(含 001\n附录相关表述);README 定位节同步。",
+    "file": "docs/plans/archived/006-autoize-feasibility.md",
+    "related": [
+     "PLAN-006"
+    ],
+    "status": "stable",
+    "superseded_by": null
+   },
+   {
+    "id": "P005-4",
+    "section": "designs",
+    "title": "AutoTerm Phase 4 交互批(Rust 版功能齐全:自动滚动 + 块选 + 右键菜单 + 选中色 + 光标形状/闪烁) — 详细设计",
+    "content": "### core:块选与光标形状透传(T1)\n\n- `term.rs` `cursor()` 扩展:返回 `(row, col, CursorShape)` 或\n  新增 `cursor_shape()`(保持旧签名兼容调用点最小改);\n- sim_regression 增 1 用例:feed `ESC[4 q` 后 shape==Underline\n  (DECSCUSR 通路);Block 选中 2 用例(范围矩形语义 + 文本逐行\n  截断)。\n\n### ui:块选触发与渲染(T2)\n\n- widget `ButtonPressed(Left)` 分支:mods 含 Alt → ty=Block\n  (多击计数与 Alt 正交:Alt 按下时恒 Block,不参与 1/2/3 击);\n- 高亮渲染:`sel.is_block` 时逐行画 `col_begin..col_last` 窄带\n  (矩形对齐,不跨全行);文本层不动;\n- dev-select 解析器增 `block` 前缀(现 parser 三前缀外补一)。\n\n### ui:拖选自动滚动(T3)\n\n- App 增 `drag_scroll: Option<i32>`(方向行数);handle_select\n  的 Extend 分支检测:cell.row==0 且指针在上边缘带(由 widget\n  发布 `at_edge: Option<Vertical>` 扩展字段)→ 置 drag_scroll;\n  离开边缘/Finish → 清;\n- 条件订阅:`drag_scroll.is_some()` 时挂 `time::every(50ms)` →\n  `Message::Scrolled(delta)`(复用现滚轮回滚路径,选中随绝对行\n  锚定自动跟随);菜单打开时暂停。\n\n### ui:右键上下文菜单(T4)\n\n- `Message::ContextMenu(Option<(usize,usize)>)`(格坐标或像素,\n  存 MenuState);widget 右键释放改发 ContextMenu(原 Paste 通道\n  由菜单项\"粘贴\"承担);\n- TermGrid 增 `menu: Option<MenuState>` 字段;draw 最顶层画:\n  底 quad + 边框 + 三项文本(复制/粘贴/全选)+ hover 反色;\n- 交互:菜单开着时点击命中项 → publish 对应动作(Copy=\n  clipboard_shortcut 同函数 / Paste=现消息 / 全选=Begin{Lines,\n  视口左上}+Extend{视口右下});未命中或 ESC → 关闭;\n- 命中检测在 `pixel_to_cell` 同域(菜单矩形像素判定,纯函数\n  可单测)。\n\n### ui:选中色配置(T5)\n\n- bin 增 `--selection-color RRGGBB[AA]`(clap,默认 `e8e8e8`+\n  α0.25 硬编码值移入 AppConfig);解析 hex → iced::Color 纯函数\n  + 单测(6/8 位、非法回退默认);\n- App → TermGrid.selection_color: Color;高亮 quad 改用之。\n\n### ui:光标形状与闪烁(T6-T7)\n\n- 渲染分形:Underline=格底 2px 亮 quad;Beam=格左 2px 亮 quad\n  (不反色字形);Block 维持 004 反色块;\n- `App.focused: bool`(iced window focus 事件接入,新增消息);\n- 闪烁:`cursor_blink_on: bool`(相位),条件订阅 500ms 取反,\n  仅 `focused && shape!=Hidden && menu.is_none()`;光标不可见\n  帧跳过光标绘制(preedit 挂起时同样不闪);\n- 转储增 `cursor_shape:`/`cursor_visible:` 行(dev 取证)。\n\n### 取证与文档(T8-T9)\n\n- 冒烟矩阵:块选高亮像素扫描(列带几何)/DECSCUSR 三形转储+\n  Beam 像素(左缘亮线)/自动滚动注入(dev-select 边缘 Extend 模\n  拟 → 转储 scroll_offset>0 且 selection_text 跨滚动区)/菜单\n  开合(dev-hook 注入 ContextMenu 坐标 → 像素扫描菜单底 quad);\n- 001 追加 004→005 决策链;DEBTS 勾账(Phase 4 批次 1-4 项 +\n  光标形状早年账);README 交互表增块选/菜单/形状/闪烁。",
+    "file": "docs/plans/archived/005-phase4-interaction-batch.md",
+    "related": [
+     "PLAN-005"
+    ],
+    "status": "stable"
+   },
+   {
+    "id": "P007-4",
+    "section": "designs",
+    "title": "AutoTerm ash(AutoShell)独立运行验证与测试门禁 — 详细设计",
+    "content": "### `crates/autoterm-core/tests/ash_integration.rs` 结构\n\n```rust\n//! ash (AutoShell) 集成门禁:真 PTY → 仿真核心 → 网格断言。\n//! 门控:AUTOTERM_ASH_BIN 优先,兄弟仓约定路径兜底,皆无则 skip。\n\nfn ash_bin() -> Option<PathBuf>;           // env → ../auto-shell/.../ash.exe 探测\nfn grid_text(s: &PtySession) -> String;    // visible_lines().join(\"\\n\")\nfn wait_for<F: Fn(&TermSession) -> bool>(  // 轮询 drain + 判定\n    s: &mut PtySession, timeout: Duration, what: &str, pred: F,\n);  // 超时 panic 附 grid_text 快照\n\n#[test] fn spawn_prompt_renders()          // ① 非空行出现 + bytes_fed > 0\n#[test] fn echo_roundtrip()                // ② marker 出现于网格\n#[test] fn ctrl_c_interrupt_returns_prompt() // ③ sleep 30 + 0x03 + after-marker ≤10s\n#[test] fn exit_command_terminates()       // ④a \"exit\\r\" → exited() ≤10s\n#[test] fn ctrl_d_eof_terminates()         // ④b 0x04(至多两次)→ exited()\n#[test] fn resize_survives()               // ⑤ 120x40 + marker2 响应\n#[test] fn color_info_reports_truecolor()  // ⑥ 网格含 \"24-bit truecolor\"\n```\n\n要点:\n\n- 每个用例独立 `PtySession::spawn(bin, [], 80, 24)`(ash 裸跑即 REPL,\n  无需参数;`--shell` 只收程序名的设计不受影响);`Drop` 兜底杀进程,\n  用例内不显式清理也安全;\n- marker 用随机后缀(如 `ash_probe_{pid}`)防串扰;\n- 场景③判定逻辑:`sleep 30` 阻塞下,后续 `echo after_c` 的 marker 若能\n  在 ≤10s 内出现,即证明中断生效(sleep 30 不可能自然结束);\n- 场景⑥若实测**不是** 24-bit:不静默改断言迎合——原样断言失败,\n  执行记录里按发现处理(进 open-questions + DEBTS + 设计文档 R4 结论),\n  断言修正为实测值时必须附注释引用 DEBTS 条目号。\n\n### UI 半自动冒烟配方(T7 执行时落成三条可复制命令)\n\n```bash\nASH=D:/autostack/auto-shell/ash/target/release/ash.exe\n# A echo 往返\ncargo run -p autoterm-ui --features dev-tools -- --shell $ASH \\\n  --dev-autotype \"4000:echo ash_ui_probe\\r\" --dev-exit-after 12 \\\n  --dev-dump target/ash-smoke-a.txt\n# B 真彩取证(color rainbow + color info)\ncargo run -p autoterm-ui --features dev-tools -- --shell $ASH \\\n  --dev-autotype \"4000:color rainbow\\r\" \"6500:color info\\r\" \\\n  --dev-exit-after 14 --dev-dump target/ash-smoke-b.txt\n# C Ctrl+C 中断(sleep 30 + \\x03 + 复验 marker)\ncargo run -p autoterm-ui --features dev-tools -- --shell $ASH \\\n  --dev-autotype \"4000:sleep 30\\r\" \"6000:\\x03\" \"8000:echo after_c\\r\" \\\n  --dev-exit-after 16 --dev-dump target/ash-smoke-c.txt\n```\n\n证据核对面(dump 含网格文本 + 损伤/帧计数,lib.rs:597-654):\nA 含 `ash_ui_probe`;B 含 `Ash 24-bit Truecolor Rainbow!` 与\n`Color depth: 24-bit truecolor`;C 含 `after_c` 且 uptime < 15s。\n首提示符延迟超 4s 时按 dump 实况回调各段延迟(执行记录里注明)。\n\n### `docs/designs/003-ash-compatibility.md` 骨架\n\n场景矩阵表(6+3 场景 × 结果/证据)、R1–R6 逐项结论、ash 冷启动数字、\n遗留问题(→ DEBTS 编号)、虚拟桌面接入契约提醒(显式绝对路径)。",
+    "file": "docs/plans/archived/007-ash-shell-support.md",
+    "related": [
+     "PLAN-007"
+    ],
+    "status": "stable"
+   },
+   {
+    "id": "P008-4",
+    "section": "designs",
+    "title": "AutoTerm Ctrl+C 中断通路修复(DEBTS #12,F2:win32 控制台事件注入) — 详细设计",
+    "content": "### `crates/autoterm-core/src/bin/autoterm-ctrlc.rs`(T1)\n\n```rust\n//! Ctrl+C 注入辅助:挂进目标进程的控制台后广播 CTRL_C_EVENT。\n//! 用法: autoterm-ctrlc <pid>;exit 0=成功,2=attach 失败,3=用法。\n// SPDX-License-Identifier: Apache-2.0\n// 非 windows 目标:占位 main,打印不支持后 exit 1(保持可编译)。\n\n#[cfg(windows)]\nmod imp {\n    // 手写 kernel32 FFI(零新依赖):BOOL=i32,全部标量签名\n    #[link(name = \"kernel32\")]\n    extern \"system\" {\n        fn FreeConsole() -> i32;\n        fn AttachConsole(dwProcessId: u32) -> i32;\n        fn SetConsoleCtrlHandler(handler: Option<unsafe extern \"system\" fn(u32) -> i32>, add: i32) -> i32;\n        fn GenerateConsoleCtrlEvent(dwCtrlEvent: u32, dwProcessGroupId: u32) -> i32;\n    }\n    const CTRL_C_EVENT: u32 = 0;\n\n    pub fn run(pid: u32) -> i32 {\n        unsafe {\n            let _ = FreeConsole();                       // 脱离宿主(若挂)控制台\n            if AttachConsole(pid) == 0 { return 2; }     // 挂进 ConPTY 隐藏控制台\n            let _ = SetConsoleCtrlHandler(None, 1);      // 自身免疫本事件\n            let ok = GenerateConsoleCtrlEvent(CTRL_C_EVENT, 0); // 广播\n            let _ = FreeConsole();\n            if ok == 0 { 2 } else { 0 }\n        }\n    }\n}\n```\n\n### `pty.rs` 增量(T2)\n\n- 字段:`shell_pid: Option<u32>`(spawn 后 `child.process_id()`\n  存副本)、`program: String`(:57 既有变量,供 UI 侧 ash 判定,\n  `pub fn program(&self) -> &str` 暴露);\n- `pub fn interrupt(&mut self) -> bool`:windows → pid 缺席(已\n  reap)返 false;`resolve_helper_bin()` 取路径 →\n  `std::process::Command::new(path).arg(pid)` +\n  `creation_flags(0x08000000)`(CREATE_NO_WINDOW,防控制台窗口\n  闪烁)spawn,`wait_timeout ≤3s`(自旋 try_wait 50ms 步进,不引\n  wait-timeout crate);失败/超时/缺席 → `log::warn!` +\n  `write_input(&[0x03])` 返 false;成功返 true;\n- `fn resolve_helper_bin_from(exe: &Path) -> Option<PathBuf>`:\n  exe 起 1..=3 级父目录寻 `autoterm-ctrlc.exe`(纯函数可单测);\n  外壳 `resolve_helper_bin()` 依次查 env\n  `CARGO_BIN_EXE_AUTOTERM_CTRLC` → env `AUTOTERM_CTRLC_BIN` →\n  `resolve_helper_bin_from(&current_exe())`;\n- `#[cfg(not(windows))]` 的 interrupt() = `write_input(&[0x03])`\n  返 true(占位,Unix 轨道另立)。\n\n### `tests/ctrl_event.rs`(T3)\n\n- 自带 `grid_text`/`wait_for` 助手(与 ash_integration.rs:62-79\n  同源,注释注明;不建 tests/common,保持各门禁文件自包含);\n- ① `interrupt_terminates_cmd_child`:spawn `cmd /c ping -n 30\n  127.0.0.1` → 等 \"Reply from\" → `interrupt()` 返 true →\n  轮询 `exited()` ≤5s(**#12 的直接门禁,cmd 恒在场**);\n- ② `interrupt_returns_pwsh_prompt`:`where pwsh` 探测缺席即\n  eprintln skip + return;在场:提示符 → `ping -n 30\n  127.0.0.1\\r` → 等 \"Reply from\" → `interrupt()` → `echo\n  marker\\r` ≤10s 上屏 + `!exited()`;\n- ③ `interrupt_helper_missing_falls_back`:`AUTOTERM_CTRLC_BIN=\n  Z:/nonexistent.exe`(std::env::set_var,测试串行;两级 env 先于\n  walk-up,故指向不存在即缺席)→ cmd /c ping 会话 → `interrupt()`\n  返 false、不 panic、2s 内 `!exited()`(降级=修复前行为)。\n\n### ash 探针矩阵与复现器退役(T4)\n\n- 删除 `f2_repro_cmd_interrupt`/`f2_repro_pwsh_interrupt`\n  (ash_integration.rs:261-296)——cmd/pwsh 语义已由 ctrl_event.rs\n  转正,复现器使命完成;文件头注释同步(引用 PLAN-008);\n- 新增 `ctrl_c_event_effect_on_ash`(ash 缺席 skip),三态:\n  - **idle**:提示符下 `interrupt()` → 析取断言\"存活且 marker\n    可跑\"或 `exited()`,记录实际分支;\n  - **builtin**:`sleep 30\\r` 上屏后 `interrupt()` → 同析取;\n  - **external**:`ping -n 30 127.0.0.1\\r`(ash 跑外部 ping)→\n    `interrupt()` → ping 输出停止且提示符回归/`exited()` 析取。\n- **预授权裁定规则**(执行记录落矩阵后即时裁定,不回询):\n  idle 态 ash 被 exit(默认 handler)→ auto 模式保留 ash 豁免;\n  idle 态存活(handler 已在)→ 不引入豁免门,ash 同享 both;\n  矩阵结论同步 DEBTS #13 行(auto-shell 协调请求)。\n\n### UI 接线(T5)\n\n- `pub fn is_bare_ctrl_c(key: &Key, mods: &Modifiers) -> bool`\n  纯函数(Character 'c' + CONTROL 且非 SHIFT);\n- `Message::Keyboard` 分支在剪贴板拦截(lib.rs:651-656)之后、\n  `key_to_bytes`(:658)之前:`if is_bare_ctrl_c(&key,&mods) {\n  return self.handle_ctrl_c(); }`;\n- `fn handle_ctrl_c(&mut self) -> Task<Message>`:按\n  `self.config.ctrl_c_mode`——byte=仅 `write_input([0x03])`;\n  event=仅 `session.interrupt()`;both=两者;auto=\n  `resolve_effective_mode(&self.config.shell)`(stem eq_ignore_case\n  \"ash\" → byte,#13 落地后撤,否则 both);函数纯化便于单测;\n- DevTick 注入(lib.rs:491-493):`bytes == [0x03]` 时改调\n  `handle_ctrl_c()` 同路(保配方 C 的 dev 证据 = 真实按键语义);\n- `AppConfig.ctrl_c_mode` + bin `--ctrl-c-mode <auto|byte|event|\n  both>`(clap ValueEnum,默认 auto,autoterm.rs:23 旁);\n- 单测:is_bare_ctrl_c 三例(裸=真/Ctrl+Shift=假/无 Ctrl=假,\n  既有 :1388 断言迁移对齐)、resolve_effective_mode 两例\n  (ash→byte、cmd/pwsh→both)。\n\n### UI 取证(T6)\n\n007 配方 C 原样复跑(`--dev-autotype` 重复传参语义,003 §2.2):\n\n```bash\ncargo run -p autoterm-ui --features dev-tools -- --shell $ASH \\\n  --dev-autotype \"4000:sleep 30\\r\" --dev-autotype \"6000:\\x03\" \\\n  --dev-autotype \"8000:echo after_c\\r\" --dev-exit-after 16 \\\n  --dev-dump target/ash-smoke-c2.txt\n```\n\n- T4 裁定 ash 豁免生效时:上命令加 `--ctrl-c-mode both` 取证\n  (dump 含 `after_c`,对照 007 的 0 命中即修复生效),另补默认\n  auto 一条对照 dump(after_c 0 命中 = 豁免证据);\n- 无豁免时:默认 auto 即含 after_c。\n\n### 文档与台账(T7)\n\n- designs/003 追加 §4.1 修复实施(机制/双投递/ash 三态矩阵/\n  ctrl-c-mode 表);§5 第 4 条改\"中断:可用(默认 auto,见 §4.1)\";\n- DEBTS:#12 清账(门禁①证据)、#7 关账(win32 直调落地,稳定版\n  conhost 调查随事件注入失去必要性)、#13 追注矩阵 + 协调请求、\n  头部账期;\n- README:交互表 Ctrl+C 行为一句(双投递 + helper 部署说明:\n  拷贝部署需 autoterm.exe 与 autoterm-ctrlc.exe 同目录)。",
+    "file": "docs/plans/archived/008-ctrlc-interrupt-fix.md",
+    "related": [
+     "PLAN-008"
+    ],
+    "status": "stable"
+   },
+   {
+    "id": "P009-4",
+    "section": "designs",
+    "title": "AutoTerm Auto 化第一相位(分支 A:a2r 修缮 → terminal 原生组件 → 引擎 adapter → Auto 复刻对拍) — 详细设计",
+    "content": "### P0:auto-lang a2r 修缮(T1,worktree:auto-lang)\n\n- F1 修复:`docs/a2r-transpiler-guide.md` 所述派生组合\n  (自动派生×显式派生 → E0369)在转译器侧修(优先)或规约绕开\n  (兜底,记入 `.at` 编码规约);修复证据 = 006 S2 样本中此前\n  不可编译的构造转译后 rustc 实编通过;\n- 快照门扩档:`crates/auto-lang/test/a2r/` 快照管线增加\n  \"rustc 实编\"档(006 拆解草案原文:round-trip 快照扩一档\n  rustc 实编门)——每快照产物 `cargo check` 级验证;\n- 本仓 `spikes/autoize-roundtrip/` 重跑:diff 相对 006 NOTES.md\n  的记录,新差异(应只有 F1 修复带来的改善)归档。\n\n### P1:auto-lang `terminal` 原生组件(T2–T5,worktree:auto-lang)\n\n新目录 `crates/auto-lang/src/ui/terminal/`(mod 结构照 code_editor),\n**迁移源 = 本仓 widget.rs 逐块搬运 + 接 auto-lang 组件协议**:\n\n- T2 骨架+接线:`ui/terminal/{mod.rs,widget.rs}` 四件套\n  (Widget trait:State/Message/View/focus)+ `widget_registry.rs`/\n  `component.rs`/`a2ui/schema.rs`/`iced/renderer.rs` 四处注册\n  (View 新变体 `Terminal`),渲染占位矩形;`.at` 最小示例\n  (examples/ui 下)能挂载;\n- T3 视口+损伤:网格字形渲染(monospace cell 布局/宽字符)、\n  行级损伤门控与 RowPara 等价缓存、光标块/形状/闪烁——搬\n  widget.rs 的 draw/damage 逻辑,数据面按裁定形态接;\n- T4 交互:选中三模式+块选(列带高亮)、IME 自绘 preedit、\n  滚轮回滚/偏移指示、右键菜单——搬 004/005 的交互套件;\n- T5 测试管线:headless 断言(网格文本/选中/损伤计数)+\n  iced_test(照 selectable_text);rust-mode 示例 E0080 小修;\n- 数据面形态裁定(甲/乙)在 T2 实测后落执行记录,后续任务按\n  裁定形态实现。\n\n### P2:本仓引擎 cdylib adapter(T6–T7,worktree:auto-term)\n\n- T6 cdylib 面:`crates/autoterm-core` 加 `[lib] crate-type`\n  增补(rlib 保留),新增 `ffi.rs` 模块——opaque SessionHandle +\n  标量/字符串 C ABI:`autoterm_engine_spawn/write_input/feed_ready/\n  take_dirty_rows/row_text/row_style/resize/interrupt/kill`\n  (命名风格以现有公面为准,T6 细化);行级损伤增量导出走\n  `take_dirty_rows`(与 P1 数据面甲形态对齐);\n- T7 独立集成测试:新测试 crate 或 tests/(独立进程)经\n  libloading 加载 cdylib,跑 echo 往返 + resize + interrupt\n  (008 语义)全链断言——这就是 Auto 侧未来消费形态的预演。\n\n### P3:本仓 Auto 复刻 + 对拍(T8–T10,worktree:auto-term)\n\n- T8 `.at` 应用骨架:本仓新目录 `at/`(产品归属本仓):\n  `at/autoterm.at`(app 声明:窗口/消息/update)+ terminal 组件\n  挂载 + adapter 经 ext/FFI 绑定(use.rust 管线,006 Q2 结论);\n  a2r 转译产物 `at-gen/`(入库,对拍门禁消费)rustc 实编通过;\n- T9 对拍门禁:`crates/autoterm-parity/`(新测试 crate,或\n  autoterm-core tests——T8 时按产物形态定,执行记录注明):\n  同一场景脚本分别驱动 Rust oracle 版与 a2r 版二进制,断言\n  网格文本等价——场景矩阵 = 007/008 门禁的子集(启动提示符/\n  echo 往返/Ctrl+C 中断(timeout 主体)/resize/色彩自证/\n  选中文本);ash 缺席显式 skip;\n- T10 UI 级冒烟取证:a2r 版二进制交互冒烟(真窗口;程序化\n  dump 等价钩子若组件数据面支持,否则手动清单 + 截图补充,\n  002/003 惯例:程序化证据为主)。\n\n### P4:收账(T11,worktree:auto-term)\n\n- DEBTS #8 关账:条件回写(对拍门禁在库 + 组件真身迁移完成 +\n  本仓转型);\n- 本仓转型声明:README 定位节改写(引擎 adapter + 参考实现/\n  oracle,widget.rs/App 冻结);001 决策链追加 009 节;\n- 无环断言:两仓 `cargo tree` 交叉检查(auto-lang 不出现\n  autoterm crate;auto-term 仅经 at-gen 依赖 auto-lang 运行时);\n- 新 DEBTS 候选记录(Vue 后端留白/数据面性能余量/E0080 若未修)。",
+    "file": "docs/plans/archived/009-autoize-phase1.md",
+    "related": [
+     "PLAN-009"
+    ],
+    "status": "stable"
+   },
+   {
+    "id": "P010-4",
+    "section": "designs",
+    "title": "009 后续收尾——a2r 存量编译债清偿 + 对拍门禁补全 + 契约/文档入账 — 详细设计",
+    "content": "### T1 [auto-lang] List.new() 限定 bug 修复\n\n调查 `trans/rust.rs` 表达式限定:`List` 走 common_collection_types\n(parser.rs:1164)→ `Type::List(Unknown)`;产物却出现\n`engine_write_line::Vec::new()` —— 疑 `Vec::new()` 生成后又被\n「未知符号 → use.rs 符号补前缀」逻辑改写(009 实证恰好选中最后注册的\nuse.rs 符号)。修复口径:集合字面量构造(`Vec::new()`/`vec![]`)列入\n豁免名单,任何 use.rs 符号不得前缀之。新增语料快照:\n`test/a2r/10_collections/007_list_new/`(含 `List.new()` 赋值字段)。\n验证:新快照绿 + 全 tt 档绿 + 实编门该用例(新增)绿。\n\n### T2 [auto-lang] 存量编译债分批清偿(计划主体)\n\n按错误码分组推进(每批一个 commit,批间 `cargo tt` + 实编门全绿):\n\n- 批次预估(ledger 分布):question 族 ~17 例(E0308 类)→ interop\n  ~10 例 → methods/collections/delegation ~15 例 → 其余;\n- 每例流程:读 ledger 行 → 取 auto-lang worktree 重转译该 .at →\n  rustc 复现 → 定位 codegen 缺陷修复 → 实编门跑绿(该例从 ledger\n  摘除)→ 金样比对(文本漂移须逐例说明,不得静默重生成);\n- 快照金样同步:修复若改变既有 `.expected.rs` 输出,逐例更新并在\n  commit message 记录理由;\n- **预授权**:个别例根因过深(如涉及 CTEE/类型推断重构)可留 ledger,\n  commit 记录理由;验收线=清偿率 ≥50%(74 → ≤37)。\n\n验证:`cargo tt`(全绿)+ `cargo t a2r_rustc_real_compile_gate`\n(skips 单调递减)+ 金样 diff 审阅。\n\n### T3 [auto-lang] CLI trans 挂起修复\n\n流程:复现(60 行样本 timeout 60s)→ `cargo build -p auto` 后以\n`RUST_LOG`/eprintln 分段定位(trans_rust_with_session vs main 前置\n初始化)→ 若为回归,`git log f3185a7..master -- crates/auto/src/main.rs\ncrates/auto-lang/src/lib.rs` 二分候选提交 → 修复 → CLI 实跑\n`auto trans -p <样本> rust` 秒级完成,产物 `diff` in-process 一致。\n若根因在并行会话领域(如 daemon/初始化),修至「CLI 不挂起」即可,\n深度重构记 DEBTS 不阻塞。\n\n验证:CLI 命令 timeout 60s 内退出 + 产物编译通过。\n\n### T4 [auto-lang] E0080 销账复核\n\n复跑 002 §4 所指两 rust-mode 示例(定位:`examples/` 下含\n`HostBackend::Iced.run` 且带 tick 的示例,009 已确认 run_app TickWrap\n根修)→ `cargo build --example <x> --features ui-iced` 双示例绿 →\n销 009 新增观察 #7(DEBTS 回写)。示例若缺 tick 分支,补最小\ntick_interval_ms 验证路径。\n\n验证:两示例 build 绿(如示例不存在则以 ui_counter 加\ntick_interval_ms 的临时变体验证后撤销)。\n\n### T5 [auto-term] 契约追补 + at-gen 标题\n\n- `docs/designs/003-ash-compatibility.md` §5 部署条后追加:\n  「Auto 复刻应用形态:随包分发 `autoterm_engine` cdylib\n  (`autoterm_core.dll`,debug/release 后缀随目标)+ 与宿主同目录的\n  `autoterm-ctrlc.exe`(interrupt 契约不变)」;\n- at-gen `src/shell.rs`/`main.rs`:iced application 标题改\n  \"AutoTerm\"(经 auto-lang run_app 侧若不支持自定义标题,则\n  run_app 增可选 title 参数或组件侧 `app_title()` 面——按现状最小改)。\n\n验证:grep 契约命中;GUI 起窗标题非缺省(smoke 截图复用)。\n\n### T6 [auto-term] DEBTS #5/#7 关账回写\n\nDEBTS.md Phase 4 清单 #5(Ctrl+C 稳定版复测/债务 #7)标注关账:\n证据=009 `parity_interrupt`(真实 ConPTY,timeout 主体,双投递广播\n成功路径)+ auto-term `engine_ffi_integration` interrupt 分支;\n#5 与 #7 合并销账(同一事实)。\n\n验证:grep DEBTS 关账标注在案。\n\n### T7 [auto-term] 选中文本 headless 对拍接线(门禁去 skip)\n\n- at-gen scenario 扩 `selection` 模式:headless 进程直接驱动组件\n  注册表面(`terminal_selection_begin/extend/finish` +\n  `terminal_selected_text`,auto-lang `src/ui/terminal/mod.rs` 公面;\n  经 at-gen 已依赖的 auto-lang),对喂入网格编程选中(\"hello world\"\n  行 Simple 选中),ROW 协议输出选中文本;\n- oracle 侧:`TermSession::begin_selection/update_selection/\n  selection_text` 同区间选中(alacritty Point/Side 坐标换算);\n- `parity_gate.rs`:`parity_selection_text` 去 skip,双侧选中文本\n  assert 相等(语义等价归一沿用);\n- 色彩自证保持 ash-缺席 skip 语义不变(注明与选中的差异:缺外部\n  依赖 vs 待接线)。\n\n验证:parity 6 场景实跑 5 + 1 skip(色彩)全绿。\n\n### T8 [auto-term→auto-lang] iced 像素自动化\n\nauto-lang `src/ui/iced/` 新增 terminal 像素测试(layout_tests 同款,\n`--features ui-iced,iced-layout-tests`):构造 `View::Terminal`(固定\n文本行/选中态/光标三形),simulator 渲染后断言:bounds 非零、\n选中列带颜色采样、光标块像素区域。放 `layout_tests.rs` 同 cfg 门\n(新 mod `terminal_pixel_tests`)。\n\n验证:`cargo t --features ui-iced,iced-layout-tests terminal_pixel` 绿。\n\n### T9 收账\n\n两仓 fold(auto-lang T1-T4 毕 → fold → auto-term T5-T8 毕 → 终 fold);\nDEBTS 009 新增观察逐条销账(#1 清偿率在案/#2 已修/#3 已修/#6 已修/\n#7 已销;#4 留白维持;#5 维持观察);复审遗留两项闭合记录。",
+    "file": "docs/plans/archived/010-post009-followups.md",
+    "related": [
+     "PLAN-010"
+    ],
+    "status": "stable"
+   }
+  ],
+  "tests": [
+   {
+    "id": "P001-5",
+    "section": "tests",
+    "title": "AutoTerm 建仓与全链路 spike(PTY→仿真核心→渲染) — 测试设计",
+    "content": "- 自动:term-probe 集成测试(真 PTY→仿真核心→网格断言)是本计划唯一\n  自动断言,也是后续正式工程的回归种子;\n- 半自动:pty-probe 字节率统计(人工核对非零 + ESC 序列存在);\n- 手动:render-probe 交互冒烟 + ash 冒烟清单 + 大输出粗测记录数字;\n- 明确不做:性能自动化基准(Phase 1+ 另立)、跨平台矩阵(仅 Windows)。",
+    "file": "docs/plans/archived/001-autoterm-bootstrap.md",
+    "related": [
+     "PLAN-001"
+    ],
+    "status": "verified",
+    "superseded_by": [
+     "P002-5"
+    ]
+   },
+   {
+    "id": "P002-5",
+    "section": "tests",
+    "title": "AutoTerm Phase 1 单窗口 MVP — 测试设计",
+    "content": "- 自动:autoterm-core 三套测试(live_pty/sim_regression/\n  pty_lifecycle)+ metrics 单测 + workspace 全量 `cargo test`;\n- 半自动:`--dev-*` 钩子冒烟(echo 回显、2000 行流式、滚轮回滚\n  快照、光标块绘制证据)——**以程序化证据为主**(网格转储、度量\n  数值断言、draw 状态转储),截图仅作人工复核补充,不构成验收\n  依赖(计划执行不依赖多模态会话);\n- 手动:日常试用清单(pwsh/ash 各 10 分钟:补全/表格/真彩/\n  Ctrl+C/关闭无残留进程 + 光标块/对齐目测);\n- 不做:性能基准自动化(字形图集专项时另立)、Unix 矩阵。",
+    "file": "docs/plans/archived/002-phase1-mvp.md",
+    "related": [
+     "PLAN-002"
+    ],
+    "status": "verified"
+   },
+   {
+    "id": "P003-5",
+    "section": "tests",
+    "title": "AutoTerm Phase 2 性能与输入完备性 — 测试设计",
+    "content": "- 自动:unescape \\xHH 单测;RowCache compare 语义单测(同行内容\n  None/变行 Shape/尺寸变 Bounds);矩阵断言脚本化进 dev 冒烟;\n  全量 `cargo test --workspace`;\n- 半自动:保留式画布性能取证(20000 行流式期间 rebuilds 曲线 +\n  单行改动帧 rebuilds < rows)、三 shell Ctrl+C 冒烟转储;\n- 手动:IME 中文输入试用(pwsh/ash 各 5 分钟,若 T8 落地);\n- 不做:性能基准自动化、列级损伤、Unix。",
+    "file": "docs/plans/archived/003-phase2-perf-input.md",
+    "related": [
+     "PLAN-003"
+    ],
+    "status": "verified"
+   },
+   {
+    "id": "P004-5",
+    "section": "tests",
+    "title": "AutoTerm Phase 3 交互完备(选中/复制粘贴 + Ctrl+C 稳定版复测 + IME) — 测试设计",
+    "content": "- 自动:core 选中 TDD(sim_regression 增 3 用例:Simple 范围/文本、\n  Semantic 词扩、Lines 行扩+滚动后 range 语义);ui 像素扫描脚本;\n  全量 `cargo test --workspace`;\n- 半自动:`--dev-select` 拖选注入 + 转储断言 + 高亮像素扫描;\n  Ctrl+Shift+V 粘贴冒烟;\n- 手动:IME 中文输入清单;真实鼠标拖选手感(视口内);\n- 不做:自动滚动拖选、块选、性能基准。",
+    "file": "docs/plans/archived/004-phase3-interaction.md",
+    "related": [
+     "PLAN-004"
+    ],
+    "status": "verified"
+   },
+   {
+    "id": "P006-5",
+    "section": "tests",
+    "title": "AutoTerm Auto 化前提调查(AutoUI 组件模型表达力 + a2r 往返一致性 + Rust 绑定通路) — 测试设计",
+    "content": "- 调查型计划:验证=每任务的产出物存在且含指定内容(grep 断言);\n- S2 spike:output.rs 生成成功 + diff 记录入档;\n- S1 spike:构建成功输出(或失败面貌也是结论,如实记录);\n- 不做:本仓 cargo test 不动(零产品代码改动,\n  `cargo test --workspace` 收尾跑一次确认无意外)。",
+    "file": "docs/plans/archived/006-autoize-feasibility.md",
+    "related": [
+     "PLAN-006"
+    ],
+    "status": "verified",
+    "superseded_by": null
+   },
+   {
+    "id": "P005-5",
+    "section": "tests",
+    "title": "AutoTerm Phase 4 交互批(Rust 版功能齐全:自动滚动 + 块选 + 右键菜单 + 选中色 + 光标形状/闪烁) — 测试设计",
+    "content": "- 自动:core TDD(DECSCUSR 1 例 + Block 2 例);ui 单测\n  (hex 解析、菜单命中矩形、Alt 修饰判定纯函数化);\n- 半自动:dev-select block 注入 + 转储断言 + 像素扫描;DECSCUSR\n  注入(dev-autotype `printf` 转义)+ 转储形状断言;边缘 Extend\n  注入断言 scroll_offset;菜单注入像素断言;\n- 手动:真鼠标 Alt 拖选/菜单手感、闪烁不刺眼(5 分钟清单);\n- 空闲零唤醒回归:静止 10s 转储 frames 增速 ≈0(闪烁条件定时\n  不泄漏);\n- 不做:性能基准、配置文件体系、Unix。",
+    "file": "docs/plans/archived/005-phase4-interaction-batch.md",
+    "related": [
+     "PLAN-005"
+    ],
+    "status": "verified"
+   },
+   {
+    "id": "P007-5",
+    "section": "tests",
+    "title": "AutoTerm ash(AutoShell)独立运行验证与测试门禁 — 测试设计",
+    "content": "- **自动**(必跑门禁):`ash_integration.rs` 七个用例;ash 缺席时输出\n  `skip: AUTOTERM_ASH_BIN unset, sibling ash.exe not found`(用例体\n  return,测试仍算过——skip 语义显式打印,不假绿:断言只可能因\n  \"ash 在场且行为不符\"而失败);\n- **半自动**:三条 UI 配方,证据引述进 003 文档(002/003 惯例:\n  程序化证据为主,截图不作验收依赖);\n- **手动**:保留\"ash 日用 5 分钟\"清单(补全/表格/Ctrl+C/关闭无残留),\n  仅作发布前人工复核,不构成本计划验收;\n- **不做**:性能基准、多 shell 参数化矩阵重构、Unix。",
+    "file": "docs/plans/archived/007-ash-shell-support.md",
+    "related": [
+     "PLAN-007"
+    ],
+    "status": "verified"
+   },
+   {
+    "id": "P008-5",
+    "section": "tests",
+    "title": "AutoTerm Ctrl+C 中断通路修复(DEBTS #12,F2:win32 控制台事件注入) — 测试设计",
+    "content": "- **自动**(必跑):ctrl_event.rs ①③(cmd 恒在场=门禁本体)+\n  ②(pwsh 缺席显式 skip);ash_integration 原有 7 门禁不回归 +\n  `ctrl_c_event_effect_on_ash`(缺席 skip,在场析取断言);\n  ui 单测(is_bare_ctrl_c/resolve_effective_mode);\n- **半自动**:配方 C 复跑 dump(事件生效)+ auto 豁免对照 dump;\n  证据引述进 003 §4.1;\n- **手动**:真机 Ctrl+C 手感(pwsh 跑长命令/ash 外部命令各一次,\n  观察伪影 R3)——5 分钟清单,不构成本计划验收;\n- **回归底线**:`cargo test --workspace` 双构建绿;零新依赖\n  (Cargo.toml/lock 零 diff);空闲零唤醒不受影响(interrupt 仅\n  按键时触发,无新增常驻订阅)。",
+    "file": "docs/plans/archived/008-ctrlc-interrupt-fix.md",
+    "related": [
+     "PLAN-008"
+    ],
+    "status": "verified"
+   },
+   {
+    "id": "P009-5",
+    "section": "tests",
+    "title": "AutoTerm Auto 化第一相位(分支 A:a2r 修缮 → terminal 原生组件 → 引擎 adapter → Auto 复刻对拍) — 测试设计",
+    "content": "- **自动(P0)**:a2r 快照 + rustc 实编门;本仓 spikes round-trip 重跑;\n- **自动(P1)**:组件 headless 断言 + iced_test;ui-iced 全量构建绿;\n- **自动(P2)**:libloading 独立进程集成测试(echo/resize/interrupt);\n- **自动(P3)**:对拍门禁(场景矩阵 × 双实现网格等价,缺席 skip);\n- **半自动**:a2r 版 UI 冒烟取证;\n- **回归底线**:Rust oracle 版 `cargo test --workspace` 全程绿\n  (每相位 fold 前各跑一次);auto-lang 侧其自有测试体系按其仓\n  惯例(P0/P1 fold 前在 auto-lang worktree 内跑其全量)。",
+    "file": "docs/plans/archived/009-autoize-phase1.md",
+    "related": [
+     "PLAN-009"
+    ],
+    "status": "verified"
+   },
+   {
+    "id": "P010-5",
+    "section": "tests",
+    "title": "009 后续收尾——a2r 存量编译债清偿 + 对拍门禁补全 + 契约/文档入账 — 测试设计",
+    "content": "- 自动(auto-lang):List.new 快照 + 74 例实编门(ledger 递减)+\n  全 tt/tf 档;E0080 两示例 build;像素测试;\n- 自动(auto-term):parity 6 场景(选中新场景)+ ffi 集成测试 +\n  workspace 全量;\n- 文档:契约/DEBTS grep 断言;\n- 回归底线:两仓全档(验收时重跑)。",
+    "file": "docs/plans/archived/010-post009-followups.md",
+    "related": [
+     "PLAN-010"
+    ],
+    "status": "verified"
+   }
+  ],
+  "reviews": [
+   {
+    "id": "P001-6",
+    "section": "reviews",
+    "title": "AutoTerm 建仓与全链路 spike(PTY→仿真核心→渲染) — 验收标准",
+    "content": "1. 仓骨架存在:README(含定位与\"零构建依赖\"声明)、.gitignore、\n   Cargo workspace、DEBTS.md、docs/plans、docs/designs;\n2. `cargo tree --workspace` 无 `ash-core`/`auto-shell` 任何路径依赖;\n3. pty-probe 在 Windows 基座读到非零字节率且含 ESC 序列;\n4. term-probe 集成测试通过(网格中出现子进程输出);\n5. render-probe 可交互:键入 `echo hi` 得到回显;resize 不崩;\n6. ash 冒烟清单全勾;\n7. `docs/designs/000-render-route.md` 存在且含 A/B 结论与证据数字;\n8. spike 代码明确标注\"非正式架构,允许整体重写\"(README 或代码头注)。",
+    "file": "docs/plans/archived/001-autoterm-bootstrap.md",
+    "related": [
+     "PLAN-001"
+    ],
+    "status": "published"
+   },
+   {
+    "id": "P002-6",
+    "section": "reviews",
+    "title": "AutoTerm Phase 1 单窗口 MVP — 验收标准",
+    "content": "1. `crates/autoterm-core`、`crates/autoterm-ui` 存在且\n   `cargo test --workspace` 全绿(spikes/ 原样未动);\n2. sim_regression ≥ 6 个断言用例全过(光标/真彩/256 色/备用屏/\n   宽字符/回滚/DSR 至少各一);\n3. 事件驱动生效:常态空闲不触发重绘帧(日志/计数证据),\n   字节到达即醒;\n4. 损伤重绘:单行改动帧的重画 run 数 < 全网格 run 数(计数断言);\n5. 实测度量:cell 宽来自 cosmic-text 实测(单测断言 >0 且与\n   0.55em 量级一致);右缘无裁剪由**度量断言**保证\n   (dev 转储含 cols×cell_w ≤ 视口宽 数值,程序化核验);\n6. 滚轮回滚可用:大输出后回滚快照含历史行,顶行有偏移指示;\n7. 光标块**绘制证据**:dev 转储含 `cursor_drawn_at`(行列)+\n   反色标志(draw 状态),人工目测为可选补充;窗口关闭后无残留\n   子进程(tasklist 验证);\n8. `docs/designs/001-phase1-architecture.md` 存在且含\"结论\"节;\n9. README 更新(Win10 1809+ 支持声明、autoterm 运行段);\n   DEBTS 勾账(#1/#3/#4 清偿,#5/#7/#10 部分清偿并注明);\n10. `cargo tree --workspace` 无 `ash-core`/`auto-shell` 路径依赖。",
+    "file": "docs/plans/archived/002-phase1-mvp.md",
+    "related": [
+     "PLAN-002"
+    ],
+    "status": "published"
+   },
+   {
+    "id": "P003-6",
+    "section": "reviews",
+    "title": "AutoTerm Phase 2 性能与输入完备性 — 验收标准",
+    "content": "1. `cargo test --workspace` 全绿,无 ash-core/auto-shell 路径;\n2. **绘制级不等式达成**(002 验收#4 兑现):单行改动帧\n   `paragraph_rebuilds < rows`(dev 转储计数断言),Full 帧仍全量;\n3. Ctrl+C 矩阵:pwhs/ash/cmd 三 shell 中断断言全过(提示符回归+\n   无孤儿),证据存档;\n4. Ctrl+Break 有明确结论(映射落地或平台 blocker 记录);\n5. IME 有明确结论(最小 preedit 落地或 blocker 记录);\n6. `--dev-*` 收进 `dev-tools` feature:默认构建 `--help` 无 dev\n   参数(或 cargo tree 无 env_logger 差异断言);\n7. 001 设计文档含 002→003 决策链节;DEBTS 勾账(#1/#2/#7 关闭\n   或降级,#6 部分推进);\n8. log 替换完成:源内无面向用户的 eprintln(grep 断言,panic 除外)。",
+    "file": "docs/plans/archived/003-phase2-perf-input.md",
+    "related": [
+     "PLAN-003"
+    ],
+    "status": "published"
+   },
+   {
+    "id": "P004-6",
+    "section": "reviews",
+    "title": "AutoTerm Phase 3 交互完备(选中/复制粘贴 + Ctrl+C 稳定版复测 + IME) — 验收标准",
+    "content": "1. `cargo test --workspace` 全绿;无 ash-core/auto-shell 路径;\n2. 拖选/双击/三击选中,高亮可见(像素扫描证据),`selection_text`\n   断言正确(dev-select 注入);\n3. copy-on-select + Ctrl+Shift+C 写入剪贴板(读回断言);Ctrl+Shift+V\n   粘贴回显;\n4. Ctrl+C 稳定版复测有结论(数据回填 001/DEBTS,或\"待环境\"挂账);\n5. IME:预编辑可见、提交上屏(人工清单全过+截图),或 blocker 记录;\n6. 001 含 003→004 决策链;DEBTS #6 清账、重排并注明;\n7. 默认构建零 dev 面(`--dev-select` 在 dev-tools feature 内)。",
+    "file": "docs/plans/archived/004-phase3-interaction.md",
+    "related": [
+     "PLAN-004"
+    ],
+    "status": "published"
+   },
+   {
+    "id": "P006-6",
+    "section": "reviews",
+    "title": "AutoTerm Auto 化前提调查(AutoUI 组件模型表达力 + a2r 往返一致性 + Rust 绑定通路) — 验收标准",
+    "content": "1. `docs/designs/002-autoize-feasibility.md` 存在,含 Q1-Q4 各\n   一节(每节 ≥3 条 file:line 源码证据)+ 差距清单 + 工作量分级\n   + go/no-go 材料 + #8 拆解草案;\n2. `spikes/autoize-roundtrip/` 含 sample.at + transpile 产物 +\n   diff 记录(或失败面貌记录);\n3. ui-iced 构建结论在案(成功时长或失败原因);\n4. DEBTS #7 关账、#8 条件更新、auto-ui 旧引用修正(grep\n   \"auto-ui 仓\" 无残留误引);\n5. 本仓 `cargo test --workspace` 仍绿(零改动自证);\n6. 与 005 无文件交集(改动仅 docs/ + spikes/ + DEBTS/README)。",
+    "file": "docs/plans/archived/006-autoize-feasibility.md",
+    "related": [
+     "PLAN-006"
+    ],
+    "status": "published",
+    "superseded_by": null
+   },
+   {
+    "id": "P005-6",
+    "section": "reviews",
+    "title": "AutoTerm Phase 4 交互批(Rust 版功能齐全:自动滚动 + 块选 + 右键菜单 + 选中色 + 光标形状/闪烁) — 验收标准与复审",
+    "content": "1. `cargo test --workspace` 全绿(含 core 新 3 例 + ui 新单测);\n2. Alt+拖选块选:矩形高亮像素证据(列带对齐),复制文本逐行\n   无拖尾(dev 注入断言);\n3. 拖选越上/下边缘自动滚动,选中跨滚动区锚定正确(转储\n   scroll_offset 与 selection_text 断言),松开即停;\n4. 右键菜单:三项可见(像素证据),复制/粘贴/全选动作与 004\n   快捷键同路径;ESC/外点击关闭;右键不再直接粘贴(README 更新);\n5. `--selection-color ff0000` 冒烟:高亮带色变(像素扫描命中色\n   更新),默认不传维持现色;\n6. DECSCUSR 三形:转储 shape 断言 + Beam/Underline 像素证据;\n   聚焦时闪烁、失焦/隐藏/菜单时停;静止 10s frames 增速≈0;\n7. 双构建绿(默认/dev-tools);默认构建零 dev 面不变;\n8. 001 含 004→005 决策链;DEBTS Phase 4 批次勾销;README 更新。\n\n## 复审(2026-09-06,ZCode /auto-plan:review 重验)\n\n**复审人**:ZCode(/auto-plan:review)· **时间**:2026-09-06 ·\n**基准**:worktree `plan-005-dev`,diff 7cd32a7..HEAD(39 文件\n+2436/-102,10 提交 T1-T10)。\n\n### 逐条验收(重验,不信勾选框)\n\n| # | 标准 | 判定 | 证据 |\n| --- | --- | --- | --- |\n| 1 | `cargo test --workspace` 全绿 | **pass** | 复审重跑:15 组 result-ok、37 用例 0 失败(含 sim 14、ui lib 16、live_pty 15s 实 PTY);core 新 3 例 + ui 新单测(16)在内 |\n| 2 | 块选像素 + 逐行复制 | **pass** | block-scan.txt:4 带 x52-142、spread=0、block_aligned=True ×4;block-dump.txt:selection_text \"AABBB\\nCCDDD\\nEEFFF\"、cells=15(3×5) |\n| 3 | 边缘自动滚动 + 锚定 + 松开即停 | **pass** | autoscroll-dump.txt:scroll_offset=11(顶满钳制)、selection_range (-4,0)-(5,4) 绝对坐标、text L06..L15(锚定+滚动揭露);松开即停=Finish/离缘清 drag_scroll(lib.rs:773/784,代码核) |\n| 4 | 菜单三项 + 同路径动作 + 关闭 + 右键不粘贴 | **pass**(注 a) | menu-scan.txt:panel_visible=True、close 后 34px 残留;动作 Copy=copy_selection/Paste=paste_from_clipboard/全选=视口 Lines(lib.rs:707);右键 release 改发 ContextMenu(widget.rs:316);README 表更新 |\n| 5 | --selection-color 冒烟 + 默认不变 | **pass** | selcolor-scan.txt:avg_red_rgb=76.1,15.1,18.1=理论混色、changed=True;默认 e8e8e8@25% 即 004/T3 已证灰(71,73,76)路径不变 |\n| 6 | 三形转储+像素;闪烁门控;零唤醒 | **pass** | cursor-{underline,beam,block}-scan.txt 全 True(19×4 / 4×38 / 19×38)+ 三 dump shape 断言;blink-focused-dump.txt:toggles=4(聚焦 ~2s,2Hz)、frames=5@11s 静止(基线 116@有内容) |\n| 7 | 双构建绿 + 默认零 dev 面 | **pass** | 复审重跑:default/dev-tools 两构建 0 error;默认构建 --dev-select → exit 2 \"unexpected argument\" |\n| 8 | 001 决策链 / DEBTS 勾销 / README | **pass** | grep \"004→005\"=1;DEBTS \"已清偿(005 T\"=4;README 交互表 3 关键词命中 |\n\n### 遗漏/延后/workaround 猜寻\n\n- **无遗漏**:11 任务逐项对 diff,T1-T10 子件(at_edge/订阅/门控/\n  纯函数/前缀/转储行)均在;diff 无新增 TODO/FIXME/HACK。\n- **无未批准延后**:非目标(Ctrl+C 复测/IME 人工清单/配置文件/\n  Unix/Auto)为计划声明、裁定既定;自动化不可覆盖的真机手感\n  (Alt 拖选手感/闪烁观感/菜单点击)以 5 分钟手工清单形式落于\n  evidence README——属计划声明的\"手动\"层,非缩水。\n- **待澄清 1-5**:均按计划文本预授权默认执行(Alt 手势/仅 CLI/\n  闪烁默认开/三项菜单/50ms×2 不分档),无遗留用户决策。\n\n### 债务候选(不阻塞,记录在案)\n\n- **a**:menu-scan.txt 的 `menu_closed_by_esc` 标名不准——实际由\n  dev-menu `:close`(ContextMenu(None),与外点关闭同消息路径)驱动;\n  ESC 键关闭为代码核(lib.rs Key 门),无像素证据。已入手工清单;\n  证据文件名不改(历史工件,README 已注明)。\n- **b**:拖选中失焦可能丢失 ButtonReleased → drag_scroll 残留\n  Some(50ms 订阅存活)至下次 Begin/Finish。低概率、可自愈,\n  建议后续计划加 Focused(false) 时清 drag_scroll。\n- **c**:菜单中文标签依赖 Microsoft YaHei UI(缺字体系统退豆腐块;\n  MONOSPACE 无 CJK 为 004 已知限制)。Unix 轨道需重新评估字体栈。\n- **d**:CursorShape::HollowBlock 渲染落入 Block 分支(未画空心)。\n  计划未要求,观测记录。\n\n### 判定\n\n全部 8 项验收 pass,无阻塞债务 → **status: reviewed**,可进入\n`/auto-plan:merge`。(注意:复审期间 main 已被 plan-006 并行推进,\nmerge 时需处理 worktree 落后 main 的合并。)",
+    "file": "docs/plans/archived/005-phase4-interaction-batch.md",
+    "related": [
+     "PLAN-005"
+    ],
+    "status": "published"
+   },
+   {
+    "id": "P007-6",
+    "section": "reviews",
+    "title": "AutoTerm ash(AutoShell)独立运行验证与测试门禁 — 验收标准与复审",
+    "content": "1. `AUTOTERM_ASH_BIN` 指向 ash.exe 时\n   `cargo test -p autoterm-core --test ash_integration` 全绿(7 用例);\n   指向不存在路径或未设且兄弟仓无产物时,7 用例均打印 skip 说明后通过;\n2. 场景覆盖齐:①②③④a④b⑤⑥ 各自独立断言,不互相掩盖;\n3. `cargo test --workspace` 绿(ash 缺席环境复跑确认无回归);\n4. `docs/designs/003-ash-compatibility.md` 存在:场景矩阵 + R1–R6 逐项\n   结论 + UI 配方证据引述;\n5. 执行中发现的所有 ash×AutoTerm 缺陷均已记入 DEBTS.md(file:line\n   证据),没有\"口头发现\";\n6. 零产品代码改动(trivial 修复除外,且须在复审记录列明 diff 行数)。\n\n### 复审记录\n**Reviewer**:ZCode(auto-plan:review)· 2026-09-06 · 复验全部在 worktree\n`.wt/auto-term-007/auto-term`(branch `plan-007-dev`,5 commits)内重跑,\n不信勾选框。\n\n### 验收逐条(全部 pass)\n\n| # | 验收 | 裁定 | 证据 |\n| --- | --- | --- | --- |\n| 1 | env 指向 ash 全绿 / 缺席显式 skip | **pass** | `AUTOTERM_ASH_BIN=<release/ash.exe>` → 7 passed, 0 failed, 2 ignored(0.37s);`AUTOTERM_ASH_BIN=Z:/nonexistent.exe` → 7 用例各打印 1 行 skip 后通过(0 fail) |\n| 2 | ①②③④a④b⑤⑥ 独立断言 | **pass**(③语义重构,见下) | 9 个 `#[test]` = 7 门禁 + 2 复现器;每用例独立 spawn + pid 后缀 marker,互不掩盖 |\n| 3 | workspace 绿 + 缺席无回归 | **pass** | `cargo test --workspace`(worktree,ash 自动探测在场):全 suite 0 FAILED(合计 31 passed);缺席模拟即验收#1b |\n| 4 | 003 文档三要件 | **pass** | `docs/designs/003-ash-compatibility.md` 六节俱全(速览/矩阵 2.1+2.2/R1-R6/F1+F2/接入契约/遗留),UI 证据行原文引述 |\n| 5 | 缺陷全记 DEBTS(file:line) | **pass** | #12(F2,通路层)+ #13(F1,ash 侧,`cmd/commands/sleep.rs:35` 等);#7 行加交叉引用;无口头发现 |\n| 6 | 零产品代码改动 | **pass** | `git diff 937d094..HEAD --stat`:仅 4 文件(DEBTS/README/tests/003),无 src/ 改动;无 trivial 修复需要列明 |\n\n文件编码复核:003 与 DEBTS 经 Python 字节级校验为合法 UTF-8(管道乱码\n为显示层伪象,未改动的原始行同样乱码可证)。\n\n### 计划↔实现分歧(全部已在执行记录/003 中明示,无静默)\n\n1. **T3 语义重构**(最重要):原\"Ctrl+C 中断运行中命令\"在通路层以下断裂\n   (F2),AutoTerm 代码层不可修;门禁改守终端层语义(0x03 转发/废弃\n   输入行),原语义复现器留档 `#[ignore]`。**待用户裁定(待澄清#5),\n   修复另立计划(DEBTS #12)** —— 若用户不认可此重构,回 /auto-plan:work\n   改回原语义(则该用例将常红直至 #12 修复)。\n2. `ash_bin()` 探测三级(`../`、`../../`、`../../../`)vs 草稿一级:\n   覆盖主仓+worktree 双布局,T1 证据已注明。\n3. UI 配方多段注入需重复 `--dev-autotype` 标志(clap Vec 语义),003\n   §2.2 已按实况修正命令文本。\n4. 场景⑥\"非 24-bit 则按发现流程\"分支未触发(实测即 truecolor)。\n\n### 遗漏/延后/workaround 猎查\n\n- 遗漏:无——9 任务均有对应 diff 与验证输出。\n- 延后(均有记录、经计划规则允许):F1 修复归 auto-shell 仓(计划非目标\n  \"不改 auto-shell\");R1 深按键矩阵、R2 滚动区视觉专项在计划目标之外,\n  003 §6 列为候选;F2 修复另立(待澄清#5 明示待裁定,非静默)。\n- Workaround:产品代码零改动、零 TODO/魔改;唯一\"降级\"即分歧#1,已\n  显式记录并留复现器。\n\n### 债务候选(复审新增,无)\n\n#12/#13 已在 T8 记档;R1/R2 深度覆盖为候选改进非债务。\n\n**路由:pass → status: reviewed**,可 `/auto-plan:merge`。",
+    "file": "docs/plans/archived/007-ash-shell-support.md",
+    "related": [
+     "PLAN-007"
+    ],
+    "status": "published"
+   },
+   {
+    "id": "P008-6",
+    "section": "reviews",
+    "title": "AutoTerm Ctrl+C 中断通路修复(DEBTS #12,F2:win32 控制台事件注入) — 验收标准与复审",
+    "content": "1. `cargo test -p autoterm-core --test ctrl_event` 全绿:①cmd\n   会话 interrupt 后 ≤5s `exited()`;②pwsh 在场绿/缺席显式\n   skip;③helper 缺席降级(返 false、不 panic、会话存活);\n2. ash_integration:0 个 ignored(复现器退役),原 7 门禁全绿\n   (含\"空闲 Ctrl+C 不杀 shell\"),`ctrl_c_event_effect_on_ash`\n   按析取绿且矩阵落执行记录;\n3. UI:单测绿(拦截排除 Ctrl+Shift+C 剪贴板路径);配方 C dump\n   含 `after_c` 且 uptime < 15s;auto 豁免(若引入)有对照 dump;\n4. DEBTS #12 清账、#7 关账、#13 追注;003 含 §4.1;README 更新;\n5. 零新依赖:`git diff` 不含 Cargo.toml/Cargo.lock;\n   `cargo tree --workspace` 无 ash-core/auto-shell;\n6. 双构建绿(默认/dev-tools);ash 缺席环境复跑 ctrl_event 仍\n   全绿(①③仅依赖 cmd)。\n\n## 复审(2026-09-06,ZCode /auto-plan:review 重验)\n**Reviewer**:ZCode(/auto-plan:review)· 2026-09-06 · 复验全部在 worktree\n`.wt/auto-008/auto-term`(branch `plan-008-dev`,8 commits 含复审 salvage)\n内重跑,不信勾选框。\n\n### 验收逐条(全部 pass)\n\n| # | 验收 | 裁定 | 证据 |\n| --- | --- | --- | --- |\n| 1 | ctrl_event 全绿(cmd≤5s/pwsh skip-gate/降级) | **pass**(挂死命令 timeout 替代 ping = 计划内实证改写,见分歧#1) | 复跑 3 passed + 1 ignored(3.08s);cmd 会话 interrupt 后 ≤5s `exited()`;pwsh 提示符回归且存活;where.exe 伪 helper → 返 false、不 panic、会话存活 |\n| 2 | ash_integration 0 ignored,7 门禁+探针绿 | **pass** | 复跑 8 passed 0 failed 0 ignored(14.73s);缺席模拟 8 行 skip + result ok;探针三态析取绿(本次 external 实测 Exited(补发 2)——首派发被负载吞、补发命中已回 idle 的 ash,与三态状态机自洽,析取覆盖) |\n| 3 | UI 单测+dump 证据+零唤醒 | **pass** | ui lib 23 passed(含 7 新);cmd-smoke-both:after_c×2、last_tick=45580(恰 7s 注入点);cmd-smoke-byte:after_c×0、last_tick=137585(跑满);uptime 13.0s<15;零唤醒 idle 10s 无注入 frames=8(005 基线 5@11s 同量级,无新增常驻订阅) |\n| 4 | DEBTS/#12/#7/#13 + 003 §4.1 + README | **pass**(复审补 3 处陈旧行,见分歧#4) | DEBTS #12/#7 标已清偿(008)、#13 补证;003 §4.1+契约第 4/5 条;README Ctrl+C 节+部署约束;三文件 UTF-8 校验过 |\n| 5 | 零新依赖 | **pass** | diff vs 0d82334 共 9 文件(+887/−53),无 Cargo.toml/Cargo.lock;`cargo tree -p autoterm-core` 无 ash-core/auto-shell;diff 无新增 TODO/FIXME |\n| 6 | 双构建绿 + ash 缺席 ctrl_event 绿 | **pass** | 复审全量套件(门禁唯一一次):18 套件 result-ok、0 FAILED;默认构建绿且 `--dev-select` 拒(exit 2)、`--ctrl-c-mode bogus` 警告回退 auto;`AUTOTERM_ASH_BIN=Z:/nonexistent.exe` 下 ctrl_event 仍 3 passed |\n\n### 代码级抽查(trust code over plan)\n\n- 拦截顺序:clipboard_shortcut(lib.rs:665)→ is_bare_ctrl_c(:673)→\n  key_to_bytes(:677)——Ctrl+Shift+C 复制路径优先,裸 Ctrl+C 截住;\n- helper 双发顺序:Break(autoterm-ctrlc.rs:92)先于 C(:94)——\n  被派发竞态杀死时有效通道已落地;\n- pty.rs:216 `code == 0 || code == STATUS_CONTROL_C_EXIT` 同判成功;\n- DevTick(lib.rs:506)与键盘(:674)两路均走 handle_ctrl_c。\n\n### 计划↔实现分歧(全部已明示,无静默)\n\n1. **修复形态重构**(最重要,待澄清#5 用户裁定):草稿\"广播\n   CTRL_C_EVENT\"在本 build(26200.9168)对 ConPTY 客户端零效果,\n   T3 诊断矩阵(C 吞/Break 达/CONIN$ 无效)→ 落地为 Break→C 双发;\n   门禁挂死命令由 ping 换 timeout(ping 对 Break 免疫 = 残留缺口,\n   #[ignore] 复现器留档,健康 build 转红即 C 通道到位)。\n2. 双投递默认 both(计划即如此);ash auto 豁免按 T4 预授权规则引入\n   (idle 态事件整体终止 ash 的实测),#13 落地后撤。\n3. UI 取证主体由 ash 换 cmd:ash 下无\"输入不敏感+Break 可终止\"干净\n   样本(四连否,T6 记录);ash-auto 豁免以单测+T4 矩阵+cmd-byte\n   对照支撑。\n4. 复审 salvage(3f98330):003 §1 速览行/§2.1 复现器行/§2.2 配方 C\n   行三处陈旧(仍述\"不可用/已退役复现器\"),已同步为修复后语义。\n\n### 遗漏/延后/workaround 猎查\n\n- 遗漏:无——9 任务对 diff 逐项核;既有 :1388 剪贴板断言保留且语义\n  仍成立;手动 5 分钟手感清单按计划测试设计\"不构成验收\"(用户侧)。\n- 延后(均有记录、计划规则允许):F1 修复归 auto-shell(#13,非目标);\n  上游 portable-pty issue(待澄清#3,可选);残留缺口闭环待健康\n  build(#[ignore] 复现器在位)。\n- Workaround(均文档化):eprintln 代 log(零依赖验收#5 约束优先,\n  T2 证据行注明);interrupt 接受 0xC000013A(派发竞态的语义化,\n  helper 头注);探针 3s 周期补发(测试稳健性,产品面无此逻辑)。\n\n### 债务候选(复审新增)\n\n- **a**:探针 external 态实测有 Responsive(0 补发)与 Exited(补发 2)\n  两种落点——补发机制命中\"已回 idle 的 ash\"会终止之;属探针自身\n  观测行为非产品缺陷,003 §4.1 矩阵可补一行\"external 落点受补发\n  时序影响\"(不阻塞,记录在案)。\n- **b**:UI 层 idle 提示符下 cmd/pwsh 收到双投递会打 ^C/\n  Control-Break 标记(R3 化妆性,真实终端同表现)——手动清单\n  (用户侧)覆盖观感确认。\n\n**路由:pass → status: reviewed**,可 `/auto-plan:merge`。\n待澄清#5(双发形态 + #12 以\"双发+残留缺口\"关账)为用户裁定项,\nmerge 前用户可否决改走\"维持开账待稳定版 OS\"分支。",
+    "file": "docs/plans/archived/008-ctrlc-interrupt-fix.md",
+    "related": [
+     "PLAN-008"
+    ],
+    "status": "published"
+   },
+   {
+    "id": "P009-6",
+    "section": "reviews",
+    "title": "AutoTerm Auto 化第一相位(分支 A:a2r 修缮 → terminal 原生组件 → 引擎 adapter → Auto 复刻对拍) — 验收标准",
+    "content": "1. P0:a2r 快照全绿 + rustc 实编门绿;本仓 round-trip spike 重跑\n   差异归档(F1 修复证据在案);\n2. P1:auto-lang `--features ui-iced` 构建绿;terminal 组件双后端\n   测试绿;`.at` 最小示例渲染 `<terminal/>` 有取证;\n3. P2:cdylib 独立进程集成测试绿(echo 往返/resize/interrupt);\n4. P3:a2r 产物 rustc 实编 + 对拍门禁全绿(场景矩阵覆盖\n   007/008 核心语义;缺席显式 skip);UI 冒烟取证在案;\n5. P4:DEBTS #8 关账;README 转型声明 + 001 决策链 009 节;\n   **无环断言过**(auto-lang 零 Cargo 依赖 auto-term);\n6. 全程:Rust oracle `cargo test --workspace` 不回归;\n   两仓零新依赖(Cargo.toml 依赖区零新增 crate 名)。",
+    "file": "docs/plans/archived/009-autoize-phase1.md",
+    "related": [
+     "PLAN-009"
+    ],
+    "status": "published"
+   },
+   {
+    "id": "P009-7",
+    "section": "reviews",
+    "title": "AutoTerm Auto 化第一相位(分支 A:a2r 修缮 → terminal 原生组件 → 引擎 adapter → Auto 复刻对拍) — 复审记录",
+    "content": "**审阅人**:ZCode(/auto-plan:review)· **时间**:2026-09-06 ·\n**结论**:`reviewed`(全部验收过,2 项部分达标已记债,无阻塞项)\n\n### 逐条验收(全部在执行 worktree 重跑,不信勾选框)\n\n| # | 验收 | 判定 | 证据 |\n|---|---|---|---|\n| 1 | P0 a2r 快照全绿+实编门绿+spike 重跑归档 | **pass** | `cargo tt` 3817/3818(唯一失败=基线已坏 charts,主检出双证);`a2r_rustc_real_compile_gate` 在档(ledger 74 例显式豁免,文件在案);`spikes/autoize-roundtrip/T1-RERUN-PLAN009.md`+产物 diff(sample 仅派生行=修复本体,sample2 字节零差异) |\n| 2 | P1 ui-iced 构建绿+组件双后端测试+最小示例取证 | **partial→pass(记债)** | ui-iced build 绿(1m02s);headless 14/14 + 最小 .at 挂载 1/1 重跑绿;iced 像素级自动化未建(simulator 无事件注入面),以 T10 真窗口截图替代——债候选(见下) |\n| 3 | P2 cdylib 独立集成测试绿 | **pass** | `engine_ffi_integration` 1/1(2.61s)重跑绿 |\n| 4 | P3 产物实编+对拍门禁全绿+UI 取证 | **pass** | at-gen check 0 error+scenario anchor 2 处;`autoterm-parity` 5/5 重跑绿(4.35s);evidence/{ui_smoke.txt,ui_window.png} 在案 |\n| 5 | P4 收账四件+无环断言 | **pass** | grep 命中 DEBTS(4)/README(2)/001(2);cargo tree 重验:autoterm-core 0×auto-lang、auto-lang 0×autoterm、at-gen 1×auto-lang |\n| 6 | oracle 回归+零新依赖 | **pass(带注)** | workspace 61 passed 0 failed(重跑);auto-lang 009 未动任何 Cargo.toml;auto-term 侧 libloading 新声明于两个**新增** crate(at-gen/ffi-tests),lock 零新增(ash 传递已有)+T7 明示授权;parity 依赖仅仓内 rlib |\n\n### 遗漏/延后/workaround 猎查(逐项记录,不隐藏)\n\n- **延后①(记债)**:选中文本 headless 对拍——门禁显式 skip,证据未\n  落 T10(截图为初始态无选中)。组件选中面(T4)已测,缺的是 scenario\n  协议接线。计划\"场景矩阵=子集\"授权子集裁剪,但该面应补:债务候选。\n- **延后②(记债)**:terminal 组件 iced_test 像素级自动化——以 headless\n  断言+真窗口截图替代(simulator 无事件注入,选择性证据更弱)。债务候选。\n- **workaround(已记债)**:`[]` 字面量绕 a2r `List.new()` 限定 bug;\n  in-process API 绕挂起的 CLI trans(转译规程入库 at-gen/README);\n  实编门 ledger 豁免 74 例存量债(门对新破坏必红语义保留)。\n- **遗漏猎查**:11 步逐条对 diff,无丢失子项;T1/T5/T8-fix 三次\n  auto-lang fold 均完成(T1 一次顺延因主检出被并行会话占用,后补齐)。\n\n### 移交\n\n就绪 `/auto-plan:merge`(worktree `.wt/auto-009/{auto-term,auto-lang}`\n与分支 `plan-009-dev`/`auto-term-dev` 保留,清理归 merge;另注意组内\n还有 auto-down 只读 worktree 供路径解析,merge 时一并清理)。",
+    "file": "docs/plans/archived/009-autoize-phase1.md",
+    "related": [
+     "PLAN-009"
+    ],
+    "status": "published"
+   },
+   {
+    "id": "P010-6",
+    "section": "reviews",
+    "title": "009 后续收尾——a2r 存量编译债清偿 + 对拍门禁补全 + 契约/文档入账 — 验收标准",
+    "content": "1. List.new() 快照绿 + 实编门含该例;\n2. 实编门 ledger 清偿率 ≥50%(74 → ≤37),每批 commit 记录理由,\n   门全绿;\n3. CLI trans 60s 内完成且产物编译通过;\n4. E0080 两示例 build 绿 + DEBTS #7 条(009 观察)销账;\n5. 003 §5 含 cdylib 分发条;at-gen 标题非缺省;\n6. DEBTS #5/#7 关账标注在案;\n7. 对拍门禁:选中文本实跑等价(去 skip),全门禁绿(色彩保留\n   ash-缺席 skip);\n8. iced 像素自动化测试在案且绿;\n9. 两仓全档回归绿(tf/tt + workspace),零新依赖。",
+    "file": "docs/plans/archived/010-post009-followups.md",
+    "related": [
+     "PLAN-010"
+    ],
+    "status": "published"
+   },
+   {
+    "id": "P010-7",
+    "section": "reviews",
+    "title": "009 后续收尾——a2r 存量编译债清偿 + 对拍门禁补全 + 契约/文档入账 — 复审记录",
+    "content": "**复审人**: ZCode(/auto-plan:review);**时间**: 2026-09-07\n**验证面**: 两仓折后 master(并行 plan-576 已在折内),默认检出重跑\n\n### 验收标准逐条复核(9/9 pass)\n\n1. **List.new() 快照绿 + 实编门含该例** — pass。`cargo tt\n   test_10_collections_007` PASS(0.87s);ledger 37 行中无 007。\n2. **实编门清偿率 ≥50%(74→≤37),门全绿** — pass。ledger 实测\n   `grep -c \"^a2r/\"` = 37(恰 50.0%);批 1/批 2 commit 记录理由;\n   实编门绿(0 unexpected,142-143 compiled);失败清单逐例输出设施\n   已并入门禁。\n3. **CLI trans 60s 内完成且产物编译通过** — pass。折后 master 重建\n   CLI:20.4s(<60s,冷缓存;含预算内 stray 解析);产物 rustc 编译\n   绿;与 in-process transpile_rust 逐字节一致(diff 空)。\n4. **E0080 两示例 build 绿 + DEBTS #7 销账** — pass。折后重建\n   ui_counter+tick_interval_ms 变体 --features ui-iced 绿(55s,验证\n   后撤销,worktree 无残留);DEBTS.md:134 观察 #7 销账记录在案。\n5. **003 §5 含 cdylib 分发条;at-gen 标题非缺省** — pass。003:202\n   cdylib 条 grep 命中;**实窗取证**:autoterm-at.exe 启动 →\n   PowerShell MainWindowTitle = `AutoTerm`(非 \"Auto Lang - Iced\")。\n6. **DEBTS #5/#7 关账标注在案** — pass。DEBTS.md:63 #5 关账(证据=\n   parity_interrupt 真实 ConPTY 双投递绿 + engine_ffi_integration)。\n7. **对拍门禁:选中文本实跑等价(去 skip),全门禁绿(色彩保留\n   ash-skip)** — pass。折后 `cargo test -p autoterm-parity`:\n   5 passed + 0 failed(色彩 ash 缺席显式 skip,惯例保持);SEL\n   hello world 双侧一致(行尾归一)。\n8. **iced 像素自动化测试在案且绿** — pass。折后 `--features\n   ui-iced,iced-layout-tests --lib terminal_pixel` 3/3 绿(1.01s);\n   金样 4 件入库。\n9. **两仓全档回归绿(tf/tt + workspace),零新依赖** — pass。\n   auto-lang 四层(折后 master,含并行 576):tf 3468/3469、tt\n   3821/3822、tb 3516/3524、tv 3609/3610——红全部为 master 既有基线\n   (charts + 7 book listing,与 master 主检出逐一相同,无新增);\n   auto-term `cargo test --workspace` exit 0 全绿;两仓 Cargo.toml\n   diff 零新增依赖。\n\n### 遗漏/延后/workaround 猎查\n\n- **遗漏**: 无。9 步均有对应 diff 与验证;temp 变体验证后撤销无残留。\n- **延后**: 计划正文「非目标」四项(Vue/web、auto-os、形态乙、a2r\n  风格变形)均为用户裁定的显式排除,非执行期私设;遗留 37 ledger 例\n  为计划预授权(≥50% 线达成),理由逐批在案。\n- **workaround**: T3 口径「修至不挂起」的扫描有界化即计划批准的修复\n  形态,非遮盖;无 TODO/hack 残留(diff 猎查无新增 TODO)。\n\n### 债候选(记录,均不阻塞)\n\n- charts 红 + 7 book 红:master 存量(非 010 引入,基线双验),留\n  auto-lang 侧独立修缮。\n- 遗留 37 ledger 例:智能指针自动解包族/interop 外部框架族/语法未\n  编码族/ownership-闭包耦合族/singles。\n- **merge 时提醒**:auto-lang `temp_plan009_t8_transpile_at_app` 现\n  指向 .wt/auto-010 工作树路径,merge 清理 worktree 前须改回主检出\n  (009 merge 前置同款约定)。\n\n### 协议注记\n\n两仓分支 fold 已按 /auto-plan:work 多相位协议在执行期落主(T4 阶段\n折 + T9 终折),worktree 在位未清——/auto-plan:merge 只做收尾清理与\n沉淀,无分支落地动作残留。",
+    "file": "docs/plans/archived/010-post009-followups.md",
+    "related": [
+     "PLAN-010"
+    ],
+    "status": "published"
+   }
+  ]
+ }
 }

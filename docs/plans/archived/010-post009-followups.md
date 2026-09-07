@@ -1,6 +1,6 @@
 ---
 plan_id: PLAN-010
-status: reviewed
+status: archived
 feature_name: 009 后续收尾——a2r 存量编译债清偿 + 对拍门禁补全 + 契约/文档入账
 author: [衍星居士]
 created_at: 2026-09-07
