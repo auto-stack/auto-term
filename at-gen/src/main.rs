@@ -103,6 +103,35 @@ fn finish(hit: bool) -> std::process::ExitCode {
     }
 }
 
+/// PLAN-011 T1 色彩批次的注入命令(与 crates/autoterm-parity/tests/
+/// parity_gate.rs 的 COLOR_PS_CMD **逐字节同串**,两处常量互为镜像,
+/// 改一处必改另一处)。
+///
+/// 实测口径(PLAN-011):向 ConPTY 输入管写 SGR 只被 cmd 按字面回显
+/// (网格零样式格),SGR 只能经**子进程输出路径**进网格——故由
+/// powershell 单行命令([char]27 构造 ESC,避免反斜杠/控制字节过
+/// cmd)向 stdout 输出 SGR 批次:命名前景/背景 0-15、索引 16-255
+/// 抽样、RGB 前/背景,批前 `ESC[2J ESC[H` 固定行布局(批次恒为锚点
+/// 行上方 6 行),末行打 PARITY_COLOR_DONE 锚点。
+const COLOR_PS_CMD: &str = r#"powershell -NoProfile -Command "$e=[string][char]27;$n=[string][char]13+[string][char]10;$o=$e+'[2J'+$e+'[H';0..7|%{$o+=$e+'['+(30+$_)+'mX'};8..15|%{$o+=$e+'['+(82+$_)+'mX'};$o+=$e+'[0m'+$n;0..7|%{$o+=$e+'['+(40+$_)+'mX'};8..15|%{$o+=$e+'['+(92+$_)+'mX'};$o+=$e+'[0m'+$n;16,32,64,95,128,160,196,231,255|%{$o+=$e+'[38;5;'+$_+'mX'};$o+=$e+'[0m'+$n;16,32,64,95,128,160,196,231,255|%{$o+=$e+'[48;5;'+$_+'mX'};$o+=$e+'[0m'+$n;$o+=$e+'[38;2;255;0;128mX'+$e+'[38;2;10;20;30mX'+$e+'[38;2;0;255;0mX'+$e+'[0m'+$n;$o+=$e+'[48;2;10;20;30mX'+$e+'[48;2;200;100;50mX'+$e+'[48;2;1;2;3mX'+$e+'[0m'+$n;[Console]::Out.Write($o+'PARITY_COLOR_DONE'+$n)""#;
+
+/// PLAN-011 T1: 逐格样式标量 dump(`STYLE <row> <col> <fg> <bg>` 协议
+/// 行,fg|bg 为 kind<<24|value 编码,编码定义见 ffi.rs 模块头)。
+fn dump_styles(app: &TermApp) {
+    // 先收割刷新 dll 侧快照,再按行回读样式(容量 2×cols)。
+    engine::engine_feed_snapshot(app.handle);
+    let cols = app.cols as usize;
+    let mut buf = vec![0u32; cols * 2];
+    for r in 0..app.rows as usize {
+        if engine::engine_row_style(app.handle, r, &mut buf) < 0 {
+            break;
+        }
+        for (c, pair) in buf.chunks(2).enumerate() {
+            println!("STYLE {r} {c} {} {}", pair[0], pair[1]);
+        }
+    }
+}
+
 fn main() -> std::process::ExitCode {
     let args: Vec<String> = std::env::args().collect();
     if args.get(1).map(String::as_str) == Some("scenario") {
@@ -203,6 +232,20 @@ fn run_scenario(name: &str) -> std::process::ExitCode {
             let hit = poll_for(&mut app, "alive_after_parity_interrupt", 20);
             wait_prompt(&mut app, 10);
             dump_rows(&app);
+            app.dispose();
+            finish(hit)
+        }
+        "color" => {
+            // PLAN-011 T1: ANSI 注入对拍(输出路径)——同一 powershell
+            // 单行命令经 cmd 会话在 stdout 输出 SGR 批次(命名 0-15 /
+            // 索引抽样 / RGB,批前 2J+H 固定行布局,批次恒为锚点行上方
+            // 6 行)。锚点出现后 dump 全网格文本 + 逐格样式标量,门禁
+            // oracle(rlib visible_styled_lines)双侧比对。
+            let mut app = TermApp::new(80, 24);
+            app.send_line(COLOR_PS_CMD);
+            let hit = poll_for(&mut app, "PARITY_COLOR_DONE", 30);
+            dump_rows(&app);
+            dump_styles(&app);
             app.dispose();
             finish(hit)
         }

@@ -127,6 +127,23 @@ pub fn engine_rows(handle: i64) -> Vec<String> {
     snapshots().get(&handle).cloned().unwrap_or_default()
 }
 
+/// 视口一行逐格样式:fg|bg 交错 u32 标量色(kind<<24|value,ffi.rs
+/// 模块头编码)。签名对齐 `autoterm_engine_row_style`(handle,row,out,
+/// cap),返回写入的 u32 个数(行越界/容量不足 -1)。需先 tick/feed
+/// 刷新 dll 侧快照。PLAN-011 T1 色彩对拍消费。
+pub fn engine_row_style(handle: i64, row: usize, out: &mut [u32]) -> i32 {
+    let h = ptr_of(handle);
+    if h.is_null() {
+        return -1;
+    }
+    unsafe {
+        let style: libloading::Symbol<
+            unsafe extern "C" fn(*mut core::ffi::c_void, c_int, *mut u32, c_int) -> c_int,
+        > = lib().get(b"autoterm_engine_row_style\0").unwrap();
+        style(h, row as c_int, out.as_mut_ptr(), out.len() as c_int)
+    }
+}
+
 pub fn engine_resize(handle: i64, cols: i64, rows: i64) {
     let h = ptr_of(handle);
     if h.is_null() {
