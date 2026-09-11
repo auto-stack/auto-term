@@ -1,12 +1,12 @@
 ---
 plan_id: PLAN-013
-status: executing            # drafting → executing → execution_done → reviewed → archived
+status: execution_done       # drafting → executing → execution_done → reviewed → archived
 feature_name: standard-project-three-backends
 author: [ZCode]
 created_at: 2026-09-11
 updated_at: 2026-09-11
 plan_revision: 1
-current_step: 0
+current_step: 7
 total_steps: 7
 
 supersedes_spec_components: []
@@ -237,13 +237,13 @@ term.rs 侧车是其前置形态,Auto 化仍留后续）。
 
 | ID | 任务 | 仓 | 依赖 | 产出/验证 | AC |
 |---|---|---|---|---|---|
-| T-01 | VM 裸名 alias 7 枚（native alias 表）+ 裸调用 roundtrip 单测 | auto-lang | — | 单测绿（真 DLL 在场即跑,缺席 skip 惯例） | AC-04 |
-| T-02 | pac.at .rs 侧车机制（两生成点 + 幂等 + deps 注入）+ 单测 | auto-lang | — | 生成断言单测绿;schema 注记入 pac 文档 | AC-05 |
-| T-03 | ui_gen/rust.rs terminal 臂（真身组件接线）+ 生成快照 | auto-lang | — | 快照入库 + 生成工程 cargo check 绿 | AC-01 |
-| T-04 | ui_gen/vue.rs terminal 最小 `<pre>` 臂 + a2vue 金样再生 | auto-lang | — | 金样 diff 入库 | AC-03 |
-| T-05 | at-app/ 标准工程落位（pac.at/front/back/sidecar term.rs） | auto-term | T-01..T-04 | headless 冒烟脚本在库 | AC-01..04 |
-| T-06 | 三形态验收跑 + 对拍 + 证据入库（evidence/013/） | auto-term | T-05 | AC-01/02/03 证据 + 对拍记录 | AC-01..03 |
-| T-07 | 文档回执:README/DEBTS(SD-02/SD-03)/005 设计文档(SD-01) | auto-term | T-06 | 文档 diff | AC-06 |
+| T-01 ✅ | VM 裸名 alias 7 枚（native alias 表）+ 裸调用 roundtrip 单测 | auto-lang | — | 单测绿（真 DLL 在场即跑,缺席 skip 惯例） | AC-04 |
+| T-02 ✅ | pac.at .rs 侧车机制（两生成点 + 幂等 + deps 注入）+ 单测 | auto-lang | — | 生成断言单测绿;schema 注记入 pac 文档 | AC-05 |
+| T-03 ✅ | ui_gen/rust.rs terminal 臂（真身组件接线）+ 生成快照 | auto-lang | — | 快照入库 + 生成工程 cargo check 绿 | AC-01 |
+| T-04 ✅ | ui_gen/vue.rs terminal 最小 `<pre>` 臂 + a2vue 金样再生 | auto-lang | — | 金样 diff 入库 | AC-03 |
+| T-05 ✅ | at-app/ 标准工程落位（pac.at/front/back/sidecar term.rs） | auto-term | T-01..T-04 | headless 冒烟脚本在库 | AC-01..04 |
+| T-06 ✅ | 三形态验收跑 + 对拍 + 证据入库（evidence/013/） | auto-term | T-05 | AC-01/02/03 证据 + 对拍记录 | AC-01..03 |
+| T-07 ✅ | 文档回执:README/DEBTS(SD-02/SD-03)/005 设计文档(SD-01) | auto-term | T-06 | 文档 diff | AC-06 |
 
 worktree：双仓惯例 `.wt/auto-013/{auto-term,auto-lang}`（011 先例）,
 auto-lang 侧分支随其仓惯例;T-01..T-04 可并行,T-05 串后。
@@ -255,6 +255,26 @@ auto-lang 侧分支随其仓惯例;T-01..T-04 可并行,T-05 串后。
   生成器最小臂);执行期核查点 C1-C3 有界在案。
   stage: new / outcome: pass（授权范围内可开工;C1-C3 属执行期核查,
   fallback 路径已预置,不构成 blocked）/ next: work。
+- 2026-09-11 work（ZCode,/auto-plan:work）:T-01..T-07 全数完成,7/7。
+  auto-lang 侧 4 提交(325b35bb8 T1 裸调用面;4651b9f5b T2/T3/T4;
+  fa0ef828a 影子抑制改 file_modules+负哨兵解码;7066a9321 back 委托
+  处理器),worktree .wt/auto-013/auto-lang 分支 auto-term-dev;
+  auto-term 侧 1 提交(6637cc1,worktree plan-013-dev),基座 df631d5。
+  契约适配(同授权范围,实现形态演化):①D1 的"native 裸名 alias 表"
+  演化为"Plan 347 影子抑制按 file_modules 判定+#[vm] 无体声明豁免
+  +session vm_fn_names 播种"(探针实证 alias 表非必要,根因是自我
+  抑制);②D2 扩容:merged rust 形态 db.at 吸收(原只有 JSON CRUD 桩,
+  C2 核查点实锤)+back crate 标量服务委托处理器(C3 同族);③应用面
+  约束两项入库(List<str> 显式类型 var;裸调用禁入 if 条件位,597 §9);
+  ④新发现转译器缺陷账:a2r Time.sleep_ms 路径限定跨 fn 泄漏(E0433),
+  归 auto-lang 独立账(DEBTS #14②)。验证:tv 3660/3660 全绿;sidecar
+  4 单测绿;本仓 workspace 套件唯 ash_integration 6/2=F-1 基线存量红
+  (与 012 复审记录逐字同,零回归);三形态真机验收+证据 evidence/013/
+  (vm-echo-final.png/rust-echo-final2.png/vue-page.png+API 断言)。
+  stage: work | plan_id: PLAN-013 | plan_revision: 1 | outcome: pass |
+  code_commit: auto-term 6637cc1 + auto-lang 7066a9321 | task_ids:
+  T-01..T-07 | evidence: docs/plans/evidence/013/ | blockers: 无 |
+  next: review。
 
 ## 10. 待澄清事项
 
