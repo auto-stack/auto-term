@@ -163,10 +163,13 @@ win32 注记:ABI = `extern "system"`(manifest 带 ABI 注记);DLL 解析
    外来 trait impl)在既有计划中已原生可用,本计划补语料+实编+文档;
    F6 告警面=env 门控 AUTO_WARN_UNRESOLVED_TYPES(默认静默,全量噪音
    实测);与 Q2 轨 PLAN-596(430 dep 管线)边界显式无交;
-5. a2r **cdylib 导出面发射**(远期);
-6. **C 通道 a2r 后端**(§3.5):auto-bindgen 升格多后端共享 IR;
-   a2r 生成 Rust FFI 模块(S 静态/D 动态双形态);回调 trampoline
-   生成模式(SetConsoleCtrlHandler 试金石,硬点单独排)。
+5. a2r **cdylib 导出面发射**——**已立项(auto-lang PLAN-610,2026-09-10,
+   drafting,与⑥合并一项)**:#[export] 发射+类型保真,引擎 12 符号面
+   Auto 版 capstone 被 597 驱动器链接验收;
+6. **C 通道 a2r 后端**(§3.5)——**已立项(auto-lang PLAN-610,2026-09-10,
+   drafting,与⑤合并一项)**:S 静态 #[link] extern/D 动态 libloading 双
+   形态(manifest 共享 IR 三后端收口);终局闭环=⑥ 驱动链 ⑤ 产物
+   (Auto↔Auto 零手写胶水);trampoline=bounded spike(吸收 596 T-05)。
 
 ## 6. 验收与证据设施复用
 
