@@ -1,6 +1,6 @@
 ---
 plan_id: PLAN-012
-status: execution_done                # drafting → executing → execution_done → reviewed → archived
+status: reviewed                # drafting → executing → execution_done → reviewed → archived
 feature_name: engine-face-auto-adoption
 author: [ZCode]
 created_at: 2026-09-10
@@ -14,6 +14,16 @@ new_spec_components: []
 touched_goals: []
 
 affects: [at/, at-engine-face(新), scripts, docs]
+
+# /auto-plan:review 结束时填写：
+supersedes_spec_components:
+  - "docs/designs/004-engine-autoization-roadmap.md §5⑤: 修改——增 auto-term 侧转正回执(并存态:真身+产物 crate+parity 级验证;dist 不替换留 P-S)"
+  - "DEBTS.md #10: 修改——增 012 条(⑤ auto-term 侧转正账)"
+  - "README.md 布局节: 修改——增 at-engine-face 行(可发现性)"
+new_spec_components: []
+touched_goals:
+  - "004 路线图 §5⑤(引擎 Auto 化,C 通道导出面)"
+
 ---
 
 # [PLAN-012] engine-face-auto-adoption：引擎 12 符号面 Auto 版转正（并存构建 + 置换验证）
@@ -169,4 +179,22 @@ task_ids=T-01..T-05 | evidence=见下 | blockers=无 | next=review
 - **边界执行**:计划 §2 预估"无 auto-lang worktree 需求"有误——at-gen
   路径依赖需组内 auto-lang 兄弟(011 双树同款),已补 .wt/auto-012/
   auto-lang(auto-term-dev 分支),merge 清理时一并处理。
-
+---
+stage: review | PLAN-012 | rev 1 | **pass** | reviewed_commit=69f2851 |
+base=4accf44 | deps: auto-lang@fbfc145bc(组内兄弟,只读工具链+at-gen 路径依赖) |
+spec_inputs: 004/DEBTS/README(交付内落稿,auto-term 无 docs/specs 体系) |
+acceptance: AC-1 复跑=导出行过滤后 **12/12 恒等**(执行期 diff 的噪声行=文件名
+误中,已换行式过滤);AC-2 复跑=置换+parity **5 passed/6.11s**(完毕清理);
+AC-3=三回执随 ad7eae9 入库(diff 计件:004+5/DEBTS+4/README+3) |
+再生成验证: master 工具链重转译 vs 入库 lib.rs **字节级一致**(可复现+零手改
+双证) |
+suites: 主检出 cargo test --workspace --no-fail-fast=**唯 ash_integration
+6/2 红**;pariat 5/0、ctrl_event 3+1ignored、sim_regression 23、live_pty/
+pty_lifecycle/engine-ffi/ui 全绿 |
+findings: F-1(info/基线/移交):ash_integration ctrl_c 双测(ctrl_c_aborts_
+input_line/ctrl_c_event_effect_on_ash)在 main 基线即红——012 diff(at/+
+docs+at-gen lock)与其消费面零重叠;**重建 ash.exe(2026-09-11)后仍红**,
+新旧 ash 构建一致失败=非陈品漂移,真存量红(DEBTS #12/#13 领地/跨仓协调
+或环境态),建议独立调查;F-2(info):at-gen Cargo.lock 随 auto-lang master
+刷新(+77 行,依赖树追平,预期内) |
+evidence: 复审会话内重执行;命令/结果摘录见上 | next: merge
