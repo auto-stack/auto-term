@@ -201,3 +201,7 @@
     (import lib 内嵌 DLL 名换引擎);AC-06 D 形态运行期加载。语料
     27_c_abi 五件+三道 #[ignore] 实编门;trampoline 选型=A' 具名导出
     fn 按名传值(闭包直转证伪 E0308,实作 defer)。回执全文 004 §5。
+    **⑤ auto-term 侧转正(PLAN-012,2026-09-11,并存态)**:at/engine_face.at
+    真身+at-engine-face 产物 crate(转译入库);dumpbin 12/12 恒等;parity
+    六场景 Auto 面驱动全绿(置换法,证据在案);dist 生产物不替换(P-S 终局
+    决策留用户),at-gen engine.rs 胶水 Auto 化(⑥应用)留后续计划。
