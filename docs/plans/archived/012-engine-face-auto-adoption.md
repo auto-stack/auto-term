@@ -1,6 +1,6 @@
 ---
 plan_id: PLAN-012
-status: reviewed                # drafting → executing → execution_done → reviewed → archived
+status: archived                # drafting → executing → execution_done → reviewed → archived
 feature_name: engine-face-auto-adoption
 author: [ZCode]
 created_at: 2026-09-10
@@ -198,3 +198,21 @@ docs+at-gen lock)与其消费面零重叠;**重建 ash.exe(2026-09-11)后仍红*
 或环境态),建议独立调查;F-2(info):at-gen Cargo.lock 随 auto-lang master
 刷新(+77 行,依赖树追平,预期内) |
 evidence: 复审会话内重执行;命令/结果摘录见上 | next: merge
+
+---
+## 合并回执(PLAN-012:r1,2026-09-11)
+
+- stage: merge | outcome: **pass** | delivery_commit=c67579e(merge --no-ff
+  plan-012-dev;含实现 ad7eae9+lock 69f2851+复审后同步 b357810)
+- prepared: 复审基线零漂移(受审面 5237eb4..HEAD 无触及);规范增量三处
+  随交付内落稿(auto-term 无 docs/specs 体系,载体=004/DEBTS/README)
+- landed: main c67579e,wt-guard 前置 clean;主检出冒烟=at-engine-face
+  构建 5.68s 产出 dll+默认 parity 5/0(Rust 引擎基线)——main 已知绿
+- ledger_refreshed: .autoos/specs.json(离线 RMW+回读)P012-1..6 六节
+  各+1,file→archived/012-*.md;无关条目保全
+- archived: docs/plans/archived/012-engine-face-auto-adoption.md(git mv)
+  + status: archived + completion_kind: delivered
+- cleaned: (待清理执行后回填)
+- 移交: F-1(ash_integration ctrl_c 双测基线红,重建 ash 仍红——独立调查
+  建议,DEBTS #12/#13 领地);P-S 两决策留用户(dist 替换/at-gen 胶水
+  Auto 化后续计划)
