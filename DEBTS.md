@@ -153,3 +153,39 @@
    侧配套已落地待折:VM 动态轨 Terminal 真渲染两臂(convert_view_messages
    显式臂+convert_terminal 堆 ListData 物化,`.wt/auto-os-013/auto-lang`
    分支 auto-os-config-dev)。引擎契约面(12 符号 FFI/语义)零改动。
+10. **引擎 Rust 形态口径修正与 Auto 化路线(004,2026-09-07 用户裁定)**:
+    a2r 可复刻任意 Rust = Auto 语言设计目标;"引擎保持 Rust"(002 Q2/
+    009 P2)由终局裁定降格为**分期工程裁定**——现阶段是 Auto/a2r 能力
+    不足(外来泛型类型字段/外来 trait impl/trait 对象/裸线程+阻塞 io/
+    unsafe 面),非"不支持所以不做",四模块保留未来切 Auto 源选项。
+    C ABI 互操作(FFI/win32 同为 C ABI DLL)归宿 = **C 通道**(a2c/
+    c_ffi/auto-bindgen;unsafe 消解而非解决,Auto 不设 Rust 式 unsafe
+    面)。路线与能力缺口账全文 `docs/designs/004-engine-autoization-
+    roadmap.md`(ledger D004-2/D004-4);工作项五条全归 auto-lang 侧:
+    ①auto-bindgen 补 kernel32 console manifest ②a2c 复刻 ctrlc+对拍
+    (验收复用 ctrl_event/parity_interrupt 门禁)③12 符号面 C 通道驱动
+    ④a2r 语言能力四项 ⑤cdylib 导出发射(远期)⑥C 通道 a2r 后端
+    (`use.c` 三后端下降:VM/a2c 已在,a2r 生成 Rust FFI 缺——
+    auto-bindgen 升格共享 IR,S 静态/D 动态双形态,回调 trampoline
+    硬点)。002 原文不改,口径
+    以 004 为准(§7 勘读)。
+    **①② 已落地清账(auto-lang PLAN-595,2026-09-09)**:FnPtr 变体+
+    abi 注记+windows.h manifest 6 函数入 auto-bindgen(6 测绿);a2c
+    复刻 autoterm-ctrlc 成真 exe(ctrl_event 门禁产物置换跑 a2c helper
+    3 passed 1 ignored 与 Rust 版同绿,静态对拍 3,3/2,2);执行期顺修
+    a2c 闭包原型缺陷(真 MSVC 编译 C2065,快照盲区)。回执全文
+    004 §5。
+    **③ 已落地清账(auto-lang PLAN-597,2026-09-09)**:a2c 全量驱动
+    autoterm_core.dll 12 符号面真机通过(CFACE_OK/exit 0;MSVC 须链
+    .dll.lib import lib,直接 DLL 输入 LNK1107);VM 标量子集打通
+    (use_scanner 潜伏缺口=任何 VM 模式 use.c 均报模块不存在,修复+
+    JSON manifest 加载面+三分派臂,VFACE_OK);缓冲出参 4 符号实证
+    VM 不可达归 004⑥;路径裁定:独立工具→a2c 链入/宿主内→a2r+侧车/
+    VM→标量子集;附带 VM 轨两枚存量缺陷实测定位在案(597 §9)。
+    **④ 已落地清账(auto-lang PLAN-599,2026-09-10)**:a2r 外来形态四
+    能力(泛型字段/ext-for 外来 trait/dyn Trait+Send 拼写/裸线程 std
+    透传)语料五件+rustc 实编门;capstone term.rs 子集与 Rust oracle
+    黑盒 stdout 全等(共享 fake_core stub);执行期两修(dyn 字段派生
+    语义修订/spawn-move 双发);泛型字段与外来 trait impl 系既有计划
+    已原生可用(002 缺口 1.1 实为已清),599 补齐语料/实编/文档;F6
+    告警面 env 门控默认静默(全量噪音实测)。回执全文 004 §5。

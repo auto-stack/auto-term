@@ -246,6 +246,19 @@
           "PLAN-011"
         ],
         "status": "proposed"
+      },
+      {
+        "id": "D004-2",
+        "section": "goals",
+        "title": "引擎手写 Rust 的 Auto 化保留(能力缺口账与 C 通道) — 目标",
+        "content": "**用户裁定(2026-09-07)**:a2r 可复刻任意 Rust 代码是 Auto\n语言设计目标之一;引擎保持 Rust(002 Q2/PLAN-009)由终局裁定\n降格为**分期工程裁定**——现阶段是 Auto/a2r **能力不足**\n(外来泛型类型字段/外来 trait impl/trait 对象/裸线程+阻塞 io/\nunsafe 面),非\"不支持所以不做\"。引擎四模块(pty.rs/term.rs/\nffi.rs/autoterm-ctrlc.rs)保留未来切换 Auto 源的选项;C ABI 互操作\n(FFI/win32,同为 C ABI DLL)归宿 = **C 通道**(a2c/c_ffi/\nauto-bindgen)——unsafe 问题消解而非解决,Auto 不设 Rust 式\nunsafe 面。路线全文见 docs/designs/004;工作项五条归 auto-lang 侧\n(①kernel32 console manifest ②a2c 复刻 ctrlc+对拍 ③12 符号面\nC 通道驱动 ④a2r 语言能力四项 ⑤cdylib 导出发射)。",
+        "file": "docs/designs/004-engine-autoization-roadmap.md",
+        "related": [
+          "PLAN-006",
+          "PLAN-009",
+          "DEBTS #8"
+        ],
+        "status": "proposed"
       }
     ],
     "architecture": [
@@ -501,6 +514,19 @@
         "file": "docs/plans/archived/011-color-parity-and-release.md",
         "related": [
           "PLAN-011"
+        ],
+        "status": "stable"
+      },
+      {
+        "id": "D004-4",
+        "section": "designs",
+        "title": "004 引擎 Auto 化路线:口径修正、能力缺口账与 C 通道 — 详细设计",
+        "content": "七节结构:§0 口径修正(能力缺口待补,非不支持;002 缺口 1.5\n\"架构既定\"改读为当时形态裁定);§1 两条边界辨析(Q2 use.rust\nFFI 绑定白名单 ≠ Q3 a2r 表达力——trait impl/泛型/闭包/actor 可\nemit,use.rust 透传原生链接外来 crate;普通构造零运行时,无环\n不受伤);§2 能力缺口账(引擎构造→所需能力→现状,逐项有承接\n路径);§3 C 通道(a2c 4534 行/闭包→函数指针/c_ffi libloading/\nauto-bindgen 缺 windows.h;**unsafe 消解论**;三角色对账:ctrlc\n→a2c 纯产物首靶、engine 胶水→C 通道有 junction 或 a2r+侧车、\nffi.rs 导出→a2r 发射特性不走 C 通道);§4 分期路径 P0→P-C→P-L→\nP-S(源码切换,门禁升格语言验收器);§5 工作项五条(全 auto-lang\n侧);§6 验收设施复用(parity gate/ctrl_event/S2 先例);§7 勘读\n注记(002 原文不改,口径以 004 为准)。",
+        "file": "docs/designs/004-engine-autoization-roadmap.md",
+        "related": [
+          "PLAN-006",
+          "PLAN-009",
+          "DEBTS #8"
         ],
         "status": "stable"
       }
