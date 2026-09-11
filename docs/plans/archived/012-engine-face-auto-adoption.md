@@ -212,7 +212,9 @@ evidence: 复审会话内重执行;命令/结果摘录见上 | next: merge
   各+1,file→archived/012-*.md;无关条目保全
 - archived: docs/plans/archived/012-engine-face-auto-adoption.md(git mv)
   + status: archived + completion_kind: delivered
-- cleaned: (待清理执行后回填)
+- cleaned: 双 wt-guard clean(auto-term + auto-lang 组内兄弟)→worktree
+  remove×2+分支 plan-012-dev(已合)/auto-term-dev 删除+组目录 .wt/auto-012
+  空删
 - 移交: F-1(ash_integration ctrl_c 双测基线红,重建 ash 仍红——独立调查
   建议,DEBTS #12/#13 领地);P-S 两决策留用户(dist 替换/at-gen 胶水
   Auto 化后续计划)
