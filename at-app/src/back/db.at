@@ -1,0 +1,63 @@
+// at-app src/back/db.at — TermApp 引擎驱动状态机(PLAN-013 T5)
+//
+// 移植自 auto-term at/autoterm.at(冻结的 at-gen oracle);back crate
+// 用户逻辑唯一吸收面 = db.at(a2r 转译 db.rs / VM 直跑双形态)。
+// 引擎调用面 = use auto.term 裸调用(013 D1 裁定:a2r 下降 crate::term
+// ← sidecar 供给;VM 走 auto.term shims——同一 autoterm_core.dll)。
+//
+// 应用面约束(T1 实测注记):
+//   - engine_rows 的 List 返回必须落显式类型 var(否则 .len() 得 None);
+//   - 裸调用不得内联于 if 条件位(597 §9 挂起缺陷)——先赋值再比较。
+
+use auto.term: engine_spawn, engine_write_line, engine_rows, engine_resize, engine_interrupt, engine_is_exited, engine_free
+
+var handle int = 0
+var cols int = 100
+var rows int = 30
+var exited bool = false
+
+/// 每拍驱动:首调按存档几何 spawn(100×30);收割引擎输出并回传
+/// 视口行快照。零参(async init 引导惯例:extract_init_api_func 只认
+/// list_/get_ 前缀零参 fn);几何固定 013 不做动态 resize。
+pub fn get_lines() []str {
+    var first bool = false
+    if handle == 0 {
+        handle = engine_spawn(cols, rows)
+        first = true
+    }
+    var snapshot List<str> = engine_rows(handle)
+    // 首调(engine boot,async init 的 spawn_blocking 线程)短轮询等
+    // shell banner——引导快照取太早会整屏空行(rust 形态实测)。
+    if first {
+        // 有界忙等(a2r 对 Time.sleep_ms 的路径限定有存量缺陷,见
+        // rust-run.log E0433;boot 线程内短暂自旋可接受):等 shell banner。
+        var tries int = 0
+        loop {
+            if tries >= 400 {
+                break
+            }
+            if snapshot.len() > 0 {
+                break
+            }
+            snapshot = engine_rows(handle)
+            tries = tries + 1
+        }
+    }
+    exited = engine_is_exited(handle)
+    return snapshot
+}
+
+/// 宿主 → 子进程一行输入(胶水侧补 \r\n)。
+pub fn term_send(line str) {
+    engine_write_line(handle, line)
+}
+
+/// Ctrl+C 中断(Break→C 双发语义,引擎契约 003 §4.1)。
+pub fn term_interrupt() int {
+    return engine_interrupt(handle)
+}
+
+/// 子进程退出态(末次 tick 采样)。
+pub fn term_exited() bool {
+    return exited
+}

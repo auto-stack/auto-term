@@ -43,6 +43,10 @@ crates/autoterm-ui    单窗口终端(iced):事件驱动、实测字形度量、
 at-engine-face/       引擎 12 符号面的 Auto 版替身 cdylib(PLAN-012,
                       并存形态:at/engine_face.at 真身→a2r 转译入库;
                       parity 六场景已验,不替换 dist 生产物)
+at-app/               标准 Auto 工程三形态(PLAN-013:auto run
+                      -r rust|vm|vue 同源跑 AutoTerm;契约见
+                      docs/designs/005;引擎经侧车 term.rs/
+                      auto.term shims 驱动同一 DLL)
 spikes/               PLAN-001 归档(一次性探针,保留作证据,不再演进)
 docs/plans/           实施计划(auto-plan 流)
 docs/designs/         设计决策(000:渲染路线;001:Phase 1 架构与决策链;
@@ -52,6 +56,11 @@ docs/designs/         设计决策(000:渲染路线;001:Phase 1 架构与决策�
 ## 运行
 
 ```powershell
+# 标准 Auto 工程三形态(PLAN-013,详见 at-app/README.md):
+cd at-app && auto run -r rust   # a2r iced 窗口(merged:db 吸收+侧车)
+cd at-app && auto run -r vm     # AutoVM 动态轨(auto.term shims)
+cd at-app && auto run -r vue    # Vite 页面 + axum back(HTTP)
+
 cargo run -q -p autoterm-ui --                    # 交互终端(默认 pwsh)
 cargo run -q -p autoterm-ui -- --shell <exe>      # 指定 shell(如 ash.exe)
 cargo test --workspace                            # 全量回归

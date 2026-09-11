@@ -1,0 +1,14 @@
+name: "at-app"
+version: "0.1.0"
+scene: "ui"
+render: "vm"
+title: "AutoTerm"
+api: "rust"
+theme: "dark"
+
+// PLAN-013 T2: .rs 侧车——crate::term(引擎胶水,源自 at-gen/src/engine.rs)
+// 供给 rust/vue 两个生成点;VM 形态经 auto.term shims 走同一 DLL,无需侧车。
+rust_sidecar {
+    modules: ["term:term.rs"]
+    deps: ["libloading:0.8"]
+}

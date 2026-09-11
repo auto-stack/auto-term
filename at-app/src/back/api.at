@@ -1,0 +1,31 @@
+// at-app src/back/api.at — #[api] 契约面(PLAN-013 T5)
+//
+// 全标量/[]str 面:rust merged(db 吸收委托)、vue split(a2r axum
+// handlers 调 db.rs)、VM merged(api fn 字节码直调 db)三形态同源。
+// 实现体在 db.at(api.at 仅为契约 + VM 直跑的委托体)。
+
+use db
+
+/// 每拍驱动(几何存 db 侧全局,首调 spawn)。
+#[api(method = "POST", path = "/api/term/tick")]
+pub fn get_lines() []str {
+    return db.get_lines()
+}
+
+/// 宿主 → 子进程一行输入。
+#[api(method = "POST", path = "/api/term/send")]
+pub fn term_send(line str) {
+    db.term_send(line)
+}
+
+/// Ctrl+C 中断。
+#[api(method = "POST", path = "/api/term/interrupt")]
+pub fn term_interrupt() int {
+    return db.term_interrupt()
+}
+
+/// 子进程退出态。
+#[api(method = "GET", path = "/api/term/exited")]
+pub fn term_exited() bool {
+    return db.term_exited()
+}
