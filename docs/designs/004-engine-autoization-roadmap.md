@@ -163,13 +163,19 @@ win32 注记:ABI = `extern "system"`(manifest 带 ABI 注记);DLL 解析
    外来 trait impl)在既有计划中已原生可用,本计划补语料+实编+文档;
    F6 告警面=env 门控 AUTO_WARN_UNRESOLVED_TYPES(默认静默,全量噪音
    实测);与 Q2 轨 PLAN-596(430 dep 管线)边界显式无交;
-5. a2r **cdylib 导出面发射**——**已立项(auto-lang PLAN-610,2026-09-10,
-   drafting,与⑥合并一项)**:#[export] 发射+类型保真,引擎 12 符号面
-   Auto 版 capstone 被 597 驱动器链接验收;
-6. **C 通道 a2r 后端**(§3.5)——**已立项(auto-lang PLAN-610,2026-09-10,
-   drafting,与⑤合并一项)**:S 静态 #[link] extern/D 动态 libloading 双
-   形态(manifest 共享 IR 三后端收口);终局闭环=⑥ 驱动链 ⑤ 产物
-   (Auto↔Auto 零手写胶水);trampoline=bounded spike(吸收 596 T-05)。
+5. a2r **cdylib 导出面发射**——**已落地清账(auto-lang PLAN-610,
+   2026-09-11,与⑥合并一项)**:#[export]/#[export(system)] 兄弟包装
+   模块发射(no_mangle extern,符号=fn 名;int i64↔i32 边界 cast/
+   cstr CString 边界/句柄缓冲双形参规则,unsafe 全居生成码);引擎
+   12 符号面 Auto 版 capstone(005 语料)被 597 a2c 驱动器链接跑出
+   CFACE_OK/exit 0(a2r_cabi_engine_face_gate);
+6. **C 通道 a2r 后端**(§3.5)——**已落地清账(auto-lang PLAN-610,
+   2026-09-11,与⑤合并一项)**:S 静态 #[link] extern/D 动态 libloading
+   双形态落地(manifest 共享 IR 增 link 字段,三后端收口);终局闭环
+   实证=⑥ 驱动同产物改链 ⑤ 产物 CFACE_OK(**Auto↔Auto 零手写胶水**,
+   a2r_cabi_use_c_gate 三腿:AC-04 真 DLL/AC-05 ⑤产物/AC-06 D 运行期);
+   trampoline 选型=A' 具名 #[export(system)] fn 按名传值(闭包直转
+   E0308 证伪,捕获案 B 兜底,实作 defer;PLAN-610 §5 附录)。
 
 ## 6. 验收与证据设施复用
 

@@ -189,3 +189,15 @@
     语义修订/spawn-move 双发);泛型字段与外来 trait impl 系既有计划
     已原生可用(002 缺口 1.1 实为已清),599 补齐语料/实编/文档;F6
     告警面 env 门控默认静默(全量噪音实测)。回执全文 004 §5。
+    **⑤⑥ 已落地清账(auto-lang PLAN-610,2026-09-11)**:C ABI 双面全通。
+    ⑤导出面=#[export]/#[export(system)] 兄弟包装模块发射(no_mangle
+    extern,符号=fn 名,调用方零改动;int i64↔i32 边界 cast/cstr CString
+    边界/句柄空安全解引用/缓冲 kit 收口全部 unsafe 于生成码);⑥ use.c
+    双形态下降(manifest 共享 IR 增 link 字段:S 静态 #[link] extern /
+    D 动态 libloading env→exe同目录→PATH)。三级 CFACE_OK 实证:
+    AC-03 引擎 12 符号 Auto 版 cdylib(005 语料,包真 PtySession)被
+    597 a2c 驱动器链接跑通;AC-04 ⑥ S 驱动链真 autoterm_core.dll.lib;
+    AC-05 同一 ⑥ 驱动产物改链 ⑤ 产物=**Auto↔Auto 全链零手写胶水**
+    (import lib 内嵌 DLL 名换引擎);AC-06 D 形态运行期加载。语料
+    27_c_abi 五件+三道 #[ignore] 实编门;trampoline 选型=A' 具名导出
+    fn 按名传值(闭包直转证伪 E0308,实作 defer)。回执全文 004 §5。
