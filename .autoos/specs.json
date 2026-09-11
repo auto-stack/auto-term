@@ -122,6 +122,19 @@
           "PLAN-011"
         ],
         "status": "published"
+      },
+      {
+        "id": "P012-1",
+        "section": "reports",
+        "title": "engine-face-auto-adoption — 变更摘要",
+        "content": "auto-lang PLAN-610(⑤)的 auto-term 侧落地:引擎 12 符号 C ABI 面 Auto 版转正(并存态)——at/engine_face.at 真身(源流 610 capstone 语料,语义对齐ffi.rs:opaque Box 句柄/快照仅 take_dirty_rows 刷新/kind_color 乘法位等价/null 哨兵统一化)+at-engine-face 产物 crate(a2r 转译 364 行入库含 auto_cabi_kit 桥,cdylib 零 auto-lang 运行时依赖)。验收:dumpbin 12/12 符号集恒等+parity 六场景 Auto 面驱动全绿(置换法)+SCENARIO_OK+再生成字节级一致。dist 生产物不替换(P-S 终局决策留用户)。",
+        "file": "docs/plans/archived/012-engine-face-auto-adoption.md",
+        "related": [
+          "PLAN-012"
+        ],
+        "status": "published",
+        "created": "2026-09-11",
+        "last_modified": "2026-09-11"
       }
     ],
     "goals": [
@@ -259,6 +272,19 @@
           "DEBTS #8"
         ],
         "status": "proposed"
+      },
+      {
+        "id": "P012-2",
+        "section": "goals",
+        "title": "engine-face-auto-adoption — 目标",
+        "content": "004 §5⑤ 的 auto-term 侧收口:Auto 版引擎面作为可构建/可验收替身在仓转正——证明同一 C ABI 契约可由 Auto 源书写并经既有 parity 门禁(启动/echo/resize/中断/色彩/选中)行为级验证。并存形态,替换生产物=P-S 用户终裁。",
+        "file": "docs/plans/archived/012-engine-face-auto-adoption.md",
+        "related": [
+          "PLAN-012"
+        ],
+        "status": "proposed",
+        "created": "2026-09-11",
+        "last_modified": "2026-09-11"
       }
     ],
     "architecture": [
@@ -386,6 +412,19 @@
           "PLAN-011"
         ],
         "status": "stable"
+      },
+      {
+        "id": "P012-3",
+        "section": "architecture",
+        "title": "engine-face-auto-adoption — 架构方案",
+        "content": "真身链:at/engine_face.at(Auto 源)→auto-lang master auto trans(只读工具链)→at-engine-face/src/lib.rs 入库(at-gen app_logic.rs 同款纪律);at-engine-face 独立 workspace(无环铁律不变),edition 2024 cdylib,dep autoterm-core path 只读;产物名 autoterm_engine_face_auto.dll(独立名防覆盖);置换验证走 at-gen 引擎解析序 exe 同目录候选。",
+        "file": "docs/plans/archived/012-engine-face-auto-adoption.md",
+        "related": [
+          "PLAN-012"
+        ],
+        "status": "stable",
+        "created": "2026-09-11",
+        "last_modified": "2026-09-11"
       }
     ],
     "designs": [
@@ -529,6 +568,19 @@
           "DEBTS #8"
         ],
         "status": "stable"
+      },
+      {
+        "id": "P012-4",
+        "section": "designs",
+        "title": "engine-face-auto-adoption — 详细设计",
+        "content": "细节见归档计划 §5:再生成规程(README);置换验证规程(env AUTOTERM_AT_BIN+exe 同目录置入+完毕清理);null 哨兵统一化与 ffi.rs -1/-2 分档的差异注记(驱动方从不传 null,六场景不触及);已知边界:at-gen 路径依赖需组内auto-lang 兄弟(011 双树同款,计划 §9 边界修正)。",
+        "file": "docs/plans/archived/012-engine-face-auto-adoption.md",
+        "related": [
+          "PLAN-012"
+        ],
+        "status": "stable",
+        "created": "2026-09-11",
+        "last_modified": "2026-09-11"
       }
     ],
     "tests": [
@@ -656,6 +708,19 @@
           "PLAN-011"
         ],
         "status": "verified"
+      },
+      {
+        "id": "P012-5",
+        "section": "tests",
+        "title": "engine-face-auto-adoption — 测试设计",
+        "content": "dumpbin 导出行式过滤对照(文件名噪声教训);parity 六场景置换法(Auto 面dll 以 autoterm_core.dll 之名置入 at-gen exe 同目录,解析序第一命中);headless scenario echo 冒烟;再生成字节级一致(可复现+零手改);主 workspace 构造性零回归(新增物不入主树)。",
+        "file": "docs/plans/archived/012-engine-face-auto-adoption.md",
+        "related": [
+          "PLAN-012"
+        ],
+        "status": "verified",
+        "created": "2026-09-11",
+        "last_modified": "2026-09-11"
       }
     ],
     "reviews": [
@@ -813,6 +878,19 @@
           "PLAN-011"
         ],
         "status": "published"
+      },
+      {
+        "id": "P012-6",
+        "section": "reviews",
+        "title": "engine-face-auto-adoption — 验收标准与复审记录",
+        "content": "复审 pass(rev1,reviewed 69f2851,base 4accf44):AC-1/2/3 全复验通过;再生成字节级一致;全套件唯 ash_integration 6/2=基线存量红(F-1:重建ash.exe 后仍红,新旧一致,与 012 零重叠——移交独立调查,DEBTS #12/#13 领地);F-2=at-gen lock 刷新 info。复审记录 5237eb4。",
+        "file": "docs/plans/archived/012-engine-face-auto-adoption.md",
+        "related": [
+          "PLAN-012"
+        ],
+        "status": "published",
+        "created": "2026-09-11",
+        "last_modified": "2026-09-11"
       }
     ]
   }
