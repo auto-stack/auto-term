@@ -169,6 +169,11 @@ win32 注记:ABI = `extern "system"`(manifest 带 ABI 注记);DLL 解析
    cstr CString 边界/句柄缓冲双形参规则,unsafe 全居生成码);引擎
    12 符号面 Auto 版 capstone(005 语料)被 597 a2c 驱动器链接跑出
    CFACE_OK/exit 0(a2r_cabi_engine_face_gate);
+   **auto-term 侧转正(PLAN-012,2026-09-11,并存态)**:真身落位
+   `at/engine_face.at`+产物 crate `at-engine-face/`(a2r 转译入库,
+   cdylib=autoterm_engine_face_auto.dll);dumpbin 12/12 符号集与 Rust 版
+   恒等;**parity 六场景在 Auto 面驱动下全绿**(置换法)+headless 冒烟
+   SCENARIO_OK。不替换 dist 生产物(P-S 终局决策留用户)。
 6. **C 通道 a2r 后端**(§3.5)——**已落地清账(auto-lang PLAN-610,
    2026-09-11,与⑤合并一项)**:S 静态 #[link] extern/D 动态 libloading
    双形态落地(manifest 共享 IR 增 link 字段,三后端收口);终局闭环

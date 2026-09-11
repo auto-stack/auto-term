@@ -1,0 +1,22 @@
+[package]
+name = "autoterm-engine-face-auto"
+version = "0.1.0"
+edition = "2024"
+license = "Apache-2.0"
+publish = false
+
+# 独立于 auto-term workspace(同 at-gen;见 README)。
+[workspace]
+
+# PLAN-012: 引擎 12 符号 C ABI 面的 Auto 版替身 cdylib——
+# at/engine_face.at 经 a2r 转译产物入库 src/lib.rs(勿手改),
+# dep autoterm-core 只读(ffi.rs 契约冻结,oracle 身份不变)。
+# 并存形态:Rust 版 autoterm_core.dll 仍是 dist 生产引擎;
+# 本 crate 为可构建/可验收的替身,替换决策属 004 P-S 用户终裁。
+
+[lib]
+name = "autoterm_engine_face_auto"
+crate-type = ["cdylib"]
+
+[dependencies]
+autoterm-core = { path = "../crates/autoterm-core" }

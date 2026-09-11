@@ -40,6 +40,9 @@ crates/autoterm-core  终端会话层:PTY 会话 + alacritty_terminal 封装
 crates/autoterm-ui    单窗口终端(iced):事件驱动、实测字形度量、
                       回滚 UI、反色光标、选中/复制粘贴、IME 预编辑;
                       bin = autoterm
+at-engine-face/       引擎 12 符号面的 Auto 版替身 cdylib(PLAN-012,
+                      并存形态:at/engine_face.at 真身→a2r 转译入库;
+                      parity 六场景已验,不替换 dist 生产物)
 spikes/               PLAN-001 归档(一次性探针,保留作证据,不再演进)
 docs/plans/           实施计划(auto-plan 流)
 docs/designs/         设计决策(000:渲染路线;001:Phase 1 架构与决策链;
