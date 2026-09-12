@@ -1,6 +1,6 @@
 ---
 plan_id: PLAN-013
-status: reviewed             # drafting → executing → execution_done → reviewed → archived
+status: archived             # drafting → executing → execution_done → reviewed → archived
 feature_name: standard-project-three-backends
 author: [ZCode]
 created_at: 2026-09-11
@@ -314,6 +314,22 @@ auto-lang 侧分支随其仓惯例;T-01..T-04 可并行,T-05 串后。
   findings: F-1 存量/F-2 已修正/F-3 非阻塞 hygiene/F-4 演化在案 |
   evidence: docs/plans/evidence/013/(仓库耐久路径)+本记录内嵌命令
   摘要(tv/tf/parity/单测计数) | next: merge。
+- 2026-09-11 merge（ZCode,/auto-plan:merge;PLAN-013:r1）:
+  **prepared**=reviewed 基线(auto-term 6637cc1/auto-lang 7066a9321,
+  计划文件 f9e5d73)+canonical 文档已在交付提交内(005 设计文档/
+  DEBTS/README 随 6637cc1 入库)+F-3 hygiene 提交 824dadd;
+  **landed**=auto-lang master fast-forward→859c31710(worktree 内先
+  reconcile master 前进[PLAN-615,55 文件],零冲突,刷新门禁 tf 3534/
+  tv 3680 全绿后落地)+auto-term main merge→1859f87(merge commit,
+  内容=6637cc1..824dadd+主检出计划簿记);**ledger_refreshed**=见下
+  一提交(.autoos/specs.json P013-1..6 六件,file 指向 archived/013);
+  **archived**=本文件 git mv→docs/plans/archived/013-standard-project-
+  three-backends.md,status: archived,completion_kind: delivered;
+  **cleaned**=待回填(worktree/分支清扫后补)。
+  stage: merge | plan_id: PLAN-013 | plan_revision: 1 | outcome: pass
+  (待 cleaned 回填) | delivery_commit: auto-term 1859f87 + auto-lang
+  859c31710 | canonical: docs/designs/005 + DEBTS #14/009#4 + README |
+  archive_path: docs/plans/archived/013-standard-project-three-backends.md
 
 ## 10. 待澄清事项
 
