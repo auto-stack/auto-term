@@ -1,0 +1,28 @@
+// pac.at — AutoTerm 桌面 app 壳（PLAN-013 T7，auto-os 桌面整理批）。
+//
+// 定位：AutoOS 虚拟桌面的通用终端独立 app——autoterm-core 引擎
+// （autoterm_core.dll，libloading 运行期加载）+ auto-lang View::Terminal
+// 组件（PLAN-009 P1 真身）。引擎面 = auto.term.* catalog shim
+//（OS-013 T2，进程内绑定，ID 2943-2949）：Term.engine_* 接收者式调用，
+// dll 缺席优雅降级（spawn 返 0，宿主不崩）。
+//
+// 部署件契约（003 §5；auto-os-config scripts/deploy-autoterm.sh 组布局
+// 感知，幂等）：autoterm_core.dll + autoterm-ctrlc.exe → 宿主 exe 同目录；
+// term 门面 → stdlib 安装副本。auto-term 侧先 `cargo build -p autoterm-core`。
+//
+// 无 back：引擎在宿主进程内，无 api 契约、无 daemon 声明。render vm——
+// terminal 为 VM 原生组件（vue 轨无此渲染面，非缺陷）。
+
+name: "auto-term"
+version: "0.1.0"
+description: "AutoTerm — AutoOS 虚拟桌面通用终端"
+
+scene: "ui"
+render: "vm"
+title: "AutoTerm"
+icon: "terminal"
+category: "system"
+# 端口 = auto-os 伞形 17xxx 带预留（apps.manifest 同步登记 17400/17401）；
+# 本 app 无 back daemon，键为伞形登记一致性占位。
+front_port: 17400
+back_port: 17401

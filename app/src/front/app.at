@@ -1,0 +1,23 @@
+// app.at — PLAN-013 T7:AutoTerm 桌面 app 根——200ms .Tick 节拍转发
+// AutoTerm store(os-config OS-013 T3 同款;tick_interval 订阅形态,
+// stopwatch/minesweeper 同族——extract 将 interval 从 state 剥离只进
+// 订阅)。store 内自判 handle==0 no-op,空转零渲染影响。
+use autoterm_page: AutoTermPage
+
+widget App {
+    msg Msg { Tick }
+
+    model {
+        var interval int = 200
+    }
+
+    view {
+        AutoTermPage { }
+    }
+
+    on {
+        .Tick -> {
+            AutoTerm.Tick()
+        }
+    }
+}

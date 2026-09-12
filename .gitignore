@@ -10,3 +10,7 @@ at-app/dist/
 at-app/target/
 at-app/.auto/
 at-app/.am/
+
+# PLAN-013 T7: app/ 桌面 app 壳生成物（auto build/状态目录）
+app/.am/
+app/build/
