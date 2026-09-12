@@ -1,6 +1,6 @@
 ---
 plan_id: PLAN-013
-status: execution_done       # drafting → executing → execution_done → reviewed → archived
+status: reviewed             # drafting → executing → execution_done → reviewed → archived
 feature_name: standard-project-three-backends
 author: [ZCode]
 created_at: 2026-09-11
@@ -14,6 +14,15 @@ new_spec_components: []
 touched_goals: []
 
 affects: [at-app/(新), at-gen(冻结不改), docs, auto-lang(兄弟仓 4 项)]
+
+# /auto-plan:review 结束时填写（复审定稿）：
+supersedes_spec_components:
+  - "DEBTS.md 009 观察 #4: 修改——Vue/web terminal 留白收窄(最小只读视口已通,xterm.js 类交互留白维持)"
+new_spec_components:
+  - "docs/designs/005-standard-project-three-backends.md: 新增——三形态运行契约+侧车机制+调用面裁定(D1..D3)+实证记录"
+  - "DEBTS.md #14: 新增——at-app 三形态后续账(定时器/a2r Time.sleep_ms 缺陷/at-gen 退役收敛/vue 交互留白)"
+touched_goals:
+  - "004 引擎 Auto 化路线(标准工程延伸:at-app 三形态即 C 通道/P-L 成果的应用面)
 
 ---
 
@@ -206,7 +215,7 @@ term.rs 侧车是其前置形态,Auto 化仍留后续）。
 |---|---|---|---|---|---|
 | SD-01 | add | docs/designs/005-standard-project-three-backends.md | 无→三形态运行契约+侧车机制+调用面裁定(D1..D3)全文 | 标准命令形态首次入账 | AC-01..05 |
 | SD-02 | modify | DEBTS.md 009 观察 #4 | "Vue/web terminal 留白"→"最小只读视口已通(013);xterm.js 类交互留白维持" | 口径随事实收窄 | AC-03 |
-| SD-03 | modify | DEBTS.md #10 / README.md 布局节 | 增 at-app 工程行与三命令运行节;PLAN-012 遗留"胶水 Auto 化"注记侧车前置 | 可发现性 | AC-06 |
+| SD-03 | add/modify | DEBTS.md #14(新增)/ README.md 布局与运行节 | 无→#14 四项后续账(定时器/a2r Time 缺陷/at-gen 退役收敛/vue 留白);README 增 at-app 行与三命令节 | 可发现性与后续账 | AC-06 |
 
 ## 6. 测试设计
 
@@ -275,6 +284,36 @@ auto-lang 侧分支随其仓惯例;T-01..T-04 可并行,T-05 串后。
   code_commit: auto-term 6637cc1 + auto-lang 7066a9321 | task_ids:
   T-01..T-07 | evidence: docs/plans/evidence/013/ | blockers: 无 |
   next: review。
+- 2026-09-11 review（ZCode,/auto-plan:review;实现会话内复审,结论自
+  工件重建）:基线=auto-term plan-013-dev@6637cc1(基 df631d5)/auto-lang
+  auto-term-dev@7066a9321(基 d8971f4b1)/计划文件主检出@0988c5d→本记录
+  提交;两 worktree 提交时点清洁。**AC 逐条**:AC-01 pass(rust 形态证据
+  rust-echo-final2.png+生成码检查 mod db/mod term/View::Terminal/委托
+  端点,证据采集后链路零改);AC-02 pass(复审基线独立复现:MCP type/
+  action 驱动 echo 回环,state lines 填充;vm-echo-final.png;api_gen
+  后续提交不触及 VM 解释器路径);AC-03 pass(7066a9321 构建上采集:
+  send 200/tick JSON 含回显/vue-page.png);AC-04 pass(复审复跑
+  term_engine_shims 2/2 绿);AC-05 pass(sidecar 单测 4/4 绿);AC-06
+  pass(tf 3517/3517;tv 终版 3660/3660;parity 5/5——worktree 需先构建
+  at-gen oracle,缺失即 0/5 环境性失败,已实证;workspace 唯
+  ash_integration 6/2=F-1 存量;日常档 worktree 24 红 vs master 28 红,
+  红集合为基线/环境族——ffi dep 构建波动跨次漂移实证、gallery 扫描
+  差异源于检出布局、d8 在 master 同红——无一红归因本次改动面)。
+  **findings**:F-1(存量,移交在案)ash_integration 6/2+日常档基线红,
+  与本计划无关;F-2(info,已修正)SD-03 契约漂移——实际回执为 DEBTS
+  #14 新增+009#4 收窄+README 两节,非 #10 注记,SD 表已按实改写;
+  F-3(info,非阻塞)at-app/.am/state.at 运行态误入库,建议 merge 清扫
+  补 .gitignore(at-app/.am/)+git rm --cached;F-4(info)契约实现形态
+  演化四项,授权范围内,§9 在案,revision 维持 1。
+  stage: review | plan_id: PLAN-013 | plan_revision: 1 | outcome: pass |
+  reviewed_commit: auto-term 6637cc1 + auto-lang 7066a9321 |
+  base_commit: auto-term df631d5 + auto-lang d8971f4b1 |
+  dependency_revisions: 两仓互为零 Cargo 依赖(引擎 DLL 运行期加载,
+  无环铁律) | spec_inputs: docs/designs/005(新增,6637cc1)/DEBTS
+  #14+009#4/README(6637cc1) | acceptance_results: AC-01..06 全 pass |
+  findings: F-1 存量/F-2 已修正/F-3 非阻塞 hygiene/F-4 演化在案 |
+  evidence: docs/plans/evidence/013/(仓库耐久路径)+本记录内嵌命令
+  摘要(tv/tf/parity/单测计数) | next: merge。
 
 ## 10. 待澄清事项
 
