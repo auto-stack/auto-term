@@ -325,9 +325,12 @@ auto-lang 侧分支随其仓惯例;T-01..T-04 可并行,T-05 串后。
   一提交(.autoos/specs.json P013-1..6 六件,file 指向 archived/013);
   **archived**=本文件 git mv→docs/plans/archived/013-standard-project-
   three-backends.md,status: archived,completion_kind: delivered;
-  **cleaned**=待回填(worktree/分支清扫后补)。
-  stage: merge | plan_id: PLAN-013 | plan_revision: 1 | outcome: pass
-  (待 cleaned 回填) | delivery_commit: auto-term 1859f87 + auto-lang
+  **cleaned**=已清——wt-guard 首跑 BLOCKED(at-app/gen pnpm 359 junction,
+  guard 处方 rmdir 摘链后 clean),三 worktree 全 guard-clean 后移除:
+  auto-term(plan-013-dev@824dadd 删)/auto-lang(auto-term-dev@859c31710
+  删)/auto-down(detached,借 siblings);组目录 .wt/auto-013 已空已删。
+  stage: merge | plan_id: PLAN-013 | plan_revision: 1 | outcome: pass |
+  delivery_commit: auto-term 1859f87 + auto-lang
   859c31710 | canonical: docs/designs/005 + DEBTS #14/009#4 + README |
   archive_path: docs/plans/archived/013-standard-project-three-backends.md
 
