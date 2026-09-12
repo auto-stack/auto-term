@@ -135,6 +135,19 @@
         "status": "published",
         "created": "2026-09-11",
         "last_modified": "2026-09-11"
+      },
+      {
+        "id": "P013-1",
+        "section": "reports",
+        "title": "standard-project-three-backends — 变更摘要",
+        "content": "auto-term 复刻应用的标准 Auto(automan)工程形态落地:at-app/(pac.at+src/front/app.at+src/back/{api.at,db.at}+term.rs 侧车)一份 .at 源,auto run -r rust|vm|vue 三条标准命令三形态驱动同一 autoterm_core.dll。auto-lang 侧配套:sidecar 机制(pac.at rust_sidecar 声明 .rs 模块+deps 注入 rust/back 两生成点,幂等)、merged db 吸收(a2r 转译件嵌 mod db,标量/[]str 端点委托)、back 标量服务委托处理器、ui_gen rust/vue 两枚 terminal 臂。",
+        "file": "docs/plans/archived/013-standard-project-three-backends.md",
+        "related": [
+          "PLAN-013"
+        ],
+        "status": "published",
+        "created": "2026-09-11",
+        "last_modified": "2026-09-11"
       }
     ],
     "goals": [
@@ -285,6 +298,19 @@
         "status": "proposed",
         "created": "2026-09-11",
         "last_modified": "2026-09-11"
+      },
+      {
+        "id": "P013-2",
+        "section": "goals",
+        "title": "standard-project-three-backends — 目标",
+        "content": "用标准 Auto 工程与标准命令(auto run)承载 AutoTerm 三形态,替代手工 curated 的单件转译流程;应用源以 use auto.term+裸调用单一调用面跨 a2r/VM 双后端;引擎契约(12 符号 FFI/DLL)零改动。at-gen 与 at/autoterm.at 冻结为 oracle,退役收敛另立计划(DEBTS #14③)。",
+        "file": "docs/plans/archived/013-standard-project-three-backends.md",
+        "related": [
+          "PLAN-013"
+        ],
+        "status": "proposed",
+        "created": "2026-09-11",
+        "last_modified": "2026-09-11"
       }
     ],
     "architecture": [
@@ -421,6 +447,19 @@
         "file": "docs/plans/archived/012-engine-face-auto-adoption.md",
         "related": [
           "PLAN-012"
+        ],
+        "status": "stable",
+        "created": "2026-09-11",
+        "last_modified": "2026-09-11"
+      },
+      {
+        "id": "P013-3",
+        "section": "architecture",
+        "title": "standard-project-three-backends — 架构方案",
+        "content": "三宿主一引擎:rust=iced(AutoUI rust 后端,merged db 吸收+crate::term 侧车进程内直调);vm=AutoVM 动态轨(aura_view_builder terminal 臂+auto.term.* shims);vue=Vite 页面(<pre> 最小视口)+axum back(HTTP,back crate 内 crate::term 侧车)。调用面统一裁定 D1:use auto.term+裸调用(a2r 下降 use crate::term:: 由侧车闭合;VM 走 native_catalog)。侧车裁定 D2:pac.at rust_sidecar{modules,deps} 双生成点幂等供给。D3:terminal 生成器臂 rust 直达 View::Terminal、vue 最小只读视口(交互面留白)。",
+        "file": "docs/plans/archived/013-standard-project-three-backends.md",
+        "related": [
+          "PLAN-013"
         ],
         "status": "stable",
         "created": "2026-09-11",
@@ -581,6 +620,19 @@
         "status": "stable",
         "created": "2026-09-11",
         "last_modified": "2026-09-11"
+      },
+      {
+        "id": "P013-4",
+        "section": "designs",
+        "title": "standard-project-three-backends — 详细设计",
+        "content": "细节见 docs/designs/005-standard-project-three-backends.md(裁定 D1..D3 全文+应用面约束+已知边界)与归档计划 §5:VM 裸调用两约束(List<str> 显式类型 var;禁内联 if 条件位——597 §9 挂起缺陷);api fn 命名惯例(get_/list_ 前缀零参 fn 方获 async-init 引导);a2r Time.sleep_ms 路径限定跨 fn 泄漏缺陷(E0433,有界忙等规避,auto-lang 独立账);Plan 347 影子抑制改 file_modules 判定+#[vm] 无体声明豁免(vm_fn_names session 汇集播种)。",
+        "file": "docs/plans/archived/013-standard-project-three-backends.md",
+        "related": [
+          "PLAN-013"
+        ],
+        "status": "stable",
+        "created": "2026-09-11",
+        "last_modified": "2026-09-11"
       }
     ],
     "tests": [
@@ -717,6 +769,19 @@
         "file": "docs/plans/archived/012-engine-face-auto-adoption.md",
         "related": [
           "PLAN-012"
+        ],
+        "status": "verified",
+        "created": "2026-09-11",
+        "last_modified": "2026-09-11"
+      },
+      {
+        "id": "P013-5",
+        "section": "tests",
+        "title": "standard-project-three-backends — 测试设计",
+        "content": "门禁矩阵(复审基线复跑):auto-lang tf 3534/3534+tv 3680/3680(reconcile PLAN-615 后终版);sidecar 4/4;term_engine_shims 2/2(限定+裸调用全链);auto-term workspace parity 5/5(worktree 需补建 at-gen oracle,缺失即 0/5 环境性失败)+唯 ash_integration 6/2=F-1 存量;日常档红名单 worktree 24 vs master 28,均基线/环境族零归因;三形态真机证据 docs/plans/evidence/013/(vm/rust echo 上屏截图+vue HTTP 回环断言+页面截图)。",
+        "file": "docs/plans/archived/013-standard-project-three-backends.md",
+        "related": [
+          "PLAN-013"
         ],
         "status": "verified",
         "created": "2026-09-11",
@@ -887,6 +952,19 @@
         "file": "docs/plans/archived/012-engine-face-auto-adoption.md",
         "related": [
           "PLAN-012"
+        ],
+        "status": "published",
+        "created": "2026-09-11",
+        "last_modified": "2026-09-11"
+      },
+      {
+        "id": "P013-6",
+        "section": "reviews",
+        "title": "standard-project-three-backends — 验收标准与复审记录",
+        "content": "复审 pass(rev1,reviewed 6637cc1+7066a9321,base df631d5+d8971f4b1):AC-01..06 全 pass。findings:F-1 存量基线红(移交在案);F-2 SD-03 漂移已按实修正;F-3 at-app/.am 运行态误入库已出库+gitignore(824dadd);F-4 契约演化四项在案(影子抑制 file_modules 化/D2 扩容/应用面两约束/a2r Time 缺陷开账)。复审记录 f9e5d73;merge 收据 5ca7904(本文件同仓)。",
+        "file": "docs/plans/archived/013-standard-project-three-backends.md",
+        "related": [
+          "PLAN-013"
         ],
         "status": "published",
         "created": "2026-09-11",
