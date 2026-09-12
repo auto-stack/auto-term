@@ -22,6 +22,7 @@
 | 11 | IME over-the-spot 运行时覆盖层不落屏(新) | — | 004 实测:iced_winit main-events 相相位丢弃 `State::Updated{input_method}`(381 次请求埋点实证),redraw 相相位应用链在本机不出画面;已按裁定降级自绘(可用) | 升级 iced 版本时重试 `Enabled{preedit: Some}` 路线,成则删自绘 |
 | 12 | **Ctrl+C 无法中断运行中命令(通路层,影响所有 shell)**(007 F2) | — | **已清偿(008,2026-09-06)**:辅助进程 `autoterm-ctrlc.exe`(手写 kernel32 FFI,零新依赖)AttachConsole 进 ConPTY 控制台广播控制事件;**实测(26200.9168)CTRL_C 广播被 ConPTY 客户端吞掉、CTRL_BREAK 可达** → `interrupt()`=Break→C 双发 + helper exit=0xC000013A 同判成功(handler 派发竞态:被事件杀死=事件已广播);UI 裸 Ctrl+C 双投递(事件+0x03),`--ctrl-c-mode auto\|byte\|event\|both`(默认 auto,ash 豁免仅字节);门禁 `tests/ctrl_event.rs`(cmd/timeout 5s 中断、pwsh 回提示符、helper 缺失降级),UI 铁证 cmd 死循环 both=停/byte=继续;机制全记录 `docs/designs/003-ash-compatibility.md` §4.1 | **残留缺口(26200 类 build)**:ping 类对 Break 特殊处理(打统计继续)仍不可中断,`#[ignore]` 复现器留档,健康 build 转红即 C 通道到位;分发约束:autoterm-ctrlc.exe 须与主程序同目录(缺失自动降级) |
 | 13 | ash 内建命令不可被 Ctrl+C 中断(ash 侧,跨仓协调) | — | 007 F1:内建全程 raw mode、ash 阻塞在 `std::thread::sleep`(auto-shell `cmd/commands/sleep.rs:35`)不读 stdin,0x03 排队到内建结束;Windows Terminal 下同样如此,与终端无关;外部子进程路径正常(ash `frontend/subprocess.rs:43` 临时退 raw mode)。归属 auto-shell 仓,本仓只记证不修复。**008 三态矩阵补证(003 §4.1)**:idle 态事件整体终止 ash(无 ctrl handler)→ auto 模式暂豁免 ash 为仅字节;builtin 态真事件也惰性(ash 存活至内建自然结束);external 态子进程中断正常 | auto-shell 侧:装 ctrl handler(idle 存活)+内建执行期处理事件即可撤 auto 豁免并打通内建中断;协调请附 003 §4.1 矩阵数据 |
+| 14 | **at-app 三形态后续(PLAN-013 开账)**:①定时器(sched.*)仅 VM 渲染靶支持,rust/vue 形态 tick 走按钮,实时流式刷新待生成器定时器故事;②a2r 对 `Time.sleep_ms` 路径限定跨 fn 泄漏(E0433 实证,db.at 有界忙等规避),转译器缺陷归 auto-lang 独立账;③at-gen 与 at/autoterm.at 冻结为 oracle,at-app 存在 TermApp 状态机临时副本,at-gen 退役时收敛;④vue 视口只读最小实现,交互面留白见 009 #4 | — | 全链实证(005 §4) | 复用/另立计划 |
 
 ## 新增观察(PLAN-004 实测,设计输入)
 
@@ -123,8 +124,10 @@
    路径遍历整棵无关树逐个 parse;修=src 字面名才按 crate 根扫+深度/
    数量/大小/垃圾目录统一有界;60 行样本 13.3s 完成,产物编译绿,
    与 in-process 逐字节一致。
-4. **Vue/web terminal 后端留白**(维持留白):未来虚拟桌面需 web 形态
-   时另立调查(xterm.js 类渲染 + 引擎桥可行性;PLAN-009 待澄清4)。
+4. **Vue/web terminal 后端留白**(留白收窄,PLAN-013):web 形态已通
+   最小只读视口(`<pre>` v-for 逐行,`auto run -r vue` + axum back,
+   见 docs/designs/005 §4);xterm.js 类交互(选中/回滚 UI/真色)仍
+   留白,另立调查时再启。
 5. **terminal 组件数据面性能余量**(维持观察):形态甲(props-feed)
    2000 行流式基准 <0.1s(debug,帧预算 16ms),无降级需要;超大规模
    流式如遇帧预算压力再评估形态乙(预授权规则在案)。

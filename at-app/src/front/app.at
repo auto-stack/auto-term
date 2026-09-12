@@ -1,0 +1,74 @@
+// at-app src/front/app.at — AutoTerm 标准 AutoUI 前端(PLAN-013 T5)
+//
+// terminal 组件(props-feed 形态甲) + 命令行输入行;三形态同一源:
+//   auto run -r rust → a2r iced(View::Terminal 臂,T3)
+//   auto run -r vm   → AutoVM 动态轨(convert_terminal,OS-013 两臂)
+//   auto run -r vue  → Vite 页面(<pre> 最小视口臂,T4)+ axum back
+// 引擎驱动 = use back.api 裸调用(term_tick/term_send/term_interrupt)。
+// 定时器(sched.*)是 VM 渲染靶专属,rust/vue 生成器无此故事——tick
+// 以 Send/Ctrl+C/Refresh 按钮驱动,实时流式刷新留 013 后续。
+
+use back.api: get_lines, term_send, term_interrupt
+
+widget App {
+    msg { Init, Tick, CmdChanged, Send, Interrupt }
+
+    model {
+        var lines List<str> = []
+        var cmd str = ""
+    }
+
+    on {
+        .Init -> {
+            .lines = get_lines()
+        }
+        .Tick -> {
+            .lines = get_lines()
+        }
+        .CmdChanged -> { .cmd = .cmd }
+        .Send -> {
+            term_send(.cmd)
+            .cmd = ""
+            .lines = get_lines()
+        }
+        .Interrupt -> {
+            term_interrupt()
+            .lines = get_lines()
+        }
+    }
+
+    view {
+        col {
+            style: "w-full h-screen bg-background p-2 gap-2"
+
+            terminal {
+                key: "at-app"
+                cols: 100
+                rows: 30
+                lines: .lines
+            }
+
+            row {
+                style: "gap-2 items-center"
+                input {
+                    value: .cmd
+                    oninput: .CmdChanged
+                    placeholder: "type a command and press Send..."
+                    style: "flex-1 px-2 py-1 border border-border rounded-md bg-background text-sm outline-none focus:border-primary"
+                }
+                button "Send" {
+                    onclick: .Send
+                    style: "px-3 py-1 bg-primary text-primary-foreground rounded-md text-sm"
+                }
+                button "Ctrl+C" {
+                    onclick: .Interrupt
+                    style: "px-3 py-1 bg-secondary text-secondary-foreground rounded-md text-sm"
+                }
+                button "Refresh" {
+                    onclick: .Tick
+                    style: "px-3 py-1 bg-secondary text-secondary-foreground rounded-md text-sm"
+                }
+            }
+        }
+    }
+}

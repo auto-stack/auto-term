@@ -2,3 +2,11 @@ target/
 *.log
 at-gen/target/
 dist/
+
+# PLAN-013 at-app 生成物(标准工程三形态构建/生成输出)
+at-app/rust-workspace/
+at-app/gen/
+at-app/dist/
+at-app/target/
+at-app/.auto/
+at-app/.am/
