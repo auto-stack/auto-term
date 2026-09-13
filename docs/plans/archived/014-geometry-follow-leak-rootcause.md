@@ -1,6 +1,6 @@
 ---
 plan_id: PLAN-014
-status: reviewed
+status: archived
 feature_name: 几何随动退化几何内存爆炸——根因修复与取证闭环(回溯收编)
 author: [zcode-session]
 created_at: 2026-09-13T12:00:00Z
@@ -189,3 +189,16 @@ alacritty_terminal 0.26(第三方,不修改);证据分析 cdb(Windows Kits)。
   夹具二进制(环境性,非本计划范围)。
   · evidence: evidence/014/ + 提交 49ae426/ee2fafa 的树内全部工件
   · next: /auto-plan:merge
+
+- 2026-09-13 stage:merge · PLAN-014:r1 · outcome:pass
+  · prepared: 复审 pass 基线(§9 前条),SD-01 规范落点 DEBTS.md #15 已随
+  49ae426 入库(本仓无 docs/specs/,复审已认定)
+  · landed: auto-term 49ae426(实现+DEBTS+evidence)→ 8f17c48(复审记录)→
+  本合并提交;依赖仓 auto-lang ee2fafa(祖先核验通过)
+  · ledger_refreshed: .autoos/specs.json 新增 P014-1..4(reports/architecture/
+  tests/reviews,file 指向 archived/014;回读验证;无关条目保全)
+  · archived: docs/plans/archived/014-geometry-follow-leak-rootcause.md
+  (git mv,status: archived),completion_kind: delivered
+  · cleaned: 无需清理——本计划为主检出应急处置交付,无专用 worktree/
+  分支(wt-guard 不适用;junction at-app/stdlib 为 VM 运行依赖的现场
+  workaround,保持未跟踪,随 auto-lang CLI 的 CWD 缺陷修复移除)

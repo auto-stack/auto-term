@@ -148,6 +148,17 @@
         "status": "published",
         "created": "2026-09-11",
         "last_modified": "2026-09-11"
+      },
+      {
+        "id": "P014-1",
+        "section": "reports",
+        "title": "geometry-follow-leak-rootcause — 变更摘要",
+        "content": "014 几何随动把最小化窗口的退化空间(0px)换算成 1x1 灌给 Term::resize,alacritty Grid::shrink_columns 将满滚动历史(~10k 行×136 列)折叠重排为 ~1.36M 行+Vec::insert(0,..) O(n²) 前插,GB 级瞬态分配冲死系统(分配在 autoterm_core.dll 自有堆,宿主 GuardAlloc 盲区)。三案取证(17:09/18:05/19:13),末案 at-suspend 挂起+cdb 栈坐实。修复=三道闸纵深防御+ring 逐出销账+取证工具链(at-suspend/at-dump/at-run-job)+DEBTS#15 责任划分。双仓锚定 auto-term 49ae426 / auto-lang ee2fafa。",
+        "file": "docs/plans/archived/014-geometry-follow-leak-rootcause.md",
+        "related": [],
+        "status": "published",
+        "created": "2026-09-13",
+        "last_modified": "2026-09-13"
       }
     ],
     "goals": [
@@ -464,6 +475,17 @@
         "status": "stable",
         "created": "2026-09-11",
         "last_modified": "2026-09-11"
+      },
+      {
+        "id": "P014-2",
+        "section": "architecture",
+        "title": "终端几何管线不变量(三道闸+嵌入契约)",
+        "content": "退化几何事故的架构防复发约定(DEBTS#15):①widget layout 对退化可用空间(最小化/零尺寸→cols<2)不发 resize 请求——最小化是可见性事件非几何变化;②terminal_request_resize 注册表钳位 MIN_RESIZE_COLS=2;③TermSession::resize 引擎边界不变量:拒绝 cols<2/rows<1,列数减半及以上收缩先 grid_mut().clear_history() 拆重排燃料。嵌入契约:任何宿主/外来实现调用 Term::resize/autoterm_engine_resize 必须走 ≥2 列合法几何;引擎护栏是兜底不是许可。",
+        "file": "docs/plans/archived/014-geometry-follow-leak-rootcause.md",
+        "related": [],
+        "status": "published",
+        "created": "2026-09-13",
+        "last_modified": "2026-09-13"
       }
     ],
     "designs": [
@@ -786,6 +808,17 @@
         "status": "verified",
         "created": "2026-09-11",
         "last_modified": "2026-09-11"
+      },
+      {
+        "id": "P014-3",
+        "section": "tests",
+        "title": "回归配方与取证档案",
+        "content": "resize_guard 单测三例(退化惰性拒绝/大幅收缩裁史/同尺寸 no-op,cargo test -p autoterm-core --test resize_guard);端到端回归配方=武装梯子(at-run-job 6144MB+AUTO_MEM_LIMIT_MB=3000+观察哨 WS≥3.5GB 自动挂起+dump)下 ash+键入+最小化:rust 轨(run4)与 VM 轨均零事故恢复无缝(最小化期间 resize 计数恒 1、内存平稳)。三案取证档案在 docs/plans/evidence/014/(挂起 dump、cdb 全栈、四轮日志、观察哨曲线、冻结报告)。",
+        "file": "docs/plans/archived/014-geometry-follow-leak-rootcause.md",
+        "related": [],
+        "status": "published",
+        "created": "2026-09-13",
+        "last_modified": "2026-09-13"
       }
     ],
     "reviews": [
@@ -969,6 +1002,17 @@
         "status": "published",
         "created": "2026-09-11",
         "last_modified": "2026-09-11"
+      },
+      {
+        "id": "P014-4",
+        "section": "reviews",
+        "title": "复审记录(blocked→pass 双轮)",
+        "content": "首轮 blocked:F-01 双仓实现未提交无 SHA 锚定(计划范围文件与移交在途交织);F-02 auto-lang 无 ui 特征构建 12 错(term_engine.rs 未门控 crate::ui 引用)。解阻后重审 pass:AC-01..06 全过,reviewed_commit auto-term 49ae426/auto-lang ee2fafa,F-01/F-02 均解除;VM backlog shim 四件三表登记(2979-2982)与 stdlib 声明随 ee2fafa 落地,VM 轨起机回归通过。",
+        "file": "docs/plans/archived/014-geometry-follow-leak-rootcause.md",
+        "related": [],
+        "status": "published",
+        "created": "2026-09-13",
+        "last_modified": "2026-09-13"
       }
     ]
   }
