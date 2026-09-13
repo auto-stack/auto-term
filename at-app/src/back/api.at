@@ -24,6 +24,72 @@ pub fn term_interrupt() int {
     return db.term_interrupt()
 }
 
+/// 直键入泵:terminal 组件键盘队列 → 引擎裸写(014;载荷不经 HTTP,
+/// vue 形态此路由恒 0——队列在窗口进程)。
+#[api(method = "POST", path = "/api/term/pump")]
+pub fn term_pump_input() int {
+    return db.term_pump_input()
+}
+
+/// 几何随动:应用 widget 的待定 resize(引擎 resize + 几何同步);
+/// 1=已应用 0=无请求。
+#[api(method = "POST", path = "/api/term/apply-resize")]
+pub fn term_apply_resize() int {
+    return db.term_apply_resize()
+}
+
+/// 当前视口几何(apply_resize/ spawn 后同步)。
+#[api(method = "GET", path = "/api/term/cols")]
+pub fn term_cols() int {
+    return db.term_cols()
+}
+
+#[api(method = "GET", path = "/api/term/rows")]
+pub fn term_rows() int {
+    return db.term_rows()
+}
+
+/// 光标格(引擎 feed 采样;未采样为 0)。
+#[api(method = "GET", path = "/api/term/cursor-row")]
+pub fn term_cursor_row() int {
+    return db.term_cursor_row()
+}
+
+#[api(method = "GET", path = "/api/term/cursor-col")]
+pub fn term_cursor_col() int {
+    return db.term_cursor_col()
+}
+
+/// 014 积压采样(tick 驱动;返回本次新报警次数,>0 = 刚发生一次越线)。
+#[api(method = "POST", path = "/api/term/backlog-sample")]
+pub fn term_backlog_sample() int {
+    return db.term_backlog_sample()
+}
+
+/// 014 累计报警次数(进程生命周期内)。
+#[api(method = "GET", path = "/api/term/backlog-alerts-total")]
+pub fn term_backlog_alerts_total() int {
+    return db.term_backlog_alerts_total()
+}
+
+/// 014 当前积压 MB(告警线 2MB;反压上限 8MB)。
+#[api(method = "GET", path = "/api/term/backlog-pending-mb")]
+pub fn term_backlog_pending_mb() int {
+    return db.term_backlog_pending_mb()
+}
+
+/// 014 reader 反压暂停中(1 = 积压超上限已暂停读取,0 = 正常)。
+#[api(method = "GET", path = "/api/term/backlog-paused")]
+pub fn term_backlog_paused() int {
+    return db.term_backlog_paused()
+}
+
+/// 014 累计丢帧块数(环形缓冲逐出;0 = 未丢)。
+#[api(method = "GET", path = "/api/term/backlog-dropped")]
+pub fn term_backlog_dropped() int {
+    return db.term_backlog_dropped()
+}
+
 /// 子进程退出态。
 #[api(method = "GET", path = "/api/term/exited")]
 pub fn term_exited() bool {

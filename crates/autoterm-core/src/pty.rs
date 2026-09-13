@@ -31,11 +31,25 @@ pub struct PtySession {
     pub term: TermSession,
     master: Box<dyn MasterPty + Send>,
     child: Option<Box<dyn Child + Send + Sync>>,
-    rx: Receiver<Vec<u8>>,
+    /// 014:reader→drain **环形缓冲**(512 块 ≈ ≤8MB;满则丢最旧并计
+    /// 数)——结构性内存上限,替代无界 mpsc(内存暴涨冲死系统的直接
+    /// 路径)。溢出计数经 `overflow_dropped()` 暴露(预警/取证)。
+    ring: std::sync::Arc<std::sync::Mutex<crate::ring::RingBuffer<Vec<u8>>>>,
+    /// reader 侧 EOF(reader 置位;drain 读到即进入退出态——环内空块
+    /// 哨兵可能被挤掉,EOF 不能走数据面)。
+    reader_eof: std::sync::Arc<std::sync::atomic::AtomicBool>,
+    /// 累计被环挤掉的块数(预警/取证;reader 侧维护)。
+    overflow_dropped: std::sync::Arc<std::sync::atomic::AtomicU64>,
     writer: Box<dyn Write + Send>,
     eof: bool,
     /// 累计喂入仿真核心的字节数(取证/诊断)。
     bytes_fed: u64,
+    /// reader→drain 之间的未消费积压字节(014 泄漏探针:1GB/s 暴涨
+    /// 嫌疑盲区;Arc 与 reader 线程共享)。
+    pending_bytes: std::sync::Arc<std::sync::atomic::AtomicU64>,
+    /// reader 是否因积压超限暂停读取(反压中;014 报警面:UI 经
+    /// `autoterm_engine_backlog_paused` 回读,横幅告知用户)。
+    backpressured: std::sync::Arc<std::sync::atomic::AtomicBool>,
     /// reader 唤醒通道接收端(UI 事件驱动订阅用;取走后由订阅持有)。
     notify_rx: Option<Receiver<()>>,
     /// spawn 的程序名(UI 侧 Ctrl+C auto 模式按 shell 判定用)。
@@ -81,7 +95,20 @@ impl PtySession {
         let writer = pair.master.take_writer().context("take writer")?;
         let master = pair.master;
 
-        let (tx, rx) = channel::<Vec<u8>>();
+        // 014:reader→drain 积压字节计数(reader 入账、drain 销账)。
+        let pending_bytes = std::sync::Arc::new(std::sync::atomic::AtomicU64::new(0));
+        let reader_pending = std::sync::Arc::clone(&pending_bytes);
+        // 014 报警面:反压暂停态(reader 置位/复位,宿主经 FFI 回读)。
+        let backpressured = std::sync::Arc::new(std::sync::atomic::AtomicBool::new(false));
+        let reader_backpressured = std::sync::Arc::clone(&backpressured);
+        // 014:结构性上限——环形缓冲(512 块 × ≤16KB ≈ ≤8MB),满则丢
+        // 最旧并计数。反压(sleep)是第一道流控;环是反压失效时的兜底。
+        let ring = std::sync::Arc::new(std::sync::Mutex::new(crate::ring::RingBuffer::new(512)));
+        let reader_ring = std::sync::Arc::clone(&ring);
+        let reader_overflow = std::sync::Arc::new(std::sync::atomic::AtomicU64::new(0));
+        let reader_overflow_writer = std::sync::Arc::clone(&reader_overflow);
+        let reader_eof = std::sync::Arc::new(std::sync::atomic::AtomicBool::new(false));
+        let reader_eof_writer = std::sync::Arc::clone(&reader_eof);
         // 每块字节后发一次唤醒:UI 订阅据此即时 drain(事件驱动,
         // 替换 spike 的 16ms 轮询)。发送端只活在 reader 线程——
         // 线程结束时通道断开,UI 侧订阅随之安静。
@@ -89,16 +116,39 @@ impl PtySession {
         thread::spawn(move || {
             let mut reader = reader;
             let mut buf = [0u8; 16384];
+            // 014 积压上限:超过即暂停读取(ConPTY 管道天然反压 child)。
+            // 无界 channel 是 at-app.exe 内存暴涨冲死系统的直接路径
+            // (UI 线程卡住时 reader 独自堆积,GB/s 级);环是第二道兜底。
+            const BACKLOG_CAP: u64 = 8 * 1024 * 1024;
             loop {
+                while reader_pending.load(std::sync::atomic::Ordering::Relaxed) > BACKLOG_CAP {
+                    reader_backpressured.store(true, std::sync::atomic::Ordering::Relaxed);
+                    std::thread::sleep(std::time::Duration::from_millis(5));
+                }
+                reader_backpressured.store(false, std::sync::atomic::Ordering::Relaxed);
                 match reader.read(&mut buf) {
                     Ok(0) | Err(_) => {
-                        let _ = tx.send(Vec::new()); // EOF 哨兵
+                        reader_eof_writer.store(true, std::sync::atomic::Ordering::Relaxed);
                         let _ = tx_notify.send(());
                         break;
                     }
                     Ok(n) => {
-                        if tx.send(buf[..n].to_vec()).is_err() {
-                            break;
+                        reader_pending.fetch_add(n as u64, std::sync::atomic::Ordering::Relaxed);
+                        let chunk = buf[..n].to_vec();
+                        let evicted = if let Ok(mut r) = reader_ring.lock() {
+                            r.push(chunk)
+                        } else {
+                            None
+                        };
+                        if let Some(evicted) = evicted {
+                            reader_overflow_writer
+                                .fetch_add(1, std::sync::atomic::Ordering::Relaxed);
+                            // 014 记账修复:被挤块也要销账——否则 pending
+                            // 虚高累计越过上限,reader 永久反压休眠(假死)。
+                            reader_pending.fetch_sub(
+                                evicted.len() as u64,
+                                std::sync::atomic::Ordering::Relaxed,
+                            );
                         }
                         let _ = tx_notify.send(());
                     }
@@ -110,10 +160,14 @@ impl PtySession {
             term: TermSession::new(cols, rows),
             master,
             child: Some(child),
-            rx,
+            ring,
+            reader_eof,
+            overflow_dropped: reader_overflow,
             writer,
             eof: false,
             bytes_fed: 0,
+            pending_bytes,
+            backpressured,
             notify_rx: Some(notify_rx),
             program: program.to_string(),
             shell_pid,
@@ -125,22 +179,30 @@ impl PtySession {
         self.notify_rx.take()
     }
 
-    /// 收割 reader 线程积压字节:喂仿真核心,DSR/DA 应答回写主端。
+    /// 收割 reader 环形缓冲积压字节:喂仿真核心,DSR/DA 应答回写主端。
     /// 返回是否喂到了字节(调用方据此决定重绘)。
     pub fn drain(&mut self) -> bool {
         let mut fed = false;
-        loop {
-            match self.rx.try_recv() {
-                Ok(chunk) if chunk.is_empty() => {
-                    self.eof = true;
-                    break;
+        // 014:EOF 经 reader_eof 标志位(环内空块哨兵可能被挤掉,EOF
+        // 不能走数据面)。
+        if self.reader_eof.load(std::sync::atomic::Ordering::Relaxed) {
+            self.eof = true;
+        }
+        let chunks = if let Ok(mut ring) = self.ring.lock() {
+            Some(ring.take_all())
+        } else {
+            None
+        };
+        if let Some(chunks) = chunks {
+            for chunk in chunks {
+                if chunk.is_empty() {
+                    continue;
                 }
-                Ok(chunk) => {
-                    self.bytes_fed += chunk.len() as u64;
-                    self.term.feed(&chunk);
-                    fed = true;
-                }
-                Err(_) => break,
+                self.bytes_fed += chunk.len() as u64;
+                self.pending_bytes
+                    .fetch_sub(chunk.len() as u64, std::sync::atomic::Ordering::Relaxed);
+                self.term.feed(&chunk);
+                fed = true;
             }
         }
         let answers = self.term.pump();
@@ -153,6 +215,28 @@ impl PtySession {
     /// 累计喂入仿真核心的字节数。
     pub fn bytes_fed(&self) -> u64 {
         self.bytes_fed
+    }
+
+    /// reader→drain 之间的未消费积压字节(014 泄漏定位:正常应稳定在
+    /// 单 tick 输出量级;若随时间无界增长 = 消费侧跟不上产出侧)。
+    pub fn pending_bytes(&self) -> u64 {
+        self.pending_bytes.load(std::sync::atomic::Ordering::Relaxed)
+    }
+
+    /// reader 是否处于反压暂停(积压超上限,暂停读 ConPTY;014 报警面)。
+    pub fn backpressure_engaged(&self) -> bool {
+        self.backpressured.load(std::sync::atomic::Ordering::Relaxed)
+    }
+
+    /// 014:被环挤掉的输出块数(溢出预警/取证;0 = 未溢出)。
+    pub fn overflow_dropped(&self) -> u64 {
+        self.overflow_dropped
+            .load(std::sync::atomic::Ordering::Relaxed)
+    }
+
+    /// shell 子进程 PID(014 内存哨兵冻结挂钩:宿主挂起产出侧用)。
+    pub fn shell_pid(&self) -> Option<u32> {
+        self.shell_pid
     }
 
     /// 键盘输入等宿主→子进程字节。

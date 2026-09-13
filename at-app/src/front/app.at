@@ -1,73 +1,81 @@
-// at-app src/front/app.at — AutoTerm 标准 AutoUI 前端(PLAN-013 T5)
+// at-app src/front/app.at — AutoTerm 标准 AutoUI 前端(PLAN-013 T5;
+// 014 直键入收口:整窗只渲染 terminal 本体,不再有输入行/按钮)
 //
-// terminal 组件(props-feed 形态甲) + 命令行输入行;三形态同一源:
+// terminal 组件(props-feed 形态甲)+ oninput 直键入;三形态同一源:
 //   auto run -r rust → a2r iced(View::Terminal 臂,T3)
 //   auto run -r vm   → AutoVM 动态轨(convert_terminal,OS-013 两臂)
-//   auto run -r vue  → Vite 页面(<pre> 最小视口臂,T4)+ axum back
-// 引擎驱动 = use back.api 裸调用(term_tick/term_send/term_interrupt)。
-// 定时器(sched.*)是 VM 渲染靶专属,rust/vue 生成器无此故事——tick
-// 以 Send/Ctrl+C/Refresh 按钮驱动,实时流式刷新留 013 后续。
+//   auto run -r vue  → Vite 页面(<pre> 最小视口臂,T4,只读)+ axum back
+//
+// 输入语义(像 Windows Terminal):点击终端获得焦点后直接键入;widget 把
+// 按键翻译成 VT 串入 TerminalCore 队列,消息 .KeyIn 只当触发器——
+// term_pump_input() 排空队列裸写引擎(无 \r\n 补缀),随后 get_lines()
+// 收割回显。timer 驱动 50ms 轮询,命令输出(含长跑任务)流式上屏,
+// 不再依赖按钮 tick。
+//
+// 014 积压报警状态行:reader→drain 积压是内存暴涨主嫌疑,每拍采样
+// pending/paused/alerts 置顶横幅——健康时一行静默指标,积压越线
+// (≥2MB)数字飙升即用户可见警报;reader 反压(8MB)后 paused=1。
 
-use back.api: get_lines, term_send, term_interrupt
+use back.api: get_lines, term_pump_input, term_apply_resize, term_cols, term_rows, term_cursor_row, term_cursor_col, term_backlog_sample, term_backlog_alerts_total, term_backlog_pending_mb, term_backlog_paused, term_backlog_dropped
 
 widget App {
-    msg { Init, Tick, CmdChanged, Send, Interrupt }
+    msg { Init, Tick, KeyIn }
 
     model {
         var lines List<str> = []
-        var cmd str = ""
+        var cols int = 100
+        var rows int = 30
+        var crow int = 0
+        var ccol int = 0
+        var bl_alerts int = 0
+        var bl_pending int = 0
+        var bl_paused int = 0
+        var bl_dropped int = 0
+    }
+
+    timer {
+        Tick (every_ms: 50)
     }
 
     on {
         .Init -> {
             .lines = get_lines()
+            .crow = term_cursor_row()
+            .ccol = term_cursor_col()
         }
         .Tick -> {
+            term_apply_resize()
+            .cols = term_cols()
+            .rows = term_rows()
             .lines = get_lines()
+            .crow = term_cursor_row()
+            .ccol = term_cursor_col()
+            term_backlog_sample()
+            .bl_alerts = term_backlog_alerts_total()
+            .bl_pending = term_backlog_pending_mb()
+            .bl_paused = term_backlog_paused()
+            .bl_dropped = term_backlog_dropped()
         }
-        .CmdChanged -> { .cmd = .cmd }
-        .Send -> {
-            term_send(.cmd)
-            .cmd = ""
+        .KeyIn -> {
+            term_pump_input()
             .lines = get_lines()
-        }
-        .Interrupt -> {
-            term_interrupt()
-            .lines = get_lines()
+            .crow = term_cursor_row()
+            .ccol = term_cursor_col()
         }
     }
 
     view {
         col {
-            style: "w-full h-screen bg-background p-2 gap-2"
-
+            style: "w-full h-screen bg-background"
+            text f"backlog ${.bl_pending}MB | paused=${.bl_paused} | alerts=${.bl_alerts} | dropped=${.bl_dropped}"
             terminal {
                 key: "at-app"
-                cols: 100
-                rows: 30
+                cols: .cols
+                rows: .rows
                 lines: .lines
-            }
-
-            row {
-                style: "gap-2 items-center"
-                input {
-                    value: .cmd
-                    oninput: .CmdChanged
-                    placeholder: "type a command and press Send..."
-                    style: "flex-1 px-2 py-1 border border-border rounded-md bg-background text-sm outline-none focus:border-primary"
-                }
-                button "Send" {
-                    onclick: .Send
-                    style: "px-3 py-1 bg-primary text-primary-foreground rounded-md text-sm"
-                }
-                button "Ctrl+C" {
-                    onclick: .Interrupt
-                    style: "px-3 py-1 bg-secondary text-secondary-foreground rounded-md text-sm"
-                }
-                button "Refresh" {
-                    onclick: .Tick
-                    style: "px-3 py-1 bg-secondary text-secondary-foreground rounded-md text-sm"
-                }
+                cursor_row: .crow
+                cursor_col: .ccol
+                oninput: .KeyIn
             }
         }
     }

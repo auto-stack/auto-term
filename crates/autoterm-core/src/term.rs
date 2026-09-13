@@ -125,9 +125,27 @@ impl TermSession {
     }
 
     /// 通知仿真核心窗口尺寸变化。
+    ///
+    /// 014 爆炸护栏(19:13 案 dump 坐实,双仓责任划分见 DEBTS #15):
+    /// - **退化几何(最小化/零尺寸产生的 1×1)一律拒绝**——满滚动历史的
+    ///   网格被 alacritty `Grid::shrink_columns` 折叠重排到极小列宽时,
+    ///   会物化 cols 倍行数 + `Vec::insert(0,..)` O(n²) 前插,GB 级瞬态
+    ///   分配冲死系统(发生在本 DLL 自己的堆里,宿主 GuardAlloc 盲区)。
+    ///   最小化是**可见性**事件,不是几何变化。
+    /// - **大幅收缩(列数减半及以上)先裁滚动历史**——拆除重排燃料:
+    ///   旧折行在窄列下已无意义,先丢弃可把行数膨胀与搬运成本压回
+    ///   常数级。
+    /// 此为 FFI/嵌入边界不变量:任何宿主(含外来实现)都不可依赖被
+    /// 上游钳制的调用路径绕过(上游 widget 同步钳制,此处兜底)。
     pub fn resize(&mut self, cols: usize, rows: usize) {
+        if cols < 2 || rows < 1 {
+            return;
+        }
         if self.size.cols == cols && self.size.rows == rows {
             return;
+        }
+        if cols * 2 <= self.size.cols {
+            self.term.grid_mut().clear_history();
         }
         self.size = GridSize { cols, rows };
         self.term.resize(self.size);

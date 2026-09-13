@@ -7,6 +7,7 @@
 
 pub mod ffi;
 pub mod pty;
+pub mod ring;
 pub mod term;
 
 pub use ffi::*;

@@ -1,0 +1,3 @@
+live_bytes=0 (0.0 MB) peak_live=0.0 MB commit_peak=4032 MB frozen=true
+big_live_count=0 (>= 262144 bytes each)
+big_live_total=0.0 MB

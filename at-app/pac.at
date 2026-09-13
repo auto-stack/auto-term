@@ -5,6 +5,12 @@ render: "vm"
 title: "AutoTerm"
 api: "rust"
 theme: "dark"
+// 014:rust 轨生成应用的可执行产物名(缺省 = 包名 at_app)。
+exe_name: "auto-term"
+// 014:整窗即终端——window 给开窗初值(≈100×30 格);之后由几何随动
+// 收敛(可用空间反推网格 → 引擎 resize → View 几何回流),最大化/拖拽
+// 都跟随,不受此初值约束。
+window: "802x482"
 
 // PLAN-013 T2: .rs 侧车——crate::term(引擎胶水,源自 at-gen/src/engine.rs)
 // 供给 rust/vue 两个生成点;VM 形态经 auto.term shims 走同一 DLL,无需侧车。

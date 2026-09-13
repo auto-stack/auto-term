@@ -9,12 +9,17 @@
 //   - engine_rows 的 List 返回必须落显式类型 var(否则 .len() 得 None);
 //   - 裸调用不得内联于 if 条件位(597 §9 挂起缺陷)——先赋值再比较。
 
-use auto.term: engine_spawn, engine_write_line, engine_rows, engine_resize, engine_interrupt, engine_is_exited, engine_free
+use auto.term: engine_spawn, engine_write_line, engine_rows, engine_resize, engine_interrupt, engine_is_exited, engine_free, engine_pump_input, engine_apply_resize, engine_viewport_cols, engine_viewport_rows, engine_cursor_row, engine_cursor_col, engine_backlog_pending_mb, engine_backlog_paused, engine_backlog_take_alerts, engine_backlog_dropped
 
 var handle int = 0
 var cols int = 100
 var rows int = 30
 var exited bool = false
+// 014 积压报警:tick 采样快照(take 计数累积进 total)。
+var bl_alerts_total int = 0
+var bl_pending_mb int = 0
+var bl_paused int = 0
+var bl_dropped int = 0
 
 /// 每拍驱动:首调按存档几何 spawn(100×30);收割引擎输出并回传
 /// 视口行快照。零参(async init 引导惯例:extract_init_api_func 只认
@@ -55,6 +60,88 @@ pub fn term_send(line str) {
 /// Ctrl+C 中断(Break→C 双发语义,引擎契约 003 §4.1)。
 pub fn term_interrupt() int {
     return engine_interrupt(handle)
+}
+
+/// 直键入泵:排空 terminal 组件键盘队列,逐键裸写引擎(无 \r\n 补缀;
+/// Enter 已是 VT 串里的 \r)。返回泵送键数;未 spawn(handle=0)时 0。
+pub fn term_pump_input() int {
+    if handle == 0 {
+        return 0
+    }
+    return engine_pump_input(handle)
+}
+
+/// 几何随动:应用 widget 在注册表的待定 resize 请求(引擎 resize +
+/// 视口静态量刷新);有应用时同步 db 侧几何(spawn/回读基准)。
+/// 返回 1=已应用 0=无请求。
+pub fn term_apply_resize() int {
+    if handle == 0 {
+        return 0
+    }
+    var applied int = engine_apply_resize(handle)
+    if applied > 0 {
+        cols = engine_viewport_cols(handle)
+        rows = engine_viewport_rows(handle)
+    }
+    return applied
+}
+
+/// 当前视口几何(db 侧;apply_resize 已同步,spawn 时落初值)。
+pub fn term_cols() int {
+    return cols
+}
+
+pub fn term_rows() int {
+    return rows
+}
+
+/// 光标格(feed 时引擎采样;未采样为 0)。
+pub fn term_cursor_row() int {
+    if handle == 0 {
+        return 0
+    }
+    return engine_cursor_row(handle)
+}
+
+pub fn term_cursor_col() int {
+    if handle == 0 {
+        return 0
+    }
+    return engine_cursor_col(handle)
+}
+
+/// 014 积压采样(tick 驱动):取走新报警累计入总量,刷新 pending/paused
+/// 快照。返回本次新报警次数(>0 = 刚发生一次积压越线)。
+pub fn term_backlog_sample() int {
+    if handle == 0 {
+        return 0
+    }
+    var fresh int = engine_backlog_take_alerts(handle)
+    bl_alerts_total = bl_alerts_total + fresh
+    bl_pending_mb = engine_backlog_pending_mb(handle)
+    bl_paused = engine_backlog_paused(handle)
+    bl_dropped = engine_backlog_dropped(handle)
+    return fresh
+}
+
+/// 累计报警次数(进程生命周期内)。
+pub fn term_backlog_alerts_total() int {
+    return bl_alerts_total
+}
+
+/// 当前积压 MB(越线阈值 2MB;反压上限 8MB)。
+pub fn term_backlog_pending_mb() int {
+    return bl_pending_mb
+}
+
+/// reader 反压暂停中(1 = 积压超上限已暂停读取,0 = 正常)。
+pub fn term_backlog_paused() int {
+    return bl_paused
+}
+
+/// 累计丢帧块数(环形缓冲逐出;0 = 未丢)。
+pub fn term_backlog_dropped() int {
+    return bl_dropped
 }
 
 /// 子进程退出态(末次 tick 采样)。

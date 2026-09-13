@@ -194,6 +194,40 @@ pub extern "C" fn autoterm_engine_cursor(
     }
 }
 
+/// 014 泄漏定位:reader→drain 积压字节(正常稳定在单 tick 输出量级;
+/// 无界增长 = 产出侧失控或消费侧停摆)。空句柄 -1。
+#[unsafe(no_mangle)]
+pub extern "C" fn autoterm_engine_pending_bytes(h: *mut AutotermEngine) -> i32 {
+    let Some(engine) = ptr_or_null(h) else { return -1 };
+    engine.inner.pending_bytes().min(i32::MAX as u64) as i32
+}
+
+/// 014 报警面:reader 是否因积压超限暂停读取(反压中)。
+/// 1 = 暂停中,0 = 正常,空句柄 -1。
+#[unsafe(no_mangle)]
+pub extern "C" fn autoterm_engine_backlog_paused(h: *mut AutotermEngine) -> i32 {
+    let Some(engine) = ptr_or_null(h) else { return -1 };
+    if engine.inner.backpressure_engaged() { 1 } else { 0 }
+}
+
+/// 014 内存哨兵冻结挂钩:返回 shell 子进程 PID(宿主挂起/恢复用);
+/// 无子进程/空句柄 -1。
+#[unsafe(no_mangle)]
+pub extern "C" fn autoterm_engine_shell_pid(h: *mut AutotermEngine) -> i32 {
+    let Some(engine) = ptr_or_null(h) else { return -1 };
+    match engine.inner.shell_pid() {
+        Some(pid) if pid <= i32::MAX as u32 => pid as i32,
+        _ => -1,
+    }
+}
+
+/// 014 环形缓冲溢出计数:被挤掉的输出块数(预警/取证;0 = 未溢出)。
+#[unsafe(no_mangle)]
+pub extern "C" fn autoterm_engine_overflow_count(h: *mut AutotermEngine) -> i32 {
+    let Some(engine) = ptr_or_null(h) else { return -1 };
+    engine.inner.overflow_dropped().min(i32::MAX as u64) as i32
+}
+
 /// resize(先仿真核心后 ConPTY 的既有顺序)。
 #[unsafe(no_mangle)]
 pub extern "C" fn autoterm_engine_resize(h: *mut AutotermEngine, cols: i32, rows: i32) {
