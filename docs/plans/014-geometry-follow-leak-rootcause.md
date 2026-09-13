@@ -1,6 +1,6 @@
 ---
 plan_id: PLAN-014
-status: executing
+status: reviewed
 feature_name: 几何随动退化几何内存爆炸——根因修复与取证闭环(回溯收编)
 author: [zcode-session]
 created_at: 2026-09-13T12:00:00Z
@@ -174,3 +174,18 @@ alacritty_terminal 0.26(第三方,不修改);证据分析 cdb(Windows Kits)。
   · next: 解阻二选一——①agent 落地其 014 WIP 提交后,本计划变更随之或另行提交,
   即刻重审(代码未变,证据可复用,理由已录);②用户授权对交织文件做整体快照提交
   (含 agent 在途 hunk)。F-02 转 agent:term_engine.rs 补 cfg 门。
+
+- 2026-09-13 stage:review(重审) · PLAN-014 · plan_revision 1 · outcome:**pass**
+  · reviewed_commit: auto-term 49ae426 / auto-lang ee2fafa(双仓锚定,F-01 解除)
+  · base_commit: 1032158(auto-term)/ c9f4d5a7(auto-lang)
+  · dependency_revisions: auto-lang ee2fafa(含 F-02 修复+VM shim 三表登记)
+  · spec_inputs: DEBTS.md #15(随 49ae426 入库)
+  · acceptance_results: AC-01..06 全 pass——重审复用前次工件复核结果,
+    理由:代码与证据未变,仅新增提交锚定;F-02(前次基线阻断)已随
+  ee2fafa 修复验证(无 ui 特征编译通过);新增 VM 轨同配方回归 PASS
+  (20:4x,3 分钟最小化 220MB 平稳零错误,恢复无缝,见会话记录)。
+  · findings: F-01 已解除(双仓提交);F-02 已修复(term_engine ui 适配层
+  cfg 门+测试模块同门)。新基线注记:tf 的 ffi_dep_parity 五测缺 oracle
+  夹具二进制(环境性,非本计划范围)。
+  · evidence: evidence/014/ + 提交 49ae426/ee2fafa 的树内全部工件
+  · next: /auto-plan:merge
