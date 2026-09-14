@@ -116,6 +116,36 @@ fn check_overflow(dropped: i64) {
     }
 }
 
+/// PLAN-018 D10:引擎 scheme 表装载(进程一次;FFI `palette_color` 纯
+/// 查询 → terminal 注册表缓存覆盖内置回退表)。旧 DLL 无符号 = 静默
+/// 保留内置(与 backlog_paused 同款皮实语义)。
+fn load_palettes_once(lib: &Library) {
+    static LOADED: OnceLock<()> = OnceLock::new();
+    LOADED.get_or_init(|| unsafe {
+        let Ok(color) = lib.get::<unsafe extern "C" fn(c_int, c_int, c_int) -> u32>(
+            b"autoterm_engine_palette_color\0",
+        ) else {
+            return;
+        };
+        for scheme in [0i32, 1] {
+            let mut table = [0u32; auto_lang::ui::terminal::TERMINAL_PALETTE_SLOTS];
+            let mut ok = true;
+            for slot in 0..18i32 {
+                let is_fg = if slot == 0 { 1 } else { 0 };
+                let v = color(scheme, slot, is_fg);
+                if v == 0xFFFF_FFFF {
+                    ok = false;
+                    break;
+                }
+                table[slot as usize] = v;
+            }
+            if ok {
+                auto_lang::ui::terminal::terminal_palette_load(scheme, table);
+            }
+        }
+    });
+}
+
 fn lib() -> &'static Library {
     LIB.get_or_init(|| {
         // 解析顺序:env → exe 目录同目录(003 §5 dist 布局:三件套同
@@ -141,7 +171,9 @@ fn lib() -> &'static Library {
         // 常驻 11:35 旧 DLL(无 pending/反压导出),新 guard 从未真正上机,
         // 爆炸复发即源于此。日志里这行 = 当次运行真正生效的引擎。
         eprintln!("[term-dll] 加载引擎: {}", path.display());
-        unsafe { Library::new(&path) }.expect("autoterm_core.dll 加载失败")
+        let lib = unsafe { Library::new(&path) }.expect("autoterm_core.dll 加载失败");
+        load_palettes_once(&lib);
+        lib
     })
 }
 
