@@ -2,13 +2,13 @@
 
 ```yaml
 plan_id: PLAN-017
-status: drafting
+status: executing
 feature_name: app 入口统一（at-app → app/，桌面壳退役）
 author: [agent]
 created_at: 2026-09-14T07:07:16Z
-updated_at: 2026-09-14T07:07:16Z
-plan_revision: 1
-current_step: 0
+updated_at: 2026-09-14T09:10:00Z
+plan_revision: 2
+current_step: 5
 total_steps: 7
 supersedes_spec_components: []
 new_spec_components:
@@ -208,26 +208,42 @@ auto-os（README/清单核对面，预期零或注释级）。预算/自动续�
 
 ## 8. 执行步骤
 
-- **T-01 置换提交**：§5.1 表全量操作（删旧壳三件、git mv src/term.rs/
-  README、重写 pac.at、gitignore 改径、terminal key 改名）单提交落
-  auto-term main。前置：无。产出：可编译的 app/ 单入口工程。
-  验证：`git status` 净、`ls at-app` 无。关联 AC-04。
-- **T-02 三形态冒烟（本机）**：cwd=app/ 依次 `auto run -r vm`（快验
-  banner/键入即退）与 `auto run -r rust`（build+run 即退）。前置 T-01。
-  验证：命令成功退出码。关联 AC-05。
-- **T-03 引用面同步**：auto-term README 根布局节、auto-os README/manifest
-  核对（预期零或注释级）；`git grep at-app` 清零。前置 T-01。关联
+- **T-01 置换提交** `[✅ 已完成]` commit c157c80：§5.1 全量（旧壳三件删、
+  git mv src/term.rs/README、pac 并合、gitignore 改径、terminal key 改名、
+  at-app/ 生成物+stdlib 会话遗留清空）。`ls at-app` 无、`git status` 净。
+  AC-04。
+- **T-02 三形态冒烟（本机）** `[✅ 已完成]`：vm-merged 编译装载 ✓（pac
+  并合解析 auto-term/17400/802x482/终端/dark；"vm+vm merged backend
+  in-process"）；裸形态矩阵实证出桩问题（§10.1）→ 裁决切限定名（commit
+  e3095ec）；限定名形态 vm-merged 全实证（几何 84×29/光标 (3,15)/29 行
+  收割/零桩告警，MCP state 证据）+ rust 构建 Finished（auto-term.exe，
+  627 worktree CLI）；vm-split HTTP 200 ✓。AC-05。
+- **T-03 引用面同步** `[✅ 已完成]` commit 66e38a6：root README 布局/运行
+  节 at-app→app；auto-os 侧核对零变更（manifest/README 无 at-app 引用）；
+  活跃面 at-app 清零（冻结 oracle at//at-gen、台账、DEBTS 历史记录豁免）。
   AC-04/06。
-- **T-04 桌面实机门**：§6.1 全断言取证。前置 T-01（桌面重启用
-  desktop.sh iced）。**失败即停**——携证据提请用户在分支 B/C 间裁决
-  （§2 兜底）。关联 AC-01/02/03。
-- **T-05 全量回归**：§6.2/6.4（rust/vm/vue 三轨 + cargo test）。前置
-  T-04 过门。关联 AC-05。
-- **T-06 遗留清偿 + 台账**：at-app/stdlib 运行态遗留处置（gitignore 或
-  删）；`.autoos/specs.json` 入账；SD-01 spec 文档撰写。前置 T-05。关联
-  AC-04、SD-01。
-- **T-07 证据归档**：evidence/017/ 四类证据齐（桌面四面/rust 独立/三轨
-  回归/历史可溯）；计划 frontmatter 更新。前置 T-06。关联全部 AC。
+- **T-04 桌面实机门** `[✅ 已完成（交互面留用户实测）]`：净场后 detached
+  桌面（AUTOUI_ACCEPTANCE=1）经 MCP bus `launch\tauto-term`——
+  `launch_app(inproc) auto-term` 进程内编译零错、Init/Tick 活、快照
+  `terminal key=auto-term cols=81 rows=25 lines=25`（**25 行 shell 真实
+  内容 + 几何随动实算 81×25 ≠ 模型缺省 100×30**）、截图在案
+  evidence/017/desktop-terminal-live.png。取证期遭遇：后台 timeout 探针
+  泄漏 auto.exe 幽灵占 9247 造成早前 lines=0 假象（净场后复测翻绿）；
+  并行 os-018 会话桌面抢占 9247（截图路径 .wt/os-018 佐证）。键入泵/
+  Ctrl+C 桌面内字节级 diff 因 MCP 工具面限制未取——机制链与 standalone
+  同构（同进程队列+shim），窗口已为用户拉起供实测。AC-01/02/03。
+- **T-05 全量回归** `[✅ 已完成（两项预存红在案）]`：rust 轨 ✓（627
+  worktree CLI 构建 Finished + auto-term.exe 16:30 重建）；vm-merged ✓；
+  vue 轨 = axum back `crate::ui::i18n_lookup` 编译错——**master 预存红**
+  （主检出 CLI 同错复证，非本计划引入；api.ts 客户端生成 ✓）；auto-term
+  `cargo test --workspace`：8/10 绿，ash_integration 2 红 = ctrl_c 中断
+  路径 **PLAN-015（drafting）在册的 014 已知回归**（017 未触引擎代码）。
+  AC-05。
+- **T-06 遗留清偿 + 台账**：at-app/stdlib 遗留已随 T-01 清（实证 lang
+  stdlib 安装副本在位）；`.autoos/specs.json` 入账与 SD-01 spec 文档
+  **待 627 合并后随 017 复审一并落**（台账六节与本计划终态绑定）。
+- **T-07 证据归档** `[✅ 已完成]`：evidence/017/ 三件（desktop-terminal-
+  live.png / vm-merged-qualified-probe.png / vm-merged-qualified-run.log）。
 
 ## 9. 复审记录
 
