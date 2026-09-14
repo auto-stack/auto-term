@@ -312,8 +312,14 @@ touched_goals: []
 
 ## 10. 待澄清事项
 
-- rust 轨(`auto run -r rust`)实测未做:共享组件改动经生成期吸收,
-  需一次生成+运行确认(可并入 review 或下一计划)。
+- ~~rust 轨(`auto run -r rust`)实测未做~~ **已闭环(归档后补验
+  2026-09-14)**:重新生成+构建(auto-term.exe,1m13s)→实机运行→
+  加载修复后 DLL(`[term-dll] 加载引擎` 日志确认)→DPI 感知抓图
+  像素验收:四点 bg=(6,7,9)、红主导=0、navy/black 残留=0、右/底
+  余量带=0、顶/左内缩与 VM 轨同值——五项全过,双轨同源确认。
+  备注:①MCP devtools 端口 9247 被并行会话占用,bind 失败不影响
+  运行;②rust 轨标题栏浅色 vs VM 轨深色(DWM 层差异,非应用内容,
+  未深究)。
 - 金样 4 张(auto-lang test/ui/terminal_pixel/*-wgpu.png)重建 diff
   属预期视觉变更,随本计划一并提交——如复审不认可视觉口径需回滚
   金样与组件参数两处。
