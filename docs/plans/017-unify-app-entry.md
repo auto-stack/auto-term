@@ -2,13 +2,13 @@
 
 ```yaml
 plan_id: PLAN-017
-status: executing
+status: execution_done
 feature_name: app 入口统一（at-app → app/，桌面壳退役）
 author: [agent]
 created_at: 2026-09-14T07:07:16Z
-updated_at: 2026-09-14T11:40:00Z
+updated_at: 2026-09-14T15:50:00Z
 plan_revision: 2
-current_step: 6
+current_step: 7
 total_steps: 7
 supersedes_spec_components: []
 new_spec_components:
@@ -222,7 +222,7 @@ auto-os（README/清单核对面，预期零或注释级）。预算/自动续�
   节 at-app→app；auto-os 侧核对零变更（manifest/README 无 at-app 引用）；
   活跃面 at-app 清零（冻结 oracle at//at-gen、台账、DEBTS 历史记录豁免）。
   AC-04/06。
-- **T-04 桌面实机门** `[ ]` **[R2 复审重开——F-R3: AC-03 fail]**：净场后 detached
+- **T-04 桌面实机门** `[x]` **[R2 修复轮复验通过]** **[R2 复审重开——F-R3: AC-03 fail]**：净场后 detached
   桌面（AUTOUI_ACCEPTANCE=1）经 MCP bus `launch\tauto-term`——
   `launch_app(inproc) auto-term` 进程内编译零错、Init/Tick 活、快照
   `terminal key=auto-term cols=81 rows=25 lines=25`（**25 行 shell 真实
@@ -239,6 +239,30 @@ auto-os（README/清单核对面，预期零或注释级）。预算/自动续�
   （疑：桌面宿主内嵌 engine/widget 副本先于 016 修复，或桌面委托色彩
   编码分叉）→ 修复 → 重取桌面门截图（须非红底 + 几何 + 形态三面）
   → 交复审。
+  **[R2 修复轮结案（work 2026-09-14）]** 根因坐实 = **长驻桌面进程跨
+  DLL 重建的陈旧内存映像，非代码缺陷**：①当前源码零缺陷——spec 定义
+  回归 `cargo test -p autoterm-parity parity_color_attestation` 绿
+  （oracle vs FFI STYLE 协议行逐格对拍含语义色归并路径）；磁盘唯一
+  引擎 DLL `auto-term/target/debug/autoterm_core.dll` mtime 16:53 晚于
+  016 落地 14:42。②门时（16:54）红底 = 门会话的桌面进程在 16:53 DLL
+  重建**前**启动、Windows 文件替换不换已加载映像 → 进程内仍是
+  pre-09afd6e kind_color（发 Named(257) 原值）× 消费端截断 → 整屏
+  RGB(128,0,0)；vm 探针为新进程加载新 DLL → RGB(6,7,9) 黑——红黑同
+  时分叉唯此解释自洽。③复验（R2 门）：原生 PowerShell env 继承新起
+  验收桌面（AUTOUI_ACCEPTANCE=1 + AUTOTERM_ENGINE_DLL 显式钉住
+  post-fix DLL + AUTOUI_MCP_PORT=9251，避让生产桌面 bus）→
+  `launch\tauto-term` 入队 → 快照 `terminal key=auto-term cols=81
+  rows=25 lines=25`（几何随动签名与 T-04 一致）→ 新截图
+  evidence/017/desktop-terminal-live-r2.png：四点采样背景 RGB(6,7,9)
+  （=016 契约 #060709）、**零 128,0,0**、黑底白字 cmd banner+提示符+
+  光标块、整窗形态无输入框——AC-01/02/03 三面单图全数成立。④附注：
+  桌面 DLL 解析在 ui_desktop/auto.exe 默认布局下无缺省命中臂（祖先链
+  够不到 auto-term target），生产链依赖 ambient AUTOTERM_ENGINE_DLL
+  或 exe 同目录分发——陈旧映像风险类，属部署/契约面，记 §10 观察。
+  复验期环境注记：原生产桌面（22:49 起，bus 9247）在复验窗口内消失
+  （疑与验收实例单实例/端口冲突相关，非本计划代码触达）；复验后已以
+  生产模式重启桌面归还。MSYS bash 中转层会丢失注入 env（vue 轨 vite
+  同场崩），验收通道须原生 PowerShell/直接进程启动——程序性教训。
 - **T-05 全量回归** `[✅ 已完成（两项预存红在案）]`：rust 轨 ✓（627
   worktree CLI 构建 Finished + auto-term.exe 16:30 重建）；vm-merged ✓；
   vue 轨 = axum back `crate::ui::i18n_lookup` 编译错——**master 预存红**
@@ -325,6 +349,20 @@ auto-os（README/清单核对面，预期零或注释级）。预算/自动续�
   （RGB(6,7,9)）、本记录复现命令与结果、archived/016 根因节对照 ·
   next: **work**（修 F-R3，T-04 已重开，current_step 6/7）。
 
+- 2026-09-14 stage:work（F-R3 修复轮）· plan_id: PLAN-017 ·
+  plan_revision: 2 · outcome: **pass** · code_commit: ff0ef3f
+  （计划记账基线；F-R3 = 部署陈旧映像类，零 auto-term 代码改动）·
+  task_ids: T-04（重开→复验勾回）；T-01..T-03/T-05..T-07 证据复核
+  不受影响 · evidence: ①parity_color_attestation 绿（1.28s，当前
+  构建语义 = 016 契约）；②根因链 = 门时桌面进程早于 16:53 DLL 重建
+  启动、Windows 映像替换不溯及已加载 DLL → pre-016 kind_color 内存
+  常驻（RGB(128,0,0) 签名），vm 探针新进程对照黑（RGB(6,7,9)）；
+  ③R2 门新证据 evidence/017/desktop-terminal-live-r2.png——验收
+  桌面（9251 bus，AUTOTERM_ENGINE_DLL 钉 post-fix DLL）launch
+  auto-term：快照 81×25/25 行 + 截图四点采样 RGB(6,7,9) 零红 +
+  整窗形态 + 光标块，AC-01/02/03 三面齐 · blockers: 无 ·
+  next: **review**（F-R3 结案复核；用户已授权修完即复审）。
+
 ## 10. 待澄清事项
 
 1. **[2026-09-14 work 会话实证——T-02 升级为裁决点]** merged 模式下裸
@@ -355,8 +393,10 @@ auto-os（README/清单核对面，预期零或注释级）。预算/自动续�
 3. vue 轨 pac 端口：并合 pac 保留 17400/17401 占位——vm-split 实测以
    17401 起真服务（front 17400/back 17401 落位正确），vue split 形态
    未来真端口需求另行计划。
-4. **[R2 复审 F-R3 · 在册阻塞]** AC-03 fail：桌面委托路径整屏暗红底
+4. **[R2 复审 F-R3 · 已结案（work 修复轮）]** AC-03 fail：桌面委托路径整屏暗红底
    （像素实证 RGB(128,0,0) = 016"257 截断→base16[1]"签名；vm 路径
-   对照正常黑底）——016 修复未覆盖桌面路径或宿主内嵌副本陈旧（详见
-   §9 findings）。unblock 动作：work 期定位根因 → 修复/宿主刷新 →
-   重取桌面门证据（非红底+几何随动+形态三面）→ 交复审。
+   对照正常黑底）——根因 = 长驻桌面进程跨 DLL 重建的陈旧内存映像
+   （非代码缺陷，parity 色彩对拍绿），新进程加载 post-fix DLL 复验
+   黑底（evidence/017/desktop-terminal-live-r2.png，RGB(6,7,9) 零红）。
+   详见 T-04 结案注记。残余观察：桌面 DLL 解析缺省命中臂缺失 =
+   部署/契约面风险类，留 DEBTS/后续计划候选，不阻 017。
