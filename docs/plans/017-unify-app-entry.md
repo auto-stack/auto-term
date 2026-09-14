@@ -240,10 +240,29 @@ auto-os（README/清单核对面，预期零或注释级）。预算/自动续�
 
 ## 10. 待澄清事项
 
-1. **桌面 merged back 实机行为**（T-04 门）：若出桩失败，分支 B（cdylib
-   工程新建，工作量约 os-config-back 量级）vs 分支 C（front store 双实
-   现破坏单源）需用户裁决——两案均超出本轮授权范围。
-2. `at-app/stdlib/` 遗留件处置（gitignore vs 删除）：T-06 就地按内容判
-   定，若发现被运行期依赖则上报再动。
-3. vue 轨 pac 端口：并合 pac 保留 17400/17401 占位——vue split 形态若
-   未来需要真端口，另行计划（本计划不动 vue 行为）。
+1. **[2026-09-14 work 会话实证——T-02 升级为裁决点]** merged 模式下裸
+   `#[api]` 调用按 auto-lang 当前 master 设计进 no-op 桩
+   （`vm/codegen.rs:8200` PLAN-053 拦截；`api_funcs` 在共享 handler 编译
+   路径注册——桌面 `build_dynamic_component` 同样命中）。**主案 A 的
+   "merged 字节码直调"仅对限定名调用成立**（codegen 明示 qualified 跳过
+   拦截直落本地字节码）。实测矩阵（tmp 探针，已清理）：
+   - 裸导入（at-app 原样）：rust ✓ / vue ✓ / vm-split ✓ / vm-merged ✗ 桩 /
+     **桌面 ✗ 桩**（代码路径确证，同拦截）。
+   - 限定名（`use back.api` + `api.X()`）：vm-merged ✓ 全实证（几何
+     84×29 真值、光标 (3,15)、29 行收割、零桩告警）；rust ✗ E0425×13
+     （a2r 只改写裸名）；vue ✗（api.ts 裸导出无命名空间）。
+   - **分支 B（cdylib）技术否证**：`engine_pump_input`/`apply_resize` 读
+     `auto_lang::ui::terminal` 进程内静态注册表（app/term.rs:195/220）
+     ——cdylib 自带 auto-lang 拷贝与宿主静态分裂，桌面键入/几何必死
+     （os-config 先例无此耦合，不可迁移）。
+   - plan622（auto-lang 09-14 归档）确认：split 可达后端，merged 宿主
+     分派需 ash-runner/桥——无在途修复改变裸调用语义。
+   **请裁决**：(a) 前端切限定名 + 立跨仓小计划补 a2r/vue 限定名支持
+   （017 挂 T-04/T-05 部分项待依赖）；或 (b) 回滚 T-01（revert c157c80）
+   017 挂起等 auto-lang 先行。桌面零升级不成立（旧壳已删，裸形态桌面
+   = 死终端）。
+2. ~~at-app/stdlib 遗留~~（T-01 已清：stdlib 会话遗留副本 + rust-workspace
+   生成物随目录退役删除，实证 = lang stdlib 安装副本在位）。
+3. vue 轨 pac 端口：并合 pac 保留 17400/17401 占位——vm-split 实测以
+   17401 起真服务（front 17400/back 17401 落位正确），vue split 形态
+   未来真端口需求另行计划。
