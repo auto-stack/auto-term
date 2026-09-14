@@ -172,6 +172,17 @@
         "status": "published",
         "created": "2026-09-14",
         "last_modified": "2026-09-14"
+      },
+      {
+        "id": "P017-1",
+        "section": "reports",
+        "title": "app 入口统一 — 变更摘要",
+        "content": "at-app 三形态工程置换 app/ 桌面壳(PAC-017 T-01 git mv 保历史):app/ 成为唯一工程入口三形态同源(rust exe/vm merged/vue split),旧壳输入框+Send 形态删除;桌面 launcher 装载升级 014 形态(整窗 terminal 点击直键入+几何随动+016 颜色修复随行);#[api] 调用切限定名形态(use back.api+api.X(),裸名在 merged/桌面动态编译进 PLAN-053 no-op 桩),发射器支持由 auto-lang PLAN-627 交付;R2 复审 red 底 finding F-R3 坐实为长驻桌面进程跨 DLL 重建陈旧内存映像(非代码缺陷),重取桌面门黑底复验通过。",
+        "file": "docs/plans/archived/017-unify-app-entry.md",
+        "related": [
+          "PLAN-017"
+        ],
+        "status": "published"
       }
     ],
     "goals": [
@@ -335,6 +346,17 @@
         "status": "proposed",
         "created": "2026-09-11",
         "last_modified": "2026-09-11"
+      },
+      {
+        "id": "P017-2",
+        "section": "goals",
+        "title": "交付目标终态(G1..G4)",
+        "content": "G1 桌面 launcher 启动=app/ 现行交互形态(整窗 terminal/点击直键入/流式刷新/几何随动/颜色契约)✓;G2 app/ 唯一工程入口三形态同源,at-app/ 退役,仓内引用面同步(README/gitignore)✓;G3 独立入口零回归:auto build -r rust 产出 auto-term.exe 可运行(post-627 master CLI 基线复现 Finished 零错)✓;G4 伞形注册零变更:apps.manifest 行(id/repo/kind/ports 17400/17401/无 daemon)与 pac.at 展示键(title AutoTerm/title_zh 终端/icon terminal/category system)保持✓。",
+        "file": "docs/plans/archived/017-unify-app-entry.md",
+        "related": [
+          "PLAN-017"
+        ],
+        "status": "published"
       }
     ],
     "architecture": [
@@ -525,6 +547,17 @@
         "status": "published",
         "created": "2026-09-14",
         "last_modified": "2026-09-14"
+      },
+      {
+        "id": "P017-3",
+        "section": "architecture",
+        "title": "app/ 唯一工程入口契约(SD-01)",
+        "content": "app/=AutoTerm 唯一工程入口,三形态同源单仓:rust(auto build -r rust→auto-term.exe)/vm(auto run -r vm,backend in-process)/vue(17400/17401);桌面装载=进程内动态编译 front+本地 src/back merged 委托体+auto.term shims 进程内引擎;#[api] 调用必须限定名形态(裸名 merged/桌面进 PLAN-053 no-op 桩,限定名直落本地字节码;发射器支持=auto-lang PLAN-627);引擎 FFI=app/term.rs libloading autoterm_core.dll(env AUTOTERM_ENGINE_DLL→exe 同目录→祖先 target/{debug,release}),色彩契约见 engine-ffi-color-encoding;教训注记:长驻桌面进程跨 DLL 重建持陈旧内存映像,桌面门取证前须确认宿主启动晚于 DLL 构建。",
+        "file": "docs/specs/app-unified-entry.md",
+        "related": [
+          "PLAN-017"
+        ],
+        "status": "published"
       }
     ],
     "designs": [
@@ -694,6 +727,17 @@
         "status": "stable",
         "created": "2026-09-11",
         "last_modified": "2026-09-11"
+      },
+      {
+        "id": "P017-4",
+        "section": "designs",
+        "title": "关键设计裁决与守卫",
+        "content": "①置换方向:用户裁定以 at-app 置换 app/(app/ 为停更第一代壳);②限定名裁决(T-02 升级裁决点):裸导入在 merged/桌面进 PLAN-053 no-op 桩,唯一进程内可达=限定名,(a) 切限定名+跨仓补齐 vs (b) 回滚——用户裁 (a),落地=auto-lang PLAN-627(归档 696399830);③分支 B(cdylib)技术否证:engine_pump_input/apply_resize 读 auto_lang::ui::terminal 进程内静态注册表,cdylib 与宿主静态分裂必死;④单入口断言口径:git grep at-app 功能残留为零,命中仅出处注记(git mv 保历史+并合表自要求)/DEBTS #14③ 冻结 oracle/史志。",
+        "file": "docs/plans/archived/017-unify-app-entry.md",
+        "related": [
+          "PLAN-017"
+        ],
+        "status": "published"
       }
     ],
     "tests": [
@@ -871,6 +915,17 @@
         "status": "published",
         "created": "2026-09-14",
         "last_modified": "2026-09-14"
+      },
+      {
+        "id": "P017-5",
+        "section": "tests",
+        "title": "回归配方与证据档案",
+        "content": "桌面门三面(R2 门 desktop-terminal-live-r2.png):整窗形态无输入框+几何随动(快照 cols=81 rows=25 lines=25≠模型缺省 100×30)+色彩契约(网格采样 dark=755/red=0,背景 #060709,零 128,0,0);独立入口:auto build -r rust Finished 零错(post-627 master CLI g853ad131c,1m04s)+exe 可运行;色彩契约回归:cargo test -p autoterm-parity parity_color_attestation(见 P016-4);vm-merged:限定名零桩告警+真实 PTY 内容(vm-merged-qualified-probe.png/run.log);单入口:git grep at-app 功能残留零+git log --follow 可溯;证据目录 docs/plans/evidence/017/。",
+        "file": "docs/plans/archived/017-unify-app-entry.md",
+        "related": [
+          "PLAN-017"
+        ],
+        "status": "published"
       }
     ],
     "reviews": [
@@ -1078,6 +1133,17 @@
         "status": "published",
         "created": "2026-09-14",
         "last_modified": "2026-09-14"
+      },
+      {
+        "id": "P017-6",
+        "section": "reviews",
+        "title": "复审记录(R2 needs_fix→修复轮→R3 pass)",
+        "content": "R2 复审 needs_fix:F-R3(major/AC-03)桌面门归档截图像素实证整屏 RGB(128,0,0)=016\"257 截断→base16[1] 暗红\"签名,vm 对照黑底——AC-03 不成立,T-04 重开;F-R1(info)grep 命中=出处注记解读;F-R2(minor)launcher 截图未归档。修复轮:根因=长驻桌面进程跨 DLL 重建陈旧映像(门进程早于 16:53 DLL 重建,Windows 替换不溯及已加载模块;parity_color_attestation 绿证当前构建无缺陷),验收通道(9251+钉 post-fix DLL)重取门黑底 RGB(6,7,9) 零红。R3 终态 pass:归档截图独立网格重采样 dark=755/red=0+parity 复跑绿+DLL 事实复核,AC-01..06 全过(AC-01 交互面=用户自有项 F-R4 info)。reviewed_commit 4346580,base 4b5d2a4d。",
+        "file": "docs/plans/archived/017-unify-app-entry.md",
+        "related": [
+          "PLAN-017"
+        ],
+        "status": "published"
       }
     ]
   }
