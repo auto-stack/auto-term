@@ -1,7 +1,7 @@
-// at-app src/back/api.at — #[api] 契约面(PLAN-013 T5)
+// app src/back/api.at — #[api] 契约面(PLAN-013 T5;017 at-app→app 置换)
 //
 // 全标量/[]str 面:rust merged(db 吸收委托)、vue split(a2r axum
-// handlers 调 db.rs)、VM merged(api fn 字节码直调 db)三形态同源。
+// handlers 调 db.rs)、VM/desktop merged(api fn 字节码直调 db)同源。
 // 实现体在 db.at(api.at 仅为契约 + VM 直跑的委托体)。
 
 use db

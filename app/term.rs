@@ -1,4 +1,5 @@
-//! PLAN-013 T5 at-app 侧车模块( crates/auto-man sidecar 机制供给):
+//! PLAN-013 T5 app/ 侧车模块( crates/auto-man sidecar 机制供给;017
+//! at-app→app 置换):
 //! libloading 包装 autoterm_core.dll,模块名 crate::term。源自
 //! at-gen/src/engine.rs(逐行同语义);a2r 对 `use auto.term` 的下降
 //! (`use crate::term::{…}`)由此闭合。快照缓存在 glue 侧,`engine_rows` 回读。

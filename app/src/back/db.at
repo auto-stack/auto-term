@@ -1,4 +1,4 @@
-// at-app src/back/db.at — TermApp 引擎驱动状态机(PLAN-013 T5)
+// app src/back/db.at — TermApp 引擎驱动状态机(PLAN-013 T5;017 at-app→app 置换)
 //
 // 移植自 auto-term at/autoterm.at(冻结的 at-gen oracle);back crate
 // 用户逻辑唯一吸收面 = db.at(a2r 转译 db.rs / VM 直跑双形态)。
