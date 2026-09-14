@@ -7,8 +7,8 @@
 //!   `feed_ready`(收割 reader 积压)→ `take_dirty_rows`(取损伤 + 刷新
 //!   快照)→ `row_text` / `row_style`(按行取文本/样式,喂给组件);
 //! - interrupt 保留 PLAN-008 双投递语义(直接走 PtySession::interrupt);
-//! - 颜色标量编码:`(kind << 24) | value`,kind 0=Default、1=Indexed(0-255)、
-//!   2=RGB(0xRRGGBB)。
+//! - 颜色标量编码:`(kind << 24) | value`,kind 0=Default、1=Indexed(0-255,
+//!   含 vte Named 基础 16 色;≥256 的语义色归并 Default)、2=RGB(0xRRGGBB)。
 //!
 //! 安全边界:所有 `*mut AutotermEngine` 参数必须来自 `spawn` 且未经
 //! `free`;空句柄返回哨兵值(-1 / 空串 / 0 行)。跨 FFI 无 panic:
@@ -30,7 +30,13 @@ pub struct AutotermEngine {
 #[inline]
 fn kind_color(c: TermColor) -> u32 {
     match c {
-        TermColor::Named(n) => 1u32 << 24 | n as u32,
+        // vte NamedColor:0-15 = 基础 16 色(discriminant 与 xterm base16
+        // 对齐);≥256 = Foreground/Background/Cursor/Dim*/BrightForeground
+        // 等语义色,不属于 Indexed(0-255) 契约 → 归并 Default,由宿主
+        // 主题取默认前/背景(此前按原值传出,消费端 as u8 截断把
+        // Background=257 折成 Indexed(1) 暗红——整屏红底黑字的根因)。
+        TermColor::Named(n) if (n as u32) < 256 => 1u32 << 24 | n as u32,
+        TermColor::Named(_) => 0,
         TermColor::Indexed(i) => 1u32 << 24 | i as u32,
         TermColor::Spec(rgb) => 2u32 << 24 | (rgb.r as u32) << 16 | (rgb.g as u32) << 8 | rgb.b as u32,
     }

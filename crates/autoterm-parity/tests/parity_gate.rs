@@ -325,7 +325,9 @@ fn parity_color_attestation() {
 
     fn kind(c: Color) -> u32 {
         match c {
-            Color::Named(n) => 1 << 24 | n as u32,
+            // ffi.rs kind_color 镜像:Named ≥256(语义色)归并 Default。
+            Color::Named(n) if (n as u32) < 256 => 1 << 24 | n as u32,
+            Color::Named(_) => 0,
             Color::Indexed(i) => 1 << 24 | i as u32,
             Color::Spec(rgb) => {
                 2 << 24 | (rgb.r as u32) << 16 | (rgb.g as u32) << 8 | rgb.b as u32

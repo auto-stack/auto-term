@@ -12,11 +12,10 @@
 // 收割回显。timer 驱动 50ms 轮询,命令输出(含长跑任务)流式上屏,
 // 不再依赖按钮 tick。
 //
-// 014 积压报警状态行:reader→drain 积压是内存暴涨主嫌疑,每拍采样
-// pending/paused/alerts 置顶横幅——健康时一行静默指标,积压越线
-// (≥2MB)数字飙升即用户可见警报;reader 反压(8MB)后 paused=1。
+// 014 积压报警:展示面(置顶横幅)已按用户裁定撤下;采样/计数仍在
+// back 契约面(api.at term_backlog_*)保留,供诊断消费。
 
-use back.api: get_lines, term_pump_input, term_apply_resize, term_cols, term_rows, term_cursor_row, term_cursor_col, term_backlog_sample, term_backlog_alerts_total, term_backlog_pending_mb, term_backlog_paused, term_backlog_dropped
+use back.api: get_lines, term_pump_input, term_apply_resize, term_cols, term_rows, term_cursor_row, term_cursor_col
 
 widget App {
     msg { Init, Tick, KeyIn }
@@ -27,10 +26,6 @@ widget App {
         var rows int = 30
         var crow int = 0
         var ccol int = 0
-        var bl_alerts int = 0
-        var bl_pending int = 0
-        var bl_paused int = 0
-        var bl_dropped int = 0
     }
 
     timer {
@@ -50,11 +45,6 @@ widget App {
             .lines = get_lines()
             .crow = term_cursor_row()
             .ccol = term_cursor_col()
-            term_backlog_sample()
-            .bl_alerts = term_backlog_alerts_total()
-            .bl_pending = term_backlog_pending_mb()
-            .bl_paused = term_backlog_paused()
-            .bl_dropped = term_backlog_dropped()
         }
         .KeyIn -> {
             term_pump_input()
@@ -67,7 +57,6 @@ widget App {
     view {
         col {
             style: "w-full h-screen bg-background"
-            text f"backlog ${.bl_pending}MB | paused=${.bl_paused} | alerts=${.bl_alerts} | dropped=${.bl_dropped}"
             terminal {
                 key: "at-app"
                 cols: .cols
