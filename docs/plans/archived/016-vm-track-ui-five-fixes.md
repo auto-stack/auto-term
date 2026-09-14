@@ -1,6 +1,6 @@
 ---
 plan_id: PLAN-016
-status: reviewed
+status: archived
 feature_name: VM 轨 AutoTerm 五项 UI 修复——FFI 语义色编码红底根因 + 视觉收口(补记)
 author: [zcode-session]
 created_at: 2026-09-14T06:03:01Z
@@ -299,6 +299,16 @@ touched_goals: []
   - next: **merge**(归档 + ledger 刷新 + specs SD-01/SD-02 入库)。
   - 限制声明:复审仍在实现会话内进行,结论由提交后重跑的测试、
     提交后抓图证据与 diff 核对重建。
+
+## 收敛收据(PLAN-016:r2,2026-09-14)
+
+| 检查点 | 证据 |
+|---|---|
+| `prepared` | 复审基线=双仓 reviewed 提交(auto-term 09afd6e / auto-lang 420d45543);canonical diff=SD-01→docs/specs/engine-ffi-color-encoding.md、SD-02→docs/specs/terminal-widget-chrome.md(均新建,docs/specs/ 此前不存在);projection 目标=.autoos/specs.json 六节,预登记 P016-1..5;交付提交=同 commit |
+| `landed` | 默认分支 main 合并提交(本提交);代码交付已在 09afd6e/420d45543(祖先可溯);主已知好:三套件绿(core lib 2/2、parity_color 1/1、terminal_pixel 3/3) |
+| `ledger_refreshed` | .autoos/specs.json:P016-1(reports→归档计划)、P016-2/P016-3(architecture→docs/specs/ 两新文档)、P016-4(tests→归档计划)、P016-5(reviews→归档计划);python json 读回校验 92 条目、五 ID 逐节命中 |
+| `archived` | git mv 本文件 → docs/plans/archived/016-vm-track-ui-five-fixes.md,status: archived |
+| `cleaned` | 无 worktree(全程主检出交付,014 同款先例);两仓工作区余项:并行会话 FileManager 的 auto-lang vm/native.rs(非本计划)、会话前遗留 at-app/stdlib/ 与 tmp_ash_colors.png——均不属本计划,不处置 |
 
 ## 10. 待澄清事项
 

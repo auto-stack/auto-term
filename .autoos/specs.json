@@ -159,6 +159,19 @@
         "status": "published",
         "created": "2026-09-13",
         "last_modified": "2026-09-13"
+      },
+      {
+        "id": "P016-1",
+        "section": "reports",
+        "title": "VM 轨五项 UI 修复 — 变更摘要",
+        "content": "五项:①红底根因=FFI 颜色编码把 vte 语义色(Named≥256)按 Indexed 传出,消费端 as u8 截断把 Background=257 折成 Indexed(1) xterm 暗红(cmd 无 SGR 整屏黑字红底,013 起);修复=语义色归并 Default+parity kind() 镜像同步;②撤 backlog 状态行(展示面;api/db 采样契约面保留);③PAD 4px 四周内缩(文字不贴边);④撤组件自绘 1px 边框(双层边框不再);⑤底色底部两角 16px 圆角+右/底浅色带根因(固定网格与客户区取整余量露 bg-background #090e1a)以 Fill 同色容器消除。双仓锚定 auto-term 09afd6e / auto-lang 420d45543。",
+        "file": "docs/plans/archived/016-vm-track-ui-five-fixes.md",
+        "related": [
+          "PLAN-016"
+        ],
+        "status": "published",
+        "created": "2026-09-14",
+        "last_modified": "2026-09-14"
       }
     ],
     "goals": [
@@ -486,6 +499,32 @@
         "status": "published",
         "created": "2026-09-13",
         "last_modified": "2026-09-13"
+      },
+      {
+        "id": "P016-2",
+        "section": "architecture",
+        "title": "引擎 FFI 颜色标量编码契约(kind<<24|value)",
+        "content": "row_style 逐格 fg/bg 交错 u32:kind 0=Default,1=Indexed(0-255,含 vte NamedColor 0-15 基础 16 色),2=RGB(0xRRGGBB)。不变量:vte Named(n≥256) 语义色(Foreground=256/Background=257/Cursor/Dim* 等)一律归并 Default,禁止按原值传出;消费端解码禁止截断解释 value;oracle 镜像(parity kind()/at-gen/侧车 term.rs)与 ffi.rs kind_color 同语义,单边修改=契约漂移。依据:257 截断成 Indexed(1) 暗红事故。契约文档 docs/specs/engine-ffi-color-encoding.md。",
+        "file": "docs/specs/engine-ffi-color-encoding.md",
+        "related": [
+          "PLAN-016"
+        ],
+        "status": "published",
+        "created": "2026-09-14",
+        "last_modified": "2026-09-14"
+      },
+      {
+        "id": "P016-3",
+        "section": "architecture",
+        "title": "terminal 组件 chrome 契约(PAD 4/无边框/底角 16/同色余量)",
+        "content": "PAD=4 逻辑 px 四周内缩;组件不自绘边框(仅 OS/vwin 窗框一层);底色 quad 底部两角 16px 圆角(对齐 vwin WIN_RADIUS);默认前/背景 DEFAULT_FG #e8e8e8 / DEFAULT_BG #060709(pub);几何公式 cols×cell_w()+2×PAD 双构造点(widget::new 与 renderer View::Terminal 臂)必须同源;renderer 臂以 Fill+DEFAULT_BG 同色容器包裹消固定网格与客户区取整余量(右≤一格宽/底≤一行高)露 bg-background 的浅色带。契约文档 docs/specs/terminal-widget-chrome.md。",
+        "file": "docs/specs/terminal-widget-chrome.md",
+        "related": [
+          "PLAN-016"
+        ],
+        "status": "published",
+        "created": "2026-09-14",
+        "last_modified": "2026-09-14"
       }
     ],
     "designs": [
@@ -819,6 +858,19 @@
         "status": "published",
         "created": "2026-09-13",
         "last_modified": "2026-09-13"
+      },
+      {
+        "id": "P016-4",
+        "section": "tests",
+        "title": "回归配方与证据档案",
+        "content": "auto-term:cargo test -p autoterm-parity parity_color_attestation(oracle rlib vs a2r FFI STYLE 逐格对拍,含 ESC[0m 复位行=语义色归并路径)+ autoterm-core --lib;auto-lang:cargo test -p auto-lang --features ui-iced,iced-layout-tests --lib terminal_pixel(bounds=2×PAD 公式/光标/选中像素变化,金样 test/ui/terminal_pixel/ 随视觉变更重建);实机核验=DPI 感知(Shcore per-monitor v2)整窗抓图:客户区 (9,14,26)/(0,0,0) 采样为 0、四边统一 (6,7,9)。证据 docs/plans/evidence/016/(五项核验+带状修复整窗)。",
+        "file": "docs/plans/archived/016-vm-track-ui-five-fixes.md",
+        "related": [
+          "PLAN-016"
+        ],
+        "status": "published",
+        "created": "2026-09-14",
+        "last_modified": "2026-09-14"
       }
     ],
     "reviews": [
@@ -1013,6 +1065,19 @@
         "status": "published",
         "created": "2026-09-13",
         "last_modified": "2026-09-13"
+      },
+      {
+        "id": "P016-5",
+        "section": "reviews",
+        "title": "复审记录(needs_fix→pass 双轮)",
+        "content": "首轮 needs_fix:F-01 双仓实现未提交无 SHA 锚定(blocking);F-02 AC-05 实机弧线不可见(partial,抓图受 DPI 虚拟化与遮挡限制,首版证据图无效已重拍)。重审 pass:reviewed_commit auto-term 09afd6e / auto-lang 420d45543,F-01/F-02 解除;T-07 用户报告右/底浅色带→根因定位(固定网格取整余量露 bg-background)并修复(View::Terminal 臂 Fill 同色容器);AC-01..06 全过,三套件绑定提交后 SHA 重跑绿;specs SD-01/SD-02 入库。另顺手修 auto-lang layout_tests plan619 既有缺闭括号(HEAD 起 iced-layout-tests 特性编译不过,与本计划无关的最小修复)。",
+        "file": "docs/plans/archived/016-vm-track-ui-five-fixes.md",
+        "related": [
+          "PLAN-016"
+        ],
+        "status": "published",
+        "created": "2026-09-14",
+        "last_modified": "2026-09-14"
       }
     ]
   }
