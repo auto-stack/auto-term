@@ -65,6 +65,23 @@ impl PtySession {
         I: IntoIterator<Item = S>,
         S: AsRef<OsStr>,
     {
+        Self::spawn_in(program, args, None, cols, rows)
+    }
+
+    /// PLAN-018 D1 SpawnSpec:带工作目录的 spawn 变体。`cwd` 为 None 或
+    /// 空路径 = 继承宿主进程工作目录(portable-pty `CommandBuilder::cwd`
+    /// 既有能力接线;多 Pane 各带静态 cwd 的引擎面基础)。
+    pub fn spawn_in<I, S>(
+        program: &str,
+        args: I,
+        cwd: Option<&Path>,
+        cols: usize,
+        rows: usize,
+    ) -> Result<Self>
+    where
+        I: IntoIterator<Item = S>,
+        S: AsRef<OsStr>,
+    {
         let pty_system = portable_pty::native_pty_system();
         let pair = pty_system
             .openpty(PtySize {
@@ -77,6 +94,9 @@ impl PtySession {
         let mut cmd = CommandBuilder::new(program);
         for arg in args {
             cmd.arg(arg);
+        }
+        if let Some(dir) = cwd.filter(|p| !p.as_os_str().is_empty()) {
+            cmd.cwd(dir);
         }
         // 不继承宿主终端的能力声明;AutoTerm 即终端,自报家门。
         cmd.env_remove("TERM");

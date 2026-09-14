@@ -6,7 +6,7 @@ author: [zcode-session]
 created_at: 2026-09-14T08:40:00Z
 updated_at: 2026-09-14T09:45:00Z
 plan_revision: 2
-current_step: 0
+current_step: 1
 total_steps: 11
 supersedes_spec_components: []
 new_spec_components:
@@ -225,6 +225,21 @@ Domain、Layout 策略、Mux Daemon、Agent API)全部非目标,路线图见 §4
 `at-app/ ≡ app/` 在 work 期换算并记录。两计划同触面仅 app.at/db.at/
 term.rs,不允许并行 work(先后串行,以先 merge 者为基)。
 
+> **T-00 附记(2026-09-15 开工门勘定)**:①017 已 merge——main
+> @6454548 收据明记"status archived + 018 前置解除",`app/` 四触面
+> 在位(src/back/db.at、src/back/api.at、src/front/app.at、term.rs),
+> **路径基准裁定 = `app/` 直用,零映射开销**。②worktree 惯例勘定:
+> 014/016/017 三例均为"无 worktree 主检出交付"(017 收据 cleaned 节
+> 在案),本计划沿同款——auto-term 主检出直接实现;依赖仓 auto-lang
+> master(fd893e25f)主检出直接变更,其工作区他人遗留项
+> (`stdlib/auto/fs.at` 改动、`docs/reports/p625-evidence/`)不属本
+> 计划,保留不提交。③ffi 面 16 符号在库确认;VM shim 段 2943-2982
+> 已占用、2983 起空闲(catalog 完整性锁在册);Auto 侧 rec/Map 无在库
+> 先例(test/ 全无)→ 模型表按 §10.2 降级平行 List 执行。④既有观察:
+> at-gen/src/shell.rs 构造 View::Terminal 仅 9 字段,对 auto-lang
+> master 014 起即 stale(at-gen 非本仓 workspace member,冻结 oracle
+> 不动,记 §10 观察)。
+
 ## 5. 详细设计
 
 | # | 改动 | 文件:符号(仓) | 说明 |
@@ -303,10 +318,21 @@ term.rs,不允许并行 work(先后串行,以先 merge 者为基)。
 
 ## 8. 执行步骤
 
-- **T-00 开工门**:勘定 PLAN-017 状态(§4.5);路径基准裁定与记录
+- **T-00 [x] 开工门**:勘定 PLAN-017 状态(§4.5);路径基准裁定与记录
   (`app/` 或 `at-app/` 映射)。前置:无。产出:§4.5 附记。关联全部。
-- **T-01 D1+D2 引擎 SpawnSpec 面**(autoterm-core + ffi 测试)。前置
+  [✅ 已完成] main@6454548(017 收据"018 前置解除");路径基准=`app/`
+  直用;无 worktree 主检出惯例沿 014/016/017;auto-lang master
+  fd893e25f 勘定。证据:§4.5 T-00 附记。
+- **T-01 [x] D1+D2 引擎 SpawnSpec 面**(autoterm-core + ffi 测试)。前置
   T-00。关联 AC-01/02。
+  [✅ 已完成] pty.rs `spawn_in(program,args,cwd,cols,rows)`(旧 spawn
+  薄委托;CommandBuilder::cwd 接线,空 cwd=继承宿主)+ ffi.rs
+  `autoterm_engine_spawn_ex`(face 16→17;argv=C 指针数组/argc,cwd
+  NULL/空=继承;旧 16 符号零改动)。红相:基线 DLL(09-14 16:53)零新
+  符号;绿相:重建 DLL(09-15 01:24)后 `cargo test -p
+  autoterm-engine-ffi-tests --test engine_ffi_integration` 4/4 绿 2.62s
+  (cwd 回显目录/argv echo/双柄隔离互不串/旧 spawn+resize+interrupt
+  回归)+ autoterm-core --lib 2/2。commit:见 git log 018 T-01。
 - **T-02 D4 widget per-key 泵**(auto-lang;与 T-03 并行,同仓异文件
   ——mod.rs vs term_engine.rs,注意 stdlib 声明面在 T-03)。前置
   T-00。关联 AC-04。

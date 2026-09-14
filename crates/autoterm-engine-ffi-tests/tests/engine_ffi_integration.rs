@@ -15,6 +15,14 @@ use libloading::{Library, Symbol};
 
 // DLL 面(与 crates/autoterm-core/src/ffi.rs 的 C ABI 一一对应)。
 type Spawn = unsafe extern "C" fn(c_int, c_int, *const c_char) -> *mut core::ffi::c_void;
+type SpawnEx = unsafe extern "C" fn(
+    *const c_char,
+    *const *const c_char,
+    c_int,
+    *const c_char,
+    c_int,
+    c_int,
+) -> *mut core::ffi::c_void;
 type WriteInput = unsafe extern "C" fn(*mut core::ffi::c_void, *const u8, usize);
 type FeedReady = unsafe extern "C" fn(*mut core::ffi::c_void) -> c_int;
 type TakeDirtyRows = unsafe extern "C" fn(*mut core::ffi::c_void, *mut c_int, c_int) -> c_int;
@@ -43,12 +51,7 @@ unsafe impl Send for Engine {}
 
 impl Engine {
     fn load() -> Self {
-        let dll = dll_path();
-        unsafe {
-            let lib = Library::new(&dll)
-                .unwrap_or_else(|e| panic!("加载 cdylib 失败({}): {e}", dll.display()));
-            // libloading 惯用姿势:Symbol 的借用期拉平为 'static——Library
-            // 本体保存在 Self 里同生共死,实际安全(官方文档认可的转写)。
+        Self::load_inner(|lib| unsafe {
             let spawn: Symbol<'static, Spawn> = std::mem::transmute(
                 lib.get::<unsafe extern "C" fn(c_int, c_int, *const c_char) -> *mut core::ffi::c_void>(
                     b"autoterm_engine_spawn\0",
@@ -56,7 +59,58 @@ impl Engine {
                 .unwrap(),
             );
             let handle = spawn(80, 24, std::ptr::null());
-            assert!(!handle.is_null(), "autoterm_engine_spawn 返回 NULL");
+            (spawn, handle)
+        })
+    }
+
+    /// PLAN-018 D2:经 `autoterm_engine_spawn_ex` spawn(program/argv/cwd)。
+    /// cwd 传 None = NULL(继承宿主)。
+    fn load_ex(program: &str, args: &[&str], cwd: Option<&std::path::Path>) -> Self {
+        let prog = CString::new(program).unwrap();
+        let c_args: Vec<CString> = args.iter().map(|a| CString::new(*a).unwrap()).collect();
+        let cwd_buf = cwd.map(|p| CString::new(p.to_str().unwrap()).unwrap());
+        Self::load_inner(move |lib| {
+            // argv 指针数组须在 move 后的缓冲上取址(悬垂防御)。
+            let argv: Vec<*const c_char> = c_args.iter().map(|a| a.as_ptr()).collect();
+            let (argv_ptr, argc) = if argv.is_empty() {
+                (std::ptr::null(), 0)
+            } else {
+                (argv.as_ptr(), argv.len() as c_int)
+            };
+            let cwd_ptr = cwd_buf.as_ref().map(|c| c.as_ptr()).unwrap_or(std::ptr::null());
+            unsafe {
+                let spawn_ex: Symbol<'static, SpawnEx> = std::mem::transmute(
+                    lib.get::<SpawnEx>(b"autoterm_engine_spawn_ex\0").unwrap(),
+                );
+                let handle = (spawn_ex)(prog.as_ptr(), argv_ptr, argc, cwd_ptr, 80, 24);
+                let spawn: Symbol<'static, Spawn> = std::mem::transmute(
+                    lib.get::<unsafe extern "C" fn(c_int, c_int, *const c_char) -> *mut core::ffi::c_void>(
+                        b"autoterm_engine_spawn\0",
+                    )
+                    .unwrap(),
+                );
+                (spawn, handle)
+            }
+        })
+    }
+
+    fn load_inner<F>(get_handle: F) -> Self
+    where
+        F: FnOnce(
+            &Library,
+        ) -> (
+            Symbol<'static, Spawn>,
+            *mut core::ffi::c_void,
+        ),
+    {
+        let dll = dll_path();
+        unsafe {
+            let lib = Library::new(&dll)
+                .unwrap_or_else(|e| panic!("加载 cdylib 失败({}): {e}", dll.display()));
+            // libloading 惯用姿势:Symbol 的借用期拉平为 'static——Library
+            // 本体保存在 Self 里同生共死,实际安全(官方文档认可的转写)。
+            let (spawn, handle) = get_handle(&lib);
+            assert!(!handle.is_null(), "spawn 返回 NULL");
             Self {
                 handle,
                 spawn,
@@ -212,4 +266,68 @@ fn ffi_echo_resize_interrupt_round_trip() {
         }
         panic!("中断后 shell 无响应——008 语义破坏");
     }
+}
+
+// ============================================================================
+// PLAN-018 D2 SpawnSpec face(spawn_ex)三用例
+// ============================================================================
+
+/// cwd 生效:`cmd /c cd` 回显的目录 = spawn_ex 传入的 cwd(非宿主 cwd)。
+#[test]
+fn spawn_ex_cwd_takes_effect() {
+    let dir = std::env::temp_dir().join(format!("at_spawn_ex_cwd_{}", std::process::id()));
+    std::fs::create_dir_all(&dir).unwrap();
+    let mut engine = Engine::load_ex("cmd", &["/c", "cd"], Some(&dir));
+    let marker = "at_spawn_ex_cwd";
+    assert!(
+        wait_for_text(&mut engine, marker, Duration::from_secs(20)),
+        "20s 内未在网格看到 cwd 目录回显(cmd /c cd)"
+    );
+    // 回显路径必须指向注入的目录而非宿主工作目录(小写对拍,分隔符无关)。
+    engine.feed();
+    let hit = engine
+        .snapshot()
+        .iter()
+        .any(|l| l.to_ascii_lowercase().contains(&dir.to_string_lossy().to_ascii_lowercase()));
+    assert!(hit, "回显中未见注入的 cwd 路径: {dir:?}");
+    let _ = std::fs::remove_dir(&dir);
+}
+
+/// argv 生效:`cmd /c echo <marker>`——argv 未透传时 cmd 只会开交互
+/// shell,marker 永不出现。
+#[test]
+fn spawn_ex_argv_takes_effect() {
+    let mut engine = Engine::load_ex("cmd", &["/c", "echo", "argv_ok_marker"], None);
+    assert!(
+        wait_for_text(&mut engine, "argv_ok_marker", Duration::from_secs(20)),
+        "20s 内未见 argv 透传的 echo 回显"
+    );
+}
+
+/// 双柄隔离:spawn_ex 两个会话,A 写入的回显不得串进 B 的网格,反之亦然
+/// (AC-02 多会话并存互不干扰)。
+#[test]
+fn spawn_ex_two_handles_isolated() {
+    let mut a = Engine::load_ex("cmd", &[], None);
+    let mut b = Engine::load_ex("cmd", &[], None);
+    a.write("echo isolate_alpha_only\r\n");
+    assert!(
+        wait_for_text(&mut a, "isolate_alpha_only", Duration::from_secs(20)),
+        "A 会话未收到自己的回显"
+    );
+    b.feed();
+    assert!(
+        !b.snapshot().iter().any(|l| l.contains("isolate_alpha_only")),
+        "A 的键入回显串进了 B 的网格——会话隔离破坏"
+    );
+    b.write("echo isolate_beta_only\r\n");
+    assert!(
+        wait_for_text(&mut b, "isolate_beta_only", Duration::from_secs(20)),
+        "B 会话未收到自己的回显"
+    );
+    a.feed();
+    assert!(
+        !a.snapshot().iter().any(|l| l.contains("isolate_beta_only")),
+        "B 的键入回显串进了 A 的网格——会话隔离破坏"
+    );
 }

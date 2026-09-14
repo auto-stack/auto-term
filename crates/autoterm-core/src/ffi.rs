@@ -16,6 +16,7 @@
 
 use std::ffi::CStr;
 use std::os::raw::c_char;
+use std::path::PathBuf;
 
 use crate::term::{Color as TermColor, StyledChar};
 use crate::PtySession;
@@ -75,6 +76,55 @@ pub extern "C" fn autoterm_engine_spawn(
 
 fn default_shell() -> String {
     std::env::var("COMSPEC").unwrap_or_else(|_| "cmd".to_owned())
+}
+
+/// 读 NUL 结尾 C 字符串(NULL/非 UTF-8 → None;spawn_ex 参数解析共用)。
+fn read_c_string(p: *const c_char) -> Option<String> {
+    if p.is_null() {
+        return None;
+    }
+    // SAFETY: 调用方保证指向 NUL 结尾字符串。
+    unsafe { CStr::from_ptr(p) }.to_str().ok().map(str::to_owned)
+}
+
+/// PLAN-018 D1 SpawnSpec face(face 16→17):扩展 spawn——program/argv/
+/// cwd/几何。`argv` 为 C 字符串指针数组(`argc` 计数;NULL 或 argc≤0 =
+/// 无参数,遇 NULL 提前止);`cwd` NULL/空 = 继承宿主;cols/rows ≤0 →
+/// 80×24。失败返回 NULL。旧 `autoterm_engine_spawn` 语义零改动。
+#[unsafe(no_mangle)]
+pub extern "C" fn autoterm_engine_spawn_ex(
+    program: *const c_char,
+    argv: *const *const c_char,
+    argc: i32,
+    cwd: *const c_char,
+    cols: i32,
+    rows: i32,
+) -> *mut AutotermEngine {
+    let cols = if cols <= 0 { 80 } else { cols as usize };
+    let rows = if rows <= 0 { 24 } else { rows as usize };
+    let prog = match read_c_string(program) {
+        Some(s) if !s.is_empty() => s,
+        _ => default_shell(),
+    };
+    let mut args: Vec<String> = Vec::new();
+    if !argv.is_null() && argc > 0 {
+        for i in 0..argc as isize {
+            // SAFETY: 调用方保证 argv 为 argc 个指向 NUL 结尾字符串的指针。
+            let p = unsafe { *argv.offset(i) };
+            if p.is_null() {
+                break;
+            }
+            match read_c_string(p) {
+                Some(s) => args.push(s),
+                None => break,
+            }
+        }
+    }
+    let cwd_path = read_c_string(cwd).filter(|s| !s.is_empty()).map(PathBuf::from);
+    match PtySession::spawn_in(&prog, args, cwd_path.as_deref(), cols, rows) {
+        Ok(session) => Box::into_raw(Box::new(AutotermEngine { inner: session, snapshot: Vec::new() })),
+        Err(_) => std::ptr::null_mut(),
+    }
 }
 
 /// 宿主→子进程字节(键盘输入)。空句柄/空缓冲为 no-op。
