@@ -2,13 +2,13 @@
 
 ```yaml
 plan_id: PLAN-017
-status: executing
+status: execution_done
 feature_name: app 入口统一（at-app → app/，桌面壳退役）
 author: [agent]
 created_at: 2026-09-14T07:07:16Z
-updated_at: 2026-09-14T09:10:00Z
+updated_at: 2026-09-14T10:55:00Z
 plan_revision: 2
-current_step: 5
+current_step: 7
 total_steps: 7
 supersedes_spec_components: []
 new_spec_components:
@@ -239,9 +239,15 @@ auto-os（README/清单核对面，预期零或注释级）。预算/自动续�
   `cargo test --workspace`：8/10 绿，ash_integration 2 红 = ctrl_c 中断
   路径 **PLAN-015（drafting）在册的 014 已知回归**（017 未触引擎代码）。
   AC-05。
-- **T-06 遗留清偿 + 台账**：at-app/stdlib 遗留已随 T-01 清（实证 lang
-  stdlib 安装副本在位）；`.autoos/specs.json` 入账与 SD-01 spec 文档
-  **待 627 合并后随 017 复审一并落**（台账六节与本计划终态绑定）。
+- **T-06 遗留清偿 + 台账** `[✅ 已完成（work 半；入库半随 merge 执行）]`：
+  at-app/stdlib 遗留已随 T-01 清（实证 lang stdlib 安装副本在位）；
+  627 闸门解除实证——代码落地 master 3b2f7cf56 + 全收据闭合 696399830
+  （R2 复审 pass 8877393f6 → spec 沉淀 → 归档 → cleaned，ancestry
+  `--is-ancestor` YES），`.autoos/specs.json` 六节入账与 SD-01 spec
+  文档（docs/specs/app-unified-entry.md）按 §5.4 "work/merge 期入账"
+  口径**随复审/merge 窗口落**（014/016 无 worktree 主检出先例：
+  spec 文档 merge 首建；review 期禁发布 canonical spec/ledger）——
+  **merge 阶段必办项，勿以本勾选推断已入库**。
 - **T-07 证据归档** `[✅ 已完成]`：evidence/017/ 三件（desktop-terminal-
   live.png / vm-merged-qualified-probe.png / vm-merged-qualified-run.log）。
 
@@ -253,6 +259,23 @@ auto-os（README/清单核对面，预期零或注释级）。预算/自动续�
   残余风险单点 = T-04 实机门（本地委托体 back 桌面动态编译无先例），
   兜底分支 B/C 预置待裁决。outcome: pass（授权范围内可开工）；
   next: work（T-01 起）。
+
+- 2026-09-14 stage:work · plan_id: PLAN-017 · plan_revision: 2 ·
+  outcome: **pass** · code_commit: 4960bb2（main，无 worktree 主检出
+  交付，014/016 同款先例）· task_ids: T-01..T-07（7/7）· evidence:
+  ①627 依赖落地实证——auto-lang master 含 3b2f7cf56（ancestry
+  `--is-ancestor` YES）且收据链闭合（R2 复审 pass 8877393f6 → spec
+  沉淀 f7b2a4dde/9fbbfc365 → 归档 194b9202e → cleaned 696399830，
+  worktree/分支已拆）；②evidence/017/ 三件在位（desktop-terminal-
+  live.png / vm-merged-qualified-probe.png / vm-merged-qualified-
+  run.log）；③工作区零未提交代码（HEAD 4960bb2，仅 untracked tmp
+  探针件与本计划无关）· blockers: 无 · next: **review**
+  （/auto-plan:review 017）。
+  观察项（非阻塞）：PATH CLI `auto-lang/target/debug/auto` 为 18:20
+  pre-627 构建（a9d3b8c67，627 落地 22:15 之前）——在册证据不受影响
+  （16:30 auto-term.exe 用 627 worktree CLI 重建；桌面/merged 进程内
+  动态编译对限定名恒支持，PLAN-053 仅拦裸名）；后续以 PATH CLI 重建
+  rust 轨前需先重建 CLI（auto-lang 日常构建自然刷新）。
 
 ## 10. 待澄清事项
 
@@ -276,7 +299,9 @@ auto-os（README/清单核对面，预期零或注释级）。预算/自动续�
    **请裁决**：(a) 前端切限定名 + 立跨仓小计划补 a2r/vue 限定名支持
    （017 挂 T-04/T-05 部分项待依赖）；或 (b) 回滚 T-01（revert c157c80）
    017 挂起等 auto-lang 先行。桌面零升级不成立（旧壳已删，裸形态桌面
-   = 死终端）。
+   = 死终端）。**[已决并落地]** 用户裁定 (a)：前端切限定名 + 跨仓补齐
+   ——auto-lang PLAN-627 已走完全流程归档（R2 复审 pass → master
+   3b2f7cf56 → cleaned 696399830），017 依赖全解除（见 §9 work 记录）。
 2. ~~at-app/stdlib 遗留~~（T-01 已清：stdlib 会话遗留副本 + rust-workspace
    生成物随目录退役删除，实证 = lang stdlib 安装副本在位）。
 3. vue 轨 pac 端口：并合 pac 保留 17400/17401 占位——vm-split 实测以
