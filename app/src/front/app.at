@@ -11,14 +11,20 @@
 //
 // 输入语义(像 Windows Terminal):点击终端获得焦点后直接键入;widget 把
 // 按键翻译成 VT 串入 TerminalCore 队列,消息 .KeyIn 只当触发器——
-// term_pump_input() 排空队列裸写引擎(无 \r\n 补缀),随后 get_lines()
+// api.term_pump_input() 排空队列裸写引擎(无 \r\n 补缀),随后 api.get_lines()
 // 收割回显。timer 驱动 50ms 轮询,命令输出(含长跑任务)流式上屏,
 // 不再依赖按钮 tick。
 //
 // 014 积压报警:展示面(置顶横幅)已按用户裁定撤下;采样/计数仍在
 // back 契约面(api.at term_backlog_*)保留,供诊断消费。
+//
+// PLAN-017 T-02 实证裁定：api 调用统一**限定名**形态（`use back.api`
+// 模块导入 + `api.X()` 调用）——裸名导入在 merged VM/桌面动态编译下进
+// PLAN-053 no-op 桩（vm/codegen.rs 拦截仅匹配裸名），限定名直落本地
+// 字节码是唯一进程内可达形态；rust/vue 两发射器的限定名支持 =
+// auto-lang PLAN-627（模块形态契约枚举 + qualified head 裸名同发射）。
 
-use back.api: get_lines, term_pump_input, term_apply_resize, term_cols, term_rows, term_cursor_row, term_cursor_col
+use back.api
 
 widget App {
     msg { Init, Tick, KeyIn }
@@ -37,23 +43,23 @@ widget App {
 
     on {
         .Init -> {
-            .lines = get_lines()
-            .crow = term_cursor_row()
-            .ccol = term_cursor_col()
+            .lines = api.get_lines()
+            .crow = api.term_cursor_row()
+            .ccol = api.term_cursor_col()
         }
         .Tick -> {
-            term_apply_resize()
-            .cols = term_cols()
-            .rows = term_rows()
-            .lines = get_lines()
-            .crow = term_cursor_row()
-            .ccol = term_cursor_col()
+            api.term_apply_resize()
+            .cols = api.term_cols()
+            .rows = api.term_rows()
+            .lines = api.get_lines()
+            .crow = api.term_cursor_row()
+            .ccol = api.term_cursor_col()
         }
         .KeyIn -> {
-            term_pump_input()
-            .lines = get_lines()
-            .crow = term_cursor_row()
-            .ccol = term_cursor_col()
+            api.term_pump_input()
+            .lines = api.get_lines()
+            .crow = api.term_cursor_row()
+            .ccol = api.term_cursor_col()
         }
     }
 
