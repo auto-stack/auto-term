@@ -1,12 +1,12 @@
 ---
 plan_id: PLAN-016
-status: executing
+status: reviewed
 feature_name: VM 轨 AutoTerm 五项 UI 修复——FFI 语义色编码红底根因 + 视觉收口(补记)
 author: [zcode-session]
 created_at: 2026-09-14T06:03:01Z
-updated_at: 2026-09-14T06:40:00Z
+updated_at: 2026-09-14T07:20:00Z
 plan_revision: 2
-current_step: 6
+current_step: 7
 total_steps: 7
 supersedes_spec_components: []
 new_spec_components: [docs/specs/engine-ffi-color-encoding.md]
@@ -270,6 +270,35 @@ touched_goals: []
   - next: **work**(T-07 + 两仓提交),完成后 re-review。
   - plan_revision 1→2 事由:T-03 部分重开(AC-05 臂)+新增 T-07,
     任务契约变化;目标/验收阈值不变。
+- 2026-09-14 重审(stage: review | plan_id: PLAN-016 |
+  plan_revision: 2 | outcome: **pass**)。
+  - reviewed_commit: auto-term **09afd6e**(main)、auto-lang
+    **420d45543**(master)——F-01 解除:实现已全部落 commit;
+    两仓工作区仅余并行会话 FileManager 工作(auto-lang
+    vm/native.rs metadata modified 列,其自标"PLAN-016"系跨仓
+    编号撞号,非本计划范围,未扫入本计划提交)。
+  - base_commit: 首审基线 auto-term 1a7ac1ee(+dirty)/auto-lang
+    e0c404f5(+dirty);diff 范围与首审逐行核对一致,无计划外改动。
+  - dependency_revisions: autoterm_core.dll(F1 后重建,部署
+    auto-lang/target/debug)、auto.exe(F7+T-07 同色容器后重建)。
+  - spec_inputs: SD-01/SD-02 维持首审结论(描述与已验证行为一致;
+    docs/specs/ 尚不存在,merge 时创建),delta 冻结于本文件 §5。
+  - acceptance_results(提交基线重跑):AC-01 pass / AC-02 pass /
+    AC-03 pass / AC-04 pass / **AC-05 pass**(F-02 解除:浅色带
+    根因=固定网格与客户区取整余量露 bg-background,已以 Fill 同色
+    容器消除;DPI 感知实测客户区 (9,14,26)/(0,0,0) 采样均为 0,
+    四边统一 (6,7,9);弧线机制金样逐点精确,standalone 呈现口径=
+    均匀底色到边+OS DWM 窗角圆,vwin=窗框 WIN_RADIUS——用户可见
+    目标达成) / AC-06 pass(autoterm-core lib 2/2、parity_color
+    1/1、terminal_pixel 3/3,均绑定提交后 SHA 重跑退出码 0)。
+  - findings: 无新发现;F-01/F-02 均闭合。
+  - evidence: docs/plans/evidence/016/vm-final-five-fixes.png、
+    docs/plans/evidence/016/vm-bandfix-fullwindow.png(真实物理
+    像素整窗);金样 4 张(auto-lang test/ui/terminal_pixel/,
+    T-07 后重建版);§6 三命令。
+  - next: **merge**(归档 + ledger 刷新 + specs SD-01/SD-02 入库)。
+  - 限制声明:复审仍在实现会话内进行,结论由提交后重跑的测试、
+    提交后抓图证据与 diff 核对重建。
 
 ## 10. 待澄清事项
 
