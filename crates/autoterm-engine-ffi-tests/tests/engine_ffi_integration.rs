@@ -331,3 +331,83 @@ fn spawn_ex_two_handles_isolated() {
         "B 的键入回显串进了 A 的网格——会话隔离破坏"
     );
 }
+
+// ============================================================================
+// PLAN-018 D9(rev2)配色方案面(set_palette / palette_color)用例
+// ============================================================================
+
+type SetPalette = unsafe extern "C" fn(*mut core::ffi::c_void, c_int) -> c_int;
+type PaletteColor = unsafe extern "C" fn(c_int, c_int, c_int) -> u32;
+
+/// classic-dark(0)与现行为逐字节一致:18 槽全查 = 冻结渲染常量
+/// (def fg e8e8e8 / def bg 060709 / xterm 标准 base16)。
+#[test]
+fn palette_classic_dark_matches_current_behavior() {
+    let dll = dll_path();
+    let lib = unsafe { Library::new(&dll).unwrap() };
+    unsafe {
+        let color: Symbol<'static, PaletteColor> = std::mem::transmute(
+            lib.get::<PaletteColor>(b"autoterm_engine_palette_color\0").unwrap(),
+        );
+        let expect: [u32; 18] = [
+            0xE8E8E8, 0x060709, 0x000000, 0x800000, 0x008000, 0x808000, 0x000080, 0x800080,
+            0x008080, 0xC0C0C0, 0x808080, 0xFF0000, 0x00FF00, 0xFFFF00, 0x0000FF, 0xFF00FF,
+            0x00FFFF, 0xFFFFFF,
+        ];
+        for (slot, &want) in expect.iter().enumerate() {
+            assert_eq!((color)(0, slot as c_int, 1), want, "classic-dark slot {slot} 漂移");
+        }
+    }
+}
+
+/// light(1):def-bg 浅色、def-fg 深字(浅色桌面可用的核心断言)。
+#[test]
+fn palette_light_scheme_is_light() {
+    let dll = dll_path();
+    let lib = unsafe { Library::new(&dll).unwrap() };
+    unsafe {
+        let color: Symbol<'static, PaletteColor> = std::mem::transmute(
+            lib.get::<PaletteColor>(b"autoterm_engine_palette_color\0").unwrap(),
+        );
+        let bg = (color)(1, 1, 0);
+        let fg = (color)(1, 0, 1);
+        let lum = |c: u32| {
+            0.2126 * ((c >> 16) & 0xFF) as f32
+                + 0.7152 * ((c >> 8) & 0xFF) as f32
+                + 0.0722 * (c & 0xFF) as f32
+        };
+        assert!(lum(bg) > 200.0, "light def-bg 应浅色: {bg:06X}");
+        assert!(lum(fg) < 150.0, "light def-fg 应深字: {fg:06X}");
+        // 非法面:未知方案/槽位越界 → 哨兵 0xFFFFFFFF。
+        assert_eq!((color)(99, 1, 0), 0xFFFF_FFFF);
+        assert_eq!((color)(1, 18, 0), 0xFFFF_FFFF);
+    }
+}
+
+/// set_palette per-handle:合法柄成功、未知方案 -2、空句柄 -1;方案查询
+/// 为纯函数不随柄态漂移(classic-dark 仍是 classic-dark)。
+#[test]
+fn set_palette_per_handle_contract() {
+    let mut engine = Engine::load();
+    let dll = dll_path();
+    let lib = unsafe { Library::new(&dll).unwrap() };
+    unsafe {
+        let set: Symbol<'static, SetPalette> = std::mem::transmute(
+            lib.get::<SetPalette>(b"autoterm_engine_set_palette\0").unwrap(),
+        );
+        let color: Symbol<'static, PaletteColor> = std::mem::transmute(
+            lib.get::<PaletteColor>(b"autoterm_engine_palette_color\0").unwrap(),
+        );
+        assert_eq!((set)(engine.handle, 1), 0, "合法柄设 light 应成功");
+        assert_eq!((set)(engine.handle, 99), -2, "未知方案应 -2");
+        assert_eq!((set)(std::ptr::null_mut(), 1), -1, "空句柄应 -1");
+        // 纯函数查询不随 set_palette 漂移(单源只读)。
+        assert_eq!((color)(0, 1, 0), 0x060709, "scheme 0 查询不受柄态影响");
+        // 会话仍存活且可交互(设置未扰动会话)。
+        engine.write("echo palette_set_ok\r\n");
+        assert!(
+            wait_for_text(&mut engine, "palette_set_ok", Duration::from_secs(20)),
+            "set_palette 后会话失效"
+        );
+    }
+}

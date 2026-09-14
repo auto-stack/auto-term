@@ -2,10 +2,12 @@
 //!
 // SPDX-License-Identifier: Apache-2.0
 //! `term`:alacritty_terminal 封装(feed/pump/damage/scroll/快照);
-//! `pty`:PTY 会话(spawn/reader 线程/答案回写/resize/kill)。
+//! `pty`:PTY 会话(spawn/reader 线程/答案回写/resize/kill);
+//! `palette`:配色方案表引擎单源(PLAN-018 D9,classic-dark/light)。
 //! 由 PLAN-001 spikes/term-probe 升格而来(spikes/ 保留归档)。
 
 pub mod ffi;
+pub mod palette;
 pub mod pty;
 pub mod ring;
 pub mod term;

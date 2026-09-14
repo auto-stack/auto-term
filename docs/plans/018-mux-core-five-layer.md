@@ -6,7 +6,7 @@ author: [zcode-session]
 created_at: 2026-09-14T08:40:00Z
 updated_at: 2026-09-14T09:45:00Z
 plan_revision: 2
-current_step: 1
+current_step: 3
 total_steps: 11
 supersedes_spec_components: []
 new_spec_components:
@@ -351,8 +351,17 @@ term.rs,不允许并行 work(先后串行,以先 merge 者为基)。
   步数对账。前置 T-06。关联 AC-09。
 - **T-08 双仓锚定与复审准备**:auto-lang 侧提交 SHA、auto-term 侧提交
   SHA 回填 §9;工作收尾状态置 execution_done。前置 T-07。关联全部。
-- **T-09 [rev2] D9 引擎 scheme 表+双符号**(autoterm-core palette.rs
+- **T-09 [x] [rev2] D9 引擎 scheme 表+双符号**(autoterm-core palette.rs
   + ffi.rs + ffi 测试)。前置 T-01(引擎面扩建机制同行)。关联 AC-10。
+  [✅ 已完成] palette.rs 新建(scheme 单源:classic-dark=0 与 016 行为
+  逐字节同值/light=1 取 Windows Terminal Solarized Light 官方盘;
+  SCHEME_COUNT=2 扩展位预留)+ ffi 双符号 `set_palette`(per-handle,
+  0/-1/-2 三态)/`palette_color`(纯函数无柄,slot 0=def-fg 1=def-bg
+  2..=17=base16,非法→0xFFFFFFFF 哨兵),face 17→19;kind_color 编码
+  零改。验:`cargo test -p autoterm-core --lib` 5/5(含 palette 三单测)
+  + ffi 集成 7/7(classic-dark 18 槽逐值/light 浅底深字亮度断言/
+  set_palette 三态契约+会话存活)+ parity 套件 5/5 绿 6.17s(016 色契约
+  同验)。commit:见 git log 018 T-09。
 - **T-10 [rev2] D10 widget scheme 解析+prop+主题跟随**(auto-lang
   widget/shim/stdlib + vm/iced convert 接线;016 金样回归 + 双端截图)。
   前置 T-09。关联 AC-11。

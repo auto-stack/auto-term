@@ -18,6 +18,7 @@ use std::ffi::CStr;
 use std::os::raw::c_char;
 use std::path::PathBuf;
 
+use crate::palette::{self, SCHEME_COUNT};
 use crate::term::{Color as TermColor, StyledChar};
 use crate::PtySession;
 
@@ -26,6 +27,9 @@ pub struct AutotermEngine {
     inner: PtySession,
     /// 最近一次快照(行文本 + 行样式),`take_dirty_rows` 刷新。
     snapshot: Vec<Vec<StyledChar>>,
+    /// PLAN-018 D9:本会话配色方案 id(所有权铁律:scheme 属会话模型,
+    /// per-handle 存储与校验;渲染端经 `palette_color` 纯查询取表)。
+    palette: i32,
 }
 
 #[inline]
@@ -69,7 +73,7 @@ pub extern "C" fn autoterm_engine_spawn(
         }
     };
     match PtySession::spawn(&prog, Vec::<String>::new(), cols, rows) {
-        Ok(session) => Box::into_raw(Box::new(AutotermEngine { inner: session, snapshot: Vec::new() })),
+        Ok(session) => Box::into_raw(Box::new(AutotermEngine { inner: session, snapshot: Vec::new(), palette: 0 })),
         Err(_) => std::ptr::null_mut(),
     }
 }
@@ -122,7 +126,7 @@ pub extern "C" fn autoterm_engine_spawn_ex(
     }
     let cwd_path = read_c_string(cwd).filter(|s| !s.is_empty()).map(PathBuf::from);
     match PtySession::spawn_in(&prog, args, cwd_path.as_deref(), cols, rows) {
-        Ok(session) => Box::into_raw(Box::new(AutotermEngine { inner: session, snapshot: Vec::new() })),
+        Ok(session) => Box::into_raw(Box::new(AutotermEngine { inner: session, snapshot: Vec::new(), palette: 0 })),
         Err(_) => std::ptr::null_mut(),
     }
 }
@@ -323,6 +327,30 @@ pub extern "C" fn autoterm_engine_kill(h: *mut AutotermEngine) {
 }
 
 /// 释放会话(free 后句柄失效,不得再用)。
+/// PLAN-018 D9(rev2)配色方案面(face 17→19):设置本会话配色方案
+/// (per-handle,所有权铁律)。0 = 成功;-1 = 空句柄;-2 = 未知方案 id。
+#[unsafe(no_mangle)]
+pub extern "C" fn autoterm_engine_set_palette(h: *mut AutotermEngine, scheme_id: i32) -> i32 {
+    let Some(engine) = ptr_or_null(h) else { return -1 };
+    if palette::palette(scheme_id).is_none() {
+        return -2;
+    }
+    engine.palette = scheme_id;
+    0
+}
+
+/// 方案槽位取色(纯函数,无柄;scheme 表引擎单源见 palette.rs)。
+/// slot:0=def-fg、1=def-bg、2..=17=base16;is_fg 预留轴(0/1)。
+/// 返回 0xRRGGBB;非法方案/槽位/轴 → 0xFFFF_FFFF 哨兵(RGB 最高位必 0,
+/// 与合法值无歧义;宿主装载缓存时以此判定方案枚举终点)。
+#[unsafe(no_mangle)]
+pub extern "C" fn autoterm_engine_palette_color(scheme_id: i32, slot: i32, is_fg: i32) -> u32 {
+    match palette::palette_color(scheme_id, slot, is_fg) {
+        Some(rgb) => rgb,
+        None => 0xFFFF_FFFF,
+    }
+}
+
 #[unsafe(no_mangle)]
 pub extern "C" fn autoterm_engine_free(h: *mut AutotermEngine) {
     if h.is_null() {
