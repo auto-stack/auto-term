@@ -2,7 +2,7 @@
 
 ```yaml
 plan_id: PLAN-017
-status: execution_done
+status: reviewed
 feature_name: app 入口统一（at-app → app/，桌面壳退役）
 author: [agent]
 created_at: 2026-09-14T07:07:16Z
@@ -362,6 +362,31 @@ auto-os（README/清单核对面，预期零或注释级）。预算/自动续�
   auto-term：快照 81×25/25 行 + 截图四点采样 RGB(6,7,9) 零红 +
   整窗形态 + 光标块，AC-01/02/03 三面齐 · blockers: 无 ·
   next: **review**（F-R3 结案复核；用户已授权修完即复审）。
+
+- 2026-09-14 stage:review（R3 终态复审，F-R3 结案复核）·
+  plan_id: PLAN-017 · plan_revision: 2 · outcome: **pass** ·
+  reviewed_commit: 4346580 · base_commit: 4b5d2a4d ·
+  dependency_revisions: auto-lang master 853ad131c（627 ∈ master，
+  R2 pass）；AC-5 复现用 CLI g853ad131c · spec_inputs: SD-01 add
+  docs/specs/app-unified-entry.md（delta 表在案，merge 期首建）·
+  独立性声明：work 修复与终态复审同会话，verdict 全部从工件重建
+  （归档截图独立网格重采样/对拍复跑/文件事实复核），未采信 work
+  记录 · acceptance_results（终态）: AC-01 **pass**（T-04 契约证据
+  R2 版刷新：整窗形态机器实证；点击直键入交互面=用户自有验收项
+  （F-R4 info 在案；用户实机使用观察（018 rev2 动因"恒黑底"）佐证
+  交互通路活着））｜ AC-02 **pass**（快照 81×25 ≠ 100×30 两轮一致）｜
+  AC-03 **pass**（F-R3 结案：归档 r2 截图独立全网格重采样
+  dark=755/red=**0**/other=519；parity_color_attestation 复跑绿
+  1.00s；DLL mtime 16:53 > 016 落地 14:42）｜ AC-04 **pass**（F-R1
+  解读维持）｜ AC-05 **pass**（前轮 post-627 基线复现 + 代码零变更
+  复用理由成立）｜ AC-06 **pass**（F-R2 minor 维持）· findings:
+  F-R4（info，AC-01 交互面用户自有项，非 work 欠账）、F-R1（info）、
+  F-R2（minor）、新增观察 OBS-R-DLL（部署面：桌面链 DLL 解析无缺省
+  命中臂，陈旧映像风险类——已记 §10#4，DEBTS/后续计划候选，不阻
+  本计划）· evidence: evidence/017/desktop-terminal-live-r2.png
+  （网格采样 dark=755/red=0）、parity 复跑、archived/016 根因对照 ·
+  next: **merge**（/auto-plan:merge 017：specs.json 六节入账 + SD-01
+  spec 文档首建 + 归档收据）。
 
 ## 10. 待澄清事项
 
