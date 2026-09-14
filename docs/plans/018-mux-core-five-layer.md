@@ -6,7 +6,7 @@ author: [zcode-session]
 created_at: 2026-09-14T08:40:00Z
 updated_at: 2026-09-14T09:45:00Z
 plan_revision: 2
-current_step: 3
+current_step: 5
 total_steps: 11
 supersedes_spec_components: []
 new_spec_components:
@@ -333,12 +333,22 @@ term.rs,不允许并行 work(先后串行,以先 merge 者为基)。
   autoterm-engine-ffi-tests --test engine_ffi_integration` 4/4 绿 2.62s
   (cwd 回显目录/argv echo/双柄隔离互不串/旧 spawn+resize+interrupt
   回归)+ autoterm-core --lib 2/2。commit:见 git log 018 T-01。
-- **T-02 D4 widget per-key 泵**(auto-lang;与 T-03 并行,同仓异文件
+- **T-02 [x] D4 widget per-key 泵**(auto-lang;与 T-03 并行,同仓异文件
   ——mod.rs vs term_engine.rs,注意 stdlib 声明面在 T-03)。前置
   T-00。关联 AC-04。
-- **T-03 D5 VM 轨 per-handle + spawn_ex shim + stdlib 声明**(auto-
+  [✅ 已完成] auto-lang 269f6c5c1:三定向出口 terminal_feed_cells_for
+  (缺 key no-op)/terminal_drain_inputs_for(FIFO 整段)/
+  terminal_take_resize_for;广播旧三件原样保留;定向单测 2 件;terminal
+  全量 28/28 绿(016 像素金样三件在列)。
+- **T-03 [x] D5 VM 轨 per-handle + spawn_ex shim + stdlib 声明**(auto-
   lang)。前置 T-00(依赖 T-01 的符号语义定稿,可并行起草)。关联
   AC-05。
+  [✅ 已完成] auto-lang 4c6fe9015:CURSORS/VIEWPORTS per-handle 表(shim
+  按柄弹参——顺带修正旧 cursor/viewport shim 不弹参的逐调用栈槽滞留,
+  597 §9 D1/D2 未撞);spawn_ex shim + 定向三件(ID 2983-2986,完整性
+  锁 3/3);Sideband All/Key 旁路定向;stdlib 双面同名变体;冒烟气
+  SPAWNEX_OK(argv 回显+缺 key no-op);执行期补 mod.rs `terminal_core
+  (key)` 只读取柄访问器(D4/D5 共用,属 D4 泵族)。
 - **T-04 D3 侧车 per-handle + spawn_ex 包装**(at-app term.rs)。前置
   T-01。关联 AC-03。
 - **T-05 D6+D7 MuxCore 模型 + db/api/front 接线**(mux.at 新建;db.at

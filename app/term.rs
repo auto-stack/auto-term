@@ -16,10 +16,39 @@ static LIB: OnceLock<Library> = OnceLock::new();
 static NEXT_HANDLE: std::sync::atomic::AtomicI64 = std::sync::atomic::AtomicI64::new(1);
 type SnapMap = std::collections::HashMap<i64, Vec<String>>;
 static SNAPSHOTS: std::sync::LazyLock<Mutex<SnapMap>> = std::sync::LazyLock::new(|| Mutex::new(SnapMap::new()));
-// 014:光标格与视口几何(feed 时随拍采样,spawn 时落初值;db 经
-// engine_cursor_*/engine_viewport_* 回读)。
-static CURSOR: Mutex<(i64, i64)> = Mutex::new((0, 0));
-static VIEWPORT: Mutex<(i64, i64)> = Mutex::new((0, 0));
+
+// PLAN-018 D3 per-handle 会话态(014 的进程级单例 CURSOR/VIEWPORT/
+// BACKLOG_STATE 全部入表——多 Pane 光标/几何/积压互不串线):
+struct SessionState {
+    /// DLL 侧原始指针(spawn 时登记,free 时移除)。
+    raw: i64,
+    /// 最近一次 feed 采样的光标格(可见时刷新;隐藏保持)。
+    cursor: (i64, i64),
+    /// 当前视口几何(spawn 落初值;apply_resize 泵随动)。
+    viewport: (i64, i64),
+    /// 014 积压迟滞态:(告警中, 上升沿待取次数)。
+    backlog: (bool, i64),
+}
+
+static HANDLES: OnceLock<Mutex<std::collections::HashMap<i64, SessionState>>> = OnceLock::new();
+
+fn handles() -> std::sync::MutexGuard<'static, std::collections::HashMap<i64, SessionState>> {
+    HANDLES.get_or_init(|| Mutex::new(std::collections::HashMap::new())).lock().unwrap()
+}
+
+fn ptr_of(handle: i64) -> *mut core::ffi::c_void {
+    handles().get(&handle).map(|s| s.raw).unwrap_or(0) as *mut core::ffi::c_void
+}
+
+/// 光标格读(per-handle;未注册句柄 = (0,0))。
+fn cursor_of(handle: i64) -> (i64, i64) {
+    handles().get(&handle).map(|s| s.cursor).unwrap_or((0, 0))
+}
+
+/// 视口读(per-handle)。
+fn viewport_of(handle: i64) -> (i64, i64) {
+    handles().get(&handle).map(|s| s.viewport).unwrap_or((0, 0))
+}
 
 // 014 追踪(AUTO_TERM_TRACE=1 开启):热路径计数,每 N 次限频输出。
 static TRACE: OnceLock<bool> = OnceLock::new();
@@ -37,23 +66,23 @@ static PUMP_KEYS: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::n
 // 下沿(512KB)解除。db/api 每拍采样,前端状态行横幅告知用户。
 const BACKLOG_WARN_BYTES: i32 = 2 * 1024 * 1024;
 const BACKLOG_CLEAR_BYTES: i32 = 512 * 1024;
-/// (告警中, 待取走的上升沿次数)。take 语义:engine_backlog_take_alerts 取走。
-static BACKLOG_STATE: Mutex<(bool, i64)> = Mutex::new((false, 0));
 
-/// 积压上升沿检测:越线计次并报警;回落到迟滞下沿解除告警态。
-fn check_backlog(pending_bytes: i32) {
-    let mut st = BACKLOG_STATE.lock().unwrap();
-    let (active, count) = *st;
+/// 积压上升沿检测(per-handle D3):越线计次并报警;回落到迟滞下沿
+/// 解除告警态。
+fn check_backlog(handle: i64, pending_bytes: i32) {
+    let mut handles = handles();
+    let Some(st) = handles.get_mut(&handle) else { return };
+    let (active, count) = st.backlog;
     if !active && pending_bytes >= BACKLOG_WARN_BYTES {
-        *st = (true, count + 1);
-        drop(st);
+        st.backlog = (true, count + 1);
+        drop(handles);
         eprintln!(
             "[term-backlog] ⚠ reader→drain 积压 {pending_bytes} 字节越过告警线 \
              {BACKLOG_WARN_BYTES}(第 {} 次)——产出侧洪峰或消费侧停摆",
             count + 1
         );
     } else if active && pending_bytes <= BACKLOG_CLEAR_BYTES {
-        *st = (false, count);
+        st.backlog = (false, count);
     }
 }
 
@@ -122,9 +151,62 @@ fn snapshots() -> std::sync::MutexGuard<'static, SnapMap> {
 
 
 /// spawn(缺省 shell = COMSPEC/cmd);返回句柄(0 = 失败)。
+/// PLAN-018 D3:会话态入 per-handle SessionState(光标/视口/积压)。
 pub fn engine_spawn(cols: i64, rows: i64) -> i64 {
-    *VIEWPORT.lock().unwrap() = (cols, rows);
-    *CURSOR.lock().unwrap() = (0, 0);
+    spawn_inner(
+        |lib| unsafe {
+            let spawn: libloading::Symbol<
+                unsafe extern "C" fn(c_int, c_int, *const c_char) -> *mut core::ffi::c_void,
+            > = lib.get(b"autoterm_engine_spawn\0").unwrap();
+            spawn(cols as c_int, rows as c_int, std::ptr::null())
+        },
+        (cols, rows),
+    )
+}
+
+/// PLAN-018 D3 SpawnSpec:engine_spawn_ex(program/argv/cwd/几何)——
+/// argv 逐项透传(空 = 无参);cwd 空 = 继承宿主。旧 engine_spawn 原样。
+pub fn engine_spawn_ex(program: &str, argv: Vec<String>, cwd: &str, cols: i64, rows: i64) -> i64 {
+    let c_prog = match CString::new(program) {
+        Ok(s) => s,
+        Err(_) => return 0,
+    };
+    let c_args: Vec<CString> = argv.iter().filter_map(|a| CString::new(a.as_str()).ok()).collect();
+    let c_argv: Vec<*const c_char> = c_args.iter().map(|a| a.as_ptr()).collect();
+    let c_cwd = if cwd.is_empty() { None } else { CString::new(cwd).ok() };
+    spawn_inner(
+        |lib| unsafe {
+            let spawn_ex: libloading::Symbol<
+                unsafe extern "C" fn(
+                    *const c_char,
+                    *const *const c_char,
+                    c_int,
+                    *const c_char,
+                    c_int,
+                    c_int,
+                ) -> *mut core::ffi::c_void,
+            > = match lib.get(b"autoterm_engine_spawn_ex\0") {
+                Ok(s) => s,
+                Err(_) => return std::ptr::null_mut(), // 旧 DLL = 契约内失败
+            };
+            spawn_ex(
+                c_prog.as_ptr(),
+                if c_argv.is_empty() { std::ptr::null() } else { c_argv.as_ptr() },
+                c_argv.len() as c_int,
+                c_cwd.as_ref().map(|c| c.as_ptr()).unwrap_or(std::ptr::null()),
+                cols as c_int,
+                rows as c_int,
+            )
+        },
+        (cols, rows),
+    )
+}
+
+/// spawn 共同尾:登记句柄表(SessionState)+ 内存哨兵挂钩(幂等)。
+fn spawn_inner<F>(spawn_call: F, geom: (i64, i64)) -> i64
+where
+    F: FnOnce(&'static Library) -> *mut core::ffi::c_void,
+{
     // 014 内存哨兵:注册冻结挂钩——超限时挂起 shell 子进程,掐断产出侧
     // (只丢消息拦不住非消息线程的增长)。幂等;未启哨兵阈值时无副作用。
     auto_lang::ui::mem_guard::set_freeze_hook(Box::new(move || {
@@ -132,31 +214,18 @@ pub fn engine_spawn(cols: i64, rows: i64) -> i64 {
             engine_suspend_child(h);
         }
     }));
-    unsafe {
-        let spawn: libloading::Symbol<
-            unsafe extern "C" fn(c_int, c_int, *const c_char) -> *mut core::ffi::c_void,
-        > = lib().get(b"autoterm_engine_spawn\0").unwrap();
-        let h = spawn(cols as c_int, rows as c_int, std::ptr::null());
-        if h.is_null() {
-            return 0;
-        }
-        let handle = NEXT_HANDLE.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
-        // SAFETY: 句柄由 spawn 签名约定持有,free 前有效;句柄↔指针映射由
-        // 各按句柄导出函数用不到——这里把指针直接编码进 handle 无法 round
-        // trip,故 glue 侧持有指针表。
-        handles().insert(handle, h as i64);
-        handle
+    let h = spawn_call(lib());
+    if h.is_null() {
+        return 0;
     }
-}
-
-static HANDLES: OnceLock<Mutex<std::collections::HashMap<i64, i64>>> = OnceLock::new();
-
-fn handles() -> std::sync::MutexGuard<'static, std::collections::HashMap<i64, i64>> {
-    HANDLES.get_or_init(|| Mutex::new(std::collections::HashMap::new())).lock().unwrap()
-}
-
-fn ptr_of(handle: i64) -> *mut core::ffi::c_void {
-    handles().get(&handle).copied().unwrap_or(0) as *mut core::ffi::c_void
+    let handle = NEXT_HANDLE.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
+    // SAFETY: 句柄由 spawn 签名约定持有,free 前有效;原始指针无法
+    // round-trip 进 i64 句柄,故 glue 侧持 SessionState 表。
+    handles().insert(
+        handle,
+        SessionState { raw: h as i64, cursor: (0, 0), viewport: geom, backlog: (false, 0) },
+    );
+    handle
 }
 
 /// 宿主→子进程一行输入(补 \r\n)。
@@ -191,8 +260,22 @@ fn write_raw(h: *mut core::ffi::c_void, bytes: &[u8]) {
 /// 014 直键入泵:排空 terminal 组件键入队列(auto_lang::ui::terminal
 /// 注册表,与 iced 渲染同进程),逐键裸写引擎。返回泵送键数。队列空 /
 /// 句柄无效 = 0(no-op;vue back 进程无 widget,恒走此路径)。
+/// 旧件 = 广播排空(单端应用行为不变;兼容面)。
 pub fn engine_pump_input(handle: i64) -> i64 {
-    let keys = auto_lang::ui::terminal::terminal_drain_all_inputs();
+    pump_inner(handle, auto_lang::ui::terminal::terminal_drain_all_inputs())
+}
+
+/// PLAN-018 D3 定向泵:只排空 `key` terminal 的队列并裸写该柄——
+/// 多 Pane 键入互不串线(缺 key = 0,no-op)。
+pub fn engine_pump_input_for(handle: i64, key: &str) -> i64 {
+    let keys = match auto_lang::ui::terminal::terminal_core(key) {
+        Some(core) => auto_lang::ui::terminal::terminal_drain_inputs_for(core),
+        None => Vec::new(),
+    };
+    pump_inner(handle, keys)
+}
+
+fn pump_inner(handle: i64, keys: Vec<String>) -> i64 {
     let n = keys.len() as i64;
     if n == 0 {
         return 0;
@@ -215,13 +298,30 @@ pub fn engine_pump_input(handle: i64) -> i64 {
 // ── 014:几何随动 + 光标格(读注册表/glue 静态量,泵同款管线)────────
 
 /// 应用 widget 请求的待定几何:注册表 `terminal_take_any_resize()` →
-/// 引擎 resize → VIEWPORT 刷新。返回 1=已应用 0=无请求。
+/// 引擎 resize → 该柄视口刷新。返回 1=已应用 0=无请求。(旧件:任意端。)
 pub fn engine_apply_resize(handle: i64) -> i64 {
     let Some((cols, rows)) = auto_lang::ui::terminal::terminal_take_any_resize() else {
         return 0;
     };
+    apply_resize_inner(handle, cols, rows)
+}
+
+/// PLAN-018 D3 定向几何泵:只消费 `key` terminal 的待定请求。
+pub fn engine_apply_resize_for(handle: i64, key: &str) -> i64 {
+    let Some(core) = auto_lang::ui::terminal::terminal_core(key) else {
+        return 0;
+    };
+    let Some((cols, rows)) = auto_lang::ui::terminal::terminal_take_resize_for(core) else {
+        return 0;
+    };
+    apply_resize_inner(handle, cols, rows)
+}
+
+fn apply_resize_inner(handle: i64, cols: u16, rows: u16) -> i64 {
     engine_resize(handle, cols as i64, rows as i64);
-    *VIEWPORT.lock().unwrap() = (cols as i64, rows as i64);
+    if let Some(st) = handles().get_mut(&handle) {
+        st.viewport = (cols as i64, rows as i64);
+    }
     if trace_on() {
         let n = RESIZE_CALLS.fetch_add(1, Ordering::Relaxed) + 1;
         eprintln!("[term-trace] resize #{n}: {cols}x{rows}");
@@ -229,26 +329,45 @@ pub fn engine_apply_resize(handle: i64) -> i64 {
     1
 }
 
-pub fn engine_viewport_cols(_handle: i64) -> i64 {
-    VIEWPORT.lock().unwrap().0
+pub fn engine_viewport_cols(handle: i64) -> i64 {
+    viewport_of(handle).0
 }
 
-pub fn engine_viewport_rows(_handle: i64) -> i64 {
-    VIEWPORT.lock().unwrap().1
+pub fn engine_viewport_rows(handle: i64) -> i64 {
+    viewport_of(handle).1
 }
 
-pub fn engine_cursor_row(_handle: i64) -> i64 {
-    CURSOR.lock().unwrap().0
+pub fn engine_cursor_row(handle: i64) -> i64 {
+    cursor_of(handle).0
 }
 
-pub fn engine_cursor_col(_handle: i64) -> i64 {
-    CURSOR.lock().unwrap().1
+pub fn engine_cursor_col(handle: i64) -> i64 {
+    cursor_of(handle).1
 }
 
 /// 收割引擎输出并刷新 glue 侧快照(feed + 损伤行全量重采 + 光标采样 +
-/// 逐格样式旁路:row_style 解码 → terminal_feed_cells_all,ash 彩色
-/// 输出经此上屏)。
+/// 逐格样式旁路)。`target` 决定样式上屏目标:旧件广播全部注册 terminal
+/// (单端行为不变);PLAN-018 D3 `engine_rows_for` 按 key 定向。
 pub fn engine_feed_snapshot(handle: i64) {
+    feed_snapshot_inner(handle, FeedTarget::All);
+}
+
+/// PLAN-018 D3 定向变体:样式旁路只投喂 `key` 对应的 terminal(缺 key
+/// = 不上屏,快照文本面照常)。
+pub fn engine_rows_for(handle: i64, key: &str) -> Vec<String> {
+    feed_snapshot_inner(handle, FeedTarget::Key(key));
+    snapshots().get(&handle).cloned().unwrap_or_default()
+}
+
+/// 样式旁路上屏目标。
+enum FeedTarget<'k> {
+    /// 广播(旧 engine_rows/engine_feed_snapshot 兼容面)。
+    All,
+    /// 只投喂该 key(D3 定向)。
+    Key(&'k str),
+}
+
+fn feed_snapshot_inner(handle: i64, target: FeedTarget<'_>) {
     let h = ptr_of(handle);
     if h.is_null() {
         return;
@@ -263,13 +382,15 @@ pub fn engine_feed_snapshot(handle: i64) {
         > = lib().get(b"autoterm_engine_take_dirty_rows\0").unwrap();
         let mut rows = [0 as c_int; 64];
         take(h, rows.as_mut_ptr(), 64);
-        // 光标格随拍采样(可见时刷新;隐藏保持上次值)。
+        // 光标格随拍采样(per-handle D3;可见时刷新,隐藏保持)。
         let cursor: libloading::Symbol<
             unsafe extern "C" fn(*mut core::ffi::c_void, *mut c_int, *mut c_int) -> c_int,
         > = lib().get(b"autoterm_engine_cursor\0").unwrap();
         let (mut r, mut c) = (0 as c_int, 0 as c_int);
         if cursor(h, &mut r, &mut c) == 1 {
-            *CURSOR.lock().unwrap() = (r as i64, c as i64);
+            if let Some(st) = handles().get_mut(&handle) {
+                st.cursor = (r as i64, c as i64);
+            }
         }
         // Full(-1)或脏行集都全量重采(行数由 rows 文本直至 -1 决定;
         // 上限 256 行,resize 钳位 MAX_RESIZE_ROWS=200 在册)。逐行取
@@ -286,7 +407,7 @@ pub fn engine_feed_snapshot(handle: i64) {
         > = lib().get(b"autoterm_engine_pending_bytes\0").unwrap();
         let pending_bytes = pending(h);
         // 014 报警面:越线检测(feed 拍频即检测频率,无需另起线程)。
-        check_backlog(pending_bytes);
+        check_backlog(handle, pending_bytes);
         // 014 丢帧可见性:环逐出计数增长即留痕(丢帧不再是"无痕"事件)。
         check_overflow(engine_backlog_dropped(handle));
         let mut lines = Vec::new();
@@ -319,7 +440,16 @@ pub fn engine_feed_snapshot(handle: i64) {
                 });
             }
             if !cells.is_empty() {
-                auto_lang::ui::terminal::terminal_feed_cells_all(r as usize, cells);
+                match target {
+                    FeedTarget::All => {
+                        auto_lang::ui::terminal::terminal_feed_cells_all(r as usize, cells)
+                    }
+                    FeedTarget::Key(key) => auto_lang::ui::terminal::terminal_feed_cells_for(
+                        key,
+                        r as usize,
+                        cells,
+                    ),
+                }
             }
             lines.push(text);
         }
@@ -391,11 +521,12 @@ pub fn engine_backlog_paused(handle: i64) -> i64 {
     }
 }
 
-/// 取走自上次调用以来的积压报警次数(上升沿,take 语义)。
-pub fn engine_backlog_take_alerts(_handle: i64) -> i64 {
-    let mut st = BACKLOG_STATE.lock().unwrap();
-    let taken = st.1;
-    st.1 = 0;
+/// 取走自上次调用以来的积压报警次数(上升沿,take 语义;per-handle D3)。
+pub fn engine_backlog_take_alerts(handle: i64) -> i64 {
+    let mut handles = handles();
+    let Some(st) = handles.get_mut(&handle) else { return 0 };
+    let taken = st.backlog.1;
+    st.backlog.1 = 0;
     taken
 }
 
