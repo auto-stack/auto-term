@@ -266,8 +266,9 @@ pub fn engine_pump_input(handle: i64) -> i64 {
 }
 
 /// PLAN-018 D3 定向泵:只排空 `key` terminal 的队列并裸写该柄——
-/// 多 Pane 键入互不串线(缺 key = 0,no-op)。
-pub fn engine_pump_input_for(handle: i64, key: &str) -> i64 {
+/// 多 Pane 键入互不串线(缺 key = 0,no-op)。面名对齐 stdlib
+/// auto.term 的 engine_pump_for(VM shim 同名)。
+pub fn engine_pump_for(handle: i64, key: &str) -> i64 {
     let keys = match auto_lang::ui::terminal::terminal_core(key) {
         Some(core) => auto_lang::ui::terminal::terminal_drain_inputs_for(core),
         None => Vec::new(),

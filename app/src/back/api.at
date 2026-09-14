@@ -3,6 +3,9 @@
 // 全标量/[]str 面:rust merged(db 吸收委托)、vue split(a2r axum
 // handlers 调 db.rs)、VM/desktop merged(api fn 字节码直调 db)同源。
 // 实现体在 db.at(api.at 仅为契约 + VM 直跑的委托体)。
+// PLAN-018 D7:/api/mux/* 结构操作契约面(为 Phase 4 Control API 铺
+// 地基但**不是** Control API——无 socket/CLI/权限分级)。端点名与
+// db.at 实现同名(merged_db_delegate 同名吸收惯例)。
 
 use db
 
@@ -94,4 +97,73 @@ pub fn term_backlog_dropped() int {
 #[api(method = "GET", path = "/api/term/exited")]
 pub fn term_exited() bool {
     return db.term_exited()
+}
+
+// ── PLAN-018 D7:MuxCore 结构操作(/api/mux/*;Action 单入口的契约面)──
+
+/// 分屏:活动焦点 Pane 叶位替换为分支(axis 0=纵向 1=横向)。
+/// 返回新 Pane id(0 = 失败)。
+#[api(method = "POST", path = "/api/mux/split")]
+pub fn mux_split(axis int) int {
+    return db.mux_split(axis)
+}
+
+/// 关 Pane(兄弟收编父位)。1=已关 0=末 Pane 拒绝 -1=未找到。
+#[api(method = "POST", path = "/api/mux/close-pane")]
+pub fn mux_close_pane(pane_id int) int {
+    return db.mux_close_pane(pane_id)
+}
+
+/// 焦点切换。1=成功 -1=未找到。
+#[api(method = "POST", path = "/api/mux/focus")]
+pub fn mux_focus(pane_id int) int {
+    return db.mux_focus(pane_id)
+}
+
+/// 缩放开关。1=缩放中 0=取消 -1=未找到。
+#[api(method = "POST", path = "/api/mux/zoom")]
+pub fn mux_zoom(pane_id int) int {
+    return db.mux_zoom(pane_id)
+}
+
+/// 新 Tab(自动激活)。返回 tab id。
+#[api(method = "POST", path = "/api/mux/new-tab")]
+pub fn mux_new_tab() int {
+    return db.mux_new_tab()
+}
+
+/// 关 Tab。1=已关 0=末 Tab 拒绝 -1=未找到。
+#[api(method = "POST", path = "/api/mux/close-tab")]
+pub fn mux_close_tab(tab_id int) int {
+    return db.mux_close_tab(tab_id)
+}
+
+/// 激活 Tab。1=成功 -1=未找到。
+#[api(method = "POST", path = "/api/mux/activate-tab")]
+pub fn mux_activate_tab(tab_id int) int {
+    return db.mux_activate_tab(tab_id)
+}
+
+/// 结构快照(JSON 串;结构断言/观测面)。
+#[api(method = "GET", path = "/api/mux/snapshot")]
+pub fn mux_snapshot() str {
+    return db.mux_snapshot()
+}
+
+/// 焦点 Pane 视口宽(db 同步值)。
+#[api(method = "GET", path = "/api/mux/cols")]
+pub fn mux_cols() int {
+    return db.mux_cols()
+}
+
+/// 焦点 Pane 视口高(db 同步值)。
+#[api(method = "GET", path = "/api/mux/rows")]
+pub fn mux_rows() int {
+    return db.mux_rows()
+}
+
+/// 焦点 Pane 模型 key(pane-<id>;"" = 无)。
+#[api(method = "GET", path = "/api/mux/focus-key")]
+pub fn mux_focus_key() str {
+    return db.mux_focus_key()
 }

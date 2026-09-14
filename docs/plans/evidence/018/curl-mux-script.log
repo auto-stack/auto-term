@@ -1,0 +1,30 @@
+# PLAN-018 AC-06 curl 剧本(2026-09-15;axum back=rust-workspace/app-back,AUTO_HTTP_PORT=17401)
+## 0. tick 引导(mux_init:单 Workspace+Tab+Pane)
+["                                                                                                    ","                                                                                               
+## 1. 初始 snapshot(单 Pane)
+"{\"workspace\":{\"active_tab\":1},\"tabs\":[{\"id\":1,\"root\":1,\"active_pane\":1,\"zoomed_pane\":0}],\"nodes\":[{\"id\":1,\"tab\":1,\"axis\":0,\"ratio\":500,\"first\":0,\"second\":0,\"pane\":1}],\"panes\":[{\"id\":1,\"handle\":1,\"key\":\"pane-1\",\"tab\":1,\"exited\":false}],\"focus\":{\"pane\":1,\"handle\":1}}"
+## 2. split axis=0
+2
+## 3. split 后 snapshot(树 3 节点/2 Pane,focus 不变=1)
+"{\"workspace\":{\"active_tab\":1},\"tabs\":[{\"id\":1,\"root\":3,\"active_pane\":1,\"zoomed_pane\":0}],\"nodes\":[{\"id\":1,\"tab\":1,\"axis\":0,\"ratio\":500,\"first\":0,\"second\":0,\"pane\":1},{\"id\":2,\"tab\":1,\"axis\":0,\"ratio\":500,\"first\":0,\"second\":0,\"pane\":2},{\"id\":3,\"tab\":1,\"axis\":0,\"ratio\":500,\"first\":1,\"second\":2,\"pane\":0}],\"panes\":[{\"id\":1,\"handle\":1,\"key\":\"pane-1\",\"tab\":1,\"exited\":false},{\"id\":2,\"handle\":2,\"key\":\"pane-2\",\"tab\":1,\"exited\":false}],\"focus\":{\"pane\":1,\"handle\":1}}"
+## 4. focus 新 Pane=2
+1
+"pane-2"
+## 5. zoom 2 → 1(开),再 zoom 2 → 0(关)
+1
+0
+## 6. close pane 2(焦点回落兄弟=1)
+1
+"{\"workspace\":{\"active_tab\":1},\"tabs\":[{\"id\":1,\"root\":1,\"active_pane\":1,\"zoomed_pane\":0}],\"nodes\":[{\"id\":1,\"tab\":1,\"axis\":0,\"ratio\":500,\"first\":0,\"second\":0,\"pane\":1}],\"panes\":[{\"id\":1,\"handle\":1,\"key\":\"pane-1\",\"tab\":1,\"exited\":false}],\"focus\":{\"pane\":1,\"handle\":1}}"
+## 7. close 末 Pane 1(拒绝=0,结构不变)
+0
+"{\"workspace\":{\"active_tab\":1},\"tabs\":[{\"id\":1,\"root\":1,\"active_pane\":1,\"zoomed_pane\":0}],\"nodes\":[{\"id\":1,\"tab\":1,\"axis\":0,\"ratio\":500,\"first\":0,\"second\":0,\"pane\":1}],\"panes\":[{\"id\":1,\"handle\":1,\"key\":\"pane-1\",\"tab\":1,\"exited\":false}],\"focus\":{\"pane\":1,\"handle\":1}}"
+## 8. new-tab(=2)→ activate-tab 1 → close-tab 2(=1)→ close-tab 1(末 Tab 拒绝=0)
+2
+1
+1
+0
+## 9. cols/rows/focus-key 观测面
+100
+30
+"pane-1"

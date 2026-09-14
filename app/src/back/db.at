@@ -1,41 +1,709 @@
-// app src/back/db.at — TermApp 引擎驱动状态机(PLAN-013 T5;017 at-app→app 置换)
+// app src/back/db.at — TermApp 引擎驱动状态机 + MuxCore 五层模型
+// (PLAN-013 T5 起底;017 at-app→app 置换;PLAN-018 T-05 pane 化)
 //
 // 移植自 auto-term at/autoterm.at(冻结的 at-gen oracle);back crate
-// 用户逻辑唯一吸收面 = db.at(a2r 转译 db.rs / VM 直跑双形态)。
-// 引擎调用面 = use auto.term 裸调用(013 D1 裁定:a2r 下降 crate::term
-// ← sidecar 供给;VM 走 auto.term shims——同一 autoterm_core.dll)。
+// 用户逻辑唯一吸收面 = db.at(a2r 转译 db.rs / VM 直跑双形态)——因此
+// MuxCore(PLAN-018 D6)并入本文件而非独立 mux.at(a2r 吸收面硬编码
+// 单文件,auto-man rust_ui.rs merged_db_impl;执行期调整记计划 §9)。
+// 结构操作 Action 单入口 = 下方 mux_* 函数族;引擎句柄生命周期 owner =
+// pane 表(所有权铁律:任何 UI 组件不拥有 PTY/进程)。
+//
+// 模型形态(§10.2 执行期裁定):Auto 侧 rec/Map 无在库先例 → 平行
+// List 表 + 线性查找;树 = 平面节点表(二叉;first/second 存 id,0=无;
+// ratio_permille 千分比 0-1000,默认 500)。List 无中间删除原语 →
+// 删除走重建法(list_remove_* 助手)。
+//
+// V1 语义(§2.1):①关末 Pane/末 Tab = 拒绝 no-op;②焦点切换新焦点
+// Pane 几何随动;③隐藏 Pane 每拍 drain-only;④恒单 Workspace(id=1)。
+// pane.key = "pane-<id>"(模型身份);V1 视口槽 key = "auto-term"
+// (单一可见 terminal 组件;快照旁路/键入泵/几何请求都经它定向)。
+//
+// 引擎调用面 = use auto.term(013 D1:a2r 下降 crate::term ← sidecar
+// 供给;VM 走 auto.term shims——同一 autoterm_core.dll)。
 //
 // 应用面约束(T1 实测注记):
 //   - engine_rows 的 List 返回必须落显式类型 var(否则 .len() 得 None);
 //   - 裸调用不得内联于 if 条件位(597 §9 挂起缺陷)——先赋值再比较。
 
-use auto.term: engine_spawn, engine_write_line, engine_rows, engine_resize, engine_interrupt, engine_is_exited, engine_free, engine_pump_input, engine_apply_resize, engine_viewport_cols, engine_viewport_rows, engine_cursor_row, engine_cursor_col, engine_backlog_pending_mb, engine_backlog_paused, engine_backlog_take_alerts, engine_backlog_dropped
+use auto.term: engine_spawn_ex, engine_free, engine_write_line, engine_rows_for, engine_pump_for, engine_apply_resize_for, engine_viewport_cols, engine_viewport_rows, engine_cursor_row, engine_cursor_col, engine_backlog_pending_mb, engine_backlog_paused, engine_backlog_take_alerts, engine_backlog_dropped, engine_interrupt, engine_is_exited
 
-var handle int = 0
+// ══════════════════════════════════════════════════════════════════
+// MuxCore 模型表(PLAN-018 D6;Workspace/Tab/LayoutTree/Pane)
+// ══════════════════════════════════════════════════════════════════
+
+// ── Pane 表(id 平行列;id 从 1 起)────────────────────────────────
+var pane_ids List<int> = []
+var pane_handles List<int> = []
+var pane_keys List<str> = []
+var pane_tab_ids List<int> = []
+var pane_programs List<str> = []
+var pane_cwds List<str> = []
+var pane_cols List<int> = []
+var pane_rows List<int> = []
+var pane_exited List<bool> = []
+
+// ── Tab 表(zoomed_pane 0 = 无缩放;root_node 0 = 空)───────────────
+var tab_ids List<int> = []
+var tab_root_node List<int> = []
+var tab_active_pane List<int> = []
+var tab_zoomed_pane List<int> = []
+
+// ── LayoutTree 平面节点表(axis 0=纵向 1=横向;叶:pane≠0/枝:0)──
+var node_ids List<int> = []
+var node_tab_ids List<int> = []
+var node_axis List<int> = []
+var node_ratio List<int> = []
+var node_first List<int> = []
+var node_second List<int> = []
+var node_pane List<int> = []
+
+// ── Workspace(V1 恒单例 id=1;0 = 未初始化)────────────────────────
+var ws_active_tab int = 0
+var next_pane_id int = 1
+var next_tab_id int = 1
+var next_node_id int = 1
+
+// ── db 门面标量(几何/退出态/积压,014 面)─────────────────────────
 var cols int = 100
 var rows int = 30
 var exited bool = false
-// 014 积压报警:tick 采样快照(take 计数累积进 total)。
+/// 首调判定(banner 短轮询只挂 boot 拍)。
+var booted bool = false
 var bl_alerts_total int = 0
 var bl_pending_mb int = 0
 var bl_paused int = 0
 var bl_dropped int = 0
 
-/// 每拍驱动:首调按存档几何 spawn(100×30);收割引擎输出并回传
-/// 视口行快照。零参(async init 引导惯例:extract_init_api_func 只认
-/// list_/get_ 前缀零参 fn);几何固定 013 不做动态 resize。
-pub fn get_lines() []str {
-    var first bool = false
-    if handle == 0 {
-        handle = engine_spawn(cols, rows)
-        first = true
+// ══════════════════════════════════════════════════════════════════
+// 模型内部助手(线性查找/重建删除;V1 规模 = 个位数量级)
+// ══════════════════════════════════════════════════════════════════
+
+fn list_remove_int(xs List<int>, idx int) List<int> {
+    var out List<int> = []
+    var i int = 0
+    var n int = xs.len()
+    loop {
+        if i >= n {
+            break
+        }
+        if i != idx {
+            out.push(xs.get(i))
+        }
+        i = i + 1
     }
-    var snapshot List<str> = engine_rows(handle)
+    return out
+}
+
+fn list_remove_str(xs List<str>, idx int) List<str> {
+    var out List<str> = []
+    var i int = 0
+    var n int = xs.len()
+    loop {
+        if i >= n {
+            break
+        }
+        if i != idx {
+            out.push(xs.get(i))
+        }
+        i = i + 1
+    }
+    return out
+}
+
+fn list_remove_bool(xs List<bool>, idx int) List<bool> {
+    var out List<bool> = []
+    var i int = 0
+    var n int = xs.len()
+    loop {
+        if i >= n {
+            break
+        }
+        if i != idx {
+            out.push(xs.get(i))
+        }
+        i = i + 1
+    }
+    return out
+}
+
+fn pane_index(pane_id int) int {
+    var i int = 0
+    var n int = pane_ids.len()
+    var hit int = -1
+    loop {
+        if i >= n {
+            break
+        }
+        if pane_ids.get(i) == pane_id {
+            hit = i
+        }
+        i = i + 1
+    }
+    return hit
+}
+
+fn node_index(node_id int) int {
+    var i int = 0
+    var n int = node_ids.len()
+    var hit int = -1
+    loop {
+        if i >= n {
+            break
+        }
+        if node_ids.get(i) == node_id {
+            hit = i
+        }
+        i = i + 1
+    }
+    return hit
+}
+
+fn tab_index(tab_id int) int {
+    var i int = 0
+    var n int = tab_ids.len()
+    var hit int = -1
+    loop {
+        if i >= n {
+            break
+        }
+        if tab_ids.get(i) == tab_id {
+            hit = i
+        }
+        i = i + 1
+    }
+    return hit
+}
+
+/// 活动下标(未初始化 = -1)。
+fn active_tab_index() int {
+    if ws_active_tab == 0 {
+        return -1
+    }
+    return tab_index(ws_active_tab)
+}
+
+/// 找 pane 所在叶节点 id(0 = 无)。
+fn leaf_node_of_pane(pane_id int) int {
+    var i int = 0
+    var n int = node_ids.len()
+    var hit int = 0
+    loop {
+        if i >= n {
+            break
+        }
+        if node_pane.get(i) == pane_id {
+            hit = node_ids.get(i)
+        }
+        i = i + 1
+    }
+    return hit
+}
+
+/// 子树内最左叶的 pane id(close 后焦点回落用;0 = 空)。
+fn leftmost_pane(node_id int) int {
+    var ni int = node_index(node_id)
+    if ni < 0 {
+        return 0
+    }
+    var pane int = node_pane.get(ni)
+    if pane != 0 {
+        return pane
+    }
+    var left int = leftmost_pane(node_first.get(ni))
+    if left != 0 {
+        return left
+    }
+    return leftmost_pane(node_second.get(ni))
+}
+
+/// 把树中 old_child 的挂点改挂 new_child(父分支槽或 tab 根)。
+fn replace_child(tab_id int, old_child int, new_child int) int {
+    var ti int = tab_index(tab_id)
+    if ti >= 0 {
+        if tab_root_node.get(ti) == old_child {
+            tab_root_node.set(ti, new_child)
+            return 1
+        }
+    }
+    var i int = 0
+    var n int = node_ids.len()
+    loop {
+        if i >= n {
+            break
+        }
+        if node_first.get(i) == old_child {
+            node_first.set(i, new_child)
+        }
+        if node_second.get(i) == old_child {
+            node_second.set(i, new_child)
+        }
+        i = i + 1
+    }
+    return 1
+}
+
+/// 摘除节点(按 id 重建全部节点表)。
+fn drop_node(node_id int) int {
+    var ni int = node_index(node_id)
+    if ni < 0 {
+        return 0
+    }
+    node_ids = list_remove_int(node_ids, ni)
+    node_tab_ids = list_remove_int(node_tab_ids, ni)
+    node_axis = list_remove_int(node_axis, ni)
+    node_ratio = list_remove_int(node_ratio, ni)
+    node_first = list_remove_int(node_first, ni)
+    node_second = list_remove_int(node_second, ni)
+    node_pane = list_remove_int(node_pane, ni)
+    return 1
+}
+
+/// 摘除 Pane(按下标重建全部 pane 表;句柄释放由调用方先行)。
+fn remove_pane_at(pi int) int {
+    pane_ids = list_remove_int(pane_ids, pi)
+    pane_handles = list_remove_int(pane_handles, pi)
+    pane_keys = list_remove_str(pane_keys, pi)
+    pane_tab_ids = list_remove_int(pane_tab_ids, pi)
+    pane_programs = list_remove_str(pane_programs, pi)
+    pane_cwds = list_remove_str(pane_cwds, pi)
+    pane_cols = list_remove_int(pane_cols, pi)
+    pane_rows = list_remove_int(pane_rows, pi)
+    pane_exited = list_remove_bool(pane_exited, pi)
+    return 1
+}
+
+// ══════════════════════════════════════════════════════════════════
+// MuxCore Action 函数族(唯一变异入口;PLAN-018 D6)
+// ══════════════════════════════════════════════════════════════════
+
+/// 活动焦点 Pane id(0 = 无)。
+fn mux_focus_pane_id() int {
+    var ti int = active_tab_index()
+    if ti < 0 {
+        return 0
+    }
+    return tab_active_pane.get(ti)
+}
+
+/// 焦点 Pane 的引擎柄(0 = 无/未初始化)。
+fn mux_focus_handle() int {
+    var pid int = mux_focus_pane_id()
+    if pid == 0 {
+        return 0
+    }
+    var pi int = pane_index(pid)
+    if pi < 0 {
+        return 0
+    }
+    return pane_handles.get(pi)
+}
+
+/// 焦点 Pane 的模型 key(pane-<id>;"" = 无)。
+fn mux_focus_key_inner() str {
+    var pid int = mux_focus_pane_id()
+    if pid == 0 {
+        return ""
+    }
+    var pi int = pane_index(pid)
+    if pi < 0 {
+        return ""
+    }
+    return pane_keys.get(pi)
+}
+
+/// 隐藏 Pane 的引擎柄表(tick 的 drain-only 收割对象)。
+fn mux_hidden_handles() List<int> {
+    var out List<int> = []
+    var focus int = mux_focus_handle()
+    var i int = 0
+    var n int = pane_handles.len()
+    loop {
+        if i >= n {
+            break
+        }
+        var h int = pane_handles.get(i)
+        if h != focus {
+            out.push(h)
+        }
+        i = i + 1
+    }
+    return out
+}
+
+/// 建新 Pane(引擎 spawn_ex + 表落账)→ 返回其叶节点 id(0 = 失败)。
+fn spawn_pane_into_tab(tab_id int, axis int) int {
+    var pid int = next_pane_id
+    next_pane_id = next_pane_id + 1
+    var key str = "pane-" + pid.str()
+    var h int = engine_spawn_ex("", [], "", 100, 30)
+    if h == 0 {
+        return 0
+    }
+    pane_ids.push(pid)
+    pane_handles.push(h)
+    pane_keys.push(key)
+    pane_tab_ids.push(tab_id)
+    pane_programs.push("")
+    pane_cwds.push("")
+    pane_cols.push(100)
+    pane_rows.push(30)
+    pane_exited.push(false)
+
+    var leaf int = next_node_id
+    next_node_id = next_node_id + 1
+    node_ids.push(leaf)
+    node_tab_ids.push(tab_id)
+    node_axis.push(axis)
+    node_ratio.push(500)
+    node_first.push(0)
+    node_second.push(0)
+    node_pane.push(pid)
+    return leaf
+}
+
+/// V1 单 Workspace + 初始 Tab + 初始 Pane(缺省 shell,继承宿主 cwd;
+/// 100×30 存档几何)。已初始化 = no-op(0)。
+pub fn mux_init() int {
+    if ws_active_tab != 0 {
+        return 0
+    }
+    var tab int = mux_new_tab()
+    ws_active_tab = tab
+    return tab
+}
+
+/// 分屏:活动焦点 Pane 的叶位替换为分支(原叶 first、新 Pane second;
+/// axis 0=纵向 1=横向;比例 500‰)。返回新 Pane id(0 = 失败)。
+pub fn mux_split(axis int) int {
+    var ti int = active_tab_index()
+    if ti < 0 {
+        return 0
+    }
+    var tab_id int = tab_ids.get(ti)
+    var focus int = tab_active_pane.get(ti)
+    var old_leaf int = leaf_node_of_pane(focus)
+    if old_leaf == 0 {
+        return 0
+    }
+    var new_leaf int = spawn_pane_into_tab(tab_id, axis)
+    if new_leaf == 0 {
+        return 0
+    }
+    var branch int = next_node_id
+    next_node_id = next_node_id + 1
+    node_ids.push(branch)
+    node_tab_ids.push(tab_id)
+    node_axis.push(axis)
+    node_ratio.push(500)
+    node_first.push(old_leaf)
+    node_second.push(new_leaf)
+    node_pane.push(0)
+
+    replace_child(tab_id, old_leaf, branch)
+    var ni int = node_index(new_leaf)
+    return node_pane.get(ni)
+}
+
+/// 关 Pane:兄弟收编父位(wezterm remove_pane/kitty collapse 同语义);
+/// 被关者引擎柄 free(所有权铁律);关的是焦点 → 焦点落兄弟子树最左叶。
+/// 1 = 已关;0 = 末 Pane 拒绝;-1 = 未找到。
+pub fn mux_close_pane(pane_id int) int {
+    var ti int = active_tab_index()
+    if ti < 0 {
+        return -1
+    }
+    var pi int = pane_index(pane_id)
+    if pi < 0 {
+        return -1
+    }
+    var tab_id int = pane_tab_ids.get(pi)
+    var leaf int = leaf_node_of_pane(pane_id)
+    if leaf == 0 {
+        return -1
+    }
+    var ti2 int = tab_index(tab_id)
+    if tab_root_node.get(ti2) == leaf {
+        return 0
+    }
+
+    var parent int = 0
+    var sibling int = 0
+    var i int = 0
+    var n int = node_ids.len()
+    loop {
+        if i >= n {
+            break
+        }
+        if node_first.get(i) == leaf {
+            parent = node_ids.get(i)
+            sibling = node_second.get(i)
+        }
+        if node_second.get(i) == leaf {
+            parent = node_ids.get(i)
+            sibling = node_first.get(i)
+        }
+        i = i + 1
+    }
+    if parent == 0 {
+        return 0
+    }
+
+    replace_child(tab_id, parent, sibling)
+    drop_node(parent)
+    drop_node(leaf)
+    var h int = pane_handles.get(pi)
+    engine_free(h)
+    remove_pane_at(pi)
+
+    if tab_active_pane.get(ti2) == pane_id {
+        var next_focus int = leftmost_pane(sibling)
+        if next_focus != 0 {
+            tab_active_pane.set(ti2, next_focus)
+        }
+    }
+    return 1
+}
+
+/// 焦点切换(1 = 成功;-1 = 未找到)。
+pub fn mux_focus(pane_id int) int {
+    var pi int = pane_index(pane_id)
+    if pi < 0 {
+        return -1
+    }
+    var tab_id int = pane_tab_ids.get(pi)
+    var ti int = tab_index(tab_id)
+    if ti < 0 {
+        return -1
+    }
+    tab_active_pane.set(ti, pane_id)
+    return 1
+}
+
+/// 缩放开关(活动 Tab;zoomed_pane 0=无)。返回缩放中 1 / 取消 0。
+pub fn mux_zoom(pane_id int) int {
+    var ti int = active_tab_index()
+    if ti < 0 {
+        return -1
+    }
+    var cur int = tab_zoomed_pane.get(ti)
+    if cur == pane_id {
+        tab_zoomed_pane.set(ti, 0)
+        return 0
+    }
+    tab_zoomed_pane.set(ti, pane_id)
+    return 1
+}
+
+/// 调比例:pane 所在叶的父分支 ratio_permille(0-1000 钳位)。
+/// 返回新比例(负 = 未找到/无父分支)。
+pub fn mux_resize_pane(pane_id int, ratio int) int {
+    var leaf int = leaf_node_of_pane(pane_id)
+    if leaf == 0 {
+        return -1
+    }
+    var i int = 0
+    var n int = node_ids.len()
+    var hit int = -1
+    loop {
+        if i >= n {
+            break
+        }
+        if node_first.get(i) == leaf {
+            hit = i
+        }
+        if node_second.get(i) == leaf {
+            hit = i
+        }
+        i = i + 1
+    }
+    if hit < 0 {
+        return -1
+    }
+    var clamped int = ratio
+    if clamped < 0 {
+        clamped = 0
+    }
+    if clamped > 1000 {
+        clamped = 1000
+    }
+    node_ratio.set(hit, clamped)
+    return clamped
+}
+
+/// 新 Tab(单 Pane;自动激活)。返回 tab id(0 = spawn 失败)。
+pub fn mux_new_tab() int {
+    var tab int = next_tab_id
+    next_tab_id = next_tab_id + 1
+    var leaf int = spawn_pane_into_tab(tab, 0)
+    if leaf == 0 {
+        return 0
+    }
+    tab_ids.push(tab)
+    tab_root_node.push(leaf)
+    var ni int = node_index(leaf)
+    tab_active_pane.push(node_pane.get(ni))
+    tab_zoomed_pane.push(0)
+    ws_active_tab = tab
+    return tab
+}
+
+/// 关 Tab:该 tab 全部 Pane 引擎柄 free、pane/节点/表行全量摘除。
+/// 1 = 已关;0 = 末 Tab 拒绝;-1 = 未找到。
+pub fn mux_close_tab(tab_id int) int {
+    var ti int = tab_index(tab_id)
+    if ti < 0 {
+        return -1
+    }
+    if tab_ids.len() == 1 {
+        return 0
+    }
+    // 释放并摘除该 tab 的全部 Pane(倒序扫描,重建法对下标安全)。
+    var i int = pane_ids.len() - 1
+    loop {
+        if i < 0 {
+            break
+        }
+        if pane_tab_ids.get(i) == tab_id {
+            var h int = pane_handles.get(i)
+            engine_free(h)
+            remove_pane_at(i)
+        }
+        i = i - 1
+    }
+    // 摘除该 tab 的全部节点(倒序同款)。
+    i = node_ids.len() - 1
+    loop {
+        if i < 0 {
+            break
+        }
+        if node_tab_ids.get(i) == tab_id {
+            node_ids = list_remove_int(node_ids, i)
+            node_tab_ids = list_remove_int(node_tab_ids, i)
+            node_axis = list_remove_int(node_axis, i)
+            node_ratio = list_remove_int(node_ratio, i)
+            node_first = list_remove_int(node_first, i)
+            node_second = list_remove_int(node_second, i)
+            node_pane = list_remove_int(node_pane, i)
+        }
+        i = i - 1
+    }
+    tab_ids = list_remove_int(tab_ids, ti)
+    tab_root_node = list_remove_int(tab_root_node, ti)
+    tab_active_pane = list_remove_int(tab_active_pane, ti)
+    tab_zoomed_pane = list_remove_int(tab_zoomed_pane, ti)
+    if ws_active_tab == tab_id {
+        if tab_ids.len() > 0 {
+            ws_active_tab = tab_ids.get(0)
+        } else {
+            ws_active_tab = 0
+        }
+    }
+    return 1
+}
+
+/// 激活 Tab(1/-1)。
+pub fn mux_activate_tab(tab_id int) int {
+    var ti int = tab_index(tab_id)
+    if ti < 0 {
+        return -1
+    }
+    ws_active_tab = tab_id
+    return 1
+}
+
+/// 结构快照(JSON 串;/api/mux/snapshot 断言面)。
+pub fn mux_snapshot() str {
+    var at int = ws_active_tab
+    var out str = "{\"workspace\":{\"active_tab\":" + at.str()
+    out = out + "},\"tabs\":["
+    var i int = 0
+    var n int = tab_ids.len()
+    loop {
+        if i >= n {
+            break
+        }
+        if i > 0 {
+            out = out + ","
+        }
+        out = out + "{\"id\":" + tab_ids.get(i).str()
+        out = out + ",\"root\":" + tab_root_node.get(i).str()
+        out = out + ",\"active_pane\":" + tab_active_pane.get(i).str()
+        out = out + ",\"zoomed_pane\":" + tab_zoomed_pane.get(i).str() + "}"
+        i = i + 1
+    }
+    out = out + "],\"nodes\":["
+    i = 0
+    n = node_ids.len()
+    loop {
+        if i >= n {
+            break
+        }
+        if i > 0 {
+            out = out + ","
+        }
+        out = out + "{\"id\":" + node_ids.get(i).str()
+        out = out + ",\"tab\":" + node_tab_ids.get(i).str()
+        out = out + ",\"axis\":" + node_axis.get(i).str()
+        out = out + ",\"ratio\":" + node_ratio.get(i).str()
+        out = out + ",\"first\":" + node_first.get(i).str()
+        out = out + ",\"second\":" + node_second.get(i).str()
+        out = out + ",\"pane\":" + node_pane.get(i).str() + "}"
+        i = i + 1
+    }
+    out = out + "],\"panes\":["
+    i = 0
+    n = pane_ids.len()
+    loop {
+        if i >= n {
+            break
+        }
+        if i > 0 {
+            out = out + ","
+        }
+        out = out + "{\"id\":" + pane_ids.get(i).str()
+        out = out + ",\"handle\":" + pane_handles.get(i).str()
+        out = out + ",\"key\":\"" + pane_keys.get(i) + "\""
+        out = out + ",\"tab\":" + pane_tab_ids.get(i).str()
+        out = out + ",\"exited\":"
+        if pane_exited.get(i) {
+            out = out + "true"
+        } else {
+            out = out + "false"
+        }
+        out = out + "}"
+        i = i + 1
+    }
+    out = out + "],\"focus\":{\"pane\":" + mux_focus_pane_id().str()
+    out = out + ",\"handle\":" + mux_focus_handle().str() + "}}"
+    return out
+}
+
+// ══════════════════════════════════════════════════════════════════
+// tick 驱动 + term_* 焦点 Pane 门面(PLAN-018 D7)
+// ══════════════════════════════════════════════════════════════════
+
+/// 每拍驱动(首调 mux_init:单 Workspace + 初始 Tab/Pane spawn)。
+/// 焦点 Pane:定向几何泵 + 定向快照(旁路投喂视口槽 key="auto-term");
+/// 隐藏 Pane:drain-only(收割引擎防 014 积压,不投喂 widget)。
+/// 零参(async init 引导惯例:extract_init_api_func 只认 list_/get_ 前缀
+/// 零参 fn)。
+pub fn get_lines() []str {
+    mux_init()
+    var handle int = mux_focus_handle()
+    if handle == 0 {
+        var empty List<str> = []
+        return empty
+    }
+    drain_hidden(handle)
+    var applied int = engine_apply_resize_for(handle, "auto-term")
+    if applied > 0 {
+        cols = engine_viewport_cols(handle)
+        rows = engine_viewport_rows(handle)
+    }
+    var snapshot List<str> = engine_rows_for(handle, "auto-term")
     // 首调(engine boot,async init 的 spawn_blocking 线程)短轮询等
     // shell banner——引导快照取太早会整屏空行(rust 形态实测)。
-    if first {
-        // 有界忙等(a2r 对 Time.sleep_ms 的路径限定有存量缺陷,见
-        // rust-run.log E0433;boot 线程内短暂自旋可接受):等 shell banner。
+    if booted == false {
         var tries int = 0
         loop {
             if tries >= 400 {
@@ -44,41 +712,68 @@ pub fn get_lines() []str {
             if snapshot.len() > 0 {
                 break
             }
-            snapshot = engine_rows(handle)
+            snapshot = engine_rows_for(handle, "auto-term")
             tries = tries + 1
         }
+        booted = true
     }
     exited = engine_is_exited(handle)
     return snapshot
 }
 
-/// 宿主 → 子进程一行输入(胶水侧补 \r\n)。
+/// 隐藏 Pane drain-only:收割引擎输出(快照刷新)不投喂任何 widget
+/// (key "-hidden-" 不命中注册表)。
+fn drain_hidden(focus int) int {
+    var hidden List<int> = mux_hidden_handles()
+    var i int = 0
+    var n int = hidden.len()
+    loop {
+        if i >= n {
+            break
+        }
+        var h int = hidden.get(i)
+        if h != focus {
+            var sink List<str> = engine_rows_for(h, "-hidden-")
+            var keep int = sink.len()
+            if keep > 0 {
+                keep = 1
+            }
+        }
+        i = i + 1
+    }
+    return 0
+}
+
+/// 宿主 → 子进程一行输入(胶水侧补 \r\n;焦点 Pane 门面)。
 pub fn term_send(line str) {
+    var handle int = mux_focus_handle()
     engine_write_line(handle, line)
 }
 
-/// Ctrl+C 中断(Break→C 双发语义,引擎契约 003 §4.1)。
+/// Ctrl+C 中断(Break→C 双发语义,引擎契约 003 §4.1;焦点 Pane)。
 pub fn term_interrupt() int {
+    var handle int = mux_focus_handle()
     return engine_interrupt(handle)
 }
 
-/// 直键入泵:排空 terminal 组件键盘队列,逐键裸写引擎(无 \r\n 补缀;
-/// Enter 已是 VT 串里的 \r)。返回泵送键数;未 spawn(handle=0)时 0。
+/// 直键入泵:排空视口槽 terminal 组件键盘队列,定向裸写焦点 Pane 引擎
+/// (无 \r\n 补缀;Enter 已是 VT 串里的 \r)。返回泵送键数。
 pub fn term_pump_input() int {
+    var handle int = mux_focus_handle()
     if handle == 0 {
         return 0
     }
-    return engine_pump_input(handle)
+    return engine_pump_for(handle, "auto-term")
 }
 
-/// 几何随动:应用 widget 在注册表的待定 resize 请求(引擎 resize +
-/// 视口静态量刷新);有应用时同步 db 侧几何(spawn/回读基准)。
-/// 返回 1=已应用 0=无请求。
+/// 几何随动(定向):只消费视口槽 key 的待定 resize 请求 → 焦点 Pane
+/// 引擎 resize + db 几何同步。返回 1=已应用 0=无请求。
 pub fn term_apply_resize() int {
+    var handle int = mux_focus_handle()
     if handle == 0 {
         return 0
     }
-    var applied int = engine_apply_resize(handle)
+    var applied int = engine_apply_resize_for(handle, "auto-term")
     if applied > 0 {
         cols = engine_viewport_cols(handle)
         rows = engine_viewport_rows(handle)
@@ -95,8 +790,9 @@ pub fn term_rows() int {
     return rows
 }
 
-/// 光标格(feed 时引擎采样;未采样为 0)。
+/// 光标格(feed 时引擎采样;未采样为 0;焦点 Pane)。
 pub fn term_cursor_row() int {
+    var handle int = mux_focus_handle()
     if handle == 0 {
         return 0
     }
@@ -104,15 +800,16 @@ pub fn term_cursor_row() int {
 }
 
 pub fn term_cursor_col() int {
+    var handle int = mux_focus_handle()
     if handle == 0 {
         return 0
     }
     return engine_cursor_col(handle)
 }
 
-/// 014 积压采样(tick 驱动):取走新报警累计入总量,刷新 pending/paused
-/// 快照。返回本次新报警次数(>0 = 刚发生一次积压越线)。
+/// 014 积压采样(tick 驱动;焦点 Pane)。返回本次新报警次数。
 pub fn term_backlog_sample() int {
+    var handle int = mux_focus_handle()
     if handle == 0 {
         return 0
     }
@@ -144,7 +841,24 @@ pub fn term_backlog_dropped() int {
     return bl_dropped
 }
 
-/// 子进程退出态(末次 tick 采样)。
+/// 子进程退出态(末次 tick 采样;焦点 Pane)。
 pub fn term_exited() bool {
     return exited
+}
+
+// ── /api/mux/* 观测面(db 侧实现;api.at 同名契约委托)─────────────
+
+/// 焦点 Pane 视口宽(db 同步值)。
+pub fn mux_cols() int {
+    return cols
+}
+
+/// 焦点 Pane 视口高(db 同步值)。
+pub fn mux_rows() int {
+    return rows
+}
+
+/// 焦点 Pane 模型 key(pane-<id>;"" = 无)。
+pub fn mux_focus_key() str {
+    return mux_focus_key_inner()
 }

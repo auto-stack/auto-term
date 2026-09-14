@@ -351,9 +351,19 @@ term.rs,不允许并行 work(先后串行,以先 merge 者为基)。
   (key)` 只读取柄访问器(D4/D5 共用,属 D4 泵族)。
 - **T-04 D3 侧车 per-handle + spawn_ex 包装**(at-app term.rs)。前置
   T-01。关联 AC-03。
-- **T-05 D6+D7 MuxCore 模型 + db/api/front 接线**(mux.at 新建;db.at
+- **T-05 [x] D6+D7 MuxCore 模型 + db/api/front 接线**(mux.at 新建;db.at
   pane 化;api.at 路由;app.at 焦点绑定)。前置 T-02/T-04。关联
   AC-06/07。
+  [✅ 已完成] 执行期调整两笔(Adapt 表行 1,语义不变):①模型并入
+  db.at——a2r 吸收面硬编码单文件(auto-man merged_db_impl),独立
+  mux.at 不可达;②app.at 零改动——V1 视口槽契约:单一可见组件 key
+  静态 "auto-term",焦点 Pane 快照旁路/键入泵/几何请求经该 key 定向
+  (pane.key="pane-<id>" 为模型身份,/api/mux/focus-key 观测)。
+  AC-06 权威取证=evidence/018/curl-mux-script.log(axum back 17401):
+  初始单 Pane→split(树 3 节点/2 Pane/focus 不变)→focus/zoom toggle→
+  close(兄弟收编+焦点回落)→末 Pane 拒绝→Tab 族全过+末 Tab 拒绝。
+  依赖侧三修随附(auto-lang 269f6c5c1 后新提交:a2r 全局读括号/全局
+  List 接收者识别+实参克隆/once_cell 模板/i18n cfg)。
 - **T-06 集成取证**:测试 5 curl 剧本(vue)+ 测试 6/7(rust/vm GUI
   + 014 抽查)+ 测试 4 parity;证据入 evidence/018/。前置 T-05。关联
   AC-06/07/08。
