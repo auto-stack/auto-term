@@ -209,3 +209,23 @@
     真身+at-engine-face 产物 crate(转译入库);dumpbin 12/12 恒等;parity
     六场景 Auto 面驱动全绿(置换法,证据在案);dist 生产物不替换(P-S 终局
     决策留用户),at-gen engine.rs 胶水 Auto 化(⑥应用)留后续计划。
+
+## #16 MuxCore V1 落位与已知边界(PLAN-018,2026-09-15)
+
+- **无 cwd 动态继承**:spawn_ex 的 cwd 为 spawn 期静态值(继承宿主或
+  显式传入);OSC 7 动态继承属 Phase 2 语义层,V1 的 split 不承诺跟随。
+- **关末 Pane/末 Tab 语义待 UI 计划**:V1 = 拒绝 no-op(结构保持);
+  产品级语义(关应用?重生默认 Pane?)留渲染 UI 计划期用户裁定。
+- **at/engine_face.at 并存面分叉在案**:12 符号 Auto 面不镜像
+  spawn_ex/palette 双符号(012 并存态;at-gen 退役时收敛,契约见
+  specs/terminal-mux-model.md face 记录)。
+- **at-gen/src/shell.rs 对 auto-lang master stale**:View::Terminal
+  构造缺 014 起的新字段(at-gen 非 workspace member、冻结 oracle 不
+  动,构建门不触;若复活 at-gen 须先补字段)。
+- **ash_integration 两枚 ctrl_c 用例基线即红**(既有,非 018 引入):
+  测试期望 `❯` 提示符计数而现行 auto-shell/ash(debug,09-11 构建)
+  渲染 `>`;基线 worktree 6454548(017 合入点)对照同败在案。ash 侧
+  提示符/语义漂移归 auto-shell 仓处置。
+- **a2vue 生成 App.vue 重复导入 onUnmounted**(auto-lang codegen 既有
+  缺陷,018 取证期实测):vue 前端 Vite 编译失败、`auto run -r vue`
+  整链不可起;axum back(app-back)不受影响。修复留 auto-lang 计划。

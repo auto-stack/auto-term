@@ -26,6 +26,8 @@
 
 use back.api
 
+// PLAN-018: scheme prop 可显式覆盖配色(scheme: N);缺省跟随桌面主题(V1 视图零变化)。
+
 widget App {
     msg { Init, Tick, KeyIn }
 

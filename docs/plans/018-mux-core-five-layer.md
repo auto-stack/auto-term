@@ -1,12 +1,12 @@
 ---
 plan_id: PLAN-018
-status: drafting
+status: execution_done
 feature_name: Mux Core 五层模型——Workspace/Tab/LayoutTree/Pane/TerminalRuntime 解耦(外部分析 Phase 1)
 author: [zcode-session]
 created_at: 2026-09-14T08:40:00Z
 updated_at: 2026-09-14T09:45:00Z
 plan_revision: 2
-current_step: 5
+current_step: 11
 total_steps: 11
 supersedes_spec_components: []
 new_spec_components:
@@ -364,13 +364,23 @@ term.rs,不允许并行 work(先后串行,以先 merge 者为基)。
   close(兄弟收编+焦点回落)→末 Pane 拒绝→Tab 族全过+末 Tab 拒绝。
   依赖侧三修随附(auto-lang 269f6c5c1 后新提交:a2r 全局读括号/全局
   List 接收者识别+实参克隆/once_cell 模板/i18n cfg)。
-- **T-06 集成取证**:测试 5 curl 剧本(vue)+ 测试 6/7(rust/vm GUI
+- **T-06 [x] 集成取证**:测试 5 curl 剧本(vue)+ 测试 6/7(rust/vm GUI
   + 014 抽查)+ 测试 4 parity;证据入 evidence/018/。前置 T-05。关联
   AC-06/07/08。
-- **T-07 D8 文档收口**:SD-01 spec 撰写、DEBTS #16、README、frontmatter
+  [✅ 已完成] evidence/018/ 六件(汇总 evidence-summary.md):curl 剧本
+  全断言(axum back);rust/vm 双轨 dark(跟随缺省,内容区 (6,7,9))+ light
+  (显式 scheme:1,0xFDF6E3/0x586E75)实机截图;014 最小化/恢复抽查
+  (Responding=True,dominant 不变);parity 5/5;全量 --no-fail-fast 除
+  ash ctrl_c 两枚(基线 6454548 对照同败,既有外部漂移,DEBTS #16)。
+- **T-07 [x] D8 文档收口**:SD-01 spec 撰写、DEBTS #16、README、frontmatter
   步数对账。前置 T-06。关联 AC-09。
-- **T-08 双仓锚定与复审准备**:auto-lang 侧提交 SHA、auto-term 侧提交
-  SHA 回填 §9;工作收尾状态置 execution_done。前置 T-07。关联全部。
+  [✅ 已完成] docs/specs/terminal-mux-model.md 新建(SD-01 全要素);
+  engine-ffi-color-encoding.md 增补 §scheme(SD-03,face 17→19);
+  DEBTS #16(MuxCore 边界 + ash ctrl_c 基线漂移 + a2vue 重复导入
+  观察条);app/README.md 布局表更新。
+- **T-08 [x] 双仓锚定与复审准备**:auto-lang 侧提交 SHA、auto-term 侧
+  提交 SHA 回填 §9;工作收尾状态置 execution_done。前置 T-07。关联全部。
+  [✅ 已完成] 锚定见 §9 收尾记录;11/11 步对账,execution_done。
 - **T-09 [x] [rev2] D9 引擎 scheme 表+双符号**(autoterm-core palette.rs
   + ffi.rs + ffi 测试)。前置 T-01(引擎面扩建机制同行)。关联 AC-10。
   [✅ 已完成] palette.rs 新建(scheme 单源:classic-dark=0 与 016 行为
@@ -382,11 +392,39 @@ term.rs,不允许并行 work(先后串行,以先 merge 者为基)。
   + ffi 集成 7/7(classic-dark 18 槽逐值/light 浅底深字亮度断言/
   set_palette 三态契约+会话存活)+ parity 套件 5/5 绿 6.17s(016 色契约
   同验)。commit:见 git log 018 T-09。
-- **T-10 [rev2] D10 widget scheme 解析+prop+主题跟随**(auto-lang
+- **T-10 [x] [rev2] D10 widget scheme 解析+prop+主题跟随**(auto-lang
   widget/shim/stdlib + vm/iced convert 接线;016 金样回归 + 双端截图)。
   前置 T-09。关联 AC-11。
+  [✅ 已完成] auto-lang e881750df:mod.rs per-core scheme(AtomicI32,
+  -1=跟随 theme::dark_mode)+palette 缓存(引擎装载覆盖/内置回退,
+  classic-dark 内置表与 016 定型常量逐字节同值);widget to_iced_color
+  scheme 表化(每帧一次);View::Terminal scheme:i32 穿传 7 处全字段
+  枚举点 + ui_gen 代码生成;双 glue load_palettes_once。29/29 绿含金样
+  三件;light 实机截图双轨(evidence/018/rust-gui-light-scheme1.png、
+  vm-gui-light-scheme1.png:bg 0xFDF6E3/fg 0x586E75)。auto-term c3fdb24
+  侧车装载臂。
 
 ## 9. 复审记录
+
+- 2026-09-15 stage:work · PLAN-018 · rev2 · outcome:**pass** ·
+  code_commit:auto-term c3fdb24(T-01 e0343ab / T-09 e729aa1 / T-04
+  b860879 / T-05 7995244 / T-10 c3fdb24)· auto-lang:269f6c5c1(T-02)/
+  4c6fe9015(T-03)/ 73ac6edd8(T-05 发射器三修)/ e881750df(T-10),
+  master HEAD 03914ec9a(并行 plan624 会话叠加,锚点均在其祖先)·
+  task_ids=T-00..T-10(11/11)· evidence=evidence/018/ 六件 + 各任务
+  内联记录 · blockers=无 · next:review。
+  执行期裁定(Adapt 表行 1,rev 不增):①模型并入 db.at(a2r 吸收面
+  单文件,§10.2 平行 List 降级一并执行);②app.at 零改动——V1 视口槽
+  key="auto-term" 静态契约,焦点 Pane 三路定向(快照旁路/键入泵/几何
+  请求),视觉零变化;③侧车 engine_pump_input_for 命名对齐 stdlib 面
+  engine_pump_for;④光标块色 scheme 前景 @0.85(classic-dark 下与旧
+  常量逐字节同值);⑤mux_resize_pane 钳位 0-1000(对齐 ratio_permille
+  契约,弃 50-950 窄化)。ac-05 注:VM shim 冒烟 SPAWNEX_OK(argv/cwd
+  见证 + 缺 key no-op);vm GUI dark/light 实机截图双臂在 evidence。
+  全量门:`cargo test --workspace --no-fail-fast` 全绿除 ash ctrl_c
+  两枚(基线 6454548 对照同败=既有外部漂移,DEBTS #16);工作树余项:
+  tmp_*.log/tmp_ash_colors.png(会话遗留,不处置)、auto-lang 并行
+  会话未提交项(stdlib/auto/fs.at、631 计划、p625-evidence,非本计划)。
 
 - 2026-09-14 rev2(revision,用户裁定增补,授权 §4.1[rev2])——配色
   方案面(color schemes)随引擎面扩建纳入:G6/D9-D10/SD-03/AC-10..11/

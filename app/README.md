@@ -10,10 +10,10 @@ AutoTerm 复刻应用的 automan 标准工程形态：一份 .at 源，三条标
 | 文件 | 属性 | 说明 |
 |---|---|---|
 | `pac.at` | 工程清单 | scene ui;api rust;`rust_sidecar` 侧车声明;window 802x482(整窗即终端);icon terminal/category system/17400 端口占位(伞形注册键) |
-| `term.rs` | 侧车真身 | `crate::term` 引擎胶水(源自 at-gen/src/engine.rs,T2 机制供给 rust/vue 生成点)+ 键入泵 `engine_pump_input`(读 auto_lang 键入队列裸写引擎) |
+| `term.rs` | 侧车真身 | `crate::term` 引擎胶水(源自 at-gen/src/engine.rs,T2 机制供给 rust/vue 生成点)+ per-handle 会话态 + spawn_ex/定向泵(rows_for/pump_for/apply_resize_for,PLAN-018 D3)+ scheme 表装载(D10) |
 | `src/front/app.at` | AutoUI 前端 | terminal 组件(props-feed 形态甲)整窗渲染 + `oninput` 直键入;四装载面同一源(rust/vm/vue + 桌面) |
-| `src/back/api.at` | #[api] 契约 | 全标量/[]str 面;VM/desktop 直跑委托体 |
-| `src/back/db.at` | 实现体 | TermApp 引擎驱动状态机(移植自冻结的 at/autoterm.at);back crate 用户逻辑唯一吸收面 |
+| `src/back/api.at` | #[api] 契约 | 全标量/[]str 面;/api/term/* 14 路 + /api/mux/* 11 路(PLAN-018 结构操作);VM/desktop 直跑委托体 |
+| `src/back/db.at` | 实现体 | TermApp 引擎驱动状态机 + **MuxCore 五层模型**(PLAN-018:Workspace/Tab/LayoutTree/Pane + Action 单入口 `mux_*`;契约见 docs/specs/terminal-mux-model.md);back crate 用户逻辑唯一吸收面 |
 
 ## 运行(auto-lang 仓构建的 auto CLI;cwd = app/)
 
