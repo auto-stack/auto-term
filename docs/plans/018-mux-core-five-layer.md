@@ -4,13 +4,14 @@ status: drafting
 feature_name: Mux Core 五层模型——Workspace/Tab/LayoutTree/Pane/TerminalRuntime 解耦(外部分析 Phase 1)
 author: [zcode-session]
 created_at: 2026-09-14T08:40:00Z
-updated_at: 2026-09-14T08:40:00Z
-plan_revision: 1
+updated_at: 2026-09-14T09:45:00Z
+plan_revision: 2
 current_step: 0
-total_steps: 9
+total_steps: 11
 supersedes_spec_components: []
 new_spec_components:
   - docs/specs/terminal-mux-model.md
+  - docs/specs/engine-ffi-color-encoding.md
 touched_goals: []
 ---
 
@@ -23,7 +24,9 @@ touched_goals: []
 先把 **Workspace → Tab → LayoutTree → Pane → TerminalRuntime** 五层
 对象模型立起来,UI 降格为 `render(state) / dispatch(action)`,三条铁律
 ——①Pane 不属于 UI;②Domain 不等于 PTY;③终端输出逐步升级为语义数据。
-本计划 = 该方案的 **Phase 1(Mux Core)** 落地:
+本计划 = 该方案的 **Phase 1(Mux Core)** 落地;**rev2 增补**(用户
+2026-09-14 实机验收裁定):引擎 FFI 配色方案面(color schemes)随引擎面
+扩建一并落地(见 §0.4):
 
 1. **MuxCore 状态机**落应用 back 层(新 `mux.at`):Workspace/Tab/
    LayoutTree/Pane 四类对象 + 全部结构操作(建/拆/关/焦点/缩放/比例)
@@ -38,6 +41,13 @@ touched_goals: []
 4. **控制面**:结构操作经既有 api.at 契约面暴露(`/api/mux/*`),
    `mux_snapshot()` 可结构断言——为 Phase 4 Control API 铺地基但**不是**
    Control API(无 socket/CLI/权限分级)。
+5. **[rev2] 配色方案面(color schemes)**:引擎 FFI 新增 palette 选择
+   面(17→19:+`set_palette`/`palette_color` 两符号,scheme 表落
+   autoterm-core 单源;widget 经 shim 查询缓存渲染);Term 组件增
+   `scheme` prop + 缺省跟随桌面深浅主题。动因:用户实机验收发现浅色
+   桌面下终端恒黑底(默认色/16 色板均为 widget 侧写死深色常量),
+   裁定以"Windows Terminal 式可选配色方案"随本计划引擎面扩建一并
+   落地(G6/D9-D10/SD-03/AC-10..11/T-09..10)。
 
 外部分析的 Phase 2–8(OSC 语义层、Workspace 持久化、Control API/CLI、
 Domain、Layout 策略、Mux Daemon、Agent API)全部非目标,路线图见 §4
@@ -57,6 +67,10 @@ Domain、Layout 策略、Mux Daemon、Agent API)全部非目标,路线图见 §4
   选中/菜单/中断、016 颜色)零回归;014 最小化护栏不破。
 - G5 Action 单入口:全部结构操作走 mux Action 函数族;api 契约面可
   驱动、`mux_snapshot` 可断言(结构操作的可观测性)。
+- G6 配色方案面(rev2):scheme 表(默认 fg/bg + base16)落引擎
+  单源;`set_palette` per-handle + `palette_color` 查询双符号生效;
+  Term 组件 `scheme` prop + 主题跟随缺省;classic-dark 与现行为
+  逐字节等价(零回归)。
 
 ### 非目标
 
@@ -67,7 +81,9 @@ Domain、Layout 策略、Mux Daemon、Agent API)全部非目标,路线图见 §4
 - Control API(socket/CLI/权限分级)、Mux Daemon(detach/attach)、
   Workspace 持久化/会话文件、Domain 抽象(WSL/SSH/Container)、
   Layout 策略(Tall/Grid/Stack)。
-- env 自定义、profile、主题系统(SpawnSpec 预留字段,不实现)。
+- env 自定义、profile(SpawnSpec 预留字段,不实现);主题系统之
+  "per-spawn 主题"与用户自定义 scheme 上传(rev2 只交付内置方案集:
+  classic-dark/light,扩展位预留)。
 - vue 交互式视口(009 #4 留白维持);`at/` + `at-gen/` 冻结 oracle
   不动;at-engine-face 并存面不动(见 §10.3)。
 - Unix 基座(DEBTS #8 维持)。
@@ -144,6 +160,11 @@ Domain、Layout 策略、Mux Daemon、Agent API)全部非目标,路线图见 §4
   90f1a1`(浅克隆)。
 - 允许仓库:auto-term(主)+ auto-lang(widget/VM shim/stdlib,016
   双仓锚定惯例)。预算/自动续跑:未指定。
+- **[rev2]** 用户 2026-09-14 实机验收(PLAN-017 桌面门)发现浅色主题
+  下终端恒黑底,裁定:"完整方案(可选配色方案):引擎 FFI 加 palette
+  选择面(像 Windows Terminal 的 color schemes,用户自选)——跨仓新
+  能力,建议挂到 PLAN-018(Mux Core) 里一起做"——"这个好"。范围=
+  G6/D9-D10;settings 面的 scheme 选择器 UI 留后续 UI 计划。
 
 ### 4.2 外部证据(Phase 1 相关面)
 
@@ -216,12 +237,15 @@ term.rs,不允许并行 work(先后串行,以先 merge 者为基)。
 | D6 | MuxCore 模型 | at-app `src/back/mux.at`(新):`rec Pane{id,handle,key,tab_id,program,cwd,cols,rows,exited}`、`rec Tab{id,active_pane,zoomed_pane,title}`、`rec WsNode{id,tab_id,axis,ratio_permille,first,second,pane}`、`rec Workspace{id,name,tabs,active_tab}`;全局表 + `mux_init/mux_create_pane/mux_split_pane/mux_close_pane/mux_focus_pane/mux_resize_pane/mux_zoom_pane/mux_new_tab/mux_close_tab/mux_activate_tab/mux_snapshot` | Action 函数族 = 唯一变异入口;close_pane 树再平衡(兄弟收编父位,wezterm remove_pane/kitty collapse 同语义);关末 Pane 拒绝;`mux_snapshot()` 返回结构 JSON 串;V1 恒单 Workspace(id=1),模型不设上限 |
 | D7 | db/api 接线 | at-app `src/back/db.at`(pane 化:tick 驱动改焦点全量+隐藏 drain-only;term_* 保留为焦点 Pane 门面)+ `src/front/app.at`(view 的 terminal key/cols/rows 改绑焦点 Pane;`oninput` 泵焦点 Pane)+ `src/back/api.at`(`/api/mux/split|close-pane|focus|zoom|new-tab|close-tab|activate-tab` POST + `/api/mux/snapshot` GET + `/api/mux/cols|rows|focus-key` GET) | `get_lines()` 零参惯例(extract_init_api_func)不动——语义改为"焦点 Pane 快照";前键入 `.KeyIn` 路径不变;隐藏 Pane 泵在 tick 分支 |
 | D8 | 文档 | `docs/specs/terminal-mux-model.md`(SD-01)+ DEBTS.md 新观察条 + at-app(→app)/README | 见规范增量 |
+| D9 | 引擎 scheme 表 + 双符号 | autoterm-core `palette.rs`(新;scheme 表:classic-dark=0 现行为/light=1;每 scheme = default fg/bg + base16 32 色)+ `ffi.rs` `autoterm_engine_set_palette(handle,scheme_id)`(per-handle,per 所有权铁律)+ `autoterm_engine_palette_color(scheme_id,slot,is_fg) -> u32 rgb`(slot:0=def-fg,1=def-bg,2..=17=base16;纯函数无柄) | face 17→19(spawn_ex 占 17);kind_color 编码零改(Default/Indexed/RGB 语义穿传,解析端换表);ffi 测试入 engine_ffi_integration.rs(D2 同文件):light def-bg 为浅色 RGB、classic-dark 与现行为逐字节一致、set_palette per-handle 隔离 |
+| D10 | widget scheme 解析 + prop | auto-lang `ui/terminal/iced/widget.rs`:`to_iced_color` 的 Default/base16 改经 scheme 表(scheme→[18]rgb 查询缓存,shim `palette_color` 装载,scheme 切换失效;零每格开销)+ `ui/terminal/mod.rs` 注册表 per-key scheme 状态 + Term 组件 `scheme` prop(int;缺省=跟随桌面主题:dark→0,light→1)+ vm/iced 两轨 convert_terminal 接线 | 主题 token 读取沿 Plan 458 主题预设面;016 pixel 金样回归(D4 同守卫);浅色方案 = 浅底深字 + base16 深底变体(solarized-light 族色调) |
 
 ### 规范增量
 
 | delta_id | add/modify/retire | docs/specs/... target | before/after rule | rationale | acceptance IDs |
 |---|---|---|---|---|---|
 | SD-01 | add | docs/specs/terminal-mux-model.md | 前:应用=单会话(单柄/单 widget/广播泵),无 Workspace/Tab/Pane 概念。后:五层对象模型 + 所有权铁律(引擎句柄 owner=mux pane 表,UI 组件永不拥有 PTY/进程)+ Action 单入口 + SpawnSpec(spawn_ex;domain/env 字段预留)+ per-key/per-handle 泵契约(广播三件退役为兼容薄委托)+ V1 语义(末 Pane 不关/焦点几何随动/隐藏 drain-only/比例千分比)+ face 记录(ffi 16→17;at/engine_face.at 12 符号并存面本计划不动,分叉在案) | 外部分析三铁律落档;Phase 2–8 的共同地基契约 | AC-01..09 |
+| SD-03 | modify | docs/specs/engine-ffi-color-encoding.md | 前:kind_color 编码面(016);默认色/16 色板为渲染端写死深色常量(引擎只报语义色)。后:配色方案面——scheme 表(classic-dark/light)落引擎单源;face 17→19(+set_palette per-handle/palette_color 查询);渲染端 Default/base16 经 scheme 表解析(查询缓存),Term `scheme` prop + 主题跟随缺省契约 | 用户裁定 Windows Terminal 式可选配色;浅色桌面终端可用性 | AC-10/11 |
 | SD-02 | modify | DEBTS.md(新观察条) | 新增 #16:MuxCore V1 落位与已知边界(无 cwd 动态继承=Phase 2;关末 Pane 语义待 UI 计划;at-engine-face face 分叉) | 债务/边界持续可见 | AC-09 |
 
 ## 6. 测试设计
@@ -268,6 +292,11 @@ term.rs,不允许并行 work(先后串行,以先 merge 者为基)。
   抽查无复燃 + 截图与 016 基线同构。验证:测试 6。
 - **AC-08** 三形态构建绿:rust/vm/vue `auto run` 冒烟 + workspace
   cargo test 0 error。验证:测试 6/7/8。
+- **AC-10** palette 面生效:ffi 测试(light def-bg 浅色 RGB/classic-dark
+  与现行为逐字节一致/set_palette per-handle 隔离)绿。
+- **AC-11** 双端渲染:vm/rust 两轨 light 方案浅底深字实机截图 + dark
+  方案 016 pixel 金样零回归;Term `scheme` prop 显式覆盖与主题跟随
+  缺省两臂各验一例。
 - **AC-09** 文档在库:specs/terminal-mux-model.md(SD-01 全要素)、
   DEBTS #16、evidence/018/ 齐备(引擎测试日志/curl 剧本截图/GUI
   截图/双仓 SHA 锚定)。验证:文件检查。
@@ -296,9 +325,19 @@ term.rs,不允许并行 work(先后串行,以先 merge 者为基)。
   步数对账。前置 T-06。关联 AC-09。
 - **T-08 双仓锚定与复审准备**:auto-lang 侧提交 SHA、auto-term 侧提交
   SHA 回填 §9;工作收尾状态置 execution_done。前置 T-07。关联全部。
+- **T-09 [rev2] D9 引擎 scheme 表+双符号**(autoterm-core palette.rs
+  + ffi.rs + ffi 测试)。前置 T-01(引擎面扩建机制同行)。关联 AC-10。
+- **T-10 [rev2] D10 widget scheme 解析+prop+主题跟随**(auto-lang
+  widget/shim/stdlib + vm/iced convert 接线;016 金样回归 + 双端截图)。
+  前置 T-09。关联 AC-11。
 
 ## 9. 复审记录
 
+- 2026-09-14 rev2(revision,用户裁定增补,授权 §4.1[rev2])——配色
+  方案面(color schemes)随引擎面扩建纳入:G6/D9-D10/SD-03/AC-10..11/
+  T-09..10;非目标"主题系统"收窄为"per-spawn 主题+用户自定义 scheme
+  上传";既有 T-00..T-08/AC-01..09 零改动(执行中会话按 work 规约
+  reread 对账即得)。语义变更点=范围扩张,已获用户明示授权。
 - 2026-09-14 stage:new · rev1 起草交接——外部分析(ChatGPT 八相方案)
   → 本计划切片 = Phase 1(Mux Core);设计依据:双仓读码(§4.3 四处
   单会话假设实体)+ wezterm/kitty 源码锚点(§4.2,浅克隆 SHA 在案);
