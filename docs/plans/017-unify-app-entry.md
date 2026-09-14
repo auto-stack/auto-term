@@ -2,13 +2,13 @@
 
 ```yaml
 plan_id: PLAN-017
-status: execution_done
+status: executing
 feature_name: app 入口统一（at-app → app/，桌面壳退役）
 author: [agent]
 created_at: 2026-09-14T07:07:16Z
-updated_at: 2026-09-14T10:55:00Z
+updated_at: 2026-09-14T11:40:00Z
 plan_revision: 2
-current_step: 7
+current_step: 6
 total_steps: 7
 supersedes_spec_components: []
 new_spec_components:
@@ -222,7 +222,7 @@ auto-os（README/清单核对面，预期零或注释级）。预算/自动续�
   节 at-app→app；auto-os 侧核对零变更（manifest/README 无 at-app 引用）；
   活跃面 at-app 清零（冻结 oracle at//at-gen、台账、DEBTS 历史记录豁免）。
   AC-04/06。
-- **T-04 桌面实机门** `[✅ 已完成（交互面留用户实测）]`：净场后 detached
+- **T-04 桌面实机门** `[ ]` **[R2 复审重开——F-R3: AC-03 fail]**：净场后 detached
   桌面（AUTOUI_ACCEPTANCE=1）经 MCP bus `launch\tauto-term`——
   `launch_app(inproc) auto-term` 进程内编译零错、Init/Tick 活、快照
   `terminal key=auto-term cols=81 rows=25 lines=25`（**25 行 shell 真实
@@ -232,6 +232,13 @@ auto-os（README/清单核对面，预期零或注释级）。预算/自动续�
   并行 os-018 会话桌面抢占 9247（截图路径 .wt/os-018 佐证）。键入泵/
   Ctrl+C 桌面内字节级 diff 因 MCP 工具面限制未取——机制链与 standalone
   同构（同进程队列+shim），窗口已为用户拉起供实测。AC-01/02/03。
+  **[R2 复审裁定]** 快照行数/几何/形态三面证据成立（AC-01 形态/AC-02
+  随动过），但归档截图经像素采样**整屏背景 RGB(128,0,0)** = 016
+  "257 截断→base16[1] 暗红"精确签名（vm 对照 probe RGB(6,7,9) 黑底
+  正常）——AC-03 在本证据上不成立，T-04 重开：定位桌面色彩路径根因
+  （疑：桌面宿主内嵌 engine/widget 副本先于 016 修复，或桌面委托色彩
+  编码分叉）→ 修复 → 重取桌面门截图（须非红底 + 几何 + 形态三面）
+  → 交复审。
 - **T-05 全量回归** `[✅ 已完成（两项预存红在案）]`：rust 轨 ✓（627
   worktree CLI 构建 Finished + auto-term.exe 16:30 重建）；vm-merged ✓；
   vue 轨 = axum back `crate::ui::i18n_lookup` 编译错——**master 预存红**
@@ -277,6 +284,47 @@ auto-os（README/清单核对面，预期零或注释级）。预算/自动续�
   动态编译对限定名恒支持，PLAN-053 仅拦裸名）；后续以 PATH CLI 重建
   rust 轨前需先重建 CLI（auto-lang 日常构建自然刷新）。
 
+- 2026-09-14 stage:review · plan_id: PLAN-017 · plan_revision: 2 ·
+  outcome: **needs_fix** · reviewed_commit: 058d22b · base_commit:
+  4b5d2a4d（c157c80^，diff 基线）· dependency_revisions: auto-lang
+  master 853ad131c（627∈master：3b2f7cf56 + 修复轮 7ad387ec3，R2 复审
+  pass 8877393f6）；auto-down 140775f（review 组兄弟）· spec_inputs:
+  SD-01 add docs/specs/app-unified-entry.md（delta 表在案；merge 期
+  首建，本次未发布）· 独立性声明：复审与 work 收口同会话，结论全部
+  从工件重建（像素采样/命令复现/提交考古），未采信执行者摘要 ·
+  acceptance_results: AC-01 **partial**（形态/启动证据成立；点击直键入
+  交互面留用户实测=在案 caveat）｜ AC-02 **pass**（快照 81×25 ≠ 模型
+  缺省 100×30 = 几何随动实算）｜ AC-03 **fail**（F-R3，见下）｜
+  AC-04 **pass**（F-R1 解读在案）｜ AC-05 **pass**（原 T-5 证据 +
+  当日基线复现：review CLI `v0.4.2-615-g853ad131c`（post-627 master
+  tip，含 F1/F2）`auto build -r rust` cwd=app/ → Finished 1m04s
+  EXIT=0；cargo test 复用 T-5 证据，理由=auto-term 代码零变化且
+  autoterm-core 测试不触 auto-lang）｜ AC-06 **pass**（manifest 行
+  id/repo/kind/ports/status/added + 无 daemon ✓；pac.at
+  title/title_zh/icon/category ✓；launcher 截图半边未归档=F-R2）·
+  findings:
+  - **F-R3（major，AC-03/T-04）**：归档桌面门截图整屏背景
+    **RGB(128,0,0)**（四采样点一致）= 016"Named(257)→as u8→1→
+    base16[1] 暗红"精确签名（archived/016 §根因；cmd 会话整屏默认格
+    即红底）；同证据集 vm-merged probe 对照 RGB(6,7,9) 黑底正常——
+    016 修复在 vm/standalone 路径生效、**桌面委托路径仍截断**。疑因
+    （work 期定位）：桌面宿主内嵌 engine/widget 编译副本先于 016
+    修复（宿主重建即自愈——与用户后续"恒黑底"观察相容），或桌面
+    委托色彩编码分叉。修正动作：根因定位 → 修复/宿主刷新 → 重取
+    桌面门截图（须非红底 + 几何随动 + 形态三面）→ 复审。
+  - F-R1（info，AC-04）：`git grep at-app` 活文件命中均为出处注记
+    （§5.1/5.2 git mv 保历史+并合表自要求）、DEBTS #14③ 冻结 oracle
+    字符串（at/autoterm.at、at-gen）、ledger/文档史——功能残留为零
+    （at-app/ 目录不存在、无构建引用、--follow 可溯 0770f3f→c157c80）。
+    字面"零残留"与计划自身注记要求冲突，按功能残留口径判过。
+  - F-R2（minor，AC-06）：launcher 展示截图未入 evidence/017（缓解：
+    manifest+pac 键文件 diff 全过；T-04 截图任务栏 terminal 图标活跃
+    = launcher 实际拉起成功）。
+  evidence: evidence/017/desktop-terminal-live.png（像素采样
+  RGB(128,0,0)×4 点）、evidence/017/vm-merged-qualified-probe.png
+  （RGB(6,7,9)）、本记录复现命令与结果、archived/016 根因节对照 ·
+  next: **work**（修 F-R3，T-04 已重开，current_step 6/7）。
+
 ## 10. 待澄清事项
 
 1. **[2026-09-14 work 会话实证——T-02 升级为裁决点]** merged 模式下裸
@@ -307,3 +355,8 @@ auto-os（README/清单核对面，预期零或注释级）。预算/自动续�
 3. vue 轨 pac 端口：并合 pac 保留 17400/17401 占位——vm-split 实测以
    17401 起真服务（front 17400/back 17401 落位正确），vue split 形态
    未来真端口需求另行计划。
+4. **[R2 复审 F-R3 · 在册阻塞]** AC-03 fail：桌面委托路径整屏暗红底
+   （像素实证 RGB(128,0,0) = 016"257 截断→base16[1]"签名；vm 路径
+   对照正常黑底）——016 修复未覆盖桌面路径或宿主内嵌副本陈旧（详见
+   §9 findings）。unblock 动作：work 期定位根因 → 修复/宿主刷新 →
+   重取桌面门证据（非红底+几何随动+形态三面）→ 交复审。
