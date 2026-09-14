@@ -2,7 +2,8 @@
 
 ```yaml
 plan_id: PLAN-017
-status: reviewed
+status: archived
+completion_kind: delivered
 feature_name: app 入口统一（at-app → app/，桌面壳退役）
 author: [agent]
 created_at: 2026-09-14T07:07:16Z
@@ -387,6 +388,22 @@ auto-os（README/清单核对面，预期零或注释级）。预算/自动续�
   （网格采样 dark=755/red=0）、parity 复跑、archived/016 根因对照 ·
   next: **merge**（/auto-plan:merge 017：specs.json 六节入账 + SD-01
   spec 文档首建 + 归档收据）。
+- 2026-09-14 stage:merge · PLAN-017:r2 · outcome: **pass** ·
+  delivery_commit: 7186d88（4346580 的文档投影-only 后代：代码与依赖
+  零变更，delta 核验=SD-01 spec 新文件+specs.json P017 六节，别无
+  其他）· canonical_specs: docs/specs/app-unified-entry.md（SD-01
+  add，唯一入口契约/三形态/桌面装载形态/限定名约束/教训注记）·
+  ledger: .autoos/specs.json P017-1..6 六节（reports/goals/
+  architecture→specs 新文档/designs/tests/reviews；回读校验过，
+  幂等重试安全；P017-3 file 指向 docs/specs/，余指 archived/017）·
+  checkpoints: prepared（基线 4346580/R3 pass a8e097a/delta 表
+  §5.3）→ landed（7186d88 ∈ main，spec+ledger 内容核验）→
+  ledger_refreshed（P017-1..6 回读断言通过）→ archived
+  （docs/plans/archived/017-unify-app-entry.md，status archived +
+  completion_kind delivered）→ cleaned（无 worktree 主检出交付，
+  014/016 同款先例；无分支/组目录/依赖 worktree 需清理，wt-guard
+  不适用）· 后续：018（T-00 起）前置依赖解除。
+
 
 ## 10. 待澄清事项
 
