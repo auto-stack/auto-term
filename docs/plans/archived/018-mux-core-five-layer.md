@@ -1,6 +1,7 @@
 ---
 plan_id: PLAN-018
-status: reviewed
+status: archived
+completion_kind: delivered
 feature_name: Mux Core 五层模型——Workspace/Tab/LayoutTree/Pane/TerminalRuntime 解耦(外部分析 Phase 1)
 author: [zcode-session]
 created_at: 2026-09-14T08:40:00Z
@@ -404,6 +405,25 @@ term.rs,不允许并行 work(先后串行,以先 merge 者为基)。
   侧车装载臂。
 
 ## 9. 复审记录
+
+- 2026-09-15 merge(/auto-plan:merge)收据 **PLAN-018:r2** ·
+  reviewed_commit ab392f6(b97d76c 修复轮后代)· base 6454548 ·
+  依赖锚定 auto-lang 269f6c5c1/4c6fe9015/73ac6edd8/e881750df/548f63237
+  (master 直落,双仓锚定惯例,无依赖 worktree 需折叠)·
+  **prepared**:canonical specs 于 reviewed 提交随落 main
+  (terminal-mux-model.md 新建 + engine-ffi-color-encoding.md §scheme
+  增补;无 worktree 主检出交付惯例,014/016/017 同款),投影目标
+  .autoos/specs.json P018-1..6 六节 · **landed**:main @4972521
+  (ancestry 6454548→e0343ab→e729aa1→b860879→7995244→c3fdb24→ab392f6→
+  b97d76c→4972521 线性;specs 内容与 ledger 同验)·
+  **ledger_refreshed**:.autoos/specs.json P018-1..6 六节入账(每节一
+  项,architecture→specs/terminal-mux-model.md,余五节→归档路径;
+  格式 2 空格原样,既有 104 项零扰;回读校验 6/6)· **archived**:
+  docs/plans/archived/018-mux-core-five-layer.md,status archived,
+  completion_kind delivered · **cleaned**:无 worktree/分支交付
+  (014/016/017 同款先例;git worktree list 仅主检出;无 plan-018 分支;
+  依赖仓 auto-lang 主检出直落无清理面),wt-guard 不适用 · outcome:
+  **pass(delivered)**。
 
 - 2026-09-15 stage:review · PLAN-018 · rev2 · outcome:**pass** ·
   reviewed_commit: ab392f6(auto-term main,工作树净)· base_commit:
