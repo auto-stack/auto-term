@@ -470,7 +470,15 @@ layout 策略(Tall/Grid/Stack,Phase 6 另半边)、Workspace 持久化
   - **T-06 全量门(auto-term workspace)**:`cargo test --workspace`
     exit 0 全绿(含 parity;引擎零改动回归)。014 护栏最小化/恢复
     与 vm 实机帧归 T-06 余项(可并入复审前抽查)。
-  - next:T-07 文档(SD-01 spec 修订/DEBTS/README)→ T-08 锚定。
+  - **T-07 文档已落**:SD-01 spec 修订(terminal-mux-model.md V1
+    语义节九条:关闭语义/打字随动焦点/泵三档/槽位投影+axis 语义/
+    深度上限/shortcuts 契约/动作队列/D2 观测面/i32-i64 桥接)+
+    DEBTS #19(已根修)/#20(参数遮蔽待修)/#21(锁守卫跨引擎调用,
+    队列规避,键入泵残余窗口在案)/#22(观察条)+ app/README 可见
+    多终端节。
+  - **T-06 全量门**:cargo test --workspace exit 0 全绿(含 parity;
+    引擎零改动)。vm 形态冒烟 = §10.6 阻塞项(保持 executing)。
+  - next:vm 委托合成修复(auto-lang)→ 复审。
 
 ## 10. 待澄清事项
 
@@ -488,3 +496,15 @@ layout 策略(Tall/Grid/Stack,Phase 6 另半边)、Workspace 持久化
    另行立项。
 5. **Tab title 来源**:V1 = 序号 + shell 名(静态派生);动态
    title(OSC 转义/进程名感知)归 ③ OSC 计划。
+6. **【T-06 发现,阻塞 vm 形态冒烟】VM merged 桥的 api 委托合成
+   未覆盖新 D2 面**:`auto run -r vm` 链接失败——"Undefined symbol:
+   mux_tab_id_at in module App"(evidence/019 复现;清缓存无效)。
+   已证:①db.at 独立 VM 编译/链接/运行全通(standalone probe:
+   mux_init/split/tab_count/tab_id_at/tabs 全解析执行)——db 模块
+   无恙;②嫌疑面 = App 侧 api 委托合成(ui/handler_codegen
+   import_stmts 扁平化 + 限定名直落本地字节码)对 **GET 带参路由**
+   的处理——018 面全部为无参路由(唯一参数路由 mux_pane_lines 为
+   POST),mux_tab_count(无参)解析成功而 mux_tab_id_at(带参)
+   失败,高度指向带参委托未合成;③准确机制需 vm_bridge 合成路径
+   调试会话(auto-lang 侧,建议 lang-019 worktree 续作)。Rust/vue
+   两形态不受影响。
