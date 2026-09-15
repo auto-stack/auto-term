@@ -437,6 +437,20 @@ term.rs,不允许并行 work(先后串行,以先 merge 者为基)。
   (若用户裁定 vue 前端整链绿为本计划必要条件,可翻案 blocked,前置 =
   独立的 a2vue 修复计划;复审判定以其为非阻塞外部缺陷。)
 
+- 2026-09-15 stage:review 修复轮(用户裁定"findings 都尝试修")·
+  outcome:pass(维持,findings F-1/F-3 已修、F-2 定性环境、F-4 已修)·
+  F-1 修:auto-lang 548f63237(a2vue tick_interval 臂无守卫 push 补守卫
+  + 回归测试;`auto run -r vue` 整链复验活 front 200/back 200/活链 mux
+  剧本 split/close/末 Pane 拒绝全过)——AC-08 vue 臂与 AC-06 vue 字面
+  自此达成,AC-08 partial 升 pass。F-3 修:auto-term 测试标记现代化
+  (ash Plan 322 `❯`→`>` 行首计数 + `❯` 兜底;timeout 倒计时谓词加
+  ash 自绘 `⏳`),ash_integration 8/8 绿(两枚基线红清零)。F-2 定性:
+  与常驻 ui_desktop 共存的窗口创建偶发失败(4 样本 3 成活,无 panic
+  无确定性缺陷点,MCP bind 环健壮非死因),重试即成,不盲改启动路径,
+  DEBTS #16 记档。F-4:复审时已修。受影响门复验:ash 8/8、plan051 3/3、
+  vue 整链活链剧本;auto-lang 主检出新增提交 548f63237(锚定补记)·
+  next:merge。
+
 - 2026-09-15 stage:work · PLAN-018 · rev2 · outcome:**pass** ·
   code_commit:auto-term c3fdb24(T-01 e0343ab / T-09 e729aa1 / T-04
   b860879 / T-05 7995244 / T-10 c3fdb24)· auto-lang:269f6c5c1(T-02)/

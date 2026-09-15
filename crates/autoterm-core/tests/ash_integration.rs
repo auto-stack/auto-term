@@ -218,7 +218,7 @@ fn echo_roundtrip() {
 }
 
 /// ③ Ctrl+C(0x03)废弃当前输入行:空闲提示符下键入未回车的文本,
-/// reedline 自渲染;发 0x03 后出现**新的提示符行**(❯ 计数 +1),shell
+/// reedline 自渲染;发 0x03 后出现**新的提示符行**(提示符计数 +1),shell
 /// 存活且继续执行后续命令。这守的是终端层可负责的语义:0x03 字节
 /// 如实转发、raw-mode 应用(reedline)能消费。
 ///
@@ -232,12 +232,14 @@ fn echo_roundtrip() {
 fn ctrl_c_aborts_input_line() {
     let Some(bin) = ensure_ash() else { return };
     let mut s = spawn_ash_with_prompt(&bin);
+    // PLAN-018 F-3 修复:ash Plan 322 起**缺省提示符符号**从 `❯` 改为
+    // 模式感知 `>`(ash/ash/src/frontend/repl.rs update_prompt 注记),
+    // 测试曾因此双测齐红(计数恒 0)。行首 `>` 为现行缺省;`❯` 兜底
+    // 兼容旧 ash/用户配置覆盖。
+    let is_prompt_line =
+        |l: &String| l.trim_start().starts_with('>') || l.contains('❯');
     let prompt_count = |s: &PtySession| {
-        s.term
-            .visible_lines()
-            .iter()
-            .filter(|l| l.contains('❯'))
-            .count()
+        s.term.visible_lines().iter().filter(|l| is_prompt_line(l)).count()
     };
     s.write_input(b"echo should_not_run_123");
     wait_for(&mut s, Duration::from_secs(10), "已键入文本上屏", |t| {
@@ -248,7 +250,7 @@ fn ctrl_c_aborts_input_line() {
     let before = prompt_count(&s);
     s.write_input(b"\x03");
     wait_for(&mut s, Duration::from_secs(10), "Ctrl+C 后新提示符", |t| {
-        t.visible_lines().iter().filter(|l| l.contains('❯')).count() > before
+        t.visible_lines().iter().filter(|l| is_prompt_line(l)).count() > before
     });
     // shell 存活且继续响应:紧跟的命令必须能跑
     let marker = format!("after_c_{}", std::process::id());
@@ -348,7 +350,12 @@ fn ctrl_c_event_effect_on_ash() {
         wait_for(&mut s, Duration::from_secs(10), "timeout 倒计时", |t| {
             t.visible_lines()
                 .iter()
-                .any(|l| l.contains("Waiting") || l.contains("等待"))
+                .any(|l| {
+                    l.contains("Waiting")
+                        || l.contains("等待")
+                        // ash 状态行倒计时(`⏳ timeout /t 30 · 10.0s · …`)
+                        || l.contains('⏳')
+                })
         });
         probe_outcome_with(&mut s, "external", Duration::from_secs(15));
     }

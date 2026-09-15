@@ -222,10 +222,19 @@
 - **at-gen/src/shell.rs 对 auto-lang master stale**:View::Terminal
   构造缺 014 起的新字段(at-gen 非 workspace member、冻结 oracle 不
   动,构建门不触;若复活 at-gen 须先补字段)。
-- **ash_integration 两枚 ctrl_c 用例基线即红**(既有,非 018 引入):
-  测试期望 `❯` 提示符计数而现行 auto-shell/ash(debug,09-11 构建)
-  渲染 `>`;基线 worktree 6454548(017 合入点)对照同败在案。ash 侧
-  提示符/语义漂移归 auto-shell 仓处置。
-- **a2vue 生成 App.vue 重复导入 onUnmounted**(auto-lang codegen 既有
-  缺陷,018 取证期实测):vue 前端 Vite 编译失败、`auto run -r vue`
-  整链不可起;axum back(app-back)不受影响。修复留 auto-lang 计划。
+- **ash_integration 两枚 ctrl_c 用例基线即红 → 已修复(2026-09-15,
+  auto-term 测试侧)**:根因 = ash Plan 322 起缺省提示符符号 `❯`→
+  模式感知 `>`(auto-shell repl.rs update_prompt 注记)+ timeout 倒计时
+  文案改 ash 自绘状态行(`⏳ … · 10.0s`)。测试标记现代化(行首 `>`
+  计数 + `❯` 兜底;倒计时谓词加 `⏳`),ash_integration 8/8 绿。
+- **a2vue 生成 App.vue 重复导入 onUnmounted → 已修复(2026-09-15,
+  auto-lang 548f63237)**:根因 = ui_gen/vue.rs tick_interval 臂无守卫
+  push,timer 块臂同触时重推;守卫补齐 + 回归测试(双臂同觖断言导入
+  唯一);`auto run -r vue` 整链复验活(front 200/back 200/活链 mux
+  剧本全过)。
+- **VM 轨独立窗口与常驻桌面(ui_desktop)共存偶发窗口创建失败**
+  (018 复审期实测 1/4):进程在 winit 窗口属性打印后无 panic 静默
+  退出(exit 127);AutoUI MCP bind 冲突(9247 被桌面持有)有 10×
+  300ms 重试环兜底、非死因。重试即成(3/3);无可确定性复现的代码
+  缺陷点,暂不盲改启动路径;处置 = 重试 + 留痕(017 桌面共存先例
+  同族)。
