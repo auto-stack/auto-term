@@ -1,0 +1,3372 @@
+﻿---------------------------
+AutoNexus / Auto CLI
+---------------------------
+Loading AmConfig from Some("C:\\Users\\zhaop\\.auto\\auto-man\\am.at")...
+AmConfig: AmConfig {
+  name: default
+  index: {
+    soutek: git@codeup.aliyun.com:soutek/auto-stack/auto-index.git
+    boe: git@codeup.aliyun.com:soutek/boe/index.git
+    default: git@gitee.com:auto-stack/auto-index.git
+  }
+}
+
+
+Loaded port: windows_ninja
+port NAME: windows_ninja
+11:54:10 [0m[33m[WARN] [0mPac::new: skipping unknown target node 'rust_sidecar'
+all index: {"soutek": "git@codeup.aliyun.com:soutek/auto-stack/auto-index.git", "boe": "git@codeup.aliyun.com:soutek/boe/index.git", "default": "git@gitee.com:auto-stack/auto-index.git"}
+used index: ["default"]
+11:54:10 [0m[34m[INFO] [0mloading index store from C:/Users/zhaop/.auto/auto-man/index/default
+setting port builder: windows_ninja ninja, at build
+11:54:10 [0m[34m[INFO] [0mAutoCache initialized for project: auto-term
+  Backend API server port: 17401 (from pac.at)
+  Frontend dev server port: 17400 (from pac.at)
+  VM window size: 802x482 (from pac.at)
+  VM window title: 终端 (from pac.at)
+  UI theme: dark (from pac.at)
+11:54:10 [0m[34m[INFO] [0mRunning project ...
+
+------------ output ------------
+─────────────────────────────────
+Cache: 1 files, 1 artifacts cached
+─────────────────────────────────
+Running Vue dev server (backend: vue)
+Running Vue dev server (backend: vue)
+  app.at (cached)
+No changes detected, using cached files
+11:54:10 [0m[33m[WARN] [0mPac::new: skipping unknown target node 'rust_sidecar'
+11:54:10 [0m[34m[INFO] [0mDownloading deps
+11:54:10 [0m[34m[INFO] [0mdownload done!
+11:54:10 [0m[34m[INFO] [0m--- pac: auto-term ---
+
+╭──────┬──────┬────┬──────╮
+│[94m [39m[94mname[39m[94m [39m│[94m [39m[94mkind[39m[94m [39m│[94m [39m[94mat[39m[94m [39m│[94m [39m[94mdirs[39m[94m [39m│
+╰──────┴──────┴────┴──────╯
+11:54:10 [0m[34m[INFO] [0mLinking targets with dependencies
+11:54:10 [0m[34m[INFO] [0mScanning targets for srcs and incs, only major targets and their deps are scanned
+
+▶ Step 1/6: Checking source files...
+
+▶ Step 2/6: Generating API client...
+  ✓ Generated TypeScript client: dist/src/lib/api.ts
+  ✓ rust_sidecar applied to back crate
+  ✓ Generated Rust server: app-back/
+
+▶ Step 3/6: Materializing UI components...
+  ✓ Bundled ui components: 0 copied, 2 already present
+
+▶ Step 4/6: Installing dependencies...
+  ✓ Wrote .npmrc (build approvals for esbuild/vue-demi)
+
+▶ Installing dependencies...
+  Running: pnpm install
+✓ Lockfile passes supply-chain policies (verified 1h ago)
+Lockfile is up to date, resolution step is skipped
+Already up to date
+
+Done in 535ms using pnpm v11.6.0
+  ✓ Dependencies installed
+▶ shadcn-vue components already installed (skipping)
+
+▶ Step 5/6: Copying public assets...
+▶ No public assets to copy
+  ✓ rust_sidecar applied to back crate
+  ✓ Generated Rust server: app-back/
+
+▶ Starting API backend server (Rust axum)...
+  cargo run --manifest-path D:\autostack\auto-term\app\rust-workspace\app-back\Cargo.toml
+  ✓ API server starting (PID: 37808)...
+  Waiting for API server to be ready...
+auto.exe : warning: unused doc comment
+At C:\Users\zhaop\AppData\Local\Temp\vue-launch.ps1:3 char:1
++ & D:\autostack\auto-lang\target\debug\auto.exe run -r vue 2>&1 | Out- ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (warning: unused doc comment:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+   --> D:\autostack\auto-lang\crates\shim-metadata\src\classify.rs:213:13
+    |
+213 |               /// 回调令牌,wrapper adapter 重入 VM);其余拥有外来类型 v1 跳过
+    |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+214 | /             Ty::OpaqueOwned(n) if n.contains("Fn") => {
+215 | |                 args.push(ArgPlan::Callback);
+216 | |                 continue;
+217 | |             }
+    | |_____________- rustdoc does not generate documentation for match arms
+    |
+    = help: use `//` for a plain comment
+    = note: `#[warn(unused_doc_comments)]` (part of `#[warn(unused)]`) on by default
+
+warning: `shim-metadata` (lib) generated 1 warning
+warning: linker stdout: 正在创建库 D:\autostack\auto-term\app\rust-workspace\target\debug\deps\auto_macros-20ec29b8b4c34484.dll.lib 和对象 D:\autostack\auto-term\app\rust-workspace\target\debug\deps\auto_macros-20ec29b8b4c34484.dll.exp
+  |
+  = note: `#[warn(linker_messages)]` on by default
+
+warning: `auto-macros` (lib) generated 1 warning
+warning: unused doc comment
+   --> D:\autostack\auto-lang\crates\auto-lang\src\aura\extract.rs:874:1
+    |
+874 | /// Extract view node from parsed ViewNode
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ rustdoc does not generate documentation for macro invocations
+    |
+    = help: to document an item produced by a macro, the macro must produce the documentation as part of its expansion
+    = note: `#[warn(unused_doc_comments)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused import: `ViewProp`
+  --> D:\autostack\auto-lang\crates\auto-lang\src\aura\extract.rs:13:50
+   |
+13 | use crate::ast::{Expr, Type, Key, ViewPropValue, ViewProp, ViewEvent};
+   |                                                  ^^^^^^^^
+   |
+   = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: unnecessary parentheses around block return value
+   --> D:\autostack\auto-lang\crates\auto-lang\src\design_tokens\registry.rs:190:9
+    |
+190 |         ((g - b) / d + if g < b { 6.0 } else { 0.0 })
+    |         ^                                           ^
+    |
+    = note: `#[warn(unused_parens)]` (part of `#[warn(unused)]`) on by default
+help: remove these parentheses
+    |
+190 -         ((g - b) / d + if g < b { 6.0 } else { 0.0 })
+190 +         (g - b) / d + if g < b { 6.0 } else { 0.0 }
+    |
+
+warning: unused import: `Name`
+  --> D:\autostack\auto-lang\crates\auto-lang\src\design_tokens\recipe.rs:14:29
+   |
+14 | use crate::ast::{Arg, Expr, Name};
+   |                             ^^^^
+
+warning: unused imports: `Expr` and `Stmt`
+    --> D:\autostack\auto-lang\crates\auto-lang\src\ui_gen\rust.rs:4149:26
+     |
+4149 |         use crate::ast::{Expr, Stmt};
+     |                          ^^^^  ^^^^
+
+warning: unused import: `auto_val::Op`
+    --> D:\autostack\auto-lang\crates\auto-lang\src\ui_gen\rust.rs:4150:13
+     |
+4150 |         use auto_val::Op;
+     |             ^^^^^^^^^^^^
+
+warning: unnecessary parentheses around `if` condition
+    --> D:\autostack\auto-lang\crates\auto-lang\src\ui_gen\rust.rs:5715:20
+     |
+5715 |                 if (fn_name.starts_with("store.") || fn_name.starts_with("self.store.")) {
+     |                    ^                                                                   ^
+     |
+help: remove these parentheses
+     |
+5715 -                 if (fn_name.starts_with("store.") || fn_name.starts_with("self.store.")) {
+5715 +                 if fn_name.starts_with("store.") || fn_name.starts_with("self.store.") {
+     |
+
+warning: unused import: `std::collections::HashSet`
+   --> D:\autostack\auto-lang\crates\auto-lang\src\ui_gen\api.rs:283:5
+    |
+283 | use std::collections::HashSet;
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `Args`
+  --> D:\autostack\auto-lang\crates\auto-lang\src\trans\emit.rs:15:23
+   |
+15 | use crate::ast::{Arg, Args, Body, Call, Code, Expr, Fn, For, If, Iter, Stmt, Store, StoreKind, Try, Use, UseKind};
+   |                       ^^^^
+
+warning: unused imports: `NATIVE_PRINT_F64` and `NATIVE_PRINT_U64`
+ --> D:\autostack\auto-lang\crates\auto-lang\src\vm\codegen.rs:7:993
+  |
+7 | ...E_BASENAME, NATIVE_PRINT_F32, NATIVE_PRINT_F64, NATIVE_PRINT_I32, NATIVE_PRINT_STR, NATIVE_PRINT_U64, NATIVE_PRINT_UNIFIED, NATIVE...
+  |                                  ^^^^^^^^^^^^^^^^                                      ^^^^^^^^^^^^^^^^
+
+warning: unused import: `std::fmt::Write`
+  --> D:\autostack\auto-lang\crates\auto-lang\src\vm\abt\mod.rs:81:13
+   |
+81 |         use std::fmt::Write;
+   |             ^^^^^^^^^^^^^^^
+
+warning: unused import: `std::sync::atomic::Ordering`
+   --> D:\autostack\auto-lang\crates\auto-lang\src\vm\engine.rs:889:13
+    |
+889 |         use std::sync::atomic::Ordering;
+    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `crate::vm::ffi::VMConvertible`
+     --> D:\autostack\auto-lang\crates\auto-lang\src\vm\engine.rs:10542:9
+      |
+10542 |     use crate::vm::ffi::VMConvertible;
+      |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `crate::vm::task::AutoTask`
+     --> D:\autostack\auto-lang\crates\auto-lang\src\vm\engine.rs:10543:9
+      |
+10543 |     use crate::vm::task::AutoTask;
+      |         ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `dashmap::DashMap`
+  --> D:\autostack\auto-lang\crates\auto-lang\src\vm\rc.rs:20:5
+   |
+20 | use dashmap::DashMap;
+   |     ^^^^^^^^^^^^^^^^
+
+warning: unused import: `AtomicU64`
+  --> D:\autostack\auto-lang\crates\auto-lang\src\vm\rc.rs:22:36
+   |
+22 | use std::sync::atomic::{AtomicU32, AtomicU64, Ordering};
+   |                                    ^^^^^^^^^
+
+warning: unused doc comment
+    --> D:\autostack\auto-lang\crates\auto-lang\src\vm\ffi\stdlib.rs:2779:1
+     |
+2779 | /// 原始（inventory rust_fn）shim 的暂存表：wrapper 规整首参后委托原实现。
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ rustdoc does not generate documentation for macro invocations
+     |
+     = help: to document an item produced by a macro, the macro must produce the documentation as part of its expansion
+
+warning: unused doc comment
+   --> D:\autostack\auto-lang\crates\auto-lang\src\vm\ffi\dep_methods.rs:878:1
+    |
+878 | / /// 同步调用期有效的回调帧(裸指针仅在 marshaller 调用窗口内解引用;
+879 | | /// 单线程原型,深度 1)。Option 空即"不在回调窗口"。
+    | |_--------------------------------------------------^
+    |   |
+    |   rustdoc does not generate documentation for macro invocations
+    |
+    = help: to document an item produced by a macro, the macro must produce the documentation as part of its expansion
+
+warning: unnecessary parentheses around assigned value
+   --> D:\autostack\auto-lang\crates\auto-lang\src\vm\ffi\term_engine.rs:689:26
+    |
+689 |         let Ok(paused) = (lib.get::<unsafe extern "C" fn(*mut core::ffi::c_void) -> c_int>(
+    |                          ^
+690 |             b"autoterm_engine_backlog_paused\0",
+691 |         )) else {
+    |          ^
+    |
+help: remove these parentheses
+    |
+689 ~         let Ok(paused) = lib.get::<unsafe extern "C" fn(*mut core::ffi::c_void) -> c_int>(
+690 |             b"autoterm_engine_backlog_paused\0",
+691 ~         ) else {
+    |
+
+warning: unnecessary parentheses around assigned value
+   --> D:\autostack\auto-lang\crates\auto-lang\src\vm\ffi\term_engine.rs:728:27
+    |
+728 |         let Ok(dropped) = (lib.get::<unsafe extern "C" fn(*mut core::ffi::c_void) -> c_int>(
+    |                           ^
+729 |             b"autoterm_engine_overflow_count\0",
+730 |         )) else {
+    |          ^
+    |
+help: remove these parentheses
+    |
+728 ~         let Ok(dropped) = lib.get::<unsafe extern "C" fn(*mut core::ffi::c_void) -> c_int>(
+729 |             b"autoterm_engine_overflow_count\0",
+730 ~         ) else {
+    |
+
+warning: unused import: `crate::run`
+  --> D:\autostack\auto-lang\crates\auto-lang\src\vm\tests_chart_geometry.rs:12:5
+   |
+12 | use crate::run;
+   |     ^^^^^^^^^^
+
+warning: unused imports: `VueGenerator` and `VueMode`
+    --> D:\autostack\auto-lang\crates\auto-lang\src\lib.rs:6295:76
+     |
+6295 |     use crate::ui_gen::{generate_component_from_file, ComponentGenOptions, VueGenerator, VueMode};
+     |                                                                            ^^^^^^^^^^^^  ^^^^^^^
+
+warning: unused import: `AtomicBool`
+  --> D:\autostack\auto-lang\crates\auto-lang\src\ui\style\mod.rs:41:29
+   |
+41 |     use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
+   |                             ^^^^^^^^^^
+
+warning: unused import: `Try`
+  --> D:\autostack\auto-lang\crates\auto-lang\src\ui\handler_codegen.rs:22:73
+   |
+22 |     Arg, Body, Branch, Expr, Fn, FnKind, If, Member, Name, Param, Stmt, Try, Type, TypeDecl,
+   |                                                                         ^^^
+
+warning: variable does not need to be mutable
+   --> D:\autostack\auto-lang\crates\auto-lang\src\aura\extract.rs:689:24
+    |
+689 |     let (mut handlers, mut handler_params) = if let Some(on) = &decl.on {
+    |                        ----^^^^^^^^^^^^^^
+    |                        |
+    |                        help: remove this `mut`
+    |
+    = note: `#[warn(unused_mut)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused variable: `def`
+   --> D:\autostack\auto-lang\crates\auto-lang\src\aura\schema.rs:327:21
+    |
+327 |         if let Some(def) = self.elements.get(tag) {
+    |                     ^^^ help: if this is intentional, prefix it with an underscore: `_def`
+    |
+    = note: `#[warn(unused_variables)]` (part of `#[warn(unused)]`) on by default
+
+warning: variable does not need to be mutable
+    --> D:\autostack\auto-lang\crates\auto-lang\src\ui_gen\vue.rs:6357:34
+     |
+6357 | ...                   let (mut static_classes, _dc, _ds) = self.extract_classes(tag, props);
+     |                            ----^^^^^^^^^^^^^^
+     |                            |
+     |                            help: remove this `mut`
+
+warning: unreachable pattern
+    --> D:\autostack\auto-lang\crates\auto-lang\src\ui_gen\vue.rs:8846:13
+     |
+8817 |             "option" | "Option" => "option".to_string(),
+     |             ------------------- matches all the relevant values
+...
+8846 |             "option" | "Option" => "option".to_string(),
+     |             ^^^^^^^^^^^^^^^^^^^ no value can reach this
+     |
+     = note: `#[warn(unreachable_patterns)]` (part of `#[warn(unused)]`) on by default
+
+warning: unreachable pattern
+    --> D:\autostack\auto-lang\crates\auto-lang\src\ui_gen\vue.rs:9382:17
+     |
+9382 |                 _ => {}
+     |                 ^ no value can reach this
+     |
+note: multiple earlier patterns match some of the same values
+    --> D:\autostack\auto-lang\crates\auto-lang\src\ui_gen\vue.rs:9382:17
+     |
+9255 |                 AuraPropValue::StyleBinding(bindings) => {
+     |                 ------------------------------------- matches some of the same values
+...
+9274 |                 AuraPropValue::Expr(crate::ast::Expr::Str(s)) => {
+     |                 --------------------------------------------- matches some of the same values
+...
+9304 |                 AuraPropValue::Expr(crate::ast::Expr::If(if_stmt)) => {
+     |                 -------------------------------------------------- matches some of the same values
+...
+9317 |                 AuraPropValue::Expr(crate::ast::Expr::Array(elems)) => {
+     |                 --------------------------------------------------- matches some of the same values
+...
+9382 |                 _ => {}
+     |                 ^ ...and 1 other patterns collectively make this unreachable
+
+warning: unused variable: `store_check`
+    --> D:\autostack\auto-lang\crates\auto-lang\src\ui_gen\rust.rs:4411:21
+     |
+4411 |                 let store_check = format!("{}.{}", first, part);
+     |                     ^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_store_check`
+
+warning: variable does not need to be mutable
+   --> D:\autostack\auto-lang\crates\auto-lang\src\ui_gen\widget\registry.rs:336:13
+    |
+336 |         let mut scroll_scrollbar = WidgetSpec::new("ScrollAreaScrollbar", WidgetCategory::Layout)
+    |             ----^^^^^^^^^^^^^^^^
+    |             |
+    |             help: remove this `mut`
+
+warning: variable does not need to be mutable
+   --> D:\autostack\auto-lang\crates\auto-lang\src\ui_gen\widget\registry.rs:341:13
+    |
+341 |         let mut scroll_thumb = WidgetSpec::new("ScrollAreaThumb", WidgetCategory::Layout)
+    |             ----^^^^^^^^^^^^
+    |             |
+    |             help: remove this `mut`
+
+warning: variable does not need to be mutable
+   --> D:\autostack\auto-lang\crates\auto-lang\src\ui_gen\widget\registry.rs:534:13
+    |
+534 |         let mut select_value = WidgetSpec::new("SelectValue", WidgetCategory::Form)
+    |             ----^^^^^^^^^^^^
+    |             |
+    |             help: remove this `mut`
+
+warning: variable does not need to be mutable
+    --> D:\autostack\auto-lang\crates\auto-lang\src\ui_gen\widget\registry.rs:1127:13
+     |
+1127 |         let mut breadcrumb_sep = WidgetSpec::new("BreadcrumbSeparator", WidgetCategory::Navigation)
+     |             ----^^^^^^^^^^^^^^
+     |             |
+     |             help: remove this `mut`
+
+warning: variable does not need to be mutable
+    --> D:\autostack\auto-lang\crates\auto-lang\src\ui_gen\widget\registry.rs:1192:13
+     |
+1192 |         let mut pagination_link = WidgetSpec::new("PaginationLink", WidgetCategory::Navigation)
+     |             ----^^^^^^^^^^^^^^^
+     |             |
+     |             help: remove this `mut`
+
+warning: variable does not need to be mutable
+    --> D:\autostack\auto-lang\crates\auto-lang\src\ui_gen\widget\registry.rs:1197:13
+     |
+1197 |         let mut pagination_ellipsis = WidgetSpec::new("PaginationEllipsis", WidgetCategory::Navigation)
+     |             ----^^^^^^^^^^^^^^^^^^^
+     |             |
+     |             help: remove this `mut`
+
+warning: variable does not need to be mutable
+    --> D:\autostack\auto-lang\crates\auto-lang\src\ui_gen\widget\registry.rs:1202:13
+     |
+1202 |         let mut pagination_next = WidgetSpec::new("PaginationNext", WidgetCategory::Navigation)
+     |             ----^^^^^^^^^^^^^^^
+     |             |
+     |             help: remove this `mut`
+
+warning: variable does not need to be mutable
+    --> D:\autostack\auto-lang\crates\auto-lang\src\ui_gen\widget\registry.rs:1207:13
+     |
+1207 |         let mut pagination_prev = WidgetSpec::new("PaginationPrevious", WidgetCategory::Navigation)
+     |             ----^^^^^^^^^^^^^^^
+     |             |
+     |             help: remove this `mut`
+
+warning: variable does not need to be mutable
+    --> D:\autostack\auto-lang\crates\auto-lang\src\ui_gen\widget\registry.rs:1850:13
+     |
+1850 |         let mut toast_viewport = WidgetSpec::new("ToastViewport", WidgetCategory::Feedback)
+     |             ----^^^^^^^^^^^^^^
+     |             |
+     |             help: remove this `mut`
+
+warning: variable does not need to be mutable
+    --> D:\autostack\auto-lang\crates\auto-lang\src\ui_gen\widget\registry.rs:1861:13
+     |
+1861 |         let mut toast_close = WidgetSpec::new("ToastClose", WidgetCategory::Feedback)
+     |             ----^^^^^^^^^^^
+     |             |
+     |             help: remove this `mut`
+
+warning: variable does not need to be mutable
+    --> D:\autostack\auto-lang\crates\auto-lang\src\ui_gen\widget\registry.rs:1899:13
+     |
+1899 |         let mut sonner = WidgetSpec::new("Sonner", WidgetCategory::Feedback)
+     |             ----^^^^^^
+     |             |
+     |             help: remove this `mut`
+
+warning: variable does not need to be mutable
+    --> D:\autostack\auto-lang\crates\auto-lang\src\ui_gen\widget\registry.rs:2070:13
+     |
+2070 |         let mut calendar_day = WidgetSpec::new("CalendarDay", WidgetCategory::Data)
+     |             ----^^^^^^^^^^^^
+     |             |
+     |             help: remove this `mut`
+
+warning: value assigned to `sub_widgets_out` is never read
+   --> D:\autostack\auto-lang\crates\auto-lang\src\ui_gen\api.rs:726:44
+    |
+726 |     let mut sub_widgets_out: Vec<String> = Vec::new();
+    |                                            ^^^^^^^^^^ this value is reassigned later and never used
+...
+789 |         sub_widgets_out = package_names;
+    |         --------------- `sub_widgets_out` is overwritten here before the previous value is read
+    |
+    = note: `#[warn(unused_assignments)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused variable: `count`
+   --> D:\autostack\auto-lang\crates\auto-lang\src\ui_gen\validators.rs:674:9
+    |
+674 |     let count = template.matches("AutoDownEditor").count();
+    |         ^^^^^ help: if this is intentional, prefix it with an underscore: `_count`
+
+warning: unused variable: `w`
+    --> D:\autostack\auto-lang\crates\auto-lang\src\parser.rs:1383:21
+     |
+1383 |                 let w = "__w".to_string();
+     |                     ^ help: if this is intentional, prefix it with an underscore: `_w`
+
+warning: variable does not need to be mutable
+    --> D:\autostack\auto-lang\crates\auto-lang\src\parser.rs:2542:13
+     |
+2542 |         let mut rollback = |slf: &mut Self| {
+     |             ----^^^^^^^^
+     |             |
+     |             help: remove this `mut`
+
+warning: unused variable: `open`
+     --> D:\autostack\auto-lang\crates\auto-lang\src\parser.rs:10882:14
+      |
+10882 |         let (open, close, close_text) = if self.is_kind(TokenKind::Lt) {
+      |              ^^^^ help: if this is intentional, prefix it with an underscore: `_open`
+
+warning: unused variable: `events`
+     --> D:\autostack\auto-lang\crates\auto-lang\src\parser.rs:13196:45
+      |
+13196 |             ViewNode::Element { tag, props, events, children, .. } => {
+      |                                             ^^^^^^ help: try ignoring the field: `events: _`
+
+warning: unused variable: `method`
+    --> D:\autostack\auto-lang\crates\auto-lang\src\trans\rust.rs:1012:31
+     |
+1012 |         if let Expr::Dot(obj, method) = call.name.as_ref() {
+     |                               ^^^^^^ help: if this is intentional, prefix it with an underscore: `_method`
+
+warning: unreachable pattern
+    --> D:\autostack\auto-lang\crates\auto-lang\src\trans\rust.rs:6163:34
+     |
+6063 |                         "Json" => match method.as_str() {
+     |                         ------ matches all the relevant values
+...
+6163 |                         "json" | "Json" => match method.as_str() {
+     |                                  ^^^^^^ no value can reach this
+
+warning: unreachable pattern
+    --> D:\autostack\auto-lang\crates\auto-lang\src\trans\rust.rs:6283:29
+     |
+6205 | ...                   "as_int" => {
+     |                       -------- matches all the relevant values
+...
+6283 | ...                   "as_int" => {
+     |                       ^^^^^^^^ no value can reach this
+
+warning: unused variable: `name`
+     --> D:\autostack\auto-lang\crates\auto-lang\src\trans\rust.rs:11993:13
+      |
+11993 |         let name = td.name.as_str();
+      |             ^^^^ help: if this is intentional, prefix it with an underscore: `_name`
+
+warning: unused variable: `name`
+     --> D:\autostack\auto-lang\crates\auto-lang\src\trans\rust.rs:12545:9
+      |
+12545 |         name: &str,
+      |         ^^^^ help: if this is intentional, prefix it with an underscore: `_name`
+
+warning: irrefutable `if let` pattern
+     --> D:\autostack\auto-lang\crates\auto-lang\src\trans\rust.rs:19846:20
+      |
+19846 |                 if let crate::ast::Cover::Tag(tc) = cover {
+      |                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+      |
+      = note: this pattern will always match, so the `if let` is useless
+      = help: consider replacing the `if let` with a `let`
+      = note: `#[warn(irrefutable_let_patterns)]` on by default
+
+warning: unused variable: `derive_attr`
+     --> D:\autostack\auto-lang\crates\auto-lang\src\trans\rust.rs:22153:21
+      |
+22153 |                 let derive_attr = caps.get(1).unwrap().as_str();
+      |                     ^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_derive_attr`
+
+warning: unused variable: `has_kw`
+  --> D:\autostack\auto-lang\crates\auto-lang\src\trans\s2s_rules.rs:90:21
+   |
+90 |                 let has_kw = c
+   |                     ^^^^^^ help: if this is intentional, prefix it with an underscore: `_has_kw`
+
+warning: unused variable: `spec_decl`
+    --> D:\autostack\auto-lang\crates\auto-lang\src\vm\codegen.rs:2638:28
+     |
+2638 |             Stmt::SpecDecl(spec_decl) => {
+     |                            ^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_spec_decl`
+
+warning: unused variable: `enum_method`
+    --> D:\autostack\auto-lang\crates\auto-lang\src\vm\codegen.rs:7956:61
+     |
+7956 | ...                   let enum_method = format!("{}.{}", enum_name, method.as_ref());
+     |                           ^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_enum_method`
+
+warning: unreachable pattern
+   --> D:\autostack\auto-lang\crates\auto-lang\src\vm\abt\asm.rs:175:11
+    |
+151 |         | OpCode::LOAD_GLOBAL | OpCode::STORE_GLOBAL
+    |           ------------------- matches all the relevant values
+...
+175 |         | OpCode::LOAD_GLOBAL | OpCode::STORE_GLOBAL
+    |           ^^^^^^^^^^^^^^^^^^^ no value can reach this
+
+warning: unreachable pattern
+   --> D:\autostack\auto-lang\crates\auto-lang\src\vm\abt\asm.rs:175:33
+    |
+151 |         | OpCode::LOAD_GLOBAL | OpCode::STORE_GLOBAL
+    |                                 -------------------- matches all the relevant values
+...
+175 |         | OpCode::LOAD_GLOBAL | OpCode::STORE_GLOBAL
+    |                                 ^^^^^^^^^^^^^^^^^^^^ no value can reach this
+
+warning: unreachable pattern
+   --> D:\autostack\auto-lang\crates\auto-lang\src\vm\abt\disasm.rs:263:11
+    |
+239 |         | OpCode::LOAD_GLOBAL | OpCode::STORE_GLOBAL
+    |           ------------------- matches all the relevant values
+...
+263 |         | OpCode::LOAD_GLOBAL | OpCode::STORE_GLOBAL
+    |           ^^^^^^^^^^^^^^^^^^^ no value can reach this
+
+warning: unreachable pattern
+   --> D:\autostack\auto-lang\crates\auto-lang\src\vm\abt\disasm.rs:263:33
+    |
+239 |         | OpCode::LOAD_GLOBAL | OpCode::STORE_GLOBAL
+    |                                 -------------------- matches all the relevant values
+...
+263 |         | OpCode::LOAD_GLOBAL | OpCode::STORE_GLOBAL
+    |                                 ^^^^^^^^^^^^^^^^^^^^ no value can reach this
+
+warning: variable does not need to be mutable
+  --> D:\autostack\auto-lang\crates\auto-lang\src\vm\abt\mod.rs:87:13
+   |
+87 | ...   let mut emit_line = |s: &str, src_line: Option<u32>, out: &mut String, map: &mut Vec<crate::trans::SourceMapEntry>, line_no: &...
+   |           ----^^^^^^^^^
+   |           |
+   |           help: remove this `mut`
+
+warning: unused variable: `handle`
+    --> D:\autostack\auto-lang\crates\auto-lang\src\vm\engine.rs:6636:33
+     |
+6636 |                     if let Some(handle) = http_response_handle {
+     |                                 ^^^^^^ help: if this is intentional, prefix it with an underscore: `_handle`
+
+warning: unused variable: `other`
+    --> D:\autostack\auto-lang\crates\auto-lang\src\vm\engine.rs:7613:42
+     |
+7613 | ...                   Some(other) => {
+     |                            ^^^^^ help: if this is intentional, prefix it with an underscore: `_other`
+
+warning: value assigned to `old_field_ref` is never read
+    --> D:\autostack\auto-lang\crates\auto-lang\src\vm\engine.rs:4850:58
+     |
+4850 |                       let mut old_field_ref: Option<u64> = None;
+     |                                                            ^^^^ this value is reassigned later and never used
+...
+4864 | /                                 old_field_ref = instance.fields.get(field_index).and_then(|v| match v {
+4865 | |                                     Value::VmRef(r) => Some(r.id as u64),
+4866 | |                                     _ => None,
+4867 | |                                 });
+     | |__________________________________- `old_field_ref` is overwritten here before the previous value is read
+
+warning: value assigned to `old_elem_ref` is never read
+    --> D:\autostack\auto-lang\crates\auto-lang\src\vm\engine.rs:5484:57
+     |
+5484 |                       let mut old_elem_ref: Option<u64> = None;
+     |                                                           ^^^^ this value is reassigned later and never used
+...
+5494 | /                                 old_elem_ref = match &list.elems[index] {
+5495 | |                                     auto_val::Value::VmRef(r) => Some(r.id as u64),
+5496 | |                                     _ => None,
+5497 | |                                 };
+     | |_________________________________- `old_elem_ref` is overwritten here before the previous value is read
+
+warning: variable does not need to be mutable
+   --> D:\autostack\auto-lang\crates\auto-lang\src\vm\rc.rs:328:22
+    |
+328 |             let Some(mut e) = self.heap_rc.get_mut(&id) else {
+    |                      ----^
+    |                      |
+    |                      help: remove this `mut`
+
+warning: unused variable: `k`
+   --> D:\autostack\auto-lang\crates\auto-lang\src\vm\rc.rs:666:25
+    |
+666 |             if let Some(k) = &key {
+    |                         ^ help: if this is intentional, prefix it with an underscore: `_k`
+
+warning: unused variable: `key`
+  --> D:\autostack\auto-lang\crates\auto-lang\src\vm\autodown_natives.rs:59:9
+   |
+59 |     let key = pop_string_arg(task, vm);
+   |         ^^^ help: if this is intentional, prefix it with an underscore: `_key`
+
+warning: unused variable: `vm`
+   --> D:\autostack\auto-lang\crates\auto-lang\src\vm\native.rs:310:38
+    |
+310 | fn shim_int_and(task: &mut AutoTask, vm: &AutoVM) -> Result<(), VMError> {
+    |                                      ^^ help: if this is intentional, prefix it with an underscore: `_vm`
+
+warning: unused variable: `vm`
+   --> D:\autostack\auto-lang\crates\auto-lang\src\vm\native.rs:318:37
+    |
+318 | fn shim_int_or(task: &mut AutoTask, vm: &AutoVM) -> Result<(), VMError> {
+    |                                     ^^ help: if this is intentional, prefix it with an underscore: `_vm`
+
+warning: unused variable: `vm`
+   --> D:\autostack\auto-lang\crates\auto-lang\src\vm\native.rs:326:38
+    |
+326 | fn shim_int_xor(task: &mut AutoTask, vm: &AutoVM) -> Result<(), VMError> {
+    |                                      ^^ help: if this is intentional, prefix it with an underscore: `_vm`
+
+warning: unused variable: `vm`
+   --> D:\autostack\auto-lang\crates\auto-lang\src\vm\native.rs:335:38
+    |
+335 | fn shim_int_not(task: &mut AutoTask, vm: &AutoVM) -> Result<(), VMError> {
+    |                                      ^^ help: if this is intentional, prefix it with an underscore: `_vm`
+
+warning: unused variable: `vm`
+   --> D:\autostack\auto-lang\crates\auto-lang\src\vm\native.rs:343:38
+    |
+343 | fn shim_int_shl(task: &mut AutoTask, vm: &AutoVM) -> Result<(), VMError> {
+    |                                      ^^ help: if this is intentional, prefix it with an underscore: `_vm`
+
+warning: unused variable: `vm`
+   --> D:\autostack\auto-lang\crates\auto-lang\src\vm\native.rs:354:38
+    |
+354 | fn shim_int_shr(task: &mut AutoTask, vm: &AutoVM) -> Result<(), VMError> {
+    |                                      ^^ help: if this is intentional, prefix it with an underscore: `_vm`
+
+warning: unused variable: `vm`
+   --> D:\autostack\auto-lang\crates\auto-lang\src\vm\native.rs:365:38
+    |
+365 | fn shim_int_sar(task: &mut AutoTask, vm: &AutoVM) -> Result<(), VMError> {
+    |                                      ^^ help: if this is intentional, prefix it with an underscore: `_vm`
+
+warning: unused variable: `vm`
+   --> D:\autostack\auto-lang\crates\auto-lang\src\vm\native.rs:379:38
+    |
+379 | fn shim_int_rol(task: &mut AutoTask, vm: &AutoVM) -> Result<(), VMError> {
+    |                                      ^^ help: if this is intentional, prefix it with an underscore: `_vm`
+
+warning: unused variable: `vm`
+   --> D:\autostack\auto-lang\crates\auto-lang\src\vm\native.rs:387:38
+    |
+387 | fn shim_int_ror(task: &mut AutoTask, vm: &AutoVM) -> Result<(), VMError> {
+    |                                      ^^ help: if this is intentional, prefix it with an underscore: `_vm`
+
+warning: unused variable: `vm`
+   --> D:\autostack\auto-lang\crates\auto-lang\src\vm\native.rs:395:45
+    |
+395 | fn shim_int_count_ones(task: &mut AutoTask, vm: &AutoVM) -> Result<(), VMError> {
+    |                                             ^^ help: if this is intentional, prefix it with an underscore: `_vm`
+
+warning: unused variable: `vm`
+   --> D:\autostack\auto-lang\crates\auto-lang\src\vm\native.rs:402:48
+    |
+402 | fn shim_int_leading_zeros(task: &mut AutoTask, vm: &AutoVM) -> Result<(), VMError> {
+    |                                                ^^ help: if this is intentional, prefix it with an underscore: `_vm`
+
+warning: unused variable: `vm`
+   --> D:\autostack\auto-lang\crates\auto-lang\src\vm\native.rs:409:49
+    |
+409 | fn shim_int_trailing_zeros(task: &mut AutoTask, vm: &AutoVM) -> Result<(), VMError> {
+    |                                                 ^^ help: if this is intentional, prefix it with an underscore: `_vm`
+
+warning: unused variable: `vm`
+   --> D:\autostack\auto-lang\crates\auto-lang\src\vm\native.rs:416:41
+    |
+416 | fn shim_int_bitrev(task: &mut AutoTask, vm: &AutoVM) -> Result<(), VMError> {
+    |                                         ^^ help: if this is intentional, prefix it with an underscore: `_vm`
+
+warning: unused variable: `vm`
+   --> D:\autostack\auto-lang\crates\auto-lang\src\vm\native.rs:425:43
+    |
+425 | fn shim_int_bit_read(task: &mut AutoTask, vm: &AutoVM) -> Result<(), VMError> {
+    |                                           ^^ help: if this is intentional, prefix it with an underscore: `_vm`
+
+warning: unused variable: `vm`
+   --> D:\autostack\auto-lang\crates\auto-lang\src\vm\native.rs:437:43
+    |
+437 | fn shim_int_bit_test(task: &mut AutoTask, vm: &AutoVM) -> Result<(), VMError> {
+    |                                           ^^ help: if this is intentional, prefix it with an underscore: `_vm`
+
+warning: unused variable: `vm`
+   --> D:\autostack\auto-lang\crates\auto-lang\src\vm\native.rs:448:41
+    |
+448 | fn shim_int_bit_on(task: &mut AutoTask, vm: &AutoVM) -> Result<(), VMError> {
+    |                                         ^^ help: if this is intentional, prefix it with an underscore: `_vm`
+
+warning: unused variable: `vm`
+   --> D:\autostack\auto-lang\crates\auto-lang\src\vm\native.rs:458:42
+    |
+458 | fn shim_int_bit_off(task: &mut AutoTask, vm: &AutoVM) -> Result<(), VMError> {
+    |                                          ^^ help: if this is intentional, prefix it with an underscore: `_vm`
+
+warning: unused variable: `vm`
+   --> D:\autostack\auto-lang\crates\auto-lang\src\vm\native.rs:468:43
+    |
+468 | fn shim_int_bit_flip(task: &mut AutoTask, vm: &AutoVM) -> Result<(), VMError> {
+    |                                           ^^ help: if this is intentional, prefix it with an underscore: `_vm`
+
+warning: unused variable: `vm`
+   --> D:\autostack\auto-lang\crates\auto-lang\src\vm\native.rs:499:43
+    |
+499 |         pub fn $name(task: &mut AutoTask, vm: &AutoVM) -> Result<(), VMError> {
+    |                                           ^^
+...
+518 | math_unary_shim!(shim_math_sin, sin);
+    | ------------------------------------ in this macro invocation
+    |
+help: `vm` is captured in macro and introduced a unused variable
+   --> D:\autostack\auto-lang\crates\auto-lang\src\vm\native.rs:499:43
+    |
+499 |         pub fn $name(task: &mut AutoTask, vm: &AutoVM) -> Result<(), VMError> {
+    |                                           ^^
+...
+518 | math_unary_shim!(shim_math_sin, sin);
+    | ------------------------------------ in this macro invocation
+    = note: this warning originates in the macro `math_unary_shim` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+warning: unused variable: `vm`
+   --> D:\autostack\auto-lang\crates\auto-lang\src\vm\native.rs:499:43
+    |
+499 |         pub fn $name(task: &mut AutoTask, vm: &AutoVM) -> Result<(), VMError> {
+    |                                           ^^
+...
+519 | math_unary_shim!(shim_math_cos, cos);
+    | ------------------------------------ in this macro invocation
+    |
+help: `vm` is captured in macro and introduced a unused variable
+   --> D:\autostack\auto-lang\crates\auto-lang\src\vm\native.rs:499:43
+    |
+499 |         pub fn $name(task: &mut AutoTask, vm: &AutoVM) -> Result<(), VMError> {
+    |                                           ^^
+...
+519 | math_unary_shim!(shim_math_cos, cos);
+    | ------------------------------------ in this macro invocation
+    = note: this warning originates in the macro `math_unary_shim` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+warning: unused variable: `vm`
+   --> D:\autostack\auto-lang\crates\auto-lang\src\vm\native.rs:499:43
+    |
+499 |         pub fn $name(task: &mut AutoTask, vm: &AutoVM) -> Result<(), VMError> {
+    |                                           ^^
+...
+520 | math_unary_shim!(shim_math_tan, tan);
+    | ------------------------------------ in this macro invocation
+    |
+help: `vm` is captured in macro and introduced a unused variable
+   --> D:\autostack\auto-lang\crates\auto-lang\src\vm\native.rs:499:43
+    |
+499 |         pub fn $name(task: &mut AutoTask, vm: &AutoVM) -> Result<(), VMError> {
+    |                                           ^^
+...
+520 | math_unary_shim!(shim_math_tan, tan);
+    | ------------------------------------ in this macro invocation
+    = note: this warning originates in the macro `math_unary_shim` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+warning: unused variable: `vm`
+   --> D:\autostack\auto-lang\crates\auto-lang\src\vm\native.rs:499:43
+    |
+499 |         pub fn $name(task: &mut AutoTask, vm: &AutoVM) -> Result<(), VMError> {
+    |                                           ^^
+...
+523 | math_unary_shim!(shim_math_abs_f, abs);
+    | -------------------------------------- in this macro invocation
+    |
+help: `vm` is captured in macro and introduced a unused variable
+   --> D:\autostack\auto-lang\crates\auto-lang\src\vm\native.rs:499:43
+    |
+499 |         pub fn $name(task: &mut AutoTask, vm: &AutoVM) -> Result<(), VMError> {
+    |                                           ^^
+...
+523 | math_unary_shim!(shim_math_abs_f, abs);
+    | -------------------------------------- in this macro invocation
+    = note: this warning originates in the macro `math_unary_shim` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+warning: unused variable: `vm`
+   --> D:\autostack\auto-lang\crates\auto-lang\src\vm\native.rs:499:43
+    |
+499 |         pub fn $name(task: &mut AutoTask, vm: &AutoVM) -> Result<(), VMError> {
+    |                                           ^^
+...
+524 | math_unary_shim!(shim_math_floor, floor);
+    | ---------------------------------------- in this macro invocation
+    |
+help: `vm` is captured in macro and introduced a unused variable
+   --> D:\autostack\auto-lang\crates\auto-lang\src\vm\native.rs:499:43
+    |
+499 |         pub fn $name(task: &mut AutoTask, vm: &AutoVM) -> Result<(), VMError> {
+    |                                           ^^
+...
+524 | math_unary_shim!(shim_math_floor, floor);
+    | ---------------------------------------- in this macro invocation
+    = note: this warning originates in the macro `math_unary_shim` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+warning: unused variable: `vm`
+   --> D:\autostack\auto-lang\crates\auto-lang\src\vm\native.rs:499:43
+    |
+499 |         pub fn $name(task: &mut AutoTask, vm: &AutoVM) -> Result<(), VMError> {
+    |                                           ^^
+...
+525 | math_unary_shim!(shim_math_ceil, ceil);
+    | -------------------------------------- in this macro invocation
+    |
+help: `vm` is captured in macro and introduced a unused variable
+   --> D:\autostack\auto-lang\crates\auto-lang\src\vm\native.rs:499:43
+    |
+499 |         pub fn $name(task: &mut AutoTask, vm: &AutoVM) -> Result<(), VMError> {
+    |                                           ^^
+...
+525 | math_unary_shim!(shim_math_ceil, ceil);
+    | -------------------------------------- in this macro invocation
+    = note: this warning originates in the macro `math_unary_shim` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+warning: unused variable: `vm`
+   --> D:\autostack\auto-lang\crates\auto-lang\src\vm\native.rs:499:43
+    |
+499 |         pub fn $name(task: &mut AutoTask, vm: &AutoVM) -> Result<(), VMError> {
+    |                                           ^^
+...
+526 | math_unary_shim!(shim_math_round, round);
+    | ---------------------------------------- in this macro invocation
+    |
+help: `vm` is captured in macro and introduced a unused variable
+   --> D:\autostack\auto-lang\crates\auto-lang\src\vm\native.rs:499:43
+    |
+499 |         pub fn $name(task: &mut AutoTask, vm: &AutoVM) -> Result<(), VMError> {
+    |                                           ^^
+...
+526 | math_unary_shim!(shim_math_round, round);
+    | ---------------------------------------- in this macro invocation
+    = note: this warning originates in the macro `math_unary_shim` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+warning: unused variable: `vm`
+   --> D:\autostack\auto-lang\crates\auto-lang\src\vm\native.rs:499:43
+    |
+499 |         pub fn $name(task: &mut AutoTask, vm: &AutoVM) -> Result<(), VMError> {
+    |                                           ^^
+...
+527 | math_unary_shim!(shim_math_exp, exp);
+    | ------------------------------------ in this macro invocation
+    |
+help: `vm` is captured in macro and introduced a unused variable
+   --> D:\autostack\auto-lang\crates\auto-lang\src\vm\native.rs:499:43
+    |
+499 |         pub fn $name(task: &mut AutoTask, vm: &AutoVM) -> Result<(), VMError> {
+    |                                           ^^
+...
+527 | math_unary_shim!(shim_math_exp, exp);
+    | ------------------------------------ in this macro invocation
+    = note: this warning originates in the macro `math_unary_shim` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+warning: unused variable: `vm`
+   --> D:\autostack\auto-lang\crates\auto-lang\src\vm\native.rs:499:43
+    |
+499 |         pub fn $name(task: &mut AutoTask, vm: &AutoVM) -> Result<(), VMError> {
+    |                                           ^^
+...
+528 | math_unary_shim!(shim_math_ln, ln);
+    | ---------------------------------- in this macro invocation
+    |
+help: `vm` is captured in macro and introduced a unused variable
+   --> D:\autostack\auto-lang\crates\auto-lang\src\vm\native.rs:499:43
+    |
+499 |         pub fn $name(task: &mut AutoTask, vm: &AutoVM) -> Result<(), VMError> {
+    |                                           ^^
+...
+528 | math_unary_shim!(shim_math_ln, ln);
+    | ---------------------------------- in this macro invocation
+    = note: this warning originates in the macro `math_unary_shim` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+warning: unused variable: `vm`
+   --> D:\autostack\auto-lang\crates\auto-lang\src\vm\native.rs:499:43
+    |
+499 |         pub fn $name(task: &mut AutoTask, vm: &AutoVM) -> Result<(), VMError> {
+    |                                           ^^
+...
+529 | math_unary_shim!(shim_math_log2, log2);
+    | -------------------------------------- in this macro invocation
+    |
+help: `vm` is captured in macro and introduced a unused variable
+   --> D:\autostack\auto-lang\crates\auto-lang\src\vm\native.rs:499:43
+    |
+499 |         pub fn $name(task: &mut AutoTask, vm: &AutoVM) -> Result<(), VMError> {
+    |                                           ^^
+...
+529 | math_unary_shim!(shim_math_log2, log2);
+    | -------------------------------------- in this macro invocation
+    = note: this warning originates in the macro `math_unary_shim` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+warning: unused variable: `vm`
+   --> D:\autostack\auto-lang\crates\auto-lang\src\vm\native.rs:499:43
+    |
+499 |         pub fn $name(task: &mut AutoTask, vm: &AutoVM) -> Result<(), VMError> {
+    |                                           ^^
+...
+530 | math_unary_shim!(shim_math_log10, log10);
+    | ---------------------------------------- in this macro invocation
+    |
+help: `vm` is captured in macro and introduced a unused variable
+   --> D:\autostack\auto-lang\crates\auto-lang\src\vm\native.rs:499:43
+    |
+499 |         pub fn $name(task: &mut AutoTask, vm: &AutoVM) -> Result<(), VMError> {
+    |                                           ^^
+...
+530 | math_unary_shim!(shim_math_log10, log10);
+    | ---------------------------------------- in this macro invocation
+    = note: this warning originates in the macro `math_unary_shim` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+warning: unused variable: `vm`
+   --> D:\autostack\auto-lang\crates\auto-lang\src\vm\native.rs:499:43
+    |
+499 |         pub fn $name(task: &mut AutoTask, vm: &AutoVM) -> Result<(), VMError> {
+    |                                           ^^
+...
+531 | math_unary_shim!(shim_math_signum, signum);
+    | ------------------------------------------ in this macro invocation
+    |
+help: `vm` is captured in macro and introduced a unused variable
+   --> D:\autostack\auto-lang\crates\auto-lang\src\vm\native.rs:499:43
+    |
+499 |         pub fn $name(task: &mut AutoTask, vm: &AutoVM) -> Result<(), VMError> {
+    |                                           ^^
+...
+531 | math_unary_shim!(shim_math_signum, signum);
+    | ------------------------------------------ in this macro invocation
+    = note: this warning originates in the macro `math_unary_shim` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+warning: unused variable: `vm`
+   --> D:\autostack\auto-lang\crates\auto-lang\src\vm\native.rs:499:43
+    |
+499 |         pub fn $name(task: &mut AutoTask, vm: &AutoVM) -> Result<(), VMError> {
+    |                                           ^^
+...
+532 | math_unary_shim!(shim_math_asin, asin);
+    | -------------------------------------- in this macro invocation
+    |
+help: `vm` is captured in macro and introduced a unused variable
+   --> D:\autostack\auto-lang\crates\auto-lang\src\vm\native.rs:499:43
+    |
+499 |         pub fn $name(task: &mut AutoTask, vm: &AutoVM) -> Result<(), VMError> {
+    |                                           ^^
+...
+532 | math_unary_shim!(shim_math_asin, asin);
+    | -------------------------------------- in this macro invocation
+    = note: this warning originates in the macro `math_unary_shim` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+warning: unused variable: `vm`
+   --> D:\autostack\auto-lang\crates\auto-lang\src\vm\native.rs:499:43
+    |
+499 |         pub fn $name(task: &mut AutoTask, vm: &AutoVM) -> Result<(), VMError> {
+    |                                           ^^
+...
+533 | math_unary_shim!(shim_math_acos, acos);
+    | -------------------------------------- in this macro invocation
+    |
+help: `vm` is captured in macro and introduced a unused variable
+   --> D:\autostack\auto-lang\crates\auto-lang\src\vm\native.rs:499:43
+    |
+499 |         pub fn $name(task: &mut AutoTask, vm: &AutoVM) -> Result<(), VMError> {
+    |                                           ^^
+...
+533 | math_unary_shim!(shim_math_acos, acos);
+    | -------------------------------------- in this macro invocation
+    = note: this warning originates in the macro `math_unary_shim` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+warning: unused variable: `vm`
+   --> D:\autostack\auto-lang\crates\auto-lang\src\vm\native.rs:499:43
+    |
+499 |         pub fn $name(task: &mut AutoTask, vm: &AutoVM) -> Result<(), VMError> {
+    |                                           ^^
+...
+534 | math_unary_shim!(shim_math_atan, atan);
+    | -------------------------------------- in this macro invocation
+    |
+help: `vm` is captured in macro and introduced a unused variable
+   --> D:\autostack\auto-lang\crates\auto-lang\src\vm\native.rs:499:43
+    |
+499 |         pub fn $name(task: &mut AutoTask, vm: &AutoVM) -> Result<(), VMError> {
+    |                                           ^^
+...
+534 | math_unary_shim!(shim_math_atan, atan);
+    | -------------------------------------- in this macro invocation
+    = note: this warning originates in the macro `math_unary_shim` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+warning: unused variable: `vm`
+   --> D:\autostack\auto-lang\crates\auto-lang\src\vm\native.rs:499:43
+    |
+499 |         pub fn $name(task: &mut AutoTask, vm: &AutoVM) -> Result<(), VMError> {
+    |                                           ^^
+...
+535 | math_unary_shim!(shim_math_to_radians, to_radians);
+    | -------------------------------------------------- in this macro invocation
+    |
+help: `vm` is captured in macro and introduced a unused variable
+   --> D:\autostack\auto-lang\crates\auto-lang\src\vm\native.rs:499:43
+    |
+499 |         pub fn $name(task: &mut AutoTask, vm: &AutoVM) -> Result<(), VMError> {
+    |                                           ^^
+...
+535 | math_unary_shim!(shim_math_to_radians, to_radians);
+    | -------------------------------------------------- in this macro invocation
+    = note: this warning originates in the macro `math_unary_shim` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+warning: unused variable: `vm`
+   --> D:\autostack\auto-lang\crates\auto-lang\src\vm\native.rs:499:43
+    |
+499 |         pub fn $name(task: &mut AutoTask, vm: &AutoVM) -> Result<(), VMError> {
+    |                                           ^^
+...
+536 | math_unary_shim!(shim_math_to_degrees, to_degrees);
+    | -------------------------------------------------- in this macro invocation
+    |
+help: `vm` is captured in macro and introduced a unused variable
+   --> D:\autostack\auto-lang\crates\auto-lang\src\vm\native.rs:499:43
+    |
+499 |         pub fn $name(task: &mut AutoTask, vm: &AutoVM) -> Result<(), VMError> {
+    |                                           ^^
+...
+536 | math_unary_shim!(shim_math_to_degrees, to_degrees);
+    | -------------------------------------------------- in this macro invocation
+    = note: this warning originates in the macro `math_unary_shim` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+warning: unused variable: `vm`
+   --> D:\autostack\auto-lang\crates\auto-lang\src\vm\native.rs:509:43
+    |
+509 |         pub fn $name(task: &mut AutoTask, vm: &AutoVM) -> Result<(), VMError> {
+    |                                           ^^
+...
+537 | math_binary_shim!(shim_math_pow, powf);
+    | -------------------------------------- in this macro invocation
+    |
+help: `vm` is captured in macro and introduced a unused variable
+   --> D:\autostack\auto-lang\crates\auto-lang\src\vm\native.rs:509:43
+    |
+509 |         pub fn $name(task: &mut AutoTask, vm: &AutoVM) -> Result<(), VMError> {
+    |                                           ^^
+...
+537 | math_binary_shim!(shim_math_pow, powf);
+    | -------------------------------------- in this macro invocation
+    = note: this warning originates in the macro `math_binary_shim` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+warning: unused variable: `vm`
+   --> D:\autostack\auto-lang\crates\auto-lang\src\vm\native.rs:509:43
+    |
+509 |         pub fn $name(task: &mut AutoTask, vm: &AutoVM) -> Result<(), VMError> {
+    |                                           ^^
+...
+538 | math_binary_shim!(shim_math_powf, powf);
+    | --------------------------------------- in this macro invocation
+    |
+help: `vm` is captured in macro and introduced a unused variable
+   --> D:\autostack\auto-lang\crates\auto-lang\src\vm\native.rs:509:43
+    |
+509 |         pub fn $name(task: &mut AutoTask, vm: &AutoVM) -> Result<(), VMError> {
+    |                                           ^^
+...
+538 | math_binary_shim!(shim_math_powf, powf);
+    | --------------------------------------- in this macro invocation
+    = note: this warning originates in the macro `math_binary_shim` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+warning: unused variable: `vm`
+   --> D:\autostack\auto-lang\crates\auto-lang\src\vm\native.rs:549:45
+    |
+549 | pub fn shim_math_atan2(task: &mut AutoTask, vm: &AutoVM) -> Result<(), VMError> {
+    |                                             ^^ help: if this is intentional, prefix it with an underscore: `_vm`
+
+warning: unused variable: `vm`
+    --> D:\autostack\auto-lang\crates\auto-lang\src\vm\native.rs:1366:52
+     |
+1366 | pub fn shim_code_editor_text(_task: &mut AutoTask, vm: &AutoVM) -> Result<(), VMError> {
+     |                                                    ^^ help: if this is intentional, prefix it with an underscore: `_vm`
+
+warning: unused variable: `vm`
+    --> D:\autostack\auto-lang\crates\auto-lang\src\vm\native.rs:1372:59
+     |
+1372 | pub fn shim_code_editor_cursor_line(_task: &mut AutoTask, vm: &AutoVM) -> Result<(), VMError> {
+     |                                                           ^^ help: if this is intentional, prefix it with an underscore: `_vm`
+
+warning: unused variable: `vm`
+    --> D:\autostack\auto-lang\crates\auto-lang\src\vm\native.rs:1378:58
+     |
+1378 | pub fn shim_code_editor_cursor_col(_task: &mut AutoTask, vm: &AutoVM) -> Result<(), VMError> {
+     |                                                          ^^ help: if this is intentional, prefix it with an underscore: `_vm`
+
+warning: unused variable: `vm`
+    --> D:\autostack\auto-lang\crates\auto-lang\src\vm\native.rs:1384:61
+     |
+1384 | pub fn shim_code_editor_selection_len(_task: &mut AutoTask, vm: &AutoVM) -> Result<(), VMError> {
+     |                                                             ^^ help: if this is intentional, prefix it with an underscore: `_vm`
+
+warning: unused variable: `vm`
+    --> D:\autostack\auto-lang\crates\auto-lang\src\vm\native.rs:1390:52
+     |
+1390 | pub fn shim_code_editor_find(_task: &mut AutoTask, vm: &AutoVM) -> Result<(), VMError> {
+     |                                                    ^^ help: if this is intentional, prefix it with an underscore: `_vm`
+
+warning: unused variable: `vm`
+    --> D:\autostack\auto-lang\crates\auto-lang\src\vm\native.rs:1396:56
+     |
+1396 | pub fn shim_code_editor_set_text(_task: &mut AutoTask, vm: &AutoVM) -> Result<(), VMError> {
+     |                                                        ^^ help: if this is intentional, prefix it with an underscore: `_vm`
+
+warning: unused variable: `vm`
+    --> D:\autostack\auto-lang\crates\auto-lang\src\vm\native.rs:1402:59
+     |
+1402 | pub fn shim_code_editor_fold_toggle(_task: &mut AutoTask, vm: &AutoVM) -> Result<(), VMError> {
+     |                                                           ^^ help: if this is intentional, prefix it with an underscore: `_vm`
+
+warning: unused variable: `vm`
+    --> D:\autostack\auto-lang\crates\auto-lang\src\vm\native.rs:1408:65
+     |
+1408 | pub fn shim_code_editor_fold_hidden_count(_task: &mut AutoTask, vm: &AutoVM) -> Result<(), VMError> {
+     |                                                                 ^^ help: if this is intentional, prefix it with an underscore: `_vm`
+
+warning: unused variable: `vm`
+    --> D:\autostack\auto-lang\crates\auto-lang\src\vm\native.rs:1414:52
+     |
+1414 | pub fn shim_code_editor_undo(_task: &mut AutoTask, vm: &AutoVM) -> Result<(), VMError> {
+     |                                                    ^^ help: if this is intentional, prefix it with an underscore: `_vm`
+
+warning: unused variable: `vm`
+    --> D:\autostack\auto-lang\crates\auto-lang\src\vm\native.rs:1420:52
+     |
+1420 | pub fn shim_code_editor_redo(_task: &mut AutoTask, vm: &AutoVM) -> Result<(), VMError> {
+     |                                                    ^^ help: if this is intentional, prefix it with an underscore: `_vm`
+
+warning: unused variable: `vm`
+    --> D:\autostack\auto-lang\crates\auto-lang\src\vm\native.rs:1426:58
+     |
+1426 | pub fn shim_code_editor_select_all(_task: &mut AutoTask, vm: &AutoVM) -> Result<(), VMError> {
+     |                                                          ^^ help: if this is intentional, prefix it with an underscore: `_vm`
+
+warning: unused variable: `vm`
+    --> D:\autostack\auto-lang\crates\auto-lang\src\vm\native.rs:1432:51
+     |
+1432 | pub fn shim_code_editor_cut(_task: &mut AutoTask, vm: &AutoVM) -> Result<(), VMError> {
+     |                                                   ^^ help: if this is intentional, prefix it with an underscore: `_vm`
+
+warning: unused variable: `vm`
+    --> D:\autostack\auto-lang\crates\auto-lang\src\vm\native.rs:1438:52
+     |
+1438 | pub fn shim_code_editor_copy(_task: &mut AutoTask, vm: &AutoVM) -> Result<(), VMError> {
+     |                                                    ^^ help: if this is intentional, prefix it with an underscore: `_vm`
+
+warning: unused variable: `vm`
+    --> D:\autostack\auto-lang\crates\auto-lang\src\vm\native.rs:1444:53
+     |
+1444 | pub fn shim_code_editor_paste(_task: &mut AutoTask, vm: &AutoVM) -> Result<(), VMError> {
+     |                                                     ^^ help: if this is intentional, prefix it with an underscore: `_vm`
+
+warning: unused variable: `vm`
+    --> D:\autostack\auto-lang\crates\auto-lang\src\vm\native.rs:1450:50
+     |
+1450 | pub fn shim_clipboard_text(_task: &mut AutoTask, vm: &AutoVM) -> Result<(), VMError> {
+     |                                                  ^^ help: if this is intentional, prefix it with an underscore: `_vm`
+
+warning: unused variable: `vm`
+    --> D:\autostack\auto-lang\crates\auto-lang\src\vm\native.rs:1456:54
+     |
+1456 | pub fn shim_clipboard_set_text(_task: &mut AutoTask, vm: &AutoVM) -> Result<(), VMError> {
+     |                                                      ^^ help: if this is intentional, prefix it with an underscore: `_vm`
+
+warning: unused variable: `vm`
+    --> D:\autostack\auto-lang\crates\auto-lang\src\vm\native.rs:1462:47
+     |
+1462 | pub fn shim_dialog_open(_task: &mut AutoTask, vm: &AutoVM) -> Result<(), VMError> {
+     |                                               ^^ help: if this is intentional, prefix it with an underscore: `_vm`
+
+warning: unused variable: `vm`
+    --> D:\autostack\auto-lang\crates\auto-lang\src\vm\native.rs:1468:47
+     |
+1468 | pub fn shim_dialog_save(_task: &mut AutoTask, vm: &AutoVM) -> Result<(), VMError> {
+     |                                               ^^ help: if this is intentional, prefix it with an underscore: `_vm`
+
+warning: unused variable: `vm`
+    --> D:\autostack\auto-lang\crates\auto-lang\src\vm\native.rs:1506:48
+     |
+1506 | pub fn shim_console_clear(task: &mut AutoTask, vm: &AutoVM) -> Result<(), VMError> {
+     |                                                ^^ help: if this is intentional, prefix it with an underscore: `_vm`
+
+warning: unused variable: `vm`
+    --> D:\autostack\auto-lang\crates\auto-lang\src\vm\native.rs:6797:46
+     |
+6797 | pub fn shim_rand_random(task: &mut AutoTask, vm: &AutoVM) -> Result<(), VMError> {
+     |                                              ^^ help: if this is intentional, prefix it with an underscore: `_vm`
+
+warning: unused variable: `vm`
+    --> D:\autostack\auto-lang\crates\auto-lang\src\vm\native.rs:6815:44
+     |
+6815 | pub fn shim_log_noop(_task: &mut AutoTask, vm: &AutoVM) -> Result<(), VMError> {
+     |                                            ^^ help: if this is intentional, prefix it with an underscore: `_vm`
+
+warning: unused variable: `vm`
+    --> D:\autostack\auto-lang\crates\auto-lang\src\vm\native.rs:8568:45
+     |
+8568 | pub fn shim_result_ok(_task: &mut AutoTask, vm: &AutoVM) -> Result<(), VMError> {
+     |                                             ^^ help: if this is intentional, prefix it with an underscore: `_vm`
+
+warning: unused variable: `vm`
+    --> D:\autostack\auto-lang\crates\auto-lang\src\vm\native.rs:8622:45
+     |
+8622 | pub fn shim_rand_float(task: &mut AutoTask, vm: &AutoVM) -> Result<(), VMError> {
+     |                                             ^^ help: if this is intentional, prefix it with an underscore: `_vm`
+
+warning: unused variable: `vm`
+    --> D:\autostack\auto-lang\crates\auto-lang\src\vm\native.rs:8635:44
+     |
+8635 | pub fn shim_rand_bool(task: &mut AutoTask, vm: &AutoVM) -> Result<(), VMError> {
+     |                                            ^^ help: if this is intentional, prefix it with an underscore: `_vm`
+
+warning: unused variable: `vm`
+    --> D:\autostack\auto-lang\crates\auto-lang\src\vm\ffi\stdlib.rs:3535:58
+     |
+3535 | pub fn shim_net_tcp_listener_accept(task: &mut AutoTask, vm: &AutoVM) -> Result<(), VMError> {
+     |                                                          ^^ help: if this is intentional, prefix it with an underscore: `_vm`
+
+warning: unused variable: `vm`
+    --> D:\autostack\auto-lang\crates\auto-lang\src\vm\ffi\stdlib.rs:3574:57
+     |
+3574 | pub fn shim_net_tcp_listener_close(task: &mut AutoTask, vm: &AutoVM) -> Result<(), VMError> {
+     |                                                         ^^ help: if this is intentional, prefix it with an underscore: `_vm`
+
+warning: unused variable: `vm`
+    --> D:\autostack\auto-lang\crates\auto-lang\src\vm\ffi\stdlib.rs:3716:55
+     |
+3716 | pub fn shim_net_tcp_stream_close(task: &mut AutoTask, vm: &AutoVM) -> Result<(), VMError> {
+     |                                                       ^^ help: if this is intentional, prefix it with an underscore: `_vm`
+
+warning: unused variable: `vm`
+    --> D:\autostack\auto-lang\crates\auto-lang\src\vm\ffi\stdlib.rs:3737:66
+     |
+3737 | pub fn shim_net_tcp_stream_set_read_timeout(task: &mut AutoTask, vm: &AutoVM) -> Result<(), VMError> {
+     |                                                                  ^^ help: if this is intentional, prefix it with an underscore: `_vm`
+
+warning: unused variable: `vm`
+    --> D:\autostack\auto-lang\crates\auto-lang\src\vm\ffi\stdlib.rs:3756:67
+     |
+3756 | pub fn shim_net_tcp_stream_set_write_timeout(task: &mut AutoTask, vm: &AutoVM) -> Result<(), VMError> {
+     |                                                                   ^^ help: if this is intentional, prefix it with an underscore: `_vm`
+
+warning: unused variable: `vm`
+    --> D:\autostack\auto-lang\crates\auto-lang\src\vm\ffi\stdlib.rs:3778:55
+     |
+3778 | pub fn shim_net_tcp_stream_flush(task: &mut AutoTask, vm: &AutoVM) -> Result<(), VMError> {
+     |                                                       ^^ help: if this is intentional, prefix it with an underscore: `_vm`
+
+warning: unused variable: `vm`
+    --> D:\autostack\auto-lang\crates\auto-lang\src\vm\ffi\stdlib.rs:3794:61
+     |
+3794 | pub fn shim_net_tcp_stream_set_nodelay(task: &mut AutoTask, vm: &AutoVM) -> Result<(), VMError> {
+     |                                                             ^^ help: if this is intentional, prefix it with an underscore: `_vm`
+
+warning: unused variable: `vm`
+    --> D:\autostack\auto-lang\crates\auto-lang\src\vm\ffi\stdlib.rs:4022:46
+     |
+4022 | pub fn shim_http_server(task: &mut AutoTask, vm: &AutoVM) -> Result<(), VMError> {
+     |                                              ^^ help: if this is intentional, prefix it with an underscore: `_vm`
+
+warning: unused variable: `vm`
+    --> D:\autostack\auto-lang\crates\auto-lang\src\vm\ffi\stdlib.rs:4634:48
+     |
+4634 | pub fn shim_http_response(task: &mut AutoTask, vm: &AutoVM) -> Result<(), VMError> {
+     |                                                ^^ help: if this is intentional, prefix it with an underscore: `_vm`
+
+warning: unused variable: `vm`
+    --> D:\autostack\auto-lang\crates\auto-lang\src\vm\ffi\stdlib.rs:4647:55
+     |
+4647 | pub fn shim_http_response_status(task: &mut AutoTask, vm: &AutoVM) -> Result<(), VMError> {
+     |                                                       ^^ help: if this is intentional, prefix it with an underscore: `_vm`
+
+warning: unused variable: `vm`
+    --> D:\autostack\auto-lang\crates\auto-lang\src\vm\ffi\stdlib.rs:4771:50
+     |
+4771 | pub fn shim_http_rate_limit(task: &mut AutoTask, vm: &AutoVM) -> Result<(), VMError> {
+     |                                                  ^^ help: if this is intentional, prefix it with an underscore: `_vm`
+
+warning: unused variable: `vm`
+    --> D:\autostack\auto-lang\crates\auto-lang\src\vm\ffi\stdlib.rs:5976:55
+     |
+5976 | pub fn shim_response_status_code(task: &mut AutoTask, vm: &AutoVM) -> Result<(), VMError> {
+     |                                                       ^^ help: if this is intentional, prefix it with an underscore: `_vm`
+
+warning: unused variable: `vm`
+    --> D:\autostack\auto-lang\crates\auto-lang\src\vm\ffi\stdlib.rs:6177:54
+     |
+6177 | pub fn shim_http_stream_is_done(task: &mut AutoTask, vm: &AutoVM) -> Result<(), VMError> {
+     |                                                      ^^ help: if this is intentional, prefix it with an underscore: `_vm`
+
+warning: unused variable: `vm`
+    --> D:\autostack\auto-lang\crates\auto-lang\src\vm\ffi\stdlib.rs:6194:52
+     |
+6194 | pub fn shim_http_stream_close(task: &mut AutoTask, vm: &AutoVM) -> Result<(), VMError> {
+     |                                                    ^^ help: if this is intentional, prefix it with an underscore: `_vm`
+
+warning: unused variable: `vm`
+    --> D:\autostack\auto-lang\crates\auto-lang\src\vm\ffi\stdlib.rs:7229:51
+     |
+7229 | pub fn shim_http_last_status(task: &mut AutoTask, vm: &AutoVM) -> Result<(), VMError> {
+     |                                                   ^^ help: if this is intentional, prefix it with an underscore: `_vm`
+
+warning: unused variable: `vm`
+    --> D:\autostack\auto-lang\crates\auto-lang\src\vm\ffi\stdlib.rs:7262:47
+     |
+7262 | pub fn shim_http_listen(_task: &mut AutoTask, vm: &AutoVM) -> Result<(), VMError> {
+     |                                               ^^ help: if this is intentional, prefix it with an underscore: `_vm`
+
+warning: unused variable: `mod_ast`
+    --> D:\autostack\auto-lang\crates\auto-lang\src\lib.rs:3106:20
+     |
+3106 |             let Ok(mod_ast) = parser.parse() else { continue };
+     |                    ^^^^^^^ help: if this is intentional, prefix it with an underscore: `_mod_ast`
+
+warning: taking a mutable reference to a `const` item
+    --> D:\autostack\auto-lang\crates\auto-lang\src\lib.rs:5467:54
+     |
+5467 |         scan_at_files(&src_root, &mut type_store, 0, &mut SCAN_MAX_FILES);
+     |                                                      ^^^^^^^^^^^^^^^^^^^
+     |
+     = note: each usage of a `const` item creates a new temporary
+     = note: the mutable reference will refer to this temporary, not the original `const` item
+note: `const` item defined here
+    --> D:\autostack\auto-lang\crates\auto-lang\src\lib.rs:5417:9
+     |
+5417 |         const SCAN_MAX_FILES: usize = 400;
+     |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     = note: `#[warn(const_item_mutation)]` on by default
+
+warning: unused variable: `g`
+   --> D:\autostack\auto-lang\crates\auto-lang\src\ui\vm_bridge.rs:795:25
+    |
+795 |                     let g = obj.read().unwrap();
+    |                         ^ help: if this is intentional, prefix it with an underscore: `_g`
+
+warning: unused variable: `name`
+    --> D:\autostack\auto-lang\crates\auto-lang\src\ui\vm_bridge.rs:1023:14
+     |
+1023 |         for (name, val) in result.iter_mut() {
+     |              ^^^^ help: if this is intentional, prefix it with an underscore: `_name`
+
+warning: unused variable: `state_dot`
+   --> D:\autostack\auto-lang\crates\auto-lang\src\ui\handler_codegen.rs:926:9
+    |
+926 |     let state_dot = |field: &str| {
+    |         ^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_state_dot`
+
+warning: unused variable: `store_fields`
+    --> D:\autostack\auto-lang\crates\auto-lang\src\ui\handler_codegen.rs:1759:5
+     |
+1759 |     store_fields: &HashMap<String, Vec<String>>,
+     |     ^^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_store_fields`
+
+warning: unused variable: `store_widget_names`
+    --> D:\autostack\auto-lang\crates\auto-lang\src\ui\handler_codegen.rs:1760:5
+     |
+1760 |     store_widget_names: &HashMap<String, String>,
+     |     ^^^^^^^^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_store_widget_names`
+
+warning: constant `AUTO_LIB_FILES_V2` is never used
+    --> D:\autostack\auto-lang\crates\auto-lang\src\lib.rs:1887:18
+     |
+1887 | pub(crate) const AUTO_LIB_FILES_V2: &[&str] = &[
+     |                  ^^^^^^^^^^^^^^^^^
+     |
+     = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: function `aavm2_lib_source` is never used
+    --> D:\autostack\auto-lang\crates\auto-lang\src\lib.rs:1903:15
+     |
+1903 | pub(crate) fn aavm2_lib_source(project_root: &std::path::Path) -> AutoResult<String> {
+     |               ^^^^^^^^^^^^^^^^
+
+warning: function `stmt_symbol_name` is never used
+    --> D:\autostack\auto-lang\crates\auto-lang\src\lib.rs:2701:4
+     |
+2701 | fn stmt_symbol_name(stmt: &crate::ast::Stmt) -> Option<String> {
+     |    ^^^^^^^^^^^^^^^^
+
+warning: field `0` is never read
+    --> D:\autostack\auto-lang\crates\auto-lang\src\lib.rs:2914:16
+     |
+2914 |     StoreFiles(std::collections::HashMap<String, std::path::PathBuf>),
+     |     ---------- ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     |     |
+     |     field in this variant
+     |
+help: consider changing the field to be of unit type to suppress this warning while preserving the field numbering, or remove the field
+     |
+2914 -     StoreFiles(std::collections::HashMap<String, std::path::PathBuf>),
+2914 +     StoreFiles(()),
+     |
+
+warning: function `load_ext_imports_for_vm` is never used
+    --> D:\autostack\auto-lang\crates\auto-lang\src\lib.rs:2975:15
+     |
+2975 | pub(crate) fn load_ext_imports_for_vm(
+     |               ^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `store_decl_as_widget_decl` is never used
+    --> D:\autostack\auto-lang\crates\auto-lang\src\lib.rs:3228:4
+     |
+3228 | fn store_decl_as_widget_decl(
+     |    ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `positioned_parse_errors` is never used
+    --> D:\autostack\auto-lang\crates\auto-lang\src\lib.rs:3378:4
+     |
+3378 | fn positioned_parse_errors(e: &crate::error::AutoError, source: &str) -> String {
+     |    ^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `collect_module_imports` is never used
+    --> D:\autostack\auto-lang\crates\auto-lang\src\lib.rs:3426:4
+     |
+3426 | fn collect_module_imports(
+     |    ^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `extract_api_imports_from_ast` is never used
+    --> D:\autostack\auto-lang\crates\auto-lang\src\lib.rs:6158:4
+     |
+6158 | fn extract_api_imports_from_ast(code: &crate::ast::Code) -> Vec<String> {
+     |    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `is_api_use_stmt` is never used
+    --> D:\autostack\auto-lang\crates\auto-lang\src\lib.rs:6171:4
+     |
+6171 | fn is_api_use_stmt(use_stmt: &crate::ast::Use) -> bool {
+     |    ^^^^^^^^^^^^^^^
+
+warning: function `key_of` is never used
+   --> D:\autostack\auto-lang\crates\auto-lang\src\ui_gen\vue.rs:174:8
+    |
+174 |     fn key_of(node: &AuraNode) -> Option<String> {
+    |        ^^^^^^
+
+warning: method `gen_previewcard_code` is never used
+    --> D:\autostack\auto-lang\crates\auto-lang\src\ui_gen\vue.rs:7915:19
+     |
+ 835 | impl VueGenerator {
+     | ----------------- method in this implementation
+...
+7915 |     pub(crate) fn gen_previewcard_code(
+     |                   ^^^^^^^^^^^^^^^^^^^^
+
+warning: associated function `collect_pattern_idents` is never used
+     --> D:\autostack\auto-lang\crates\auto-lang\src\trans\rust.rs:19830:8
+      |
+  469 | impl RustTrans {
+      | -------------- associated function in this implementation
+...
+19830 |     fn collect_pattern_idents(expr: &Expr, out: &mut HashSet<AutoStr>) {
+      |        ^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `test_a2p` is never used
+    --> D:\autostack\auto-lang\crates\auto-lang\src\trans\python.rs:2599:8
+     |
+2599 |     fn test_a2p(case: &str) -> AutoResult<()> {
+     |        ^^^^^^^^
+
+warning: function `pop_str_idx` is never used
+  --> D:\autostack\auto-lang\crates\auto-lang\src\vm\engine.rs:91:4
+   |
+91 | fn pop_str_idx(ram: &mut VirtualRAM) -> usize {
+   |    ^^^^^^^^^^^
+
+warning: method `decode_tagged_value` is never used
+   --> D:\autostack\auto-lang\crates\auto-lang\src\vm\engine.rs:795:8
+    |
+560 | impl AutoVM {
+    | ----------- method in this implementation
+...
+795 |     fn decode_tagged_value(&self, raw: i32) -> auto_val::Value {
+    |        ^^^^^^^^^^^^^^^^^^^
+
+warning: function `vm_with` is never used
+     --> D:\autostack\auto-lang\crates\auto-lang\src\vm\engine.rs:10488:8
+      |
+10488 |     fn vm_with(code: Vec<u8>) -> AutoVM {
+      |        ^^^^^^^
+
+warning: function `pop_str` is never used
+     --> D:\autostack\auto-lang\crates\auto-lang\src\vm\engine.rs:10492:8
+      |
+10492 |     fn pop_str(vm: &AutoVM, task: &mut AutoTask) -> String {
+      |        ^^^^^^^
+
+warning: function `vm_idle` is never used
+     --> D:\autostack\auto-lang\crates\auto-lang\src\vm\engine.rs:10546:8
+      |
+10546 |     fn vm_idle() -> AutoVM {
+      |        ^^^^^^^
+
+warning: function `vm_with` is never used
+     --> D:\autostack\auto-lang\crates\auto-lang\src\vm\engine.rs:10623:8
+      |
+10623 |     fn vm_with(code: Vec<u8>) -> AutoVM {
+      |        ^^^^^^^
+
+warning: function `push_result_instance` is never used
+     --> D:\autostack\auto-lang\crates\auto-lang\src\vm\engine.rs:10627:8
+      |
+10627 |     fn push_result_instance(vm: &AutoVM, task: &mut AutoTask, kind: &str, field: auto_val::Value) {
+      |        ^^^^^^^^^^^^^^^^^^^^
+
+warning: field `root` is never read
+   --> D:\autostack\auto-lang\crates\auto-lang\src\ui\image_pipeline.rs:946:5
+    |
+944 | struct MediaSession {
+    |        ------------ field in this struct
+945 |     id: String,
+946 |     root: PathBuf,
+    |     ^^^^
+    |
+    = note: `MediaSession` has a derived impl for the trait `Debug`, but this is intentionally ignored during dead code analysis
+
+warning: method `retain_heap_result` is never used
+    --> D:\autostack\auto-lang\crates\auto-lang\src\ui\vm_bridge.rs:1344:8
+     |
+ 231 | impl VmBridge {
+     | ------------- method in this implementation
+...
+1344 |     fn retain_heap_result(&self, out: &Value) {
+     |        ^^^^^^^^^^^^^^^^^^
+
+warning: function `rewrite_stmt` is never used
+   --> D:\autostack\auto-lang\crates\auto-lang\src\ui\handler_codegen.rs:206:4
+    |
+206 | fn rewrite_stmt(stmt: &mut Stmt, state_fields: &HashSet<String>) {
+    |    ^^^^^^^^^^^^
+
+warning: function `synthesize_handler_fn_from_decl` is never used
+    --> D:\autostack\auto-lang\crates\auto-lang\src\ui\handler_codegen.rs:1623:4
+     |
+1623 | fn synthesize_handler_fn_from_decl(
+     |    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `ext_stubs_enabled` is never used
+  --> D:\autostack\auto-lang\crates\auto-lang\src\ui\ext_stubs.rs:38:15
+   |
+38 | pub(crate) fn ext_stubs_enabled() -> bool {
+   |               ^^^^^^^^^^^^^^^^^
+
+warning: struct `ExtImportRef` is never constructed
+  --> D:\autostack\auto-lang\crates\auto-lang\src\ui\ext_stubs.rs:44:19
+   |
+44 | pub(crate) struct ExtImportRef {
+   |                   ^^^^^^^^^^^^
+
+warning: function `collect_useweb_imports` is never used
+  --> D:\autostack\auto-lang\crates\auto-lang\src\ui\ext_stubs.rs:53:15
+   |
+53 | pub(crate) fn collect_useweb_imports(stmts: &[Stmt]) -> Vec<ExtImportRef> {
+   |               ^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `collect_widget_ext_imports` is never used
+  --> D:\autostack\auto-lang\crates\auto-lang\src\ui\ext_stubs.rs:70:15
+   |
+70 | pub(crate) fn collect_widget_ext_imports(decls: &[crate::ast::ui::WidgetDecl]) -> Vec<ExtImportRef> {
+   |               ^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `resolve_ext_source` is never used
+  --> D:\autostack\auto-lang\crates\auto-lang\src\ui\ext_stubs.rs:87:4
+   |
+87 | fn resolve_ext_source(base_dir: &Path, path: &str) -> Option<PathBuf> {
+   |    ^^^^^^^^^^^^^^^^^^
+
+warning: function `resolve_vm_at_adapter` is never used
+   --> D:\autostack\auto-lang\crates\auto-lang\src\ui\ext_stubs.rs:127:15
+    |
+127 | pub(crate) fn resolve_vm_at_adapter(resolved: &Path) -> Option<PathBuf> {
+    |               ^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `load_at_ext_imports` is never used
+   --> D:\autostack\auto-lang\crates\auto-lang\src\ui\ext_stubs.rs:154:15
+    |
+154 | pub(crate) fn load_at_ext_imports(
+    |               ^^^^^^^^^^^^^^^^^^^
+
+warning: function `scan_call_arities` is never used
+   --> D:\autostack\auto-lang\crates\auto-lang\src\ui\ext_stubs.rs:251:15
+    |
+251 | pub(crate) fn scan_call_arities(
+    |               ^^^^^^^^^^^^^^^^^
+
+warning: function `scan_decl_arities` is never used
+   --> D:\autostack\auto-lang\crates\auto-lang\src\ui\ext_stubs.rs:261:15
+    |
+261 | pub(crate) fn scan_decl_arities(
+    |               ^^^^^^^^^^^^^^^^^
+
+warning: function `note_call` is never used
+   --> D:\autostack\auto-lang\crates\auto-lang\src\ui\ext_stubs.rs:289:4
+    |
+289 | fn note_call(call: &crate::ast::Call, targets: &HashSet<String>, out: &mut HashMap<String, usize>) {
+    |    ^^^^^^^^^
+
+warning: function `scan_body` is never used
+   --> D:\autostack\auto-lang\crates\auto-lang\src\ui\ext_stubs.rs:299:4
+    |
+299 | fn scan_body(body: &Body, targets: &HashSet<String>, out: &mut HashMap<String, usize>) {
+    |    ^^^^^^^^^
+
+warning: function `scan_stmts` is never used
+   --> D:\autostack\auto-lang\crates\auto-lang\src\ui\ext_stubs.rs:303:4
+    |
+303 | fn scan_stmts(stmts: &[Stmt], targets: &HashSet<String>, out: &mut HashMap<String, usize>) {
+    |    ^^^^^^^^^^
+
+warning: function `scan_stmt` is never used
+   --> D:\autostack\auto-lang\crates\auto-lang\src\ui\ext_stubs.rs:309:4
+    |
+309 | fn scan_stmt(stmt: &Stmt, targets: &HashSet<String>, out: &mut HashMap<String, usize>) {
+    |    ^^^^^^^^^
+
+warning: function `scan_expr` is never used
+   --> D:\autostack\auto-lang\crates\auto-lang\src\ui\ext_stubs.rs:359:4
+    |
+359 | fn scan_expr(e: &Expr, targets: &HashSet<String>, out: &mut HashMap<String, usize>) {
+    |    ^^^^^^^^^
+
+warning: function `synthesize_stub_fn` is never used
+   --> D:\autostack\auto-lang\crates\auto-lang\src\ui\ext_stubs.rs:421:15
+    |
+421 | pub(crate) fn synthesize_stub_fn(name: &str, arity: usize) -> Stmt {
+    |               ^^^^^^^^^^^^^^^^^^
+
+warning: variable `_stake__disc` should have a snake case name
+    --> D:\autostack\auto-lang\crates\auto-lang\src\vm\native.rs:3158:13
+     |
+3158 |         let _stake__disc = crate::vm::native::StakeGuard::nv(vm, _disc);
+     |             ^^^^^^^^^^^^ help: convert the identifier to snake case: `_stake_disc`
+     |
+     = note: `#[warn(non_snake_case)]` (part of `#[warn(nonstandard_style)]`) on by default
+
+warning: variable `_stake__closure_id` should have a snake case name
+    --> D:\autostack\auto-lang\crates\auto-lang\src\vm\native.rs:3522:9
+     |
+3522 |     let _stake__closure_id = crate::vm::native::StakeGuard::new(vm, _closure_id as i64 as u64);
+     |         ^^^^^^^^^^^^^^^^^^ help: convert the identifier to snake case: `_stake_closure_id`
+
+warning: variable `_stake__func_addr` should have a snake case name
+    --> D:\autostack\auto-lang\crates\auto-lang\src\vm\native.rs:4356:9
+     |
+4356 |     let _stake__func_addr = crate::vm::native::StakeGuard::new(vm, _func_addr as i64 as u64); // Not used in MVP
+     |         ^^^^^^^^^^^^^^^^^ help: convert the identifier to snake case: `_stake_func_addr`
+
+warning: variable `_stake__func_addr` should have a snake case name
+    --> D:\autostack\auto-lang\crates\auto-lang\src\vm\native.rs:4410:9
+     |
+4410 |     let _stake__func_addr = crate::vm::native::StakeGuard::new(vm, _func_addr as i64 as u64); // Not used in MVP
+     |         ^^^^^^^^^^^^^^^^^ help: convert the identifier to snake case: `_stake_func_addr`
+
+warning: variable `_stake__capacity` should have a snake case name
+    --> D:\autostack\auto-lang\crates\auto-lang\src\vm\native.rs:5163:9
+     |
+5163 |     let _stake__capacity = crate::vm::native::StakeGuard::new(vm, _capacity as i64 as u64);
+     |         ^^^^^^^^^^^^^^^^ help: convert the identifier to snake case: `_stake_capacity`
+
+warning: variable `_stake__capacity` should have a snake case name
+    --> D:\autostack\auto-lang\crates\auto-lang\src\vm\native.rs:5995:9
+     |
+5995 |     let _stake__capacity = crate::vm::native::StakeGuard::new(vm, _capacity as i64 as u64);
+     |         ^^^^^^^^^^^^^^^^ help: convert the identifier to snake case: `_stake_capacity`
+
+warning: variable `_stake__arr_id` should have a snake case name
+    --> D:\autostack\auto-lang\crates\auto-lang\src\vm\native.rs:6508:9
+     |
+6508 |     let _stake__arr_id = crate::vm::native::StakeGuard::new(vm, _arr_id as i64 as u64);
+     |         ^^^^^^^^^^^^^^ help: convert the identifier to snake case: `_stake_arr_id`
+
+warning: variable `_stake__inst_id` should have a snake case name
+    --> D:\autostack\auto-lang\crates\auto-lang\src\vm\native.rs:6613:9
+     |
+6613 |     let _stake__inst_id = crate::vm::native::StakeGuard::new(vm, _inst_id as i64 as u64);
+     |         ^^^^^^^^^^^^^^^ help: convert the identifier to snake case: `_stake_inst_id`
+
+warning: variable `_stake__inst_id` should have a snake case name
+    --> D:\autostack\auto-lang\crates\auto-lang\src\vm\native.rs:6626:9
+     |
+6626 |     let _stake__inst_id = crate::vm::native::StakeGuard::new(vm, _inst_id as i64 as u64);
+     |         ^^^^^^^^^^^^^^^ help: convert the identifier to snake case: `_stake_inst_id`
+
+warning: calls to `std::mem::drop` with a value that implements `Copy` does nothing
+    --> D:\autostack\auto-lang\crates\auto-lang\src\vm\ffi\stdlib.rs:9014:13
+     |
+9014 |             drop(i64::pop_from_stack(task, vm).unwrap_or(0));
+     |             ^^^^^------------------------------------------^
+     |                  |
+     |                  argument has type `i64`
+     |
+     = note: `#[warn(dropping_copy_types)]` on by default
+help: use `let _ = ...` to ignore the expression or result
+     |
+9014 -             drop(i64::pop_from_stack(task, vm).unwrap_or(0));
+9014 +             let _ = i64::pop_from_stack(task, vm).unwrap_or(0);
+     |
+
+warning: calls to `std::mem::drop` with a value that implements `Copy` does nothing
+    --> D:\autostack\auto-lang\crates\auto-lang\src\vm\ffi\stdlib.rs:9018:13
+     |
+9018 |             drop(i64::pop_from_stack(task, vm).unwrap_or(0));
+     |             ^^^^^------------------------------------------^
+     |                  |
+     |                  argument has type `i64`
+     |
+help: use `let _ = ...` to ignore the expression or result
+     |
+9018 -             drop(i64::pop_from_stack(task, vm).unwrap_or(0));
+9018 +             let _ = i64::pop_from_stack(task, vm).unwrap_or(0);
+     |
+
+warning: variable `_stake__cfg` should have a snake case name
+   --> D:\autostack\auto-lang\crates\auto-lang\src\vm\ffi\musk_response_ctor.rs:836:16
+    |
+836 |     let (_cfg, _stake__cfg) = pop_value_staked(task, vm); // config Value (unused for the default)
+    |                ^^^^^^^^^^^ help: convert the identifier to snake case: `_stake_cfg`
+
+warning: for loop over a `&Option`. This is more readably written as an `if let` statement
+   --> D:\autostack\auto-lang\crates\auto-lang\src\ui\vm_bridge.rs:213:15
+    |
+213 |     for on in &decl.on {
+    |               ^^^^^^^^
+    |
+    = note: `#[warn(for_loops_over_fallibles)]` on by default
+help: to check pattern in a loop use `while let`
+    |
+213 -     for on in &decl.on {
+213 +     while let Some(on) = &decl.on {
+    |
+help: consider using `if let` to clear intent
+    |
+213 -     for on in &decl.on {
+213 +     if let Some(on) = &decl.on {
+    |
+
+warning: `auto-lang` (lib) generated 208 warnings (run `cargo fix --lib -p auto-lang` to apply 120 suggestions)
+   Compiling app-back v0.1.0 (D:\autostack\auto-term\app\rust-workspace\app-back)
+warning: unused imports: `Path`, `Query`, and `State`
+ --> app-back\src\api.rs:2:15
+  |
+2 |     extract::{Path, State, Json, Query},
+  |               ^^^^  ^^^^^        ^^^^^
+  |
+  = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused import: `crate::types::*`
+ --> app-back\src\api.rs:6:5
+  |
+6 | use crate::types::*;
+  |     ^^^^^^^^^^^^^^^
+
+warning: unused imports: `Arc` and `Mutex`
+ --> app-back\src\api.rs:7:17
+  |
+7 | use std::sync::{Arc, Mutex};
+  |                 ^^^  ^^^^^
+
+warning: unused imports: `Deserialize` and `Serialize`
+ --> app-back\src\types.rs:1:13
+  |
+1 | use serde::{Serialize, Deserialize};
+  |             ^^^^^^^^^  ^^^^^^^^^^^
+
+warning: unnecessary parentheses around assigned value
+  --> app-back\src\db.rs:80:22
+   |
+80 |     let mut n: i64 = (xs.len() as i64);
+   |                      ^               ^
+   |
+   = note: `#[warn(unused_parens)]` (part of `#[warn(unused)]`) on by default
+help: remove these parentheses
+   |
+80 -     let mut n: i64 = (xs.len() as i64);
+80 +     let mut n: i64 = xs.len() as i64;
+   |
+
+warning: unnecessary parentheses around assigned value
+  --> app-back\src\db.rs:96:22
+   |
+96 |     let mut n: i64 = (xs.len() as i64);
+   |                      ^               ^
+   |
+help: remove these parentheses
+   |
+96 -     let mut n: i64 = (xs.len() as i64);
+96 +     let mut n: i64 = xs.len() as i64;
+   |
+
+warning: unnecessary parentheses around assigned value
+   --> app-back\src\db.rs:112:22
+    |
+112 |     let mut n: i64 = (xs.len() as i64);
+    |                      ^               ^
+    |
+help: remove these parentheses
+    |
+112 -     let mut n: i64 = (xs.len() as i64);
+112 +     let mut n: i64 = xs.len() as i64;
+    |
+
+warning: unnecessary parentheses around assigned value
+   --> app-back\src\db.rs:127:22
+    |
+127 |     let mut n: i64 = ((*PANE_IDS.lock().unwrap()).len() as i64);
+    |                      ^                                        ^
+    |
+help: remove these parentheses
+    |
+127 -     let mut n: i64 = ((*PANE_IDS.lock().unwrap()).len() as i64);
+127 +     let mut n: i64 = (*PANE_IDS.lock().unwrap()).len() as i64;
+    |
+
+warning: unnecessary parentheses around assigned value
+   --> app-back\src\db.rs:143:22
+    |
+143 |     let mut n: i64 = ((*NODE_IDS.lock().unwrap()).len() as i64);
+    |                      ^                                        ^
+    |
+help: remove these parentheses
+    |
+143 -     let mut n: i64 = ((*NODE_IDS.lock().unwrap()).len() as i64);
+143 +     let mut n: i64 = (*NODE_IDS.lock().unwrap()).len() as i64;
+    |
+
+warning: unnecessary parentheses around assigned value
+   --> app-back\src\db.rs:159:22
+    |
+159 |     let mut n: i64 = ((*TAB_IDS.lock().unwrap()).len() as i64);
+    |                      ^                                       ^
+    |
+help: remove these parentheses
+    |
+159 -     let mut n: i64 = ((*TAB_IDS.lock().unwrap()).len() as i64);
+159 +     let mut n: i64 = (*TAB_IDS.lock().unwrap()).len() as i64;
+    |
+
+warning: unnecessary parentheses around assigned value
+   --> app-back\src\db.rs:176:22
+    |
+176 |     let mut n: i64 = (xs.len() as i64);
+    |                      ^               ^
+    |
+help: remove these parentheses
+    |
+176 -     let mut n: i64 = (xs.len() as i64);
+176 +     let mut n: i64 = xs.len() as i64;
+    |
+
+warning: unnecessary parentheses around function argument
+   --> app-back\src\db.rs:194:22
+    |
+194 |     return tab_index((*WS_ACTIVE_TAB.lock().unwrap()));
+    |                      ^                              ^
+    |
+help: remove these parentheses
+    |
+194 -     return tab_index((*WS_ACTIVE_TAB.lock().unwrap()));
+194 +     return tab_index(*WS_ACTIVE_TAB.lock().unwrap());
+    |
+
+warning: unnecessary parentheses around assigned value
+   --> app-back\src\db.rs:200:22
+    |
+200 |     let mut n: i64 = ((*NODE_IDS.lock().unwrap()).len() as i64);
+    |                      ^                                        ^
+    |
+help: remove these parentheses
+    |
+200 -     let mut n: i64 = ((*NODE_IDS.lock().unwrap()).len() as i64);
+200 +     let mut n: i64 = (*NODE_IDS.lock().unwrap()).len() as i64;
+    |
+
+warning: unnecessary parentheses around assigned value
+   --> app-back\src\db.rs:240:22
+    |
+240 |     let mut n: i64 = ((*NODE_IDS.lock().unwrap()).len() as i64);
+    |                      ^                                        ^
+    |
+help: remove these parentheses
+    |
+240 -     let mut n: i64 = ((*NODE_IDS.lock().unwrap()).len() as i64);
+240 +     let mut n: i64 = (*NODE_IDS.lock().unwrap()).len() as i64;
+    |
+
+warning: unnecessary parentheses around assigned value
+   --> app-back\src\db.rs:335:22
+    |
+335 |     let mut n: i64 = ((*PANE_IDS.lock().unwrap()).len() as i64);
+    |                      ^                                        ^
+    |
+help: remove these parentheses
+    |
+335 -     let mut n: i64 = ((*PANE_IDS.lock().unwrap()).len() as i64);
+335 +     let mut n: i64 = (*PANE_IDS.lock().unwrap()).len() as i64;
+    |
+
+warning: unnecessary parentheses around assigned value
+   --> app-back\src\db.rs:350:24
+    |
+350 |     let mut pid: i64 = (*NEXT_PANE_ID.lock().unwrap());
+    |                        ^                             ^
+    |
+help: remove these parentheses
+    |
+350 -     let mut pid: i64 = (*NEXT_PANE_ID.lock().unwrap());
+350 +     let mut pid: i64 = *NEXT_PANE_ID.lock().unwrap();
+    |
+
+warning: unnecessary parentheses around assigned value
+   --> app-back\src\db.rs:367:25
+    |
+367 |     let mut leaf: i64 = (*NEXT_NODE_ID.lock().unwrap());
+    |                         ^                             ^
+    |
+help: remove these parentheses
+    |
+367 -     let mut leaf: i64 = (*NEXT_NODE_ID.lock().unwrap());
+367 +     let mut leaf: i64 = *NEXT_NODE_ID.lock().unwrap();
+    |
+
+warning: unnecessary parentheses around assigned value
+   --> app-back\src\db.rs:456:27
+    |
+456 |     let mut branch: i64 = (*NEXT_NODE_ID.lock().unwrap());
+    |                           ^                             ^
+    |
+help: remove these parentheses
+    |
+456 -     let mut branch: i64 = (*NEXT_NODE_ID.lock().unwrap());
+456 +     let mut branch: i64 = *NEXT_NODE_ID.lock().unwrap();
+    |
+
+warning: unnecessary parentheses around assigned value
+   --> app-back\src\db.rs:491:22
+    |
+491 |     let mut n: i64 = ((*NODE_IDS.lock().unwrap()).len() as i64);
+    |                      ^                                        ^
+    |
+help: remove these parentheses
+    |
+491 -     let mut n: i64 = ((*NODE_IDS.lock().unwrap()).len() as i64);
+491 +     let mut n: i64 = (*NODE_IDS.lock().unwrap()).len() as i64;
+    |
+
+warning: unnecessary parentheses around assigned value
+   --> app-back\src\db.rs:559:22
+    |
+559 |     let mut n: i64 = ((*NODE_IDS.lock().unwrap()).len() as i64);
+    |                      ^                                        ^
+    |
+help: remove these parentheses
+    |
+559 -     let mut n: i64 = ((*NODE_IDS.lock().unwrap()).len() as i64);
+559 +     let mut n: i64 = (*NODE_IDS.lock().unwrap()).len() as i64;
+    |
+
+warning: unnecessary parentheses around assigned value
+   --> app-back\src\db.rs:588:24
+    |
+588 |     let mut tab: i64 = (*NEXT_TAB_ID.lock().unwrap());
+    |                        ^                            ^
+    |
+help: remove these parentheses
+    |
+588 -     let mut tab: i64 = (*NEXT_TAB_ID.lock().unwrap());
+588 +     let mut tab: i64 = *NEXT_TAB_ID.lock().unwrap();
+    |
+
+warning: unnecessary parentheses around assigned value
+   --> app-back\src\db.rs:665:23
+    |
+665 |     let mut at: i64 = (*WS_ACTIVE_TAB.lock().unwrap());
+    |                       ^                              ^
+    |
+help: remove these parentheses
+    |
+665 -     let mut at: i64 = (*WS_ACTIVE_TAB.lock().unwrap());
+665 +     let mut at: i64 = *WS_ACTIVE_TAB.lock().unwrap();
+    |
+
+warning: unnecessary parentheses around assigned value
+   --> app-back\src\db.rs:669:22
+    |
+669 |     let mut n: i64 = ((*TAB_IDS.lock().unwrap()).len() as i64);
+    |                      ^                                       ^
+    |
+help: remove these parentheses
+    |
+669 -     let mut n: i64 = ((*TAB_IDS.lock().unwrap()).len() as i64);
+669 +     let mut n: i64 = (*TAB_IDS.lock().unwrap()).len() as i64;
+    |
+
+warning: unnecessary parentheses around assigned value
+   --> app-back\src\db.rs:685:9
+    |
+685 |     n = ((*NODE_IDS.lock().unwrap()).len() as i64);
+    |         ^                                        ^
+    |
+help: remove these parentheses
+    |
+685 -     n = ((*NODE_IDS.lock().unwrap()).len() as i64);
+685 +     n = (*NODE_IDS.lock().unwrap()).len() as i64;
+    |
+
+warning: unnecessary parentheses around assigned value
+   --> app-back\src\db.rs:704:9
+    |
+704 |     n = ((*PANE_IDS.lock().unwrap()).len() as i64);
+    |         ^                                        ^
+    |
+help: remove these parentheses
+    |
+704 -     n = ((*PANE_IDS.lock().unwrap()).len() as i64);
+704 +     n = (*PANE_IDS.lock().unwrap()).len() as i64;
+    |
+
+warning: unnecessary parentheses around assigned value
+   --> app-back\src\db.rs:744:22
+    |
+744 |     let mut n: i64 = (vis.len() as i64);
+    |                      ^                ^
+    |
+help: remove these parentheses
+    |
+744 -     let mut n: i64 = (vis.len() as i64);
+744 +     let mut n: i64 = vis.len() as i64;
+    |
+
+warning: unnecessary parentheses around assigned value
+   --> app-back\src\db.rs:818:22
+    |
+818 |     let mut n: i64 = ((*PANE_IDS.lock().unwrap()).len() as i64);
+    |                      ^                                        ^
+    |
+help: remove these parentheses
+    |
+818 -     let mut n: i64 = ((*PANE_IDS.lock().unwrap()).len() as i64);
+818 +     let mut n: i64 = (*PANE_IDS.lock().unwrap()).len() as i64;
+    |
+
+warning: unnecessary parentheses around assigned value
+   --> app-back\src\db.rs:827:33
+    |
+827 |             let mut keep: i64 = (sink.len() as i64);
+    |                                 ^                 ^
+    |
+help: remove these parentheses
+    |
+827 -             let mut keep: i64 = (sink.len() as i64);
+827 +             let mut keep: i64 = sink.len() as i64;
+    |
+
+warning: unnecessary parentheses around assigned value
+   --> app-back\src\db.rs:854:22
+    |
+854 |     let mut n: i64 = (vis.len() as i64);
+    |                      ^                ^
+    |
+help: remove these parentheses
+    |
+854 -     let mut n: i64 = (vis.len() as i64);
+854 +     let mut n: i64 = vis.len() as i64;
+    |
+
+warning: unnecessary parentheses around `return` value
+   --> app-back\src\db.rs:921:12
+    |
+921 |     return (*COLS.lock().unwrap());
+    |            ^                     ^
+    |
+help: remove these parentheses
+    |
+921 -     return (*COLS.lock().unwrap());
+921 +     return *COLS.lock().unwrap();
+    |
+
+warning: unnecessary parentheses around `return` value
+   --> app-back\src\db.rs:925:12
+    |
+925 |     return (*ROWS.lock().unwrap());
+    |            ^                     ^
+    |
+help: remove these parentheses
+    |
+925 -     return (*ROWS.lock().unwrap());
+925 +     return *ROWS.lock().unwrap();
+    |
+
+warning: unnecessary parentheses around `return` value
+   --> app-back\src\db.rs:958:12
+    |
+958 |     return (*BL_ALERTS_TOTAL.lock().unwrap());
+    |            ^                                ^
+    |
+help: remove these parentheses
+    |
+958 -     return (*BL_ALERTS_TOTAL.lock().unwrap());
+958 +     return *BL_ALERTS_TOTAL.lock().unwrap();
+    |
+
+warning: unnecessary parentheses around `return` value
+   --> app-back\src\db.rs:962:12
+    |
+962 |     return (*BL_PENDING_MB.lock().unwrap());
+    |            ^                              ^
+    |
+help: remove these parentheses
+    |
+962 -     return (*BL_PENDING_MB.lock().unwrap());
+962 +     return *BL_PENDING_MB.lock().unwrap();
+    |
+
+warning: unnecessary parentheses around `return` value
+   --> app-back\src\db.rs:966:12
+    |
+966 |     return (*BL_PAUSED.lock().unwrap());
+    |            ^                          ^
+    |
+help: remove these parentheses
+    |
+966 -     return (*BL_PAUSED.lock().unwrap());
+966 +     return *BL_PAUSED.lock().unwrap();
+    |
+
+warning: unnecessary parentheses around `return` value
+   --> app-back\src\db.rs:970:12
+    |
+970 |     return (*BL_DROPPED.lock().unwrap());
+    |            ^                           ^
+    |
+help: remove these parentheses
+    |
+970 -     return (*BL_DROPPED.lock().unwrap());
+970 +     return *BL_DROPPED.lock().unwrap();
+    |
+
+warning: unnecessary parentheses around `return` value
+   --> app-back\src\db.rs:974:12
+    |
+974 |     return (*EXITED.lock().unwrap());
+    |            ^                       ^
+    |
+help: remove these parentheses
+    |
+974 -     return (*EXITED.lock().unwrap());
+974 +     return *EXITED.lock().unwrap();
+    |
+
+warning: unnecessary parentheses around `return` value
+   --> app-back\src\db.rs:978:12
+    |
+978 |     return (*COLS.lock().unwrap());
+    |            ^                     ^
+    |
+help: remove these parentheses
+    |
+978 -     return (*COLS.lock().unwrap());
+978 +     return *COLS.lock().unwrap();
+    |
+
+warning: unnecessary parentheses around `return` value
+   --> app-back\src\db.rs:982:12
+    |
+982 |     return (*ROWS.lock().unwrap());
+    |            ^                     ^
+    |
+help: remove these parentheses
+    |
+982 -     return (*ROWS.lock().unwrap());
+982 +     return *ROWS.lock().unwrap();
+    |
+
+warning: unnecessary parentheses around assigned value
+   --> app-back\src\db.rs:996:22
+    |
+996 |     let mut n: i64 = ((*TAB_IDS.lock().unwrap()).len() as i64);
+    |                      ^                                       ^
+    |
+help: remove these parentheses
+    |
+996 -     let mut n: i64 = ((*TAB_IDS.lock().unwrap()).len() as i64);
+996 +     let mut n: i64 = (*TAB_IDS.lock().unwrap()).len() as i64;
+    |
+
+warning: unnecessary parentheses around `return` value
+    --> app-back\src\db.rs:1016:12
+     |
+1016 |     return ((*TAB_IDS.lock().unwrap()).len() as i64);
+     |            ^                                       ^
+     |
+help: remove these parentheses
+     |
+1016 -     return ((*TAB_IDS.lock().unwrap()).len() as i64);
+1016 +     return (*TAB_IDS.lock().unwrap()).len() as i64;
+     |
+
+warning: unnecessary parentheses around `return` value
+    --> app-back\src\db.rs:1088:12
+     |
+1088 |     return (mux_visible_pane_ids().len() as i64);
+     |            ^                                   ^
+     |
+help: remove these parentheses
+     |
+1088 -     return (mux_visible_pane_ids().len() as i64);
+1088 +     return mux_visible_pane_ids().len() as i64;
+     |
+
+warning: unused import: `CStr`
+  --> app-back\src\term.rs:11:31
+   |
+11 | use std::ffi::{c_char, c_int, CStr, CString};
+   |                               ^^^^
+
+warning: variable does not need to be mutable
+  --> app-back\src\db.rs:77:20
+   |
+77 | fn list_remove_int(mut xs: Vec<i64>, idx: i64) -> Vec<i64> {
+   |                    ----^^
+   |                    |
+   |                    help: remove this `mut`
+   |
+   = note: `#[warn(unused_mut)]` (part of `#[warn(unused)]`) on by default
+
+warning: variable does not need to be mutable
+  --> app-back\src\db.rs:80:9
+   |
+80 |     let mut n: i64 = (xs.len() as i64);
+   |         ----^
+   |         |
+   |         help: remove this `mut`
+
+warning: variable does not need to be mutable
+  --> app-back\src\db.rs:93:20
+   |
+93 | fn list_remove_str(mut xs: Vec<String>, idx: i64) -> Vec<String> {
+   |                    ----^^
+   |                    |
+   |                    help: remove this `mut`
+
+warning: variable does not need to be mutable
+  --> app-back\src\db.rs:96:9
+   |
+96 |     let mut n: i64 = (xs.len() as i64);
+   |         ----^
+   |         |
+   |         help: remove this `mut`
+
+warning: variable does not need to be mutable
+   --> app-back\src\db.rs:109:21
+    |
+109 | fn list_remove_bool(mut xs: Vec<bool>, idx: i64) -> Vec<bool> {
+    |                     ----^^
+    |                     |
+    |                     help: remove this `mut`
+
+warning: variable does not need to be mutable
+   --> app-back\src\db.rs:112:9
+    |
+112 |     let mut n: i64 = (xs.len() as i64);
+    |         ----^
+    |         |
+    |         help: remove this `mut`
+
+warning: variable does not need to be mutable
+   --> app-back\src\db.rs:127:9
+    |
+127 |     let mut n: i64 = ((*PANE_IDS.lock().unwrap()).len() as i64);
+    |         ----^
+    |         |
+    |         help: remove this `mut`
+
+warning: variable does not need to be mutable
+   --> app-back\src\db.rs:143:9
+    |
+143 |     let mut n: i64 = ((*NODE_IDS.lock().unwrap()).len() as i64);
+    |         ----^
+    |         |
+    |         help: remove this `mut`
+
+warning: variable does not need to be mutable
+   --> app-back\src\db.rs:159:9
+    |
+159 |     let mut n: i64 = ((*TAB_IDS.lock().unwrap()).len() as i64);
+    |         ----^
+    |         |
+    |         help: remove this `mut`
+
+warning: variable does not need to be mutable
+   --> app-back\src\db.rs:174:17
+    |
+174 | fn contains_int(mut xs: Vec<i64>, v: i64) -> bool {
+    |                 ----^^
+    |                 |
+    |                 help: remove this `mut`
+
+warning: variable does not need to be mutable
+   --> app-back\src\db.rs:176:9
+    |
+176 |     let mut n: i64 = (xs.len() as i64);
+    |         ----^
+    |         |
+    |         help: remove this `mut`
+
+warning: variable does not need to be mutable
+   --> app-back\src\db.rs:200:9
+    |
+200 |     let mut n: i64 = ((*NODE_IDS.lock().unwrap()).len() as i64);
+    |         ----^
+    |         |
+    |         help: remove this `mut`
+
+warning: variable does not need to be mutable
+   --> app-back\src\db.rs:216:9
+    |
+216 |     let mut ni: i64 = node_index(node_id);
+    |         ----^^
+    |         |
+    |         help: remove this `mut`
+
+warning: variable does not need to be mutable
+   --> app-back\src\db.rs:220:9
+    |
+220 |     let mut pane: i64 = (*NODE_PANE.lock().unwrap())[(ni) as usize].clone();
+    |         ----^^^^
+    |         |
+    |         help: remove this `mut`
+
+warning: variable does not need to be mutable
+   --> app-back\src\db.rs:224:9
+    |
+224 |     let mut left: i64 = leftmost_pane((*NODE_FIRST.lock().unwrap())[(ni) as usize].clone());
+    |         ----^^^^
+    |         |
+    |         help: remove this `mut`
+
+warning: variable does not need to be mutable
+   --> app-back\src\db.rs:233:9
+    |
+233 |     let mut ti: i64 = tab_index(tab_id);
+    |         ----^^
+    |         |
+    |         help: remove this `mut`
+
+warning: variable does not need to be mutable
+   --> app-back\src\db.rs:240:9
+    |
+240 |     let mut n: i64 = ((*NODE_IDS.lock().unwrap()).len() as i64);
+    |         ----^
+    |         |
+    |         help: remove this `mut`
+
+warning: variable does not need to be mutable
+   --> app-back\src\db.rs:258:9
+    |
+258 |     let mut ni: i64 = node_index(node_id);
+    |         ----^^
+    |         |
+    |         help: remove this `mut`
+
+warning: variable does not need to be mutable
+   --> app-back\src\db.rs:288:9
+    |
+288 |     let mut ti: i64 = active_tab_index();
+    |         ----^^
+    |         |
+    |         help: remove this `mut`
+
+warning: variable does not need to be mutable
+   --> app-back\src\db.rs:297:9
+    |
+297 |     let mut pid: i64 = mux_focus_pane_id();
+    |         ----^^^
+    |         |
+    |         help: remove this `mut`
+
+warning: variable does not need to be mutable
+   --> app-back\src\db.rs:301:9
+    |
+301 |     let mut pi: i64 = pane_index(pid);
+    |         ----^^
+    |         |
+    |         help: remove this `mut`
+
+warning: variable does not need to be mutable
+   --> app-back\src\db.rs:310:9
+    |
+310 |     let mut pid: i64 = mux_focus_pane_id();
+    |         ----^^^
+    |         |
+    |         help: remove this `mut`
+
+warning: variable does not need to be mutable
+   --> app-back\src\db.rs:314:9
+    |
+314 |     let mut pi: i64 = pane_index(pid);
+    |         ----^^
+    |         |
+    |         help: remove this `mut`
+
+warning: variable does not need to be mutable
+   --> app-back\src\db.rs:325:9
+    |
+325 |     let mut ti: i64 = active_tab_index();
+    |         ----^^
+    |         |
+    |         help: remove this `mut`
+
+warning: variable does not need to be mutable
+   --> app-back\src\db.rs:329:9
+    |
+329 |     let mut zoomed: i64 = (*TAB_ZOOMED_PANE.lock().unwrap())[(ti) as usize].clone();
+    |         ----^^^^^^
+    |         |
+    |         help: remove this `mut`
+
+warning: variable does not need to be mutable
+   --> app-back\src\db.rs:335:9
+    |
+335 |     let mut n: i64 = ((*PANE_IDS.lock().unwrap()).len() as i64);
+    |         ----^
+    |         |
+    |         help: remove this `mut`
+
+warning: variable does not need to be mutable
+   --> app-back\src\db.rs:350:9
+    |
+350 |     let mut pid: i64 = (*NEXT_PANE_ID.lock().unwrap());
+    |         ----^^^
+    |         |
+    |         help: remove this `mut`
+
+warning: variable does not need to be mutable
+   --> app-back\src\db.rs:352:9
+    |
+352 |     let mut key: String = format!("{}{}", "pane-", pid.to_string());
+    |         ----^^^
+    |         |
+    |         help: remove this `mut`
+
+warning: variable does not need to be mutable
+   --> app-back\src\db.rs:353:9
+    |
+353 |     let mut h: i64 = engine_spawn_ex("", vec![], "", 100, 30);
+    |         ----^
+    |         |
+    |         help: remove this `mut`
+
+warning: variable does not need to be mutable
+   --> app-back\src\db.rs:367:9
+    |
+367 |     let mut leaf: i64 = (*NEXT_NODE_ID.lock().unwrap());
+    |         ----^^^^
+    |         |
+    |         help: remove this `mut`
+
+warning: variable does not need to be mutable
+   --> app-back\src\db.rs:398:13
+    |
+398 |         let mut code: i64 = (*ACT_CODES.lock().unwrap())[(0) as usize].clone();
+    |             ----^^^^
+    |             |
+    |             help: remove this `mut`
+
+warning: variable does not need to be mutable
+   --> app-back\src\db.rs:399:13
+    |
+399 |         let mut arg: i64 = (*ACT_ARGS.lock().unwrap())[(0) as usize].clone();
+    |             ----^^^
+    |             |
+    |             help: remove this `mut`
+
+warning: variable does not need to be mutable
+   --> app-back\src\db.rs:409:17
+    |
+409 |             let mut fid: i64 = mux_focus_pane_id();
+    |                 ----^^^
+    |                 |
+    |                 help: remove this `mut`
+
+warning: variable does not need to be mutable
+   --> app-back\src\db.rs:430:9
+    |
+430 |     let mut tab: i64 = mux_new_tab();
+    |         ----^^^
+    |         |
+    |         help: remove this `mut`
+
+warning: variable does not need to be mutable
+   --> app-back\src\db.rs:436:9
+    |
+436 |     let mut ti: i64 = active_tab_index();
+    |         ----^^
+    |         |
+    |         help: remove this `mut`
+
+warning: variable does not need to be mutable
+   --> app-back\src\db.rs:440:9
+    |
+440 |     let mut tab_id: i64 = (*TAB_IDS.lock().unwrap())[(ti) as usize].clone();
+    |         ----^^^^^^
+    |         |
+    |         help: remove this `mut`
+
+warning: variable does not need to be mutable
+   --> app-back\src\db.rs:441:9
+    |
+441 |     let mut focus: i64 = (*TAB_ACTIVE_PANE.lock().unwrap())[(ti) as usize].clone();
+    |         ----^^^^^
+    |         |
+    |         help: remove this `mut`
+
+warning: variable does not need to be mutable
+   --> app-back\src\db.rs:442:9
+    |
+442 |     let mut old_leaf: i64 = leaf_node_of_pane(focus);
+    |         ----^^^^^^^^
+    |         |
+    |         help: remove this `mut`
+
+warning: variable does not need to be mutable
+   --> app-back\src\db.rs:446:9
+    |
+446 |     let mut root: i64 = (*TAB_ROOT_NODE.lock().unwrap())[(ti) as usize].clone();
+    |         ----^^^^
+    |         |
+    |         help: remove this `mut`
+
+warning: variable does not need to be mutable
+   --> app-back\src\db.rs:447:9
+    |
+447 |     let mut ri: i64 = node_index(root);
+    |         ----^^
+    |         |
+    |         help: remove this `mut`
+
+warning: variable does not need to be mutable
+   --> app-back\src\db.rs:452:9
+    |
+452 |     let mut new_leaf: i64 = spawn_pane_into_tab(tab_id, axis);
+    |         ----^^^^^^^^
+    |         |
+    |         help: remove this `mut`
+
+warning: variable does not need to be mutable
+   --> app-back\src\db.rs:456:9
+    |
+456 |     let mut branch: i64 = (*NEXT_NODE_ID.lock().unwrap());
+    |         ----^^^^^^
+    |         |
+    |         help: remove this `mut`
+
+warning: variable does not need to be mutable
+   --> app-back\src\db.rs:467:9
+    |
+467 |     let mut ni: i64 = node_index(new_leaf);
+    |         ----^^
+    |         |
+    |         help: remove this `mut`
+
+warning: variable does not need to be mutable
+   --> app-back\src\db.rs:472:9
+    |
+472 |     let mut pi: i64 = pane_index(pane_id);
+    |         ----^^
+    |         |
+    |         help: remove this `mut`
+
+warning: variable does not need to be mutable
+   --> app-back\src\db.rs:476:9
+    |
+476 |     let mut tab_id: i64 = (*PANE_TAB_IDS.lock().unwrap())[(pi) as usize].clone();
+    |         ----^^^^^^
+    |         |
+    |         help: remove this `mut`
+
+warning: variable does not need to be mutable
+   --> app-back\src\db.rs:477:9
+    |
+477 |     let mut leaf: i64 = leaf_node_of_pane(pane_id);
+    |         ----^^^^
+    |         |
+    |         help: remove this `mut`
+
+warning: variable does not need to be mutable
+   --> app-back\src\db.rs:481:9
+    |
+481 |     let mut ti2: i64 = tab_index(tab_id);
+    |         ----^^^
+    |         |
+    |         help: remove this `mut`
+
+warning: variable does not need to be mutable
+   --> app-back\src\db.rs:491:9
+    |
+491 |     let mut n: i64 = ((*NODE_IDS.lock().unwrap()).len() as i64);
+    |         ----^
+    |         |
+    |         help: remove this `mut`
+
+warning: variable does not need to be mutable
+   --> app-back\src\db.rs:513:9
+    |
+513 |     let mut h: i64 = (*PANE_HANDLES.lock().unwrap())[(pi) as usize].clone();
+    |         ----^
+    |         |
+    |         help: remove this `mut`
+
+warning: variable does not need to be mutable
+   --> app-back\src\db.rs:518:13
+    |
+518 |         let mut next_focus: i64 = leftmost_pane(sibling);
+    |             ----^^^^^^^^^^
+    |             |
+    |             help: remove this `mut`
+
+warning: variable does not need to be mutable
+   --> app-back\src\db.rs:526:9
+    |
+526 |     let mut pi: i64 = pane_index(pane_id);
+    |         ----^^
+    |         |
+    |         help: remove this `mut`
+
+warning: variable does not need to be mutable
+   --> app-back\src\db.rs:530:9
+    |
+530 |     let mut tab_id: i64 = (*PANE_TAB_IDS.lock().unwrap())[(pi) as usize].clone();
+    |         ----^^^^^^
+    |         |
+    |         help: remove this `mut`
+
+warning: variable does not need to be mutable
+   --> app-back\src\db.rs:531:9
+    |
+531 |     let mut ti: i64 = tab_index(tab_id);
+    |         ----^^
+    |         |
+    |         help: remove this `mut`
+
+warning: variable does not need to be mutable
+   --> app-back\src\db.rs:540:9
+    |
+540 |     let mut ti: i64 = active_tab_index();
+    |         ----^^
+    |         |
+    |         help: remove this `mut`
+
+warning: variable does not need to be mutable
+   --> app-back\src\db.rs:544:9
+    |
+544 |     let mut cur: i64 = (*TAB_ZOOMED_PANE.lock().unwrap())[(ti) as usize].clone();
+    |         ----^^^
+    |         |
+    |         help: remove this `mut`
+
+warning: variable does not need to be mutable
+   --> app-back\src\db.rs:554:9
+    |
+554 |     let mut leaf: i64 = leaf_node_of_pane(pane_id);
+    |         ----^^^^
+    |         |
+    |         help: remove this `mut`
+
+warning: variable does not need to be mutable
+   --> app-back\src\db.rs:559:9
+    |
+559 |     let mut n: i64 = ((*NODE_IDS.lock().unwrap()).len() as i64);
+    |         ----^
+    |         |
+    |         help: remove this `mut`
+
+warning: variable does not need to be mutable
+   --> app-back\src\db.rs:588:9
+    |
+588 |     let mut tab: i64 = (*NEXT_TAB_ID.lock().unwrap());
+    |         ----^^^
+    |         |
+    |         help: remove this `mut`
+
+warning: variable does not need to be mutable
+   --> app-back\src\db.rs:590:9
+    |
+590 |     let mut leaf: i64 = spawn_pane_into_tab(tab, 0);
+    |         ----^^^^
+    |         |
+    |         help: remove this `mut`
+
+warning: variable does not need to be mutable
+   --> app-back\src\db.rs:596:9
+    |
+596 |     let mut ni: i64 = node_index(leaf);
+    |         ----^^
+    |         |
+    |         help: remove this `mut`
+
+warning: variable does not need to be mutable
+   --> app-back\src\db.rs:604:9
+    |
+604 |     let mut ti: i64 = tab_index(tab_id);
+    |         ----^^
+    |         |
+    |         help: remove this `mut`
+
+warning: variable does not need to be mutable
+   --> app-back\src\db.rs:618:17
+    |
+618 |             let mut h: i64 = (*PANE_HANDLES.lock().unwrap())[(i) as usize].clone();
+    |                 ----^
+    |                 |
+    |                 help: remove this `mut`
+
+warning: variable does not need to be mutable
+   --> app-back\src\db.rs:656:9
+    |
+656 |     let mut ti: i64 = tab_index(tab_id);
+    |         ----^^
+    |         |
+    |         help: remove this `mut`
+
+warning: variable does not need to be mutable
+   --> app-back\src\db.rs:665:9
+    |
+665 |     let mut at: i64 = (*WS_ACTIVE_TAB.lock().unwrap());
+    |         ----^^
+    |         |
+    |         help: remove this `mut`
+
+warning: variable does not need to be mutable
+   --> app-back\src\db.rs:734:9
+    |
+734 |     let mut handle: i64 = mux_focus_handle();
+    |         ----^^^^^^
+    |         |
+    |         help: remove this `mut`
+
+warning: variable does not need to be mutable
+   --> app-back\src\db.rs:736:13
+    |
+736 |         let mut empty: Vec<String> = vec![];
+    |             ----^^^^^
+    |             |
+    |             help: remove this `mut`
+
+warning: variable does not need to be mutable
+   --> app-back\src\db.rs:740:9
+    |
+740 |     let mut focus_pid: i64 = mux_focus_pane_id();
+    |         ----^^^^^^^^^
+    |         |
+    |         help: remove this `mut`
+
+warning: variable does not need to be mutable
+   --> app-back\src\db.rs:741:9
+    |
+741 |     let mut vis: Vec<i64> = mux_visible_pane_ids();
+    |         ----^^^
+    |         |
+    |         help: remove this `mut`
+
+warning: variable does not need to be mutable
+   --> app-back\src\db.rs:744:9
+    |
+744 |     let mut n: i64 = (vis.len() as i64);
+    |         ----^
+    |         |
+    |         help: remove this `mut`
+
+warning: variable does not need to be mutable
+   --> app-back\src\db.rs:749:13
+    |
+749 |         let mut pid: i64 = vis[(i) as usize].clone();
+    |             ----^^^
+    |             |
+    |             help: remove this `mut`
+
+warning: variable does not need to be mutable
+   --> app-back\src\db.rs:750:13
+    |
+750 |         let mut pi: i64 = pane_index(pid);
+    |             ----^^
+    |             |
+    |             help: remove this `mut`
+
+warning: variable does not need to be mutable
+   --> app-back\src\db.rs:752:17
+    |
+752 |             let mut h: i64 = (*PANE_HANDLES.lock().unwrap())[(pi) as usize].clone();
+    |                 ----^
+    |                 |
+    |                 help: remove this `mut`
+
+warning: variable does not need to be mutable
+   --> app-back\src\db.rs:753:17
+    |
+753 |             let mut key: String = (*PANE_KEYS.lock().unwrap())[(pi) as usize].clone();
+    |                 ----^^^
+    |                 |
+    |                 help: remove this `mut`
+
+warning: variable does not need to be mutable
+   --> app-back\src\db.rs:754:17
+    |
+754 |             let mut applied: i64 = engine_apply_resize_for(h, key.as_str());
+    |                 ----^^^^^^^
+    |                 |
+    |                 help: remove this `mut`
+
+warning: variable does not need to be mutable
+   --> app-back\src\db.rs:761:47
+    |
+761 |                 }            }            let mut snap: Vec<String> = engine_rows_for(h, key.as_str());
+    |                                               ----^^^^
+    |                                               |
+    |                                               help: remove this `mut`
+
+warning: variable does not need to be mutable
+   --> app-back\src\db.rs:816:9
+    |
+816 |     let mut vis: Vec<i64> = mux_visible_pane_ids();
+    |         ----^^^
+    |         |
+    |         help: remove this `mut`
+
+warning: variable does not need to be mutable
+   --> app-back\src\db.rs:818:9
+    |
+818 |     let mut n: i64 = ((*PANE_IDS.lock().unwrap()).len() as i64);
+    |         ----^
+    |         |
+    |         help: remove this `mut`
+
+warning: variable does not need to be mutable
+   --> app-back\src\db.rs:823:13
+    |
+823 |         let mut pid: i64 = (*PANE_IDS.lock().unwrap())[(i) as usize].clone();
+    |             ----^^^
+    |             |
+    |             help: remove this `mut`
+
+warning: variable does not need to be mutable
+   --> app-back\src\db.rs:825:17
+    |
+825 |             let mut h: i64 = (*PANE_HANDLES.lock().unwrap())[(i) as usize].clone();
+    |                 ----^
+    |                 |
+    |                 help: remove this `mut`
+
+warning: variable does not need to be mutable
+   --> app-back\src\db.rs:826:17
+    |
+826 |             let mut sink: Vec<String> = engine_rows_for(h, "-hidden-");
+    |                 ----^^^^
+    |                 |
+    |                 help: remove this `mut`
+
+warning: value assigned to `keep` is never read
+   --> app-back\src\db.rs:829:17
+    |
+829 |                 keep = 1;
+    |                 ^^^^^^^^
+    |
+    = help: maybe it is overwritten before being read?
+    = note: `#[warn(unused_assignments)]` (part of `#[warn(unused)]`) on by default
+
+warning: variable does not need to be mutable
+   --> app-back\src\db.rs:837:9
+    |
+837 |     let mut handle: i64 = mux_focus_handle();
+    |         ----^^^^^^
+    |         |
+    |         help: remove this `mut`
+
+warning: variable does not need to be mutable
+   --> app-back\src\db.rs:842:9
+    |
+842 |     let mut handle: i64 = mux_focus_handle();
+    |         ----^^^^^^
+    |         |
+    |         help: remove this `mut`
+
+warning: variable does not need to be mutable
+   --> app-back\src\db.rs:851:9
+    |
+851 |     let mut vis: Vec<i64> = mux_visible_pane_ids();
+    |         ----^^^
+    |         |
+    |         help: remove this `mut`
+
+warning: variable does not need to be mutable
+   --> app-back\src\db.rs:854:9
+    |
+854 |     let mut n: i64 = (vis.len() as i64);
+    |         ----^
+    |         |
+    |         help: remove this `mut`
+
+warning: variable does not need to be mutable
+   --> app-back\src\db.rs:859:13
+    |
+859 |         let mut pid: i64 = vis[(i) as usize].clone();
+    |             ----^^^
+    |             |
+    |             help: remove this `mut`
+
+warning: variable does not need to be mutable
+   --> app-back\src\db.rs:860:13
+    |
+860 |         let mut pi: i64 = pane_index(pid);
+    |             ----^^
+    |             |
+    |             help: remove this `mut`
+
+warning: variable does not need to be mutable
+   --> app-back\src\db.rs:862:17
+    |
+862 |             let mut h: i64 = (*PANE_HANDLES.lock().unwrap())[(pi) as usize].clone();
+    |                 ----^
+    |                 |
+    |                 help: remove this `mut`
+
+warning: variable does not need to be mutable
+   --> app-back\src\db.rs:863:17
+    |
+863 |             let mut key: String = (*PANE_KEYS.lock().unwrap())[(pi) as usize].clone();
+    |                 ----^^^
+    |                 |
+    |                 help: remove this `mut`
+
+warning: variable does not need to be mutable
+   --> app-back\src\db.rs:864:17
+    |
+864 |             let mut pumped: i64 = engine_pump_for(h, key.as_str());
+    |                 ----^^^^^^
+    |                 |
+    |                 help: remove this `mut`
+
+warning: variable does not need to be mutable
+   --> app-back\src\db.rs:887:9
+    |
+887 |     let mut ti: i64 = active_tab_index();
+    |         ----^^
+    |         |
+    |         help: remove this `mut`
+
+warning: variable does not need to be mutable
+   --> app-back\src\db.rs:891:9
+    |
+891 |     let mut pi: i64 = pane_index(pid);
+    |         ----^^
+    |         |
+    |         help: remove this `mut`
+
+warning: variable does not need to be mutable
+   --> app-back\src\db.rs:900:9
+    |
+900 |     let mut pid: i64 = mux_focus_pane_id();
+    |         ----^^^
+    |         |
+    |         help: remove this `mut`
+
+warning: variable does not need to be mutable
+   --> app-back\src\db.rs:904:9
+    |
+904 |     let mut pi: i64 = pane_index(pid);
+    |         ----^^
+    |         |
+    |         help: remove this `mut`
+
+warning: variable does not need to be mutable
+   --> app-back\src\db.rs:908:9
+    |
+908 |     let mut key: String = (*PANE_KEYS.lock().unwrap())[(pi) as usize].clone();
+    |         ----^^^
+    |         |
+    |         help: remove this `mut`
+
+warning: variable does not need to be mutable
+   --> app-back\src\db.rs:909:9
+    |
+909 |     let mut h: i64 = (*PANE_HANDLES.lock().unwrap())[(pi) as usize].clone();
+    |         ----^
+    |         |
+    |         help: remove this `mut`
+
+warning: variable does not need to be mutable
+   --> app-back\src\db.rs:910:9
+    |
+910 |     let mut applied: i64 = engine_apply_resize_for(h, key.as_str());
+    |         ----^^^^^^^
+    |         |
+    |         help: remove this `mut`
+
+warning: variable does not need to be mutable
+   --> app-back\src\db.rs:929:9
+    |
+929 |     let mut handle: i64 = mux_focus_handle();
+    |         ----^^^^^^
+    |         |
+    |         help: remove this `mut`
+
+warning: variable does not need to be mutable
+   --> app-back\src\db.rs:937:9
+    |
+937 |     let mut handle: i64 = mux_focus_handle();
+    |         ----^^^^^^
+    |         |
+    |         help: remove this `mut`
+
+warning: variable does not need to be mutable
+   --> app-back\src\db.rs:945:9
+    |
+945 |     let mut handle: i64 = mux_focus_handle();
+    |         ----^^^^^^
+    |         |
+    |         help: remove this `mut`
+
+warning: variable does not need to be mutable
+   --> app-back\src\db.rs:949:9
+    |
+949 |     let mut fresh: i64 = engine_backlog_take_alerts(handle);
+    |         ----^^^^^
+    |         |
+    |         help: remove this `mut`
+
+warning: variable does not need to be mutable
+   --> app-back\src\db.rs:996:9
+    |
+996 |     let mut n: i64 = ((*TAB_IDS.lock().unwrap()).len() as i64);
+    |         ----^
+    |         |
+    |         help: remove this `mut`
+
+warning: variable does not need to be mutable
+    --> app-back\src\db.rs:1040:9
+     |
+1040 |     let mut n: i64 = i + 1;
+     |         ----^
+     |         |
+     |         help: remove this `mut`
+
+warning: variable does not need to be mutable
+    --> app-back\src\db.rs:1045:9
+     |
+1045 |     let mut pi: i64 = pane_index(pane_id);
+     |         ----^^
+     |         |
+     |         help: remove this `mut`
+
+warning: variable does not need to be mutable
+    --> app-back\src\db.rs:1047:13
+     |
+1047 |         let mut empty: Vec<String> = vec![];
+     |             ----^^^^^
+     |             |
+     |             help: remove this `mut`
+
+warning: variable does not need to be mutable
+    --> app-back\src\db.rs:1050:9
+     |
+1050 |     let mut h: i64 = (*PANE_HANDLES.lock().unwrap())[(pi) as usize].clone();
+     |         ----^
+     |         |
+     |         help: remove this `mut`
+
+warning: variable does not need to be mutable
+    --> app-back\src\db.rs:1051:9
+     |
+1051 |     let mut key: String = (*PANE_KEYS.lock().unwrap())[(pi) as usize].clone();
+     |         ----^^^
+     |         |
+     |         help: remove this `mut`
+
+warning: variable does not need to be mutable
+    --> app-back\src\db.rs:1056:9
+     |
+1056 |     let mut pi: i64 = pane_index(pane_id);
+     |         ----^^
+     |         |
+     |         help: remove this `mut`
+
+warning: variable does not need to be mutable
+    --> app-back\src\db.rs:1064:9
+     |
+1064 |     let mut pi: i64 = pane_index(pane_id);
+     |         ----^^
+     |         |
+     |         help: remove this `mut`
+
+warning: variable does not need to be mutable
+    --> app-back\src\db.rs:1072:9
+     |
+1072 |     let mut pi: i64 = pane_index(pane_id);
+     |         ----^^
+     |         |
+     |         help: remove this `mut`
+
+warning: variable does not need to be mutable
+    --> app-back\src\db.rs:1080:9
+     |
+1080 |     let mut pi: i64 = pane_index(pane_id);
+     |         ----^^
+     |         |
+     |         help: remove this `mut`
+
+warning: variable does not need to be mutable
+    --> app-back\src\db.rs:1092:9
+     |
+1092 |     let mut ti: i64 = active_tab_index();
+     |         ----^^
+     |         |
+     |         help: remove this `mut`
+
+warning: variable does not need to be mutable
+    --> app-back\src\db.rs:1096:9
+     |
+1096 |     let mut root: i64 = (*TAB_ROOT_NODE.lock().unwrap())[(ti) as usize].clone();
+     |         ----^^^^
+     |         |
+     |         help: remove this `mut`
+
+warning: variable does not need to be mutable
+    --> app-back\src\db.rs:1097:9
+     |
+1097 |     let mut ri: i64 = node_index(root);
+     |         ----^^
+     |         |
+     |         help: remove this `mut`
+
+warning: variable does not need to be mutable
+    --> app-back\src\db.rs:1108:9
+     |
+1108 |     let mut ti: i64 = active_tab_index();
+     |         ----^^
+     |         |
+     |         help: remove this `mut`
+
+warning: variable does not need to be mutable
+    --> app-back\src\db.rs:1112:9
+     |
+1112 |     let mut zoomed: i64 = (*TAB_ZOOMED_PANE.lock().unwrap())[(ti) as usize].clone();
+     |         ----^^^^^^
+     |         |
+     |         help: remove this `mut`
+
+warning: variable does not need to be mutable
+    --> app-back\src\db.rs:1118:9
+     |
+1118 |     let mut root: i64 = (*TAB_ROOT_NODE.lock().unwrap())[(ti) as usize].clone();
+     |         ----^^^^
+     |         |
+     |         help: remove this `mut`
+
+warning: variable does not need to be mutable
+    --> app-back\src\db.rs:1119:9
+     |
+1119 |     let mut ri: i64 = node_index(root);
+     |         ----^^
+     |         |
+     |         help: remove this `mut`
+
+warning: variable does not need to be mutable
+    --> app-back\src\db.rs:1123:9
+     |
+1123 |     let mut pane: i64 = (*NODE_PANE.lock().unwrap())[(ri) as usize].clone();
+     |         ----^^^^
+     |         |
+     |         help: remove this `mut`
+
+warning: variable does not need to be mutable
+    --> app-back\src\db.rs:1139:9
+     |
+1139 |     let mut pid: i64 = mux_slot_pane_id(slot);
+     |         ----^^^
+     |         |
+     |         help: remove this `mut`
+
+warning: variable does not need to be mutable
+    --> app-back\src\db.rs:1143:9
+     |
+1143 |     let mut pi: i64 = pane_index(pid);
+     |         ----^^
+     |         |
+     |         help: remove this `mut`
+
+warning: variable does not need to be mutable
+    --> app-back\src\db.rs:1151:9
+     |
+1151 |     let mut ti: i64 = active_tab_index();
+     |         ----^^
+     |         |
+     |         help: remove this `mut`
+
+warning: variable does not need to be mutable
+    --> app-back\src\db.rs:1162:9
+     |
+1162 |     let mut ti: i64 = active_tab_index();
+     |         ----^^
+     |         |
+     |         help: remove this `mut`
+
+warning: variable does not need to be mutable
+    --> app-back\src\db.rs:1166:9
+     |
+1166 |     let mut zoomed: i64 = (*TAB_ZOOMED_PANE.lock().unwrap())[(ti) as usize].clone();
+     |         ----^^^^^^
+     |         |
+     |         help: remove this `mut`
+
+warning: function `mux_resize_pane` is never used
+   --> app-back\src\db.rs:553:8
+    |
+553 | pub fn mux_resize_pane(pane_id: i64, ratio: i64) -> i64 {
+    |        ^^^^^^^^^^^^^^^
+    |
+    = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: function `engine_spawn` is never used
+   --> app-back\src\term.rs:187:8
+    |
+187 | pub fn engine_spawn(cols: i64, rows: i64) -> i64 {
+    |        ^^^^^^^^^^^^
+
+warning: function `engine_write_raw` is never used
+   --> app-back\src\term.rs:275:8
+    |
+275 | pub fn engine_write_raw(handle: i64, data: &str) {
+    |        ^^^^^^^^^^^^^^^^
+
+warning: function `engine_pump_input` is never used
+   --> app-back\src\term.rs:296:8
+    |
+296 | pub fn engine_pump_input(handle: i64) -> i64 {
+    |        ^^^^^^^^^^^^^^^^^
+
+warning: function `engine_apply_resize` is never used
+   --> app-back\src\term.rs:335:8
+    |
+335 | pub fn engine_apply_resize(handle: i64) -> i64 {
+    |        ^^^^^^^^^^^^^^^^^^^
+
+warning: function `engine_feed_snapshot` is never used
+   --> app-back\src\term.rs:384:8
+    |
+384 | pub fn engine_feed_snapshot(handle: i64) {
+    |        ^^^^^^^^^^^^^^^^^^^^
+
+warning: variant `All` is never constructed
+   --> app-back\src\term.rs:398:5
+    |
+396 | enum FeedTarget<'k> {
+    |      ---------- variant in this enum
+397 |     /// 广播(旧 engine_rows/engine_feed_snapshot 兼容面)。
+398 |     All,
+    |     ^^^
+
+warning: function `engine_rows` is never used
+   --> app-back\src\term.rs:636:8
+    |
+636 | pub fn engine_rows(handle: i64) -> Vec<String> {
+    |        ^^^^^^^^^^^
+
+warning: function `engine_row_style` is never used
+   --> app-back\src\term.rs:645:8
+    |
+645 | pub fn engine_row_style(handle: i64, row: usize, out: &mut [u32]) -> i32 {
+    |        ^^^^^^^^^^^^^^^^
+
+warning: `app-back` (bin "app-back") generated 175 warnings (run `cargo fix --bin "app-back" -p app-back` to apply 165 suggestions)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 7.68s
+     Running `rust-workspace\target\debug\app-back.exe`
+Server running on http://127.0.0.1:17401
+CORS enabled for all origins
+  ✓ API server is ready on http://127.0.0.1:17401
+
+▶ Step 6/6: Starting dev server...
+
+▶ Starting dev server...
+
+═════════════════════════════════
+  Starting Vue dev server...
+═════════════════════════════════
+
+✓ Lockfile passes supply-chain policies (verified 1h ago)
+Lockfile is up to date, resolution step is skipped
+Already up to date
+
+Done in 1.1s using pnpm v11.6.0
+$ vite
+
+  [32m[1mVITE[22m v5.4.21[39m  [2mready in [0m[1m491[22m[2m[0m ms[22m
+
+  [32m➜[39m  [1mLocal[22m:   [36mhttp://localhost:[1m17400[22m/[39m
+[2m  [32m➜[39m  [1mNetwork[22m[2m: use [22m[1m--host[22m[2m to expose[22m

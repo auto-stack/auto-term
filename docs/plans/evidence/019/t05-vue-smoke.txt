@@ -1,0 +1,7 @@
+== T-05 vue 冒烟  ==
+vite http://localhost:17400/ → 200(终端 title, dark)
+proxy POST /api/term/tick → 200(mux_init 落账)
+GET /api/mux/layout → {"tab":1,"axis":-1,"slots":[1,0],"visible":1,"focus":1}
+GET /api/mux/tabs → ["1|1|shell 1"]
+App.vue: Tab 条按钮(横分/竖分/关Pane)+ onUnmounted 单导入(018 缺陷消失)
+VM List.set 语义核验: vm/list.rs list_set = 索引替换 ✓

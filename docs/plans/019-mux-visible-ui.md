@@ -458,7 +458,19 @@ layout 策略(Tall/Grid/Stack,Phase 6 另半边)、Workspace 持久化
     每 Tab 独立布局、多 Tab 并存全部实机确认。修复前三态(横分无响应
     /新 Tab 分屏挂起)均消除。余项待用户顺手验证:Zoom/scheme/快捷键
     组/关末 Pane 消 Tab(模型面已 headless 断言)。
-  - next:T-05/T-06 收口 → T-07 文档 → T-08 锚定。
+  - **T-05 vue 臂冒烟(数据面绿,视口待用户目验)**:vue arm 起服
+    (vite :17400 200 / axum back :17401 200,DLL 经启动脚本注入);
+    018 的 App.vue onUnmounted 重复导入缺陷已消失(单导入双使用);
+    生成 App.vue 含 Tab 条(横分/竖分/关Pane 按钮)+ 每拍 tick;
+    代理链冒烟:页面 200 → proxy tick 200 → mux_init 落账 →
+    /api/mux/layout slots[1,0] / mux_tabs 记录正确。VM 轨 List.set
+    原生(vm/list.rs list_set + shim_list_set)核验为替换语义,无
+    缺陷 C 同款问题。浏览器目验留用户(本会话无浏览器驱动工具):
+    http://localhost:17400/。
+  - **T-06 全量门(auto-term workspace)**:`cargo test --workspace`
+    exit 0 全绿(含 parity;引擎零改动回归)。014 护栏最小化/恢复
+    与 vm 实机帧归 T-06 余项(可并入复审前抽查)。
+  - next:T-07 文档(SD-01 spec 修订/DEBTS/README)→ T-08 锚定。
 
 ## 10. 待澄清事项
 
