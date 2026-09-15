@@ -183,6 +183,17 @@
           "PLAN-017"
         ],
         "status": "published"
+      },
+      {
+        "id": "P018-1",
+        "section": "reports",
+        "title": "Mux Core 五层模型 — 变更摘要",
+        "content": "PLAN-018 rev2 交付(2026-09-15):①MuxCore 五层模型(Workspace/Tab/LayoutTree 平面节点表/Pane)落 back 层 db.at,Action 单入口 mux_* 九函数,snapshot 结构 JSON 断言面,/api/mux/* 十一路由;②SpawnSpec 引擎面 autoterm_engine_spawn_ex(ffi 16→17,argv/cwd/几何,PtySession::spawn_in 接线 CommandBuilder::cwd,旧 16 符号零改动);③泵面 per-key/per-handle 化(样式旁路 feed_cells_for、键入 pump_for、几何 apply_resize_for、光标/视口/积压按柄;广播/任意旧件退役为兼容薄委托);④rev2 配色方案面 palette.rs 单源 classic-dark=0(016 逐字节同值)/light=1(WT Solarized Light),set_palette/palette_color 双符号(17→19),widget scheme prop(缺省跟随桌面主题)+双 glue 装载;⑤V1 GUI 仍焦点 Pane 全屏(视觉零变化,模型先行);非目标 Phase 2-8 全部留路线图。依赖侧:auto-lang terminal per-key 定向泵/View::Terminal scheme 穿传/VM shim 2983-2986/a2r 发射器三修/a2vue 守卫修。",
+        "file": "docs/plans/archived/018-mux-core-five-layer.md",
+        "related": [
+          "PLAN-018"
+        ],
+        "status": "published"
       }
     ],
     "goals": [
@@ -355,6 +366,17 @@
         "file": "docs/plans/archived/017-unify-app-entry.md",
         "related": [
           "PLAN-017"
+        ],
+        "status": "published"
+      },
+      {
+        "id": "P018-2",
+        "section": "goals",
+        "title": "交付目标终态(G1..G6)",
+        "content": "G1 五层落位=达成(mux pane 表唯一持有引擎句柄,UI 组件零 PTY 所有权,close 引擎 free);G2 SpawnSpec=达成(spawn_ex 生效,cwd/argv 断言绿,旧符号全量回归绿);G3 泵面隔离=达成(输入/resize/快照全部带 key 或 handle 定向,焦点全量+隐藏 drain-only);G4 单 Pane GUI 等价=达成(rust/vm 实机截图与 016 基线同构,014 最小化配方抽查无复燃);G5 Action 单入口=达成(curl 剧本 split/close/focus/zoom/tab 全断言,末 Pane/末 Tab 拒绝);G6 配色方案面=达成(classic-dark 逐字节零回归,light 浅底深字 双轨实机截图,scheme prop 显式覆盖+主题跟随两臂各验)。契约文本:docs/specs/terminal-mux-model.md;palette face 见 docs/specs/engine-ffi-color-encoding.md §scheme。",
+        "file": "docs/plans/archived/018-mux-core-five-layer.md",
+        "related": [
+          "PLAN-018"
         ],
         "status": "published"
       }
@@ -558,6 +580,17 @@
           "PLAN-017"
         ],
         "status": "published"
+      },
+      {
+        "id": "P018-3",
+        "section": "architecture",
+        "title": "MuxCore 五层模型契约与所有权铁律(SD-01/SD-03)",
+        "content": "五层对象模型(Workspace/Tab/LayoutTree/Pane/TerminalRuntime)三铁律:①Pane 不属于 UI;②Domain 不等于 PTY——引擎句柄 owner=mux pane 表,widget Registry 只是视图缓存;③终端输出逐步语义化(016 kind_color 穿传不变,解析端换表)。Action 单入口(mux_split/close_pane/focus/zoom/resize_pane/new_tab/close_tab/activate_tab/init),mux_snapshot 结构 JSON 可断言;V1 语义:关末 Pane/末 Tab 拒绝、焦点几何随动、隐藏 drain-only、单 Workspace、视口槽 key=auto-term(pane.key=pane-<id> 为模型身份)。per-key/per-handle 泵契约(广播旧件退役为兼容薄委托)。SpawnSpec:spawn_ex(program/argv/cwd/几何,cwd 空=继承宿主;domain/env 预留)。face 记录:ffi 16→19(+spawn_ex、+set_palette/palette_color);VM shim 2983-2986;at/engine_face.at 12 符号并存面不镜像(分叉在案)。配色方案面:scheme 表引擎单源(palette.rs),渲染端 scheme prop 缺省跟随主题、引擎装载覆盖/内置回退。全文 docs/specs/terminal-mux-model.md + docs/specs/engine-ffi-color-encoding.md。",
+        "file": "docs/specs/terminal-mux-model.md",
+        "related": [
+          "PLAN-018"
+        ],
+        "status": "published"
       }
     ],
     "designs": [
@@ -736,6 +769,17 @@
         "file": "docs/plans/archived/017-unify-app-entry.md",
         "related": [
           "PLAN-017"
+        ],
+        "status": "published"
+      },
+      {
+        "id": "P018-4",
+        "section": "designs",
+        "title": "关键设计裁决与守卫",
+        "content": "执行期裁定(Adapt 行 1,rev 不增):①模型并入 db.at(a2r 吸收面硬编码单文件 merged_db_impl,独立 mux.at 不可达);②平行 List 表+线性查找替代 rec/Map(§10.2 预留降级;List 无 remove_at→重建法);③app.at 零改动,视口槽 key 静态契约;④侧车 engine_pump_input_for 命名对齐 stdlib engine_pump_for;⑤光标块色=scheme 前景 @0.85(classic-dark 下与旧常量逐字节同值);⑥ratio 钳位 0-1000 对齐契约。守卫:末 Pane/末 Tab 拒绝 no-op;引擎 free 与表删绑定(所有权铁律);MCP 9247 bind 重试环(10×300ms)非窗口创建死因。修复轮:fid-1 a2vue tick_interval 臂守卫补齐(548f63237,回归测试双臂同触断言导入唯一);fid-3 ash_integration 测试标记现代化(Plan 322 ❯→> 行首计数+⏳ 倒计时谓词)。",
+        "file": "docs/plans/archived/018-mux-core-five-layer.md",
+        "related": [
+          "PLAN-018"
         ],
         "status": "published"
       }
@@ -924,6 +968,17 @@
         "file": "docs/plans/archived/017-unify-app-entry.md",
         "related": [
           "PLAN-017"
+        ],
+        "status": "published"
+      },
+      {
+        "id": "P018-5",
+        "section": "tests",
+        "title": "回归配方与证据档案",
+        "content": "引擎:`cargo test -p autoterm-engine-ffi-tests --test engine_ffi_integration` 7/7(cwd 回显/argv echo/双柄隔离/classic-dark 18 槽逐值/light 亮度/set_palette 契约/旧符号全量回归);core lib 5/5;parity 5/5(016 色契约同验)。widget/泵面:`cargo test -p auto-lang --features ui-iced,iced-layout-tests --lib terminal` 29/29(per-key 定向 2 件+palette 解析 1 件+016 像素金样三件);catalog 完整性 3/3。VM shim 冒烟:SPAWNEX_OK(exit 0)。模型行为:evidence/018/curl-mux-script.log(axum back 剧本)+ 复审轮 vue 整链活链复现。GUI:evidence/018/ 双轨双臂截图(rust/vm × dark/light)+014 最小化抽查;复审复现件 review-rust-gui-dark/review-rust-after-minimize/review-vm-gui-dark.png。全量:`cargo test --workspace --no-fail-fast` 绿(ash_integration 8/8 标记现代化后)。证据目录:docs/plans/evidence/018/(汇总 evidence-summary.md)。",
+        "file": "docs/plans/archived/018-mux-core-five-layer.md",
+        "related": [
+          "PLAN-018"
         ],
         "status": "published"
       }
@@ -1142,6 +1197,17 @@
         "file": "docs/plans/archived/017-unify-app-entry.md",
         "related": [
           "PLAN-017"
+        ],
+        "status": "published"
+      },
+      {
+        "id": "P018-6",
+        "section": "reviews",
+        "title": "复审记录(pass + findings 修复轮)",
+        "content": "复审(2026-09-15,实现会话内、全结论由复现工件重建):outcome=pass,reviewed_commit ab392f6,base 6454548。AC-01..07/09/10/11 pass;AC-08 partial(vue 臂受阻=F-1)。findings:F-1 a2vue 重复导入 onUnmounted(基线 worktree 归因实验=6454548 源码+当前工具链复现,非 018 引入);F-2 VM 独立窗口与常驻桌面共存偶发创建失败(4 样本 3 成活,重试即成,环境性);F-3 ash ctrl_c 两测基线漂移(ash Plan 322 提示符/倒计时文案变更);F-4 frontmatter 组件归属修正(已修)。修复轮(用户裁定修 findings):F-1 auto-lang 548f63237 守卫+回归测试,vue 整链复验活,AC-08 升 pass;F-3 auto-term 测试标记现代化,ash 8/8;F-2 定性环境记档。全部门复验绿。next merge。",
+        "file": "docs/plans/archived/018-mux-core-five-layer.md",
+        "related": [
+          "PLAN-018"
         ],
         "status": "published"
       }
