@@ -171,9 +171,11 @@ widget App {
         .NewTab -> {
             api.mux_new_tab()
         }
-        // 分屏(axis 0=纵向堆叠 col 1=横向并排 row;V1 树深 1 上限)
-        .Split(axis) -> {
-            api.mux_split(axis)
+        // 分屏(ax 0=纵向堆叠 col 1=横向并排 row;V1 树深 1 上限)。
+        // 注:参数名不可叫 axis——与模型字段同名时 a2r 处理器体把它
+        // 译成 self.axis(载荷被遮蔽,实测点按钮分出 axis=-1 的屏)。
+        .Split(ax) -> {
+            api.mux_split(ax)
         }
         .Zoom -> {
             var fid int = api.mux_focus_id()
