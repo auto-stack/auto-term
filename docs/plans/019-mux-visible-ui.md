@@ -398,7 +398,15 @@ layout 策略(Tall/Grid/Stack,Phase 6 另半边)、Workspace 持久化
     (752c9fc49,提交语注明流程偏差与裁定张力);③master 工作区
     余留 renderer.rs eprintln/vue.rs/633 文档均他方遗留,不处置;
     ④本计划后续 auto-lang 改动(V-1 修复)改走 lang-019 worktree。
-  - next:V-1 修复(auto-lang worktree)→ T-05/T-06 收口。
+  - **方法论调整(用户 2026-09-15 指示)**:自动 GUI 驱动期用户同时
+    在操作电脑,存在干扰;且用户实机目击**分屏成功、两侧均有 echo
+    输出**——V-1"视图冻结"结论存疑,主嫌 = PrintWindow 对遮挡/后台
+    窗口抓到陈旧帧(伪证)。处置:①测试 app Tab 条新增手动按钮面
+    (横分/竖分/关Pane/Zoom,纯 app.at,消息分派复用既有
+    .Split/.CloseFocusPane/.Zoom);②后续取证以用户手动操作 + 截图
+    为准,自动驱动(前台抖动/键入注入)停用;③V-1 改记"待手动取证
+    复核",暂不归缺陷。
+  - next:用户手动分屏取证 → T-05/T-06 收口。
 
 ## 10. 待澄清事项
 

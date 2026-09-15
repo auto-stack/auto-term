@@ -26,7 +26,7 @@ use back.api
 // classic-dark 基线);shortcuts prop 面 = onkeydown.*(D4,028c53b5f)。
 
 widget App {
-    msg { Init, Tick, KeyIn, Menu, TabActivate(int), TabClose(int), NewTab, Split(int), Zoom, SchemeToggle, Shortcut(int) }
+    msg { Init, Tick, KeyIn, Menu, TabActivate(int), TabClose(int), NewTab, Split(int), Zoom, CloseFocusPane, SchemeToggle, Shortcut(int) }
 
     model {
         var cols int = 100
@@ -179,6 +179,12 @@ widget App {
             var fid int = api.mux_focus_id()
             api.mux_zoom(fid)
         }
+        // 手动测试面(用户点击驱动):关焦点 Pane(=Ctrl+Shift+W 等价;
+        // 关末 Pane 时转关 Tab)
+        .CloseFocusPane -> {
+            var fid int = api.mux_focus_id()
+            api.mux_close_pane(fid)
+        }
         .SchemeToggle -> {
             if .scheme == 1 {
                 .scheme = 0
@@ -287,6 +293,18 @@ widget App {
                 }
                 button (text: "+") {
                     onclick: .NewTab
+                }
+                button (text: "横分") {
+                    onclick: .Split(1)
+                }
+                button (text: "竖分") {
+                    onclick: .Split(0)
+                }
+                button (text: "关Pane") {
+                    onclick: .CloseFocusPane
+                }
+                button (text: "Zoom") {
+                    onclick: .Zoom
                 }
                 button (text: "◐") {
                     onclick: .SchemeToggle
