@@ -110,13 +110,14 @@ pub fn term_exited() bool {
 // ── PLAN-018 D7:MuxCore 结构操作(/api/mux/*;Action 单入口的契约面)──
 
 /// 分屏:活动焦点 Pane 叶位替换为分支(axis 0=纵向 1=横向)。
-/// 返回新 Pane id(0 = 失败)。
+/// V1 UI 上限 = 树深 1(已分屏 Tab 再分拒绝)。返回新 Pane id(0 = 失败)。
 #[api(method = "POST", path = "/api/mux/split")]
 pub fn mux_split(axis int) int {
     return db.mux_split(axis)
 }
 
-/// 关 Pane(兄弟收编父位)。1=已关 0=末 Pane 拒绝 -1=未找到。
+/// 关 Pane(兄弟收编父位;末 Pane = 关其 Tab,PLAN-019 D1)。
+/// 1=已关(含转关 Tab)0=末 Tab 拒绝 -1=未找到。
 #[api(method = "POST", path = "/api/mux/close-pane")]
 pub fn mux_close_pane(pane_id int) int {
     return db.mux_close_pane(pane_id)
@@ -174,4 +175,96 @@ pub fn mux_rows() int {
 #[api(method = "GET", path = "/api/mux/focus-key")]
 pub fn mux_focus_key() str {
     return db.mux_focus_key()
+}
+
+// ── PLAN-019 D2:可见多终端观测/消费面(/api/mux/* 扩建)──────────
+// 标量 getter 族 = rust/vm 前端 tick 消费面(全标量/[]str 契约惯例);
+// 记录面 mux_tabs/mux_layout = vue/HTTP 消费与断言面。
+
+/// Tab 表记录面("id|active|title" 记录数组;vue/HTTP 断言面)。
+#[api(method = "GET", path = "/api/mux/tabs")]
+pub fn mux_tabs() []str {
+    return db.mux_tabs()
+}
+
+/// Tab 数。
+#[api(method = "GET", path = "/api/mux/tab-count")]
+pub fn mux_tab_count() int {
+    return db.mux_tab_count()
+}
+
+/// 第 i 个 Tab 的 id(0 = 越界)。
+#[api(method = "GET", path = "/api/mux/tab-id-at")]
+pub fn mux_tab_id_at(i int) int {
+    return db.mux_tab_id_at(i)
+}
+
+/// 第 i 个 Tab 是否活动(1/0)。
+#[api(method = "GET", path = "/api/mux/tab-is-active-at")]
+pub fn mux_tab_is_active_at(i int) int {
+    return db.mux_tab_is_active_at(i)
+}
+
+/// 第 i 个 Tab 标题(V1 = 序号 + shell 名,静态派生)。
+#[api(method = "GET", path = "/api/mux/tab-title-at")]
+pub fn mux_tab_title_at(i int) str {
+    return db.mux_tab_title_at(i)
+}
+
+/// 每 Pane 行快照(现喂现取;styled 旁路同拍共馈)。
+#[api(method = "POST", path = "/api/mux/pane-lines")]
+pub fn mux_pane_lines(pane_id int) []str {
+    return db.mux_pane_lines(pane_id)
+}
+
+/// 每 Pane 视口几何(pane 表同步值)。
+#[api(method = "GET", path = "/api/mux/pane-cols")]
+pub fn mux_pane_cols(pane_id int) int {
+    return db.mux_pane_cols(pane_id)
+}
+
+#[api(method = "GET", path = "/api/mux/pane-rows")]
+pub fn mux_pane_rows(pane_id int) int {
+    return db.mux_pane_rows(pane_id)
+}
+
+/// 每 Pane 光标格(引擎 feed 采样;未采样为 0)。
+#[api(method = "GET", path = "/api/mux/pane-cursor-row")]
+pub fn mux_pane_cursor_row(pane_id int) int {
+    return db.mux_pane_cursor_row(pane_id)
+}
+
+#[api(method = "GET", path = "/api/mux/pane-cursor-col")]
+pub fn mux_pane_cursor_col(pane_id int) int {
+    return db.mux_pane_cursor_col(pane_id)
+}
+
+/// 当前 Tab 可见 Pane 数(zoom 投影后;T-B ≤2)。
+#[api(method = "GET", path = "/api/mux/visible-pane-count")]
+pub fn mux_visible_pane_count() int {
+    return db.mux_visible_pane_count()
+}
+
+/// 当前 Tab 根分支轴(0=纵向 1=横向;-1 = 无分屏)。
+#[api(method = "GET", path = "/api/mux/split-axis")]
+pub fn mux_split_axis() int {
+    return db.mux_split_axis()
+}
+
+/// 布局槽位投影:slot(1/2) → 可见 Pane id(0 = 该槽无 Pane)。
+#[api(method = "GET", path = "/api/mux/slot-pane-id")]
+pub fn mux_slot_pane_id(slot int) int {
+    return db.mux_slot_pane_id(slot)
+}
+
+/// 当前 Tab 是否 zoom 中(1/0)。
+#[api(method = "GET", path = "/api/mux/zoom-active")]
+pub fn mux_zoom_active() int {
+    return db.mux_zoom_active()
+}
+
+/// 布局投影 DTO(当前 Tab;JSON 串;断言面)。
+#[api(method = "GET", path = "/api/mux/layout")]
+pub fn mux_layout() str {
+    return db.mux_layout()
 }

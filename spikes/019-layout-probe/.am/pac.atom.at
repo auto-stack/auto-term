@@ -1,0 +1,39 @@
+root {
+    version: "0.1.0"
+    all_incs: [
+        
+    ]
+    deps: [
+        
+    ]
+    devices: [
+        
+    ]
+    libs: [
+        
+    ]
+    apps: [
+        
+    ]
+    bags: [
+        
+    ]
+    tests: [
+        
+    ]
+    files: [
+        
+    ]
+    name: "probe019"
+    description: "PLAN-019 T-00 layout view-building probe"
+    scene: "ui"
+    render: "rust"
+    title: "probe019"
+    window: "802x482"
+    front_port: 17410
+    back_port: 17411
+    defines: [
+        
+    ]
+    relative_path: "/.."
+}

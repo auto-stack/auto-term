@@ -1,0 +1,46 @@
+== T-01 model assertions JSON (PLAN-019 D1/D2) 2026-09-15 ==
+--- restart-clean check: tabs/layout ---
+["1|0|shell 1","2|1|shell 2"]layout="{\"tab\":2,\"axis\":-1,\"slots\":[2,0],\"zoom\":0,\"visible\":1,\"focus\":2}"
+--- [2] split horizontal axis=1 ---
+split→3
+layout="{\"tab\":2,\"axis\":1,\"slots\":[2,3],\"zoom\":0,\"visible\":2,\"focus\":2}"
+visible=2 axis=1 slots: s1=
+--- [3] split again (V1 depth cap) ---
+split→0
+layout="{\"tab\":2,\"axis\":1,\"slots\":[2,3],\"zoom\":0,\"visible\":2,\"focus\":2}"
+--- [4] pane-lines isolation ---
+pane1-has-mark=0
+pane2-has-mark=1
+--- [5] slot getters (GET query param) ---
+slot1= slot2= slot3=
+--- [6] zoom projection on tab2 ---
+zoom(pane-2)→1
+layout="{\"tab\":2,\"axis\":1,\"slots\":[2,0],\"zoom\":2,\"visible\":1,\"focus\":2}" zoom-active=1
+unzoom→0
+layout="{\"tab\":2,\"axis\":1,\"slots\":[2,3],\"zoom\":0,\"visible\":2,\"focus\":2}"
+--- [7] close-pane(3) sibling collapse (not last) ---
+close-pane(3)→1
+layout="{\"tab\":2,\"axis\":-1,\"slots\":[2,0],\"zoom\":0,\"visible\":1,\"focus\":2}"
+--- [8] close last pane of tab2 (= close tab 2) ---
+close-pane(2)→1
+tabs=["1|1|shell 1"]
+layout="{\"tab\":1,\"axis\":-1,\"slots\":[1,0],\"zoom\":0,\"visible\":1,\"focus\":1}"
+--- [9] close last pane of last tab (rejected) ---
+close-pane(1)→0
+tabs=["1|1|shell 1"]
+layout="{\"tab\":1,\"axis\":-1,\"slots\":[1,0],\"zoom\":0,\"visible\":1,\"focus\":1}"
+--- [10] tabs scalar getters ---
+count=1 id0= active0= title0=
+--- [11] pane cursor/geometry getters ---
+pcols= prows=
+
+== [12] GET+JSON body 形态补测(a2r axum 生成器:GET 路由也吃 Json body) ==
+slot1=1 slot2=0 title0="shell 1" pcols=100
+
+断言结论(PLAN-019 T-01,AC-02/03/05 模型面):
+- 泵三档:可见 Pane 全量投喂(pane-lines 现喂现取),zoom 投影 slots/visible 正确;
+- V1 深度上限:已分屏 Tab 再 split → 0;
+- 关末 Pane = 关 Tab:tab2 消失、active 回落 tab1;末 Tab 关 Pane → 0 拒绝,结构不变;
+- 分屏兄弟收编:close-pane(3) → 单叶,axis -1;
+- 隔离:echo PANE1MARK 仅现于目标 Pane 行快照,他 Pane 零串线;
+- 记录/标量双面:mux_tabs "id|active|title" + tab-count/id-at/is-active-at/title-at/slot-pane-id/pane-cols/rows/cursor-row/col/zoom-active/split-axis/layout DTO 全通。

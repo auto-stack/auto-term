@@ -1,0 +1,17 @@
+// pac.at — PLAN-019 T-00 开工门探针工程(动态视图构建判据)。
+// 探针面:①row 内 for 驱动 button(Tab 条形态)②if 枚举 row/col 臂
+// (T-B 形态)③terminal 动态 key/多实例(分屏形态)。模型面纯本地
+// List/标量,零 back 依赖——判据聚焦 view 消费。
+// render 双跑:render: "rust" 产 a2r 生成码(main.rs)供勘读;
+// VM 臂勘读以 auto run -r vm 实机(GUI)为据(T-06 一并)。
+
+name: "probe019"
+version: "0.1.0"
+description: "PLAN-019 T-00 layout view-building probe"
+
+scene: "ui"
+render: "rust"
+title: "probe019"
+window: "802x482"
+front_port: 17410
+back_port: 17411

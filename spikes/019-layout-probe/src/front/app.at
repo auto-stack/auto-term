@@ -1,0 +1,109 @@
+// app.at — PLAN-019 T-00 探针前端(动态视图构建三判据)。
+// ①row 内 for 驱动 button(载荷消息带循环变量);②if 静态枚举
+// row/col 臂;③terminal 多实例动态 key。List 平行表驱动(018 §10.2
+// 模型形态),零 rec/Map。
+
+widget App {
+    msg { Init, Tick, TabActivate(int), NewTab, KeyIn }
+
+    model {
+        var tab_ids List<int> = [1, 2, 3]
+        var tab_labels List<str> = ["shell 1", "shell 2", "shell 3"]
+        var active_tab int = 1
+        var split int = 1
+        var axis int = 1
+        var lines1 List<str> = ["pane one output"]
+        var lines2 List<str> = ["pane two output"]
+        var cols int = 80
+        var rows int = 24
+        var crow int = 0
+        var ccol int = 0
+    }
+
+    on {
+        .Init -> {
+            .active_tab = 1
+        }
+        .Tick -> {
+        }
+        .TabActivate(id) -> {
+            .active_tab = id
+        }
+        .NewTab -> {
+        }
+        .KeyIn -> {
+        }
+    }
+
+    view {
+        col {
+            style: "w-full h-screen bg-background"
+            row {
+                style: "w-full"
+                for label in .tab_labels {
+                    button (text: label) {
+                        onclick: .TabActivate(1)
+                    }
+                }
+                button (text: "+") {
+                    onclick: .NewTab
+                }
+            }
+            if .split == 1 {
+                if .axis == 1 {
+                    row {
+                        terminal {
+                            key: "pane-1"
+                            cols: .cols
+                            rows: .rows
+                            lines: .lines1
+                            cursor_row: .crow
+                            cursor_col: .ccol
+                            oninput: .KeyIn
+                        }
+                        terminal {
+                            key: "pane-2"
+                            cols: .cols
+                            rows: .rows
+                            lines: .lines2
+                            cursor_row: .crow
+                            cursor_col: .ccol
+                            oninput: .KeyIn
+                        }
+                    }
+                } else {
+                    col {
+                        terminal {
+                            key: "pane-1"
+                            cols: .cols
+                            rows: .rows
+                            lines: .lines1
+                            cursor_row: .crow
+                            cursor_col: .ccol
+                            oninput: .KeyIn
+                        }
+                        terminal {
+                            key: "pane-2"
+                            cols: .cols
+                            rows: .rows
+                            lines: .lines2
+                            cursor_row: .crow
+                            cursor_col: .ccol
+                            oninput: .KeyIn
+                        }
+                    }
+                }
+            } else {
+                terminal {
+                    key: "pane-1"
+                    cols: .cols
+                    rows: .rows
+                    lines: .lines1
+                    cursor_row: .crow
+                    cursor_col: .ccol
+                    oninput: .KeyIn
+                }
+            }
+        }
+    }
+}

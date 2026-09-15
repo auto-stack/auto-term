@@ -13,10 +13,13 @@
 // ratio_permille 千分比 0-1000,默认 500)。List 无中间删除原语 →
 // 删除走重建法(list_remove_* 助手)。
 //
-// V1 语义(§2.1):①关末 Pane/末 Tab = 拒绝 no-op;②焦点切换新焦点
-// Pane 几何随动;③隐藏 Pane 每拍 drain-only;④恒单 Workspace(id=1)。
-// pane.key = "pane-<id>"(模型身份);V1 视口槽 key = "auto-term"
-// (单一可见 terminal 组件;快照旁路/键入泵/几何请求都经它定向)。
+// V1 语义(§2.1;PLAN-019 D1 修订):①关末 Pane = 关其 Tab(末 Tab
+// 仍拒绝 no-op,app 常驻);②焦点切换新焦点 Pane 几何随动;③泵三档
+// ——焦点(全量+键入泵)/可见非焦点(全量投喂)/不可见(zoom 掩盖/
+// 他 Tab,drain-only);④恒单 Workspace(id=1);⑤分屏 V1 UI 上限 =
+// 树深 1 两分(T-B 渲染面,深分屏归 T-C)。
+// pane.key = "pane-<id>"(模型身份,同时 = 可见多终端 UI 的视口槽
+// key;快照旁路/键入泵/几何请求都按 pane key 定向,PLAN-019)。
 //
 // 引擎调用面 = use auto.term(013 D1:a2r 下降 crate::term ← sidecar
 // 供给;VM 走 auto.term shims——同一 autoterm_core.dll)。
@@ -174,6 +177,22 @@ fn tab_index(tab_id int) int {
     return hit
 }
 
+/// List<int> 成员判定(泵可见性集合用;V1 规模个位数)。
+fn contains_int(xs List<int>, v int) bool {
+    var i int = 0
+    var n int = xs.len()
+    loop {
+        if i >= n {
+            break
+        }
+        if xs.get(i) == v {
+            return true
+        }
+        i = i + 1
+    }
+    return false
+}
+
 /// 活动下标(未初始化 = -1)。
 fn active_tab_index() int {
     if ws_active_tab == 0 {
@@ -311,19 +330,27 @@ fn mux_focus_key_inner() str {
     return pane_keys.get(pi)
 }
 
-/// 隐藏 Pane 的引擎柄表(tick 的 drain-only 收割对象)。
-fn mux_hidden_handles() List<int> {
+/// 当前 Tab 可见 pane id 表(PLAN-019 D1 泵三档判据源)。
+/// zoom 投影:zoom 中仅 zoomed Pane 可见;否则 = 当前 Tab 全部 Pane。
+fn mux_visible_pane_ids() List<int> {
     var out List<int> = []
-    var focus int = mux_focus_handle()
+    var ti int = active_tab_index()
+    if ti < 0 {
+        return out
+    }
+    var zoomed int = tab_zoomed_pane.get(ti)
+    if zoomed != 0 {
+        out.push(zoomed)
+        return out
+    }
     var i int = 0
-    var n int = pane_handles.len()
+    var n int = pane_ids.len()
     loop {
         if i >= n {
             break
         }
-        var h int = pane_handles.get(i)
-        if h != focus {
-            out.push(h)
+        if pane_tab_ids.get(i) == ws_active_tab {
+            out.push(pane_ids.get(i))
         }
         i = i + 1
     }
@@ -374,6 +401,8 @@ pub fn mux_init() int {
 
 /// 分屏:活动焦点 Pane 的叶位替换为分支(原叶 first、新 Pane second;
 /// axis 0=纵向 1=横向;比例 500‰)。返回新 Pane id(0 = 失败)。
+/// V1 UI 上限(PLAN-019 T-B 渲染面):Tab 已是分支(树深 1)→ 再分
+/// 拒绝(0)——视图投影面只到两 Pane,防不可见 Pane;上限解除归 T-C。
 pub fn mux_split(axis int) int {
     var ti int = active_tab_index()
     if ti < 0 {
@@ -384,6 +413,13 @@ pub fn mux_split(axis int) int {
     var old_leaf int = leaf_node_of_pane(focus)
     if old_leaf == 0 {
         return 0
+    }
+    var root int = tab_root_node.get(ti)
+    var ri int = node_index(root)
+    if ri >= 0 {
+        if node_pane.get(ri) == 0 {
+            return 0
+        }
     }
     var new_leaf int = spawn_pane_into_tab(tab_id, axis)
     if new_leaf == 0 {
@@ -406,12 +442,10 @@ pub fn mux_split(axis int) int {
 
 /// 关 Pane:兄弟收编父位(wezterm remove_pane/kitty collapse 同语义);
 /// 被关者引擎柄 free(所有权铁律);关的是焦点 → 焦点落兄弟子树最左叶。
-/// 1 = 已关;0 = 末 Pane 拒绝;-1 = 未找到。
+/// 关末 Pane = 关其 Tab(PLAN-019 D1,018 §10.4 裁定承接);关的是
+/// 末 Tab → mux_close_tab 内拒绝(0,app 常驻)。
+/// 1 = 已关(含转关 Tab);0 = 末 Tab 拒绝;-1 = 未找到。
 pub fn mux_close_pane(pane_id int) int {
-    var ti int = active_tab_index()
-    if ti < 0 {
-        return -1
-    }
     var pi int = pane_index(pane_id)
     if pi < 0 {
         return -1
@@ -423,7 +457,8 @@ pub fn mux_close_pane(pane_id int) int {
     }
     var ti2 int = tab_index(tab_id)
     if tab_root_node.get(ti2) == leaf {
-        return 0
+        // 末 Pane:关其 Tab(末 Tab 拒绝语义在 mux_close_tab 内)。
+        return mux_close_tab(tab_id)
     }
 
     var parent int = 0
@@ -683,10 +718,11 @@ pub fn mux_snapshot() str {
 // ══════════════════════════════════════════════════════════════════
 
 /// 每拍驱动(首调 mux_init:单 Workspace + 初始 Tab/Pane spawn)。
-/// 焦点 Pane:定向几何泵 + 定向快照(旁路投喂视口槽 key="auto-term");
-/// 隐藏 Pane:drain-only(收割引擎防 014 积压,不投喂 widget)。
-/// 零参(async init 引导惯例:extract_init_api_func 只认 list_/get_ 前缀
-/// 零参 fn)。
+/// 泵三档(PLAN-019 D1):焦点 Pane = 定向几何泵 + 定向快照(旁路投喂
+/// pane key 槽)+ 键入泵目标;可见非焦点 Pane = 同等全量投喂(各自 pane
+/// key,分屏后画面不冻结);不可见 Pane(zoom 掩盖/他 Tab)= drain-only
+/// (收割引擎防 014 积压,不投喂 widget)。返回焦点 Pane 快照
+/// (焦点门面:vue/tick 消费面零变)。
 pub fn get_lines() []str {
     mux_init()
     var handle int = mux_focus_handle()
@@ -694,13 +730,37 @@ pub fn get_lines() []str {
         var empty List<str> = []
         return empty
     }
-    drain_hidden(handle)
-    var applied int = engine_apply_resize_for(handle, "auto-term")
-    if applied > 0 {
-        cols = engine_viewport_cols(handle)
-        rows = engine_viewport_rows(handle)
+    drain_invisible()
+    var focus_pid int = mux_focus_pane_id()
+    var vis List<int> = mux_visible_pane_ids()
+    var focus_snapshot List<str> = []
+    var i int = 0
+    var n int = vis.len()
+    loop {
+        if i >= n {
+            break
+        }
+        var pid int = vis.get(i)
+        var pi int = pane_index(pid)
+        if pi >= 0 {
+            var h int = pane_handles.get(pi)
+            var key str = pane_keys.get(pi)
+            var applied int = engine_apply_resize_for(h, key)
+            if applied > 0 {
+                pane_cols.set(pi, engine_viewport_cols(h))
+                pane_rows.set(pi, engine_viewport_rows(h))
+                if pid == focus_pid {
+                    cols = engine_viewport_cols(h)
+                    rows = engine_viewport_rows(h)
+                }
+            }
+            var snap List<str> = engine_rows_for(h, key)
+            if pid == focus_pid {
+                focus_snapshot = snap
+            }
+        }
+        i = i + 1
     }
-    var snapshot List<str> = engine_rows_for(handle, "auto-term")
     // 首调(engine boot,async init 的 spawn_blocking 线程)短轮询等
     // shell banner——引导快照取太早会整屏空行(rust 形态实测)。
     if booted == false {
@@ -709,30 +769,31 @@ pub fn get_lines() []str {
             if tries >= 400 {
                 break
             }
-            if snapshot.len() > 0 {
+            if focus_snapshot.len() > 0 {
                 break
             }
-            snapshot = engine_rows_for(handle, "auto-term")
+            focus_snapshot = engine_rows_for(handle, mux_focus_key_inner())
             tries = tries + 1
         }
         booted = true
     }
     exited = engine_is_exited(handle)
-    return snapshot
+    return focus_snapshot
 }
 
-/// 隐藏 Pane drain-only:收割引擎输出(快照刷新)不投喂任何 widget
-/// (key "-hidden-" 不命中注册表)。
-fn drain_hidden(focus int) int {
-    var hidden List<int> = mux_hidden_handles()
+/// 不可见 Pane drain-only:收割引擎输出(快照刷新)不投喂任何 widget
+/// (key "-hidden-" 不命中注册表;014 积压护栏维持)。
+fn drain_invisible() int {
+    var vis List<int> = mux_visible_pane_ids()
     var i int = 0
-    var n int = hidden.len()
+    var n int = pane_ids.len()
     loop {
         if i >= n {
             break
         }
-        var h int = hidden.get(i)
-        if h != focus {
+        var pid int = pane_ids.get(i)
+        if contains_int(vis, pid) == false {
+            var h int = pane_handles.get(i)
             var sink List<str> = engine_rows_for(h, "-hidden-")
             var keep int = sink.len()
             if keep > 0 {
@@ -763,27 +824,71 @@ pub fn term_menu_take() int {
     return engine_menu_take()
 }
 
-/// 直键入泵:排空视口槽 terminal 组件键盘队列,定向裸写焦点 Pane 引擎
-/// (无 \r\n 补缀;Enter 已是 VT 串里的 \r)。返回泵送键数。
+/// 直键入泵(PLAN-019 D1 键入路由):逐可见 Pane 排空各自 queue 裸写
+/// 各自引擎(无 \r\n 补缀;Enter 已是 VT 串里的 \r)——键入恒落用户
+/// 点击聚焦的那个 terminal 槽,Pane 间零串线。本次有泵出的 Pane 记为
+/// 其 Tab 焦点(打字随动焦点;V1 近似:纯点击不打字不迁移焦点)。
+/// 返回泵送键数。
 pub fn term_pump_input() int {
-    var handle int = mux_focus_handle()
-    if handle == 0 {
-        return 0
+    var vis List<int> = mux_visible_pane_ids()
+    var total int = 0
+    var i int = 0
+    var n int = vis.len()
+    loop {
+        if i >= n {
+            break
+        }
+        var pid int = vis.get(i)
+        var pi int = pane_index(pid)
+        if pi >= 0 {
+            var h int = pane_handles.get(pi)
+            var key str = pane_keys.get(pi)
+            var pumped int = engine_pump_for(h, key)
+            if pumped > 0 {
+                total = total + pumped
+                set_focus_if_active_tab(pid)
+            }
+        }
+        i = i + 1
     }
-    return engine_pump_for(handle, "auto-term")
+    return total
 }
 
-/// 几何随动(定向):只消费视口槽 key 的待定 resize 请求 → 焦点 Pane
-/// 引擎 resize + db 几何同步。返回 1=已应用 0=无请求。
-pub fn term_apply_resize() int {
-    var handle int = mux_focus_handle()
-    if handle == 0 {
+/// 打字随动焦点:pid 记为其 Tab 焦点(仅当该 Tab = 当前活动 Tab;
+/// 不可见 Pane 队列无键,本函数只被可见泵面调用)。
+fn set_focus_if_active_tab(pid int) int {
+    var ti int = active_tab_index()
+    if ti < 0 {
         return 0
     }
-    var applied int = engine_apply_resize_for(handle, "auto-term")
+    var pi int = pane_index(pid)
+    if pi >= 0 {
+        if pane_tab_ids.get(pi) == ws_active_tab {
+            tab_active_pane.set(ti, pid)
+        }
+    }
+    return 1
+}
+
+/// 几何随动(焦点 Pane 定向):只消费焦点 pane key 的待定 resize 请求
+/// → 其引擎 resize + pane 表/db 几何同步。返回 1=已应用 0=无请求。
+pub fn term_apply_resize() int {
+    var pid int = mux_focus_pane_id()
+    if pid == 0 {
+        return 0
+    }
+    var pi int = pane_index(pid)
+    if pi < 0 {
+        return 0
+    }
+    var key str = pane_keys.get(pi)
+    var h int = pane_handles.get(pi)
+    var applied int = engine_apply_resize_for(h, key)
     if applied > 0 {
-        cols = engine_viewport_cols(handle)
-        rows = engine_viewport_rows(handle)
+        pane_cols.set(pi, engine_viewport_cols(h))
+        pane_rows.set(pi, engine_viewport_rows(h))
+        cols = engine_viewport_cols(h)
+        rows = engine_viewport_rows(h)
     }
     return applied
 }
@@ -868,4 +973,201 @@ pub fn mux_rows() int {
 /// 焦点 Pane 模型 key(pane-<id>;"" = 无)。
 pub fn mux_focus_key() str {
     return mux_focus_key_inner()
+}
+
+// ── PLAN-019 D2:可见多终端观测/消费面(db 侧实现;api.at 同名契约)
+// 标量 getter 族 = 前端 tick 消费面(018 §10.2 平行 List 先例,零
+// rec/Map、零字符串解析);记录面(mux_tabs/mux_layout)= vue/HTTP
+// 断言面。V1 静态标题派生:序号 + shell 名(动态 title 归 ③ OSC)。
+
+/// Tab 表记录面("id|active|title";vue/HTTP 消费与断言面)。
+pub fn mux_tabs() []str {
+    var out List<str> = []
+    var i int = 0
+    var n int = tab_ids.len()
+    loop {
+        if i >= n {
+            break
+        }
+        var rec str = tab_ids.get(i).str() + "|"
+        if tab_ids.get(i) == ws_active_tab {
+            rec = rec + "1|"
+        } else {
+            rec = rec + "0|"
+        }
+        rec = rec + mux_tab_title_at(i)
+        out.push(rec)
+        i = i + 1
+    }
+    return out
+}
+
+/// Tab 数。
+pub fn mux_tab_count() int {
+    return tab_ids.len()
+}
+
+/// 第 i 个 Tab 的 id(0 = 越界)。
+pub fn mux_tab_id_at(i int) int {
+    if i < 0 {
+        return 0
+    }
+    if i >= tab_ids.len() {
+        return 0
+    }
+    return tab_ids.get(i)
+}
+
+/// 第 i 个 Tab 是否活动(1/0)。
+pub fn mux_tab_is_active_at(i int) int {
+    if mux_tab_id_at(i) == 0 {
+        return 0
+    }
+    if tab_ids.get(i) == ws_active_tab {
+        return 1
+    }
+    return 0
+}
+
+/// 第 i 个 Tab 标题(V1 = 序号 + shell 名,静态派生)。
+pub fn mux_tab_title_at(i int) str {
+    var n int = i + 1
+    return "shell " + n.str()
+}
+
+/// 每 Pane 行快照(现喂现取;styled 旁路同拍共馈该 pane key)。
+pub fn mux_pane_lines(pane_id int) []str {
+    var pi int = pane_index(pane_id)
+    if pi < 0 {
+        var empty List<str> = []
+        return empty
+    }
+    var h int = pane_handles.get(pi)
+    var key str = pane_keys.get(pi)
+    return engine_rows_for(h, key)
+}
+
+/// 每 Pane 视口几何(pane 表同步值;缺槽回落 100×30 存档初值)。
+pub fn mux_pane_cols(pane_id int) int {
+    var pi int = pane_index(pane_id)
+    if pi < 0 {
+        return 100
+    }
+    return pane_cols.get(pi)
+}
+
+pub fn mux_pane_rows(pane_id int) int {
+    var pi int = pane_index(pane_id)
+    if pi < 0 {
+        return 30
+    }
+    return pane_rows.get(pi)
+}
+
+/// 每 Pane 光标格(引擎 feed 时采样;未采样为 0)。
+pub fn mux_pane_cursor_row(pane_id int) int {
+    var pi int = pane_index(pane_id)
+    if pi < 0 {
+        return 0
+    }
+    return engine_cursor_row(pane_handles.get(pi))
+}
+
+pub fn mux_pane_cursor_col(pane_id int) int {
+    var pi int = pane_index(pane_id)
+    if pi < 0 {
+        return 0
+    }
+    return engine_cursor_col(pane_handles.get(pi))
+}
+
+/// 当前 Tab 可见 Pane 数(zoom 投影后;T-B 渲染面 ≤2)。
+pub fn mux_visible_pane_count() int {
+    return mux_visible_pane_ids().len()
+}
+
+/// 当前 Tab 根分支轴(0=纵向 1=横向;-1 = 无分屏/未初始化)。
+pub fn mux_split_axis() int {
+    var ti int = active_tab_index()
+    if ti < 0 {
+        return -1
+    }
+    var root int = tab_root_node.get(ti)
+    var ri int = node_index(root)
+    if ri < 0 {
+        return -1
+    }
+    if node_pane.get(ri) != 0 {
+        return -1
+    }
+    return node_axis.get(ri)
+}
+
+/// 布局槽位投影:slot(1/2) → 可见 Pane id(0 = 该槽无 Pane)。
+/// zoom → slot1 = zoomed;无分屏 → slot1 = 唯一叶;树深 1 →
+/// slot1/2 = first/second 叶(T-B 渲染面直接消费)。
+pub fn mux_slot_pane_id(slot int) int {
+    var ti int = active_tab_index()
+    if ti < 0 {
+        return 0
+    }
+    var zoomed int = tab_zoomed_pane.get(ti)
+    if zoomed != 0 {
+        if slot == 1 {
+            return zoomed
+        }
+        return 0
+    }
+    var root int = tab_root_node.get(ti)
+    var ri int = node_index(root)
+    if ri < 0 {
+        return 0
+    }
+    var pane int = node_pane.get(ri)
+    if pane != 0 {
+        if slot == 1 {
+            return pane
+        }
+        return 0
+    }
+    if slot == 1 {
+        return leftmost_pane(node_first.get(ri))
+    }
+    if slot == 2 {
+        return leftmost_pane(node_second.get(ri))
+    }
+    return 0
+}
+
+/// 当前 Tab 是否 zoom 中(1/0)。
+pub fn mux_zoom_active() int {
+    var ti int = active_tab_index()
+    if ti < 0 {
+        return 0
+    }
+    if tab_zoomed_pane.get(ti) != 0 {
+        return 1
+    }
+    return 0
+}
+
+/// 布局投影 DTO(当前 Tab;JSON 串;/api/mux/layout 断言面)。
+pub fn mux_layout() str {
+    var ti int = active_tab_index()
+    if ti < 0 {
+        return "{\"tab\":0,\"axis\":-1,\"slots\":[0,0],\"zoom\":0,\"visible\":0,\"focus\":0}"
+    }
+    var zoomed int = tab_zoomed_pane.get(ti)
+    var out str = "{\"tab\":" + tab_ids.get(ti).str()
+    out = out + ",\"axis\":" + mux_split_axis().str()
+    out = out + ",\"slots\":[" + mux_slot_pane_id(1).str() + "," + mux_slot_pane_id(2).str() + "]"
+    out = out + ",\"zoom\":"
+    if zoomed != 0 {
+        out = out + zoomed.str()
+    } else {
+        out = out + "0"
+    }
+    out = out + ",\"visible\":" + mux_visible_pane_count().str()
+    out = out + ",\"focus\":" + mux_focus_pane_id().str() + "}"
+    return out
 }

@@ -1,12 +1,12 @@
 ---
 plan_id: PLAN-019
-status: drafting
+status: executing
 feature_name: 可见多终端 UI——Tab 条 + 分屏渲染 + 快捷键(006 蓝图 ①)
 author: [zcode-session]
 created_at: 2026-09-15T00:00:00Z
 updated_at: 2026-09-15T00:00:00Z
 plan_revision: 1
-current_step: 0
+current_step: 1
 total_steps: 9
 supersedes_spec_components: []
 new_spec_components: []
@@ -245,12 +245,20 @@ layout 策略(Tall/Grid/Stack,Phase 6 另半边)、Workspace 持久化
 
 ## 8. 执行步骤
 
-- **T-00 开工门勘定**:①布局构建三案判据——a2r/VM 对 view 内
+- **T-00 [x] 开工门勘定**:①布局构建三案判据——a2r/VM 对 view 内
   动态构建(if/for 内嵌 row/col、函数递归、平行 List 驱动循环)
   的支持实证(最小语料编译+运行,记 §9);案决 T-A/T-B。②auto-lang
   master 锚点勘定(018 后新提交面;shortcut 扩建点 7 处枚举位)。
   ③快捷键冲突表勘定(候选键 × 常见终端内程序占用)。前置:无。
   产出:§9 勘定附记。关联全部。
+  [✅ 已完成] 案决 **T-B(V1 树深 1)**——探针工程
+  `spikes/019-layout-probe`(auto build 全绿 1m48s,生成码
+  rust-workspace/019-layout-probe/src/main.rs:85 勘读):view if/else
+  枚举 row/col 臂 + 臂内多 terminal 实例 a2r 生成逐字正确;row 直属
+  for 摊平缺口在案(a2r 包 col 致纵向堆叠;VM 臂 Plan 047 既有摊平)
+  → Tab 条使能 = a2r row×for 摊平小修(Plan 407 grid 先例推广,随
+  T-03 落 auto-lang);terminal 动态键 a2r 仅认字面量(T-A 迭代形态
+  不可行,AC-02 依 §10.3 收窄两 Pane、rev 不增)。详证 §9 附记。
 - **T-01 [D1+D2] back 泵可见性化 + 关闭语义 + api 面**(db.at/
   api.at)。前置 T-00。关联 AC-02/03/05。
 - **T-02 [D3 案按 T-00] Tab 条 + 布局消费视图**(app.at;单 Pane
@@ -280,6 +288,81 @@ layout 策略(Tall/Grid/Stack,Phase 6 另半边)、Workspace 持久化
   T-B,视觉受限但不阻交付);快捷键拦截 = 既有 Binding::Custom
   机制 + 018 D10 prop 扩建路径,均为已验证模式 · next:work
   (T-00 起)。
+
+- 2026-09-15 stage:work · PLAN-019 · rev1 · **T-00 勘定附记**
+  (outcome:pass,进入 executing):
+  - **工作树勘定**:主检出直落(014/016/017/018 四例"无 worktree
+    主检出交付"惯例;auto-term 无 AGENTS.md 反向约束);auto-lang
+    master 直落(双仓锚定惯例)。auto-term 基点 c7b2df4(019 立项
+    提交);工作区唯一遗留 tmp_ash_colors.png(016 收据在案非本计划)。
+  - **①布局构建三案判据**:探针工程 `spikes/019-layout-probe/`
+    (pac.at render rust + 纯本地模型 app.at,零 back 依赖;
+    `auto build` 全绿 1m48s;生成码
+    `spikes/019-layout-probe/rust-workspace/019-layout-probe/src/
+    main.rs:85` 勘读)。实证四条:
+    (a) **T-B 可行**:view `if`/嵌套 `if` 静态枚举 row/col 臂 +
+    臂内多 terminal 实例(literal key/`.field` 绑定/oninput)→ a2r
+    生成码逐字正确(`if self.split == 1 { if self.axis == 1 {
+    View::row().child(Terminal pane-1).child(Terminal pane-2) } ...
+    }`)——深度 1 两分(横/竖)视图消费在案;
+    (b) **row×for 摊平缺口**:a2r 通用臂把 row 直属 for 包成单 col
+    子(`.child(View::col().children(map))`,按钮纵向堆叠,
+    ui_gen/rust.rs:3247 "always use .child()" 注记位);VM 臂无此
+    缺口(aura_view_builder.rs convert_row:6049 for_loop_iterations
+    横向摊平,Plan 047 在库);grid 有 a2r 摊平先例(Plan 407
+    generate_for_loop_cells)。**裁定:随本计划落 auto-lang 小修**
+    ——row 直属 ForLoop 改 `.children()` 批量加(Plan 407 先例推广
+    至 row;col 不动防扰存量),Tab 条(G1/AC-01)两轨同源 .at 所
+    必需,执行点 = T-03;
+    (c) **terminal 动态键缺口**:a2r terminal 臂 key 仅认
+    `Expr::Str` 字面量(ui_gen/rust.rs:2474),动态表达式回落
+    "main";VM 臂 extract_string_with(bindings) 动态键可用——
+    迭代驱动多实例(T-A 形态)rust 轨不可行;
+    (d) component fn 递归 + 平行 List 全表传参未验证,且视图内拉
+    模型数据违反 tick-pull 数据流(013 架构:tick 拉取入 model,
+    view 纯消费)。
+    **案决:T-B(V1 树深 1)**,§10.3 预授权降级生效——AC-02 口径
+    收窄"两 Pane 分屏",rev 不增;更深嵌套归 T-C(View::Split
+    组件,后续计划)。探测语料保留于 spikes/(不入 CASA 面)。
+  - **②auto-lang 锚点**:master de86e1d8e(PLAN-635 文档提交链顶;
+    并行工作区遗留:iced/renderer.rs 12 行 eprintln 调试 + 计划文档
+    632/634 修改——非本计划,保留不提交,renderer.rs 提交时选择性
+    staging(git apply --cached 过滤 hunk))。D4 shortcuts 扩建点
+    枚举(018 T-10 scheme 先例 + Textarea keydown 先例双轨对齐):
+    1. view.rs View::Terminal 变体 + 全字段映射(:562/:2091)增
+       `shortcuts: Vec<(String, M)>`;
+    2. aura_view_builder.rs convert_terminal(:9429)——`onkeydown.*`
+       事件收集 → shortcuts(Textarea :9386-9412 同款收集器);
+    3. renderer.rs iced 臂 1(:4144 视图构建)传穿;
+    4. renderer.rs iced 臂 2(:6727 VM 消息转换)from_dynamic;
+    5. ui_gen/rust.rs terminal 发射臂(:2471)发射 shortcuts vec;
+    6. ui/terminal/iced/widget.rs 键入捕获块(:372)前置拦截 +
+       Terminal struct(:137)增 shortcuts 字段——命中发消息不落
+       VT 队列不触发 on_input;未命中原样 key_event_to_vt;
+    7. 键名规范化新写 widget 本地 `terminal_key_binding_name`
+       (命名沿 Textarea "ctrl.r" 族;差异:字符键 shift 恒前缀 +
+       小写化——修 Ctrl+Shift+E/E 大小写平台漂移);
+    8. schema/aura.at 文档条可选(Textarea keydown 未声明的先例;
+       校验仅 S001 warning 非硬门)。vue 臂声明透传不实现(D4 承诺
+       面,rust/vm 轨)。
+  - **③快捷键冲突表**:全组(§5 D5 WT 风格)只命中带 Shift 组合;
+    裸控制码路径零扰——widget 拦截仅吃精确表项(含修饰键全匹配)。
+    逐键:Ctrl+Shift+T/W/E/O/K/Z 均无终端内程序默认占用(readline
+    C-t/C-w/C-e/C-o/C-k/C-z 全为裸 Ctrl;vim C-w 窗口族同);浏览器
+    同名键属宿主 chrome 不入终端。特勘两条:Ctrl+Shift+Z——自身 VT
+    翻译 ctrl 分支 to_ascii_lowercase,本会译成 0x1A(同 Ctrl+Z),
+    拦截先行即吞无损;Ctrl+Shift+←→——现 VT 翻译对 Named+ctrl 返
+    None(按键丢弃),改绑切 Tab 净增功能。命中后不落队列不触发
+    on_input(双通道都断,AC-04"未命中零变"由未命中路径零改动保证)。
+  - **④D2 api 形状裁定(执行期,rec/Map 摩擦面规避)**:布局/Tab
+    前端消费面用标量 getter 族(018 §10.2 平行 List 先例同款):
+    `mux_tab_count/mux_tab_id_at/mux_tab_is_active_at/mux_tab_title_at/
+    mux_active_pane_count/mux_split_axis/mux_slot_pane_id/mux_zoom_active/
+    mux_pane_cols/mux_pane_rows/mux_pane_cursor_row/mux_pane_cursor_col`
+    + `mux_pane_lines(pane_id) []str`;D2 契约路由 `mux_tabs() []str`
+    ("id|active|title" 记录)与 `mux_layout() str`(DTO)保留
+    (vue/HTTP 断言面)。前端 tick 走标量族,零字符串解析依赖。
+  - next:T-01(back 泵可见性化+关闭语义+api 面)。
 
 ## 10. 待澄清事项
 
