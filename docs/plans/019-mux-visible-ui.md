@@ -441,7 +441,19 @@ layout 策略(Tall/Grid/Stack,Phase 6 另半边)、Workspace 持久化
   - **V-1 正式撤销**:"视图结构不随模型重建"从未成立——系缺陷 A/B/C
     复合误导 + PrintWindow 遮挡抓帧陈旧帧伪证。用户实机目击与
     headless 模型断言均证明视图消费与泵正常。
-  - next:C 验证合并 → 用户手动全量取证 → T-05/T-06 收口。
+  - **缺陷 C 修复落地(auto-lang f94558d36,plan-019-dev → master FF)**:
+    最小根因修复 = `is_auto_list_expr` 补全局 var List 识别(镜像
+    recv_is_list_like 的 PLAN-018 全局覆盖);另两处方法臂特化拦截
+    (trans/rust.rs 8325/6563)为冗余保险。金样两件(参数形态 008 +
+    全局形态 009),10_collections 9/9 绿;a2r 全套 375 绿 + 4 预存
+    环境失败(基线同款)。生成码核验:`replace_child` 现发射索引赋值
+    `[(ti) as usize] = new_child`,腐坏 insert 归零。
+    **headless 全序列验证(修复后)**:队列 split → newtab → tab2 再
+    分屏(原挂起路径)→ 关 Pane 兄弟收编 → 关末 Pane 消 Tab——每步
+    snapshot 全一致(tab2 root=4→6→5,无孤儿无错位)。流程合规:
+    lang-019 worktree(plan-019-dev)实施验证 → FF 落 master
+    (87eba67ab 流程);worktree 留存供复审。
+  - next:用户手动全量取证 → T-05/T-06 收口。
 
 ## 10. 待澄清事项
 
