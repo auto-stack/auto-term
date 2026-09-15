@@ -268,3 +268,53 @@
 - **处置**:归 auto-lang a2r 语句发射器修缮(块尾表达式依所在块的
   表达式/语句位置决定是否补 `;`),独立小项;修后回删 app.at 规避
   注记。
+
+## #19 a2r List.set 曾译 Vec::insert(PLAN-019,2026-09-15)→ **已根修(f94558d36)**
+
+- **现象**:a2r 对 List 接收者的 `.set(idx,v)` 映射 `Vec::insert`
+  (插入语义,右移后续元素)而非替换——多 Tab 模型表静默腐坏
+  (split 后 tab_root_node=[3,1] 期望 [3,4]),叠加 UI×tick 并发
+  引发 AppHangB1 挂起。018 未暴露:单 Tab ti=0 时 insert 恰好读值
+  正确,腐坏静默右移。
+- **根修**(auto-lang f94558d36,lang-019 worktree→master FF):
+  `is_auto_list_expr` 补全局 var List 识别(镜像 recv_is_list_like
+  的 PLAN-018 全局覆盖),List.set 归 Plan 433 A1 索引赋值;金样
+  008(参数形态)/009(全局形态)。8325/6563 两臂另留特化拦截为冗余
+  保险(可后续收敛)。
+- **教训**:List/Map 同名方法(`set`/`insert`)重映射须按接收者
+  类型分派;纯读值断言掩盖插入语义腐坏。
+
+## #20 a2r 处理器参数遮蔽模型字段(PLAN-019,2026-09-15)
+
+- **现象**:widget 处理器 `.Split(axis) -> { api.mux_split(axis) }`
+  经 a2r 发射 `mux_split(self.axis)`——处理器解构参数被模型同名字段
+  遮蔽,载荷静默丢失。VM 轨待核。
+- **现状规避**:app.at 参数改名(`ax`)绕行(019 工作提交)。
+- **处置**:归 auto-lang a2r 处理器体参数解析修缮(解构参数优先于
+  模型字段),独立小项;修后可回改 app.at 命名。
+
+## #21 生成 db 代码在引擎调用语句期间持有 List 锁守卫(PLAN-019,2026-09-15)
+
+- **现象**:a2r 把 `engine_f(pane_handles.get(pi), pane_keys.get(pi))`
+  发射为守卫临时存活到语句末的形态——引擎调用(毫秒级,含 spawn/
+  free 阻塞段)期间持有 PANE_HANDLES/PANE_KEYS 互斥锁;与 UI 线程
+  直调引擎操作的组合产生 db 锁 × 引擎内部锁 ABBA 死锁(AppHangB1,
+  第二 Tab 分屏挂起实测)。
+- **现状规避**:019 用户动作队列——UI 线程只入队,get_lines 每拍在
+  tick 线程排水执行,引擎操作单线程序列化(spec V1 语义 §7)。
+  键入泵(term_pump_input)仍在消息线程直调引擎,窗口极小,暂留。
+- **处置**:归 auto-lang a2r 发射器修缮(全局 List 读先落 let 再作
+  实参,守卫即放),修后键入泵的残余窗口一并消除。
+
+## #22 观察条(PLAN-019):布局构建案取舍与 vue 边界(SD-02)
+
+- **布局构建案**:T-A(动态构建)a2r 不可行(terminal 动态键仅字面量
+  +迭代内数据流缺径)→ **T-B(V1 树深 1,槽位投影 if 枚举)**;更深
+  嵌套归 T-C(View::Split widget 组件,后续计划)。使能件已落:
+  row 直属 for 摊平(Plan 407 先例推广)+ terminal key 动态绑定
+  (.field → self.field.clone)。
+- **vue 臂分屏视觉边界**:vue terminal 为只读最小视口臂,V1 承诺
+  Tab 条 + 焦点 Pane 数据,分屏视觉/快捷键不承诺(§0 非目标);
+  018 的 App.vue onUnmounted 重复导入缺陷已消失(019 复测单导入)。
+- **像素金样**:terminal_pixel_preedit 全 gate 偶发红(单测恒过;
+  015 F-2 同族环境漂移,归 016 门跟踪)。
