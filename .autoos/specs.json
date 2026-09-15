@@ -405,6 +405,17 @@
         "status": "published",
         "created": "2026-09-13",
         "last_modified": "2026-09-15"
+      },
+      {
+        "id": "D006-2",
+        "section": "goals",
+        "title": "多终端完整产品路线(类 WezTerm/Kitty 七计划蓝图) — 目标",
+        "content": "**用户裁定(2026-09-15)**:多终端系统与单纯单终端为**包含关系**——单终端永久保留交付 auto-term-uno.exe,多终端壳为主 app 占用 auto-term.exe 名;PLAN-018(Mux Core,Phase 1)已交付,蓝图确立七计划路线(①可见多终端 UI/②双 exe 打包/③OSC Shell Integration/④Workspace 持久化+Mux Daemon/⑤Control API+CLI/⑥Domain 抽象/⑦Agent API),**下一个计划 = ①可见多终端 UI**;节奏=①+② 到可当主终端用的产品,③-⑥ 到完整类 WezTerm/Kitty。路线全文见 docs/designs/006。",
+        "file": "docs/designs/006-mux-terminal-roadmap.md",
+        "related": [
+          "PLAN-018"
+        ],
+        "status": "proposed"
       }
     ],
     "architecture": [
@@ -834,6 +845,17 @@
         "status": "published",
         "created": "2026-09-13",
         "last_modified": "2026-09-15"
+      },
+      {
+        "id": "D006-4",
+        "section": "designs",
+        "title": "006 多终端路线蓝图:从 Mux Core 到类 WezTerm/Kitty 完整产品 — 详细设计",
+        "content": "七计划路线(外部八相映射 + 用户双 exe 裁定的合并):①可见多终端 UI(下一计划;Tab 条/分屏渲染 View 消费 LayoutTree/末 Pane 关闭语义/scheme 选择器/tmux 式快捷键;对应 Phase 6 渲染半边+018 遗留 UI 债);②双 exe 打包(auto-term-uno.exe 单终端保留+主 auto-term.exe 多终端壳;pac.at exe_name 挂点现成;uno 源码基座 autoterm-ui 重打包 vs app/ 单 Pane 第二 exe 留 ② 裁定);③OSC 7/133 Shell Integration(Phase 2);④Workspace 持久化+Mux Daemon(Phase 3+7 合并,session 定义/运行分离);⑤Control API+CLI(Phase 4);⑥Domain 抽象 WSL/SSH/Container(Phase 5);⑦Agent/Extension(Phase 8,远期)。排序约束:OSC 先于 SSH(018 §4.4 采纳);①→② 建议序但可互换(无触面冲突);DEBTS #17 同族随 ① widget 工作面顺带清偿。节奏:①+② 到可用主终端产品,③-⑥ 到完整类 WezTerm/Kitty。",
+        "file": "docs/designs/006-mux-terminal-roadmap.md",
+        "related": [
+          "PLAN-018"
+        ],
+        "status": "stable"
       }
     ],
     "tests": [
