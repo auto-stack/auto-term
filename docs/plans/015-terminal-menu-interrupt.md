@@ -1,12 +1,12 @@
 ---
 plan_id: PLAN-015
-status: execution_done
+status: executing
 feature_name: terminal 右键菜单 Interrupt 项——恢复引擎中断通路(014 回归修复)
 author: [zcode-session]
 created_at: 2026-09-13T12:05:00Z
 updated_at: 2026-09-15T09:30:00Z
 plan_revision: 1
-current_step: 6
+current_step: 5
 total_steps: 6
 supersedes_spec_components: []
 new_spec_components: []
@@ -131,11 +131,11 @@ Auto(.at 前端/后端)+ auto-lang(terminal 组件/registry/a2r codegen)
   金样 `terminal_onmenu_emits_on_menu_direct_msg` 有/无 onmenu 双臂绿;
   ui_gen 回归 779 绿 0 failed。附注:VM 臂 convert_terminal 原已支持
   onmenu(oncontextmenu/contextmenu/onmenu 链),本任务只补 rust 臂。
-- T-02 ✅ D1+D2 widget 菜单项与 accessor(含单测)——auto-lang
-  b0e603501:MENU_ITEMS 3→4("Interrupt" 载荷 3,命中臂零改动,宽/高
-  len() 自适应)+ `terminal_take_menu_item_any()`(BTreeMap 键序首个
-  Some 即返,镜像 take_any_resize);单测
-  `menu_item_any_takes_across_terminals`;terminal 套件 31/31 绿。
+- T-02 ⏮ **复审重开(2026-09-15 review R015-F1)**:D1 菜单项功能面
+  (命中/载荷/中断链)已证,但 AC-01 可见性子项不满足——标签在 rust 轨
+  200% DPI 不可见(DEBTS #17)。重开范围 = 标签可见性修复(auto-lang
+  widget 绘制路径,像素台模拟器可离线复现);D2 accessor 完成保持。
+  其余任务证据不受影响。
 - T-03 D4+D5 侧车/db/app.at 接线(手工或 auto build 后 codegen 就绪)
 - T-04 ✅ 集成验证(008 口径三场景,evidence/015 实机):
   ①字节路径基线——`timeout /t 30 /nobreak` 倒计时中裸 Ctrl+C → 倒计时
@@ -176,6 +176,46 @@ Auto(.at 前端/后端)+ auto-lang(terminal 组件/registry/a2r codegen)
   分号(DEBTS #18,已规避);F-3 IME 英文起步顺手项交付(用户需求,
   边界外,DEBTS 无账/提交在案) ·
   next:/auto-plan:review。
+
+- 2026-09-15 stage:review · plan_id:PLAN-015 · plan_revision:1 ·
+  outcome:**needs_fix** ·
+  reviewed_commit:auto-term 3ae065a · base_commit:auto-term c2dc03d ·
+  dependency_revisions:auto-lang 0326241b5(本计划 7 提交 0ce22c27d..
+  8ac159423 全在祖先链;主检出有并发 agent 在途 WIP,已清点不属本
+  计划) ·
+  spec_inputs:DEBTS.md(#12 附记/#17/#18)、app/README.md;**无
+  docs/specs 触面说明**:菜单载荷通道为 widget-registry 层,不动
+  19 符号引擎 FFI face;VM shim 2987 登记待 merge 时随
+  terminal-mux-model spec-sync 补记(F-4) ·
+  acceptance_results:AC-01 **fail**(可见性子项——标签不可见,功能链
+  通)/AC-02 pass(t3 倒计时免疫+t8 ash 存活+代码面:interrupt 唯一
+  调用者=菜单载荷 3,键盘路径零触及)/AC-03 pass(trace `menu item=3`
+  + D2 单测)/AC-04 **partial**(a2r 金样绿、单测绿、双臂 check 绿、
+  workspace 全绿 0 fail、build Finished;像素金样 2 红=环境漂移,
+  见 F-2)/AC-05 pass(DEBTS #12 附记+README 在库) ·
+  findings:
+  **R015-F1(high,AC-01/T-02)**菜单标签 rust 轨不可见→needs_fix;
+  取证:fill 循环执行+坐标/颜色/构造四轮排除+面板 2× 尺寸偏移渲染
+  (200% DPI),像素台模拟器可离线复现(修法入口);
+  **R015-F2(medium,merge 门)**像素金样 selection/cursor 环境漂移
+  ——二分定案:f0dc16732(晨绿)洁净 worktree 现亦红,同代码跨树
+  复现、与提交零相关(simulator 系统字体栅格化对环境敏感,金样逐字
+  节比对);非本计划回归,但 merge 全量门前须环境归因(字体缓存/
+  远程桌面/显示设置)后复跑;
+  **R015-F3(low,证据卫生)**evidence/015 的 t4/t7 为中途跑残影
+  (中间跑失败打破脚本全量覆盖前提),与 t2/t5/t8 终态跑不一致;
+  F-1 修复轮重跑生成一致全套后以新帧为准;
+  **R015-F4(info,merge)**VM shim 2987 使 018 spec "shim 2983-2986"
+  记录过期,merge spec-sync 补记 ·
+  evidence:docs/plans/evidence/015/(8 帧+trace.log+脚本)、
+  auto-lang 提交 0ce22c27d/b0e603501/c240fb216/c9cc31ab3/f0dc16732/
+  029d80557/8ac159423、auto-term 59cc630/3ae065a、洁净 worktree
+  nextest 输出(HEAD 与 f0dc16732 各 29/31+2 环境红)、auto-term
+  workspace 全绿 0 fail ·
+  复审限制声明:同会话复审,结论以工件重建(提交/截图/trace/测试
+  输出),未采信执行者摘要 ·
+  next:/auto-plan:work(R015-F1 标签可见性;修后 F-3 重取证,
+  F-2 环境归因后复跑全量门)。
 
 ## 10. 待澄清事项
 
