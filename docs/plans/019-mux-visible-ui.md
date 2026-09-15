@@ -453,7 +453,12 @@ layout 策略(Tall/Grid/Stack,Phase 6 另半边)、Workspace 持久化
     snapshot 全一致(tab2 root=4→6→5,无孤儿无错位)。流程合规:
     lang-019 worktree(plan-019-dev)实施验证 → FF 落 master
     (87eba67ab 流程);worktree 留存供复审。
-  - next:用户手动全量取证 → T-05/T-06 收口。
+  - **用户手动验证(2026-09-15,AC-01/02 面通过)**:"横分竖分都可以
+    了。开新的 tab 里每个 tab 自己也可以横分或竖分"——分屏正确性、
+    每 Tab 独立布局、多 Tab 并存全部实机确认。修复前三态(横分无响应
+    /新 Tab 分屏挂起)均消除。余项待用户顺手验证:Zoom/scheme/快捷键
+    组/关末 Pane 消 Tab(模型面已 headless 断言)。
+  - next:T-05/T-06 收口 → T-07 文档 → T-08 锚定。
 
 ## 10. 待澄清事项
 
