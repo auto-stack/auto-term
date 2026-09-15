@@ -1,6 +1,6 @@
 ---
 plan_id: PLAN-018
-status: execution_done
+status: reviewed
 feature_name: Mux Core 五层模型——Workspace/Tab/LayoutTree/Pane/TerminalRuntime 解耦(外部分析 Phase 1)
 author: [zcode-session]
 created_at: 2026-09-14T08:40:00Z
@@ -11,7 +11,6 @@ total_steps: 11
 supersedes_spec_components: []
 new_spec_components:
   - docs/specs/terminal-mux-model.md
-  - docs/specs/engine-ffi-color-encoding.md
 touched_goals: []
 ---
 
@@ -405,6 +404,38 @@ term.rs,不允许并行 work(先后串行,以先 merge 者为基)。
   侧车装载臂。
 
 ## 9. 复审记录
+
+- 2026-09-15 stage:review · PLAN-018 · rev2 · outcome:**pass** ·
+  reviewed_commit: ab392f6(auto-term main,工作树净)· base_commit:
+  6454548 · dependency_revisions: auto-lang 269f6c5c1/4c6fe9015/
+  73ac6edd8/e881750df(HEAD 03914ec9a,并行 plan624 叠加,锚点均在其
+  祖先;其工作区遗留 fs.at/631 计划非本计划)· spec_inputs:
+  specs/terminal-mux-model.md(新建,SD-01)+ specs/
+  engine-ffi-color-encoding.md(增补 §scheme,SD-03;frontmatter 修正:
+  该文件系 016 既有组件之 modify,已移出 new_spec_components)·
+  acceptance_results:AC-01/02/03/04/05/06/07/09/10/11 = pass;
+  AC-08 = partial(vue 臂受阻,见 F-1;rust/vm 臂 + workspace 门绿)。
+  **独立性声明**:复审在实现会话内进行,全部结论由本轮从头复现的
+  工件得出(非执行摘要):ffi 7/7、core lib 5/5、parity 5/5、terminal
+  29/29、catalog 3/3、SPAWNEX_OK(exit 0)、curl 剧本九节逐字复现、
+  rust GUI 全新启动截图(内容区 (6,7,9)×917 + 0xE8E8E8 文字)+ 014
+  最小化/恢复抽查(Responding=True,dominant 不变)、VM GUI 全新启动
+  截图((6,7,9)×549,813 tick)。findings:F-1(minor,既有外部)a2vue
+  生成 App.vue 重复导入 onUnmounted → `auto run -r vue` 前端不可起;
+  归因实验 = 基线源码(6454548 worktree)+ 当前工具链同样复现,且本
+  计划 auto-lang 4 提交零触及 vue 路径;缓解 = AC-06 剧本经 app-back
+  (同一 a2r axum 发射器/同一 db.rs)等价达成;处置 = DEBTS #16 在案,
+  修复归 auto-lang 独立计划。F-2(minor,偶发)VM 轨启动竞态一次
+  (MCP 9247 bind 冲突 + 窗口创建退出),重试即成;与并行 78f157ea2
+  修复同族,非 018 引入。F-3(observation,既有)ash ctrl_c 两枚基线
+  即红(6454548 worktree 对照同败;ash 提示符 `❯`→`>` 漂移),DEBTS
+  #16 在案。F-4(bookkeeping,已修)frontmatter 组件归属修正(见
+  spec_inputs)。evidence=evidence/018/(curl-mux-script.log、
+  evidence-summary.md、双轨双臂截图×5、review-复现件×3:
+  review-rust-gui-dark/review-rust-after-minimize/review-vm-gui-dark)
+  · next:merge。
+  (若用户裁定 vue 前端整链绿为本计划必要条件,可翻案 blocked,前置 =
+  独立的 a2vue 修复计划;复审判定以其为非阻塞外部缺陷。)
 
 - 2026-09-15 stage:work · PLAN-018 · rev2 · outcome:**pass** ·
   code_commit:auto-term c3fdb24(T-01 e0343ab / T-09 e729aa1 / T-04
