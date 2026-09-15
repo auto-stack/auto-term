@@ -194,6 +194,19 @@
           "PLAN-018"
         ],
         "status": "published"
+      },
+      {
+        "id": "P015-1",
+        "section": "reports",
+        "title": "terminal 右键菜单 Interrupt 项——恢复引擎中断通路 — 变更摘要",
+        "content": "PLAN-015 交付(2026-09-15):014 直键入收口删按钮后 term_interrupt() 失去调用者,本计划以 terminal 右键菜单第 4 项 Interrupt(载荷 3)恢复显式中断入口——.Menu 处理器 → term_menu_take()=3 → term_interrupt()(Break→C 双投递);不自动双投递,裸 Ctrl+C 保持纯字节不误伤 idle ash。三层接线:auto-lang ui_gen onmenu 信号位(0ce22c27d,键集与 VM 臂同源)+widget 菜单第 4 项与 registry 级 terminal_take_menu_item_any(b0e603501)+VM shim 2987(c240fb216);auto-term 侧车 engine_menu_take+db/api 契约+app.at 接线(59cc630)。边界外顺手项(用户当场指令):IME 聚焦默认中文根修——TSF 权威 Shift 切换+20-tick 重试制(c9cc31ab3→029d80557),用户实测确认。修复轮(R015-F1):菜单标签不可见根因=iced wgpu WeakParagraph 静默丢弃,静态缓存根修(11a2b9bb6)。",
+        "file": "docs/plans/archived/015-terminal-menu-interrupt.md",
+        "related": [
+          "PLAN-015"
+        ],
+        "status": "published",
+        "created": "2026-09-13",
+        "last_modified": "2026-09-15"
       }
     ],
     "goals": [
@@ -379,6 +392,19 @@
           "PLAN-018"
         ],
         "status": "published"
+      },
+      {
+        "id": "P015-2",
+        "section": "goals",
+        "title": "交付目标终态(G1..G3)",
+        "content": "G1 恢复中断通路入口=达成(菜单 Interrupt → 引擎 Break→C 双投递,timeout /nobreak 实机 ≤5s 打断回提示符,evidence/015 t4/t5);G2 Ctrl+C 键入路径纯字节不变=达成(裸 Ctrl+C 倒计时免疫 t3,ash idle Ctrl+C 会话存活 t8,interrupt 唯一调用者=菜单载荷 3);G3 timeout 类 ≤5s 停止=达成(008 口径,24s ^C 打断)。",
+        "file": "docs/plans/archived/015-terminal-menu-interrupt.md",
+        "related": [
+          "PLAN-015"
+        ],
+        "status": "published",
+        "created": "2026-09-13",
+        "last_modified": "2026-09-15"
       }
     ],
     "architecture": [
@@ -591,6 +617,19 @@
           "PLAN-018"
         ],
         "status": "published"
+      },
+      {
+        "id": "P015-3",
+        "section": "architecture",
+        "title": "菜单入口接线与载荷通道",
+        "content": "右键菜单第 4 项(载荷 3)→ widget 命中臂统一落载荷(terminal_set_menu_item)+发 on_menu 信号位消息(不带载荷)→ 宿主 .Menu 处理器 → db.term_menu_take()(engine_menu_take:注册表任意端,0=Copy/1=Paste/2=SelectAll/3=Interrupt/-1=无载荷)→ 载荷 3 → term_interrupt()。三层接线:widget 菜单层(MENU_ITEMS len 自适应)+registry accessor terminal_take_menu_item_any(BTreeMap 键序,镜像 take_any_resize)+codegen onmenu 臂(rust/VM 双轨同键集 onmenu/on_menu/oncontextmenu/contextmenu);VM shim 2987。非目标维持:vue 轨只读;自动双投递不做(003 §4.1 ash 豁免语义)。IME 英文起步:聚焦 20-tick 重试+合成 Shift 权威切换(TSF 覆写 IMM32 实证),badge/preedit 同族 WeakParagraph 缺陷记 #17。",
+        "file": "docs/plans/archived/015-terminal-menu-interrupt.md",
+        "related": [
+          "PLAN-015"
+        ],
+        "status": "published",
+        "created": "2026-09-13",
+        "last_modified": "2026-09-15"
       }
     ],
     "designs": [
@@ -782,6 +821,19 @@
           "PLAN-018"
         ],
         "status": "published"
+      },
+      {
+        "id": "P015-4",
+        "section": "designs",
+        "title": "关键设计裁决与守卫",
+        "content": "执行期裁定(Adapt 行,rev 不增):①路径基准 at-app→app/(017 统一入口,零映射);②a2r 块尾值调用缺分号 E0308 规避=.Menu 处理器 () 型语句收尾(缺口记 #18 归 auto-lang);③worktree 勘定=无 worktree 主检出交付(014-018 同款);④开发布局 helper 三级解析扑空→AUTOTERM_CTRLC_BIN env 覆盖(dist 同目录免设)。修复轮(R015-F1):标签不可见根因=iced wgpu fill_paragraph 排队 WeakParagraph,draw 局部段落析构后 flush upgrade 静默丢弃(quad 值拷贝/行静态缓存存活反证自洽);修正=MENU_PARAS 静态缓存(11a2b9bb6);同族 badge/preedit 记 #17 待修。IME 顺手项三版迭代:IMM32 写入被 TSF 周期回写(0x481→0x0→回 0x1 实测)、winit 仅 WM_IME_STARTCOMPOSITION 发 Enabled→终案=聚焦 20-tick 重试+合成 Shift 走 IME 自身权威切换+AUTO_IME_TRACE 留痕(c9cc31ab3→029d80557)。",
+        "file": "docs/plans/archived/015-terminal-menu-interrupt.md",
+        "related": [
+          "PLAN-015"
+        ],
+        "status": "published",
+        "created": "2026-09-13",
+        "last_modified": "2026-09-15"
       }
     ],
     "tests": [
@@ -981,6 +1033,19 @@
           "PLAN-018"
         ],
         "status": "published"
+      },
+      {
+        "id": "P015-5",
+        "section": "tests",
+        "title": "回归配方与证据档案",
+        "content": "单测:menu_item_any_takes_across_terminals(多终端键序/取走即清/空载 None);codegen 金样 terminal_onmenu_emits_on_menu_direct_msg(有/无 onmenu 双臂断言 on_menu Some/None);terminal 套件 31/31(nextest);ui_gen 779;catalog 完整性锁 3/3;双 feature 臂 check 绿。集成实机:evidence/015 三场景(timeout /nobreak 裸 Ctrl+C 倒计时免疫→菜单 Interrupt 24s ^C 打断 ≤5s 回提示符→echo alive 会话存活;ash idle Ctrl+C 存活=AC-02)+`menu item=3` trace 留痕;8 帧 PNG+脚本 t04_menu_interrupt.ps1 配方。全量:auto-term workspace 28 套全绿。环境注记:016 像素金样 selection/cursor 2 红为环境漂移(f0dc16732 晨绿点洁净 worktree 复红,二分定案非代码),merge 门前置已记录。",
+        "file": "docs/plans/archived/015-terminal-menu-interrupt.md",
+        "related": [
+          "PLAN-015"
+        ],
+        "status": "verified",
+        "created": "2026-09-13",
+        "last_modified": "2026-09-15"
       }
     ],
     "reviews": [
@@ -1210,6 +1275,19 @@
           "PLAN-018"
         ],
         "status": "published"
+      },
+      {
+        "id": "P015-6",
+        "section": "reviews",
+        "title": "复审记录(needs_fix 修复轮 → pass)",
+        "content": "首轮复审(2026-09-15,同会话、结论由工件重建):outcome=needs_fix,reviewed_commit 3ae065a,base c2dc03d。AC-01 fail(菜单标签 200% DPI 不可见,R015-F1 high,重开 T-02);AC-02/03/05 pass;AC-04 partial(像素金样 selection/cursor 2 红)。修复轮:R015-F1 根修(auto-lang 11a2b9bb6,WeakParagraph 弱引用根因+MENU_PARAS 静态缓存),实机四项标签可见+打断链复验;F-3 全套 8 帧一致重取证。再审(同日):outcome=pass,reviewed_commit 0112052,依赖 87eba67ab;AC-01..05 全 pass(独立复现);R015-F2 环境漂移维持=merge 前置(bisect 定案非代码,晨绿点洁净树复红,具体触发源未定位);R015-F4 shim 2987 spec-sync 随本 merge 补记;R015-F3 resolved。next merge。",
+        "file": "docs/plans/archived/015-terminal-menu-interrupt.md",
+        "related": [
+          "PLAN-015"
+        ],
+        "status": "published",
+        "created": "2026-09-13",
+        "last_modified": "2026-09-15"
       }
     ]
   }

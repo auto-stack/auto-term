@@ -120,7 +120,9 @@ API 铺地基;**无** socket/CLI/权限分级,不是 Control API。
 - ffi:16→19(+spawn_ex;+set_palette per-handle / palette_color
   纯函数,后者见 engine-ffi-color-encoding.md)。
 - VM shim:2943-2982 存量;新增 2983 spawn_ex / 2984 rows_for /
-  2985 pump_for / 2986 apply_resize_for(catalog 双表登记+完整性锁)。
+  2985 pump_for / 2986 apply_resize_for(catalog 双表登记+完整性锁);
+  2987 menu_take(PLAN-015:右键菜单载荷 0-3/-1,注册表任意端,
+  catalog 双表登记,不进 bigvm 返回面)。
 - `at/engine_face.at` 12 符号并存面**不**镜像 spawn_ex(012 并存态,
   at-gen 退役时收敛);契约文档记录分叉。
 - at-gen/src/shell.rs 的 View::Terminal 构造自 auto-lang 014 起即
