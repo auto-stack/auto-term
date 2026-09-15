@@ -1,0 +1,115 @@
+Running with Iced backend
+[term-dll] 加载引擎: D:/autostack/auto-term/target/debug/autoterm_core.dll
+AutoUI MCP: listening on http://127.0.0.1:9247
+[term-trace] resize #1: 135x47
+[term-trace] feed calls=100 total_bytes=621120 rows_last=47 pending_bytes=0
+[term-trace] feed calls=200 total_bytes=1255620 rows_last=47 pending_bytes=0
+[term-trace] feed calls=300 total_bytes=1890120 rows_last=47 pending_bytes=0
+[term-trace] feed calls=400 total_bytes=2524620 rows_last=47 pending_bytes=0
+[term-trace] feed calls=500 total_bytes=3159120 rows_last=47 pending_bytes=0
+[term-trace] feed calls=600 total_bytes=3793620 rows_last=47 pending_bytes=0
+[term-trace] feed calls=700 total_bytes=4428120 rows_last=47 pending_bytes=0
+[term-trace] feed calls=800 total_bytes=5062620 rows_last=47 pending_bytes=0
+[term-trace] feed calls=900 total_bytes=5697120 rows_last=47 pending_bytes=0
+[term-trace] feed calls=1000 total_bytes=6331620 rows_last=47 pending_bytes=0
+[term-trace] feed calls=1100 total_bytes=6966120 rows_last=47 pending_bytes=0
+[term-trace] feed calls=1200 total_bytes=7600620 rows_last=47 pending_bytes=0
+[term-trace] feed calls=1300 total_bytes=8235120 rows_last=47 pending_bytes=0
+[term-trace] feed calls=1400 total_bytes=8869620 rows_last=47 pending_bytes=0
+[term-trace] feed calls=1500 total_bytes=9504120 rows_last=47 pending_bytes=0
+[term-trace] feed calls=1600 total_bytes=10138620 rows_last=47 pending_bytes=0
+[term-trace] feed calls=1700 total_bytes=10773120 rows_last=47 pending_bytes=0
+[term-trace] feed calls=1800 total_bytes=11407620 rows_last=47 pending_bytes=0
+[term-trace] feed calls=1900 total_bytes=12042120 rows_last=47 pending_bytes=0
+[term-trace] feed calls=2000 total_bytes=12676620 rows_last=47 pending_bytes=0
+[term-trace] feed calls=2100 total_bytes=13311120 rows_last=47 pending_bytes=0
+[term-trace] feed calls=2200 total_bytes=13945620 rows_last=47 pending_bytes=0
+[term-trace] feed calls=2300 total_bytes=14580120 rows_last=47 pending_bytes=0
+[term-trace] feed calls=2400 total_bytes=15214620 rows_last=47 pending_bytes=0
+[term-trace] feed calls=2500 total_bytes=15849120 rows_last=47 pending_bytes=0
+[term-trace] feed calls=2600 total_bytes=16483620 rows_last=47 pending_bytes=0
+[term-trace] feed calls=2700 total_bytes=17118120 rows_last=47 pending_bytes=0
+[term-trace] feed calls=2800 total_bytes=17752620 rows_last=47 pending_bytes=0
+[term-trace] feed calls=2900 total_bytes=18387120 rows_last=47 pending_bytes=0
+[term-trace] feed calls=3000 total_bytes=19021620 rows_last=47 pending_bytes=0
+[term-trace] feed calls=3100 total_bytes=19656120 rows_last=47 pending_bytes=0
+[term-trace] feed calls=3200 total_bytes=20290620 rows_last=47 pending_bytes=0
+[term-trace] feed calls=3300 total_bytes=20925120 rows_last=47 pending_bytes=0
+[term-trace] feed calls=3400 total_bytes=21559620 rows_last=47 pending_bytes=0
+[term-trace] feed calls=3500 total_bytes=22194120 rows_last=47 pending_bytes=0
+[term-trace] feed calls=3600 total_bytes=22828620 rows_last=47 pending_bytes=0
+[term-trace] feed calls=3700 total_bytes=23463120 rows_last=47 pending_bytes=0
+[term-trace] feed calls=3800 total_bytes=24097620 rows_last=47 pending_bytes=0
+[term-trace] feed calls=3900 total_bytes=24732120 rows_last=47 pending_bytes=0
+[term-trace] feed calls=4000 total_bytes=25366620 rows_last=47 pending_bytes=0
+[term-trace] feed calls=4100 total_bytes=26001120 rows_last=47 pending_bytes=0
+[term-trace] feed calls=4200 total_bytes=26635620 rows_last=47 pending_bytes=0
+[term-trace] feed calls=4300 total_bytes=27270120 rows_last=47 pending_bytes=0
+[term-trace] feed calls=4400 total_bytes=27904620 rows_last=47 pending_bytes=0
+[term-trace] feed calls=4500 total_bytes=28539120 rows_last=47 pending_bytes=0
+[term-trace] feed calls=4600 total_bytes=29173620 rows_last=47 pending_bytes=0
+[term-trace] feed calls=4700 total_bytes=29808120 rows_last=47 pending_bytes=0
+[term-trace] feed calls=4800 total_bytes=30442620 rows_last=47 pending_bytes=0
+[term-trace] feed calls=4900 total_bytes=31077120 rows_last=47 pending_bytes=0
+[term-trace] feed calls=5000 total_bytes=31711620 rows_last=47 pending_bytes=0
+[term-trace] feed calls=5100 total_bytes=32346120 rows_last=47 pending_bytes=0
+[term-trace] feed calls=5200 total_bytes=32980620 rows_last=47 pending_bytes=0
+[term-trace] feed calls=5300 total_bytes=33615120 rows_last=47 pending_bytes=0
+[term-trace] feed calls=5400 total_bytes=34249620 rows_last=47 pending_bytes=0
+[term-trace] feed calls=5500 total_bytes=34884120 rows_last=47 pending_bytes=0
+[term-trace] feed calls=5600 total_bytes=35518620 rows_last=47 pending_bytes=0
+[term-trace] feed calls=5700 total_bytes=36153120 rows_last=47 pending_bytes=0
+[term-trace] feed calls=5800 total_bytes=36787620 rows_last=47 pending_bytes=0
+[term-trace] feed calls=5900 total_bytes=37422120 rows_last=47 pending_bytes=0
+[term-trace] feed calls=6000 total_bytes=38056620 rows_last=47 pending_bytes=0
+[term-trace] feed calls=6100 total_bytes=38691120 rows_last=47 pending_bytes=0
+[term-trace] feed calls=6200 total_bytes=39325620 rows_last=47 pending_bytes=0
+[term-trace] feed calls=6300 total_bytes=39960120 rows_last=47 pending_bytes=0
+[term-trace] feed calls=6400 total_bytes=40594620 rows_last=47 pending_bytes=0
+[term-trace] feed calls=6500 total_bytes=41229120 rows_last=47 pending_bytes=0
+[term-trace] feed calls=6600 total_bytes=41863620 rows_last=47 pending_bytes=0
+[term-trace] feed calls=6700 total_bytes=42498120 rows_last=47 pending_bytes=0
+[term-trace] feed calls=6800 total_bytes=43132620 rows_last=47 pending_bytes=0
+[term-trace] feed calls=6900 total_bytes=43767120 rows_last=47 pending_bytes=0
+[term-trace] feed calls=7000 total_bytes=44401620 rows_last=47 pending_bytes=0
+[term-trace] feed calls=7100 total_bytes=45036120 rows_last=47 pending_bytes=0
+[term-trace] pump keys=1 total=1 (feed_calls=7112)
+[term-trace] pump keys=1 total=2 (feed_calls=7119)
+[term-trace] pump keys=1 total=3 (feed_calls=7124)
+[term-trace] resize #2: 135x23
+[term-trace] resize #3: 135x23
+[term-trace] feed calls=7200 total_bytes=45459810 rows_last=23 pending_bytes=0
+[term-trace] feed calls=7300 total_bytes=45770310 rows_last=23 pending_bytes=0
+[term-trace] feed calls=7400 total_bytes=46080810 rows_last=23 pending_bytes=0
+[term-trace] feed calls=7500 total_bytes=46391310 rows_last=23 pending_bytes=0
+[term-trace] feed calls=7600 total_bytes=46701810 rows_last=23 pending_bytes=0
+[term-trace] resize #4: 135x47
+[term-trace] feed calls=7700 total_bytes=47093310 rows_last=47 pending_bytes=0
+[term-trace] resize #5: 67x47
+[term-trace] resize #6: 67x47
+[term-trace] feed calls=7800 total_bytes=47455852 rows_last=47 pending_bytes=0
+[term-trace] feed calls=7900 total_bytes=47770752 rows_last=47 pending_bytes=0
+[term-trace] resize #7: 135x47
+[term-trace] resize #8: 67x47
+[term-trace] feed calls=8000 total_bytes=48091448 rows_last=30 pending_bytes=0
+[term-trace] resize #9: 67x47
+[term-trace] feed calls=8100 total_bytes=48403368 rows_last=30 pending_bytes=0
+[term-trace] feed calls=8200 total_bytes=48715288 rows_last=30 pending_bytes=0
+[term-trace] resize #10: 135x47
+[term-trace] feed calls=8300 total_bytes=49043039 rows_last=47 pending_bytes=0
+[term-trace] resize #11: 67x47
+[term-trace] resize #12: 67x47
+[term-trace] feed calls=8400 total_bytes=49440208 rows_last=47 pending_bytes=0
+[term-trace] feed calls=8500 total_bytes=49752128 rows_last=47 pending_bytes=0
+[term-trace] resize #13: 135x47
+[term-trace] resize #14: 135x23
+[term-trace] resize #15: 135x23
+[term-trace] feed calls=8600 total_bytes=50137905 rows_last=23 pending_bytes=0
+[term-trace] feed calls=8700 total_bytes=50447670 rows_last=23 pending_bytes=0
+[term-trace] resize #16: 135x47
+[term-trace] resize #17: 135x23
+[term-trace] resize #18: 135x23
+[term-trace] feed calls=8800 total_bytes=50762655 rows_last=23 pending_bytes=0
+[term-trace] resize #19: 135x47
+[term-trace] feed calls=8900 total_bytes=51167520 rows_last=30 pending_bytes=0
+[term-trace] feed calls=9000 total_bytes=51691635 rows_last=47 pending_bytes=0

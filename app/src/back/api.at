@@ -280,3 +280,9 @@ pub fn mux_zoom_active() int {
 pub fn mux_layout() str {
     return db.mux_layout()
 }
+
+/// 用户动作入队(UI 线程安全;引擎操作由 tick 排水执行)。
+#[api(method = "POST", path = "/api/mux/enqueue")]
+pub fn mux_enqueue(code int, arg int) int {
+    return db.mux_enqueue(code, arg)
+}

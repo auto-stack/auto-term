@@ -162,30 +162,30 @@ widget App {
         }
         .TabActivate(i) -> {
             var tid int = api.mux_tab_id_at(i)
-            api.mux_activate_tab(tid)
+            api.mux_enqueue(5, tid)
         }
         .TabClose(i) -> {
             var tid int = api.mux_tab_id_at(i)
-            api.mux_close_tab(tid)
+            api.mux_enqueue(6, tid)
         }
         .NewTab -> {
-            api.mux_new_tab()
+            api.mux_enqueue(1, 0)
         }
         // 分屏(ax 0=纵向堆叠 col 1=横向并排 row;V1 树深 1 上限)。
         // 注:参数名不可叫 axis——与模型字段同名时 a2r 处理器体把它
         // 译成 self.axis(载荷被遮蔽,实测点按钮分出 axis=-1 的屏)。
         .Split(ax) -> {
-            api.mux_split(ax)
+            api.mux_enqueue(2, ax)
         }
         .Zoom -> {
             var fid int = api.mux_focus_id()
-            api.mux_zoom(fid)
+            api.mux_enqueue(4, fid)
         }
         // 手动测试面(用户点击驱动):关焦点 Pane(=Ctrl+Shift+W 等价;
         // 关末 Pane 时转关 Tab)
         .CloseFocusPane -> {
             var fid int = api.mux_focus_id()
-            api.mux_close_pane(fid)
+            api.mux_enqueue(3, fid)
         }
         .SchemeToggle -> {
             if .scheme == 1 {
@@ -199,21 +199,21 @@ widget App {
         // 8 后 Tab(C-S-→) / 9 scheme 循环(C-S-K)。
         .Shortcut(n) -> {
             if n == 1 {
-                api.mux_new_tab()
+                api.mux_enqueue(1, 0)
             }
             if n == 2 {
                 var fid int = api.mux_focus_id()
-                api.mux_close_pane(fid)
+                api.mux_enqueue(3, fid)
             }
             if n == 3 {
-                api.mux_split(1)
+                api.mux_enqueue(2, 1)
             }
             if n == 4 {
-                api.mux_split(0)
+                api.mux_enqueue(2, 0)
             }
             if n == 5 {
                 var fid int = api.mux_focus_id()
-                api.mux_zoom(fid)
+                api.mux_enqueue(4, fid)
             }
             if n == 6 {
                 var cnt int = api.mux_tab_count()
@@ -232,7 +232,8 @@ widget App {
                 if prv < 0 {
                     prv = cnt - 1
                 }
-                api.mux_activate_tab(api.mux_tab_id_at(prv))
+                var ptid int = api.mux_tab_id_at(prv)
+                api.mux_enqueue(5, ptid)
             }
             if n == 7 {
                 var cnt int = api.mux_tab_count()
@@ -251,7 +252,8 @@ widget App {
                 if prv < 0 {
                     prv = cnt - 1
                 }
-                api.mux_activate_tab(api.mux_tab_id_at(prv))
+                var ptid int = api.mux_tab_id_at(prv)
+                api.mux_enqueue(5, ptid)
             }
             if n == 8 {
                 var cnt int = api.mux_tab_count()
@@ -270,7 +272,8 @@ widget App {
                 if nxt >= cnt {
                     nxt = 0
                 }
-                api.mux_activate_tab(api.mux_tab_id_at(nxt))
+                var ntid int = api.mux_tab_id_at(nxt)
+                api.mux_enqueue(5, ntid)
             }
             if n == 9 {
                 if .scheme == 1 {

@@ -408,6 +408,41 @@ layout 策略(Tall/Grid/Stack,Phase 6 另半边)、Workspace 持久化
     复核",暂不归缺陷。
   - next:用户手动分屏取证 → T-05/T-06 收口。
 
+- 2026-09-15 stage:work · PLAN-019 · rev1 · **手动测试期缺陷双杀记录**
+  (用户实机操作驱动,自动驱动停用):
+  - **缺陷 A(已修,app.at)**:`.Split(axis)` 处理器参数名与模型字段
+    `axis` 同名,a2r 处理器体把它译成 `self.axis`(恒 -1)遮蔽载荷——
+    点分屏按钮实际分出 axis=-1 的屏,视图 if 链不匹配渲染回单 Pane。
+    修法:参数改名 `ax`;生成码核验 `mux_split(ax)`。同型排查
+    TabActivate/TabClose/Shortcut 无遮蔽。**codegen 参数遮蔽缺陷记
+    auto-lang 侧待修(T-07 DEBTS)**。
+  - **缺陷 B(已修,app 架构面)**:"+" 新 Tab 后再分屏 → **AppHangB1
+    挂起**(用户实测 + 复现)。根因链:①按钮处理器在 UI 线程直接调
+    mux_*(含 engine_spawn),而生成的 db 代码在引擎调用语句期间持有
+    List 互斥锁守卫(临时变量存活至语句末),与 tick 执行器构成
+    db 锁 × 引擎内部锁 ABBA 死锁;②trace 取证 resize 风暴
+    (135x47↔67x47↔135x23 振荡)。修法:**用户动作队列**——UI 线程
+    处理器只 `mux_enqueue(code,arg)`(纯 push),get_lines 每拍
+    `mux_drain_actions()` 在 tick 线程排水执行;引擎操作回归单线程
+    序列化(013 Action 单入口/所有权铁律的执行面)。headless 验证:
+    队列 split/newtab 语义 ✓。
+  - **缺陷 C(真凶,auto-lang lang-019 worktree 修复中)**:挂起前置
+    条件的更深根因——**a2r 把 List 接收者的 `.set(idx,v)` 译成
+    `Vec::insert(idx,v)`(插入语义,右移后续元素)**。split 后
+    tab_root_node=[3,1](期望 [3,4],replace_child 的 set 变 insert);
+    多 Tab 后表错位 → slot/focus 指向错误 Pane → 孤儿节点 + 几何
+    风暴。018 未暴露:单 Tab 时 ti=0 的 insert 恰好读值正确,腐坏
+    静默右移;Plan 514 W1 守卫只区分了 struct/List 未区分 List/Map。
+    **最小 Rust 直调复现**(stub 引擎):`after split: root=[3, 1]`
+    铁证。修法(镜像 Plan 514 W3 get 索引形特化):List 接收者的
+    .set 走索引赋值特化臂 `recv[(idx) as usize] = v;`;Map/结构体
+    语义不变。**按 87eba67ab 裁定在 lang-019 worktree(plan-019-dev)
+    实施并验证**,金样回归 test 10_collections/008_list_set_index。
+  - **V-1 正式撤销**:"视图结构不随模型重建"从未成立——系缺陷 A/B/C
+    复合误导 + PrintWindow 遮挡抓帧陈旧帧伪证。用户实机目击与
+    headless 模型断言均证明视图消费与泵正常。
+  - next:C 验证合并 → 用户手动全量取证 → T-05/T-06 收口。
+
 ## 10. 待澄清事项
 
 1. **快捷键风格**:V1 默认 Windows Terminal 风格组合键(§5 D5 表;

@@ -66,6 +66,16 @@ var next_pane_id int = 1
 var next_tab_id int = 1
 var next_node_id int = 1
 
+// ── 用户动作队列(PLAN-019 执行期修正,2026-09-15)──────────────────
+// 背景:按钮/快捷键处理器跑在 UI 线程,直接调 mux_*(含引擎
+// spawn/free)会与 tick 执行器的 db 锁 × 引擎内部锁 ABBA 死锁
+// (a2r 生成的 db 代码在引擎调用语句期间持有 List 互斥锁守卫;
+// 第二 Tab 分屏挂起实测,AppHangB1)。故 UI 线程只入队(纯 List
+// push,零引擎调用),get_lines 每拍在 tick 线程排水执行——
+// 引擎操作保持单线程序列化(013 所有权铁律的执行面)。
+var act_codes List<int> = []
+var act_args List<int> = []
+
 // ── db 门面标量(几何/退出态/积压,014 面)─────────────────────────
 var cols int = 100
 var rows int = 30
@@ -386,6 +396,53 @@ fn spawn_pane_into_tab(tab_id int, axis int) int {
     node_second.push(0)
     node_pane.push(pid)
     return leaf
+}
+
+/// 用户动作入队(UI 线程安全)。
+/// 1=NewTab(arg0) 2=Split(arg=axis) 3=CloseFocusPane(arg=pane id)
+/// 4=Zoom(arg=pane id) 5=ActivateTab(arg=tab id) 6=CloseTab(arg=tab id)
+pub fn mux_enqueue(code int, arg int) int {
+    act_codes.push(code)
+    act_args.push(arg)
+    return 1
+}
+
+/// 动作排水(tick 专用,单线程;每拍至多 8 条防饿死视图)。
+fn mux_drain_actions() int {
+    var guard int = 0
+    loop {
+        if guard >= 8 {
+            break
+        }
+        if act_codes.len() == 0 {
+            break
+        }
+        var code int = act_codes.get(0)
+        var arg int = act_args.get(0)
+        act_codes = list_remove_int(act_codes, 0)
+        act_args = list_remove_int(act_args, 0)
+        if code == 1 {
+            mux_new_tab()
+        }
+        if code == 2 {
+            mux_split(arg)
+        }
+        if code == 3 {
+            var fid int = mux_focus_pane_id()
+            mux_close_pane(fid)
+        }
+        if code == 4 {
+            mux_zoom(arg)
+        }
+        if code == 5 {
+            mux_activate_tab(arg)
+        }
+        if code == 6 {
+            mux_close_tab(arg)
+        }
+        guard = guard + 1
+    }
+    return 0
 }
 
 /// V1 单 Workspace + 初始 Tab + 初始 Pane(缺省 shell,继承宿主 cwd;
@@ -725,6 +782,7 @@ pub fn mux_snapshot() str {
 /// (焦点门面:vue/tick 消费面零变)。
 pub fn get_lines() []str {
     mux_init()
+    mux_drain_actions()
     var handle int = mux_focus_handle()
     if handle == 0 {
         var empty List<str> = []
