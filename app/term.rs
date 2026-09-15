@@ -681,6 +681,20 @@ pub fn engine_interrupt(handle: i64) -> i64 {
     }
 }
 
+/// PLAN-015 D4:菜单动作载荷取走(注册表任意端;0=Copy 1=Paste
+/// 2=SelectAll 3=Interrupt;-1=无载荷)——`.Menu` 处理器经
+/// db.term_menu_take 消费,payload 3 → engine_interrupt。
+pub fn engine_menu_take() -> i64 {
+    let item = match auto_lang::ui::terminal::terminal_take_menu_item_any() {
+        Some(item) => item as i64,
+        None => -1,
+    };
+    if trace_on() {
+        eprintln!("[term-trace] menu item={item}");
+    }
+    item
+}
+
 pub fn engine_is_exited(handle: i64) -> bool {
     let h = ptr_of(handle);
     if h.is_null() {

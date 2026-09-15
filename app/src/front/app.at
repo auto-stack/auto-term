@@ -29,7 +29,7 @@ use back.api
 // PLAN-018: scheme prop 可显式覆盖配色(scheme: N);缺省跟随桌面主题(V1 视图零变化)。
 
 widget App {
-    msg { Init, Tick, KeyIn }
+    msg { Init, Tick, KeyIn, Menu }
 
     model {
         var lines List<str> = []
@@ -63,6 +63,18 @@ widget App {
             .crow = api.term_cursor_row()
             .ccol = api.term_cursor_col()
         }
+        // PLAN-015:右键菜单 Interrupt 项(载荷 3)→ term_interrupt()
+        // (引擎 Break→C 双投递;0/1/2 组件内建语义,前端忽略)。
+        // 注:if 块尾不落值返回裸调用(a2r 块尾语句省 `;`,值调用
+        // 会使 if-无-else 臂类型错位,rustc E0308)——补一行 () 型收尾
+        // 顺带中断后即时刷新(a2r 缺口记 DEBTS,归 auto-lang 侧修缮)。
+        .Menu -> {
+            var item int = api.term_menu_take()
+            if item == 3 {
+                api.term_interrupt()
+                .lines = api.get_lines()
+            }
+        }
     }
 
     view {
@@ -76,6 +88,7 @@ widget App {
                 cursor_row: .crow
                 cursor_col: .ccol
                 oninput: .KeyIn
+                onmenu: .Menu
             }
         }
     }

@@ -25,7 +25,7 @@
 //   - engine_rows 的 List 返回必须落显式类型 var(否则 .len() 得 None);
 //   - 裸调用不得内联于 if 条件位(597 §9 挂起缺陷)——先赋值再比较。
 
-use auto.term: engine_spawn_ex, engine_free, engine_write_line, engine_rows_for, engine_pump_for, engine_apply_resize_for, engine_viewport_cols, engine_viewport_rows, engine_cursor_row, engine_cursor_col, engine_backlog_pending_mb, engine_backlog_paused, engine_backlog_take_alerts, engine_backlog_dropped, engine_interrupt, engine_is_exited
+use auto.term: engine_spawn_ex, engine_free, engine_write_line, engine_rows_for, engine_pump_for, engine_apply_resize_for, engine_viewport_cols, engine_viewport_rows, engine_cursor_row, engine_cursor_col, engine_backlog_pending_mb, engine_backlog_paused, engine_backlog_take_alerts, engine_backlog_dropped, engine_interrupt, engine_is_exited, engine_menu_take
 
 // ══════════════════════════════════════════════════════════════════
 // MuxCore 模型表(PLAN-018 D6;Workspace/Tab/LayoutTree/Pane)
@@ -754,6 +754,13 @@ pub fn term_send(line str) {
 pub fn term_interrupt() int {
     var handle int = mux_focus_handle()
     return engine_interrupt(handle)
+}
+
+/// 菜单动作载荷取走(PLAN-015 D4;on_menu 消息后由 .Menu 处理器消费):
+/// 0=Copy 1=Paste 2=SelectAll 3=Interrupt;-1=无载荷(读取即取走)。
+/// 载荷 3 → term_interrupt()(显式中断,不误伤 idle ash;0/1/2 暂忽略)。
+pub fn term_menu_take() int {
+    return engine_menu_take()
 }
 
 /// 直键入泵:排空视口槽 terminal 组件键盘队列,定向裸写焦点 Pane 引擎

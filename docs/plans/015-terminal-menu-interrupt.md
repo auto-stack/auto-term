@@ -1,13 +1,13 @@
 ---
 plan_id: PLAN-015
-status: drafting
+status: executing
 feature_name: terminal 右键菜单 Interrupt 项——恢复引擎中断通路(014 回归修复)
 author: [zcode-session]
 created_at: 2026-09-13T12:05:00Z
-updated_at: 2026-09-13T12:05:00Z
+updated_at: 2026-09-15T09:30:00Z
 plan_revision: 1
-current_step: 0
-total_steps: 5
+current_step: 3
+total_steps: 6
 supersedes_spec_components: []
 new_spec_components: []
 touched_goals: []
@@ -107,11 +107,37 @@ Auto(.at 前端/后端)+ auto-lang(terminal 组件/registry/a2r codegen)
 
 ## 8. 执行步骤
 
-- T-01 调查+D3 codegen onmenu(含金样)——依赖 agent codegen 回归
-  修复完成(见 §10),避免同文件撞车
-- T-02 D1+D2 widget 菜单项与 accessor(含单测)
+- T-00 开工门勘定(2026-09-15):
+  ①**前置确认=T-01 阻塞解除**——014 §10 所记"rust codegen 回归
+  (terminal 臂属性退化/i64 不匹配)"已随现场 agent 移交落地
+  (auto-lang ee2fafa76,2026-09-13)并为后续 017/018 两轮全链复验
+  覆盖(017 G3:`auto build -r rust` Finished 零错;018 复审:rust/vm
+  GUI 全新启动+ui_gen scheme 臂复审绿);当日活体探针:auto-lang
+  master(d74f34e50)`cargo test -p auto-lang --features ui-iced,
+  iced-layout-tests --lib terminal` = **29/29 绿 0 failed**;DEBTS 无
+  在账条目。ui_gen/rust.rs terminal 臂现状健康(属性全带 as u16/
+  as i32 casts),`on_menu: None` 硬编码缺口与 §4 描述一致=待办非
+  回归。②**worktree 勘定**:沿 014/016/017/018 同款"无 worktree
+  主检出交付"——auto-term 主检出直接实现;依赖仓 auto-lang master
+  主检出直接变更(018 master 直落惯例);其工作区他人遗留项
+  (renderer.rs/session.rs 桌面图标拖拽 WIP、fs.at、570 文档)不属
+  本计划,保留不提交,仅提交本计划文件(与 WIP 文件集零重叠)。
+  ③**路径基准**:017 已统一入口——§2/§5 所记"at-app"即现行
+  `app/`(src/front/app.at、src/back/{db.at,api.at}、term.rs 四触面,
+  018 T-00 同款裁定),语义修订记录在此,范围不变。
+- T-01 ✅ 调查+D3 codegen onmenu(含金样)——前置依赖已解除(见 T-00);
+  auto-lang 0ce22c27d:terminal 臂 events(onmenu/on_menu/oncontextmenu/
+  contextmenu)→ `on_menu: Some(DirectMsg)`(键集与 VM 臂同源);
+  金样 `terminal_onmenu_emits_on_menu_direct_msg` 有/无 onmenu 双臂绿;
+  ui_gen 回归 779 绿 0 failed。附注:VM 臂 convert_terminal 原已支持
+  onmenu(oncontextmenu/contextmenu/onmenu 链),本任务只补 rust 臂。
+- T-02 ✅ D1+D2 widget 菜单项与 accessor(含单测)——auto-lang
+  b0e603501:MENU_ITEMS 3→4("Interrupt" 载荷 3,命中臂零改动,宽/高
+  len() 自适应)+ `terminal_take_menu_item_any()`(BTreeMap 键序首个
+  Some 即返,镜像 take_any_resize);单测
+  `menu_item_any_takes_across_terminals`;terminal 套件 31/31 绿。
 - T-03 D4+D5 侧车/db/app.at 接线(手工或 auto build 后 codegen 就绪)
-- T-06 等下,T-03 完成后集成验证(008 口径三场景)
+- T-04 T-03 完成后集成验证(008 口径三场景)
 - T-05 文档收尾(SD-01/02)
 
 ## 9. 复审记录
@@ -121,6 +147,9 @@ Auto(.at 前端/后端)+ auto-lang(terminal 组件/registry/a2r codegen)
 
 ## 10. 待澄清事项
 
-- T-01 依赖现场 agent 修完 rust codegen 回归(terminal 臂属性退化/
-  i64)——同文件(ui_gen/rust.rs)在途冲突;需协调先后或由 agent 代做 D3。
-- VM 轨生效依赖 014 VM shim 补全(PLAN-014 §10 同源交接)。
+- ~~T-01 依赖现场 agent 修完 rust codegen 回归~~ **已解除(2026-09-15
+  T-00 勘定)**:移交落地于 auto-lang ee2fafa76 并经 017/018 两轮复验,
+  当日活体探针 terminal 29/29 绿(证据见 §8 T-00)。
+- VM 轨生效依赖 014 VM shim 补全——014 交付时已随 ee2fafa76 落地
+  (backlog shim 四件三表登记),018 复审 VM 轨全绿,本计划 VM 臂
+  可直接依赖。

@@ -27,6 +27,14 @@ pub fn term_interrupt() int {
     return db.term_interrupt()
 }
 
+/// 菜单动作载荷(terminal 右键菜单;PLAN-015):0=Copy 1=Paste
+/// 2=SelectAll 3=Interrupt;-1=无载荷。载荷 3 由前端转 term_interrupt
+/// (vue 形态 terminal 只读,此路由恒 -1——菜单在窗口进程)。
+#[api(method = "POST", path = "/api/term/menu-take")]
+pub fn term_menu_take() int {
+    return db.term_menu_take()
+}
+
 /// 直键入泵:terminal 组件键盘队列 → 引擎裸写(014;载荷不经 HTTP,
 /// vue 形态此路由恒 0——队列在窗口进程)。
 #[api(method = "POST", path = "/api/term/pump")]
