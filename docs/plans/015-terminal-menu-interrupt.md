@@ -1,12 +1,12 @@
 ---
 plan_id: PLAN-015
-status: executing
+status: execution_done
 feature_name: terminal 右键菜单 Interrupt 项——恢复引擎中断通路(014 回归修复)
 author: [zcode-session]
 created_at: 2026-09-13T12:05:00Z
 updated_at: 2026-09-15T09:30:00Z
 plan_revision: 1
-current_step: 5
+current_step: 6
 total_steps: 6
 supersedes_spec_components: []
 new_spec_components: []
@@ -131,11 +131,17 @@ Auto(.at 前端/后端)+ auto-lang(terminal 组件/registry/a2r codegen)
   金样 `terminal_onmenu_emits_on_menu_direct_msg` 有/无 onmenu 双臂绿;
   ui_gen 回归 779 绿 0 failed。附注:VM 臂 convert_terminal 原已支持
   onmenu(oncontextmenu/contextmenu/onmenu 链),本任务只补 rust 臂。
-- T-02 ⏮ **复审重开(2026-09-15 review R015-F1)**:D1 菜单项功能面
-  (命中/载荷/中断链)已证,但 AC-01 可见性子项不满足——标签在 rust 轨
-  200% DPI 不可见(DEBTS #17)。重开范围 = 标签可见性修复(auto-lang
-  widget 绘制路径,像素台模拟器可离线复现);D2 accessor 完成保持。
-  其余任务证据不受影响。
+- T-02 ✅ D1+D2 widget 菜单项与 accessor(含单测)——auto-lang
+  b0e603501:MENU_ITEMS 3→4("Interrupt" 载荷 3,命中臂零改动,宽/高
+  len() 自适应)+ `terminal_take_menu_item_any()`(BTreeMap 键序首个
+  Some 即返,镜像 take_any_resize);单测
+  `menu_item_any_takes_across_terminals`。
+  **R015-F1 修复轮重收口(2026-09-15,auto-lang 11a2b9bb6)**:标签
+  不可见根因 = iced wgpu fill_paragraph 排队 WeakParagraph,draw 局部
+  段落析构后 flush upgrade 失败静默丢弃(行文本因静态缓存存活而正常
+  ——全部 forensic 由此自洽);修正 = MENU_PARAS 静态缓存强引用;
+  实机四项标签全部可见(含 "Interrupt"),打断链同跑复验;badge/
+  preedit 同族记 DEBTS #17 待修。
 - T-03 D4+D5 侧车/db/app.at 接线(手工或 auto build 后 codegen 就绪)
 - T-04 ✅ 集成验证(008 口径三场景,evidence/015 实机):
   ①字节路径基线——`timeout /t 30 /nobreak` 倒计时中裸 Ctrl+C → 倒计时
@@ -216,6 +222,18 @@ Auto(.at 前端/后端)+ auto-lang(terminal 组件/registry/a2r codegen)
   输出),未采信执行者摘要 ·
   next:/auto-plan:work(R015-F1 标签可见性;修后 F-3 重取证,
   F-2 环境归因后复跑全量门)。
+
+- 2026-09-15 stage:work(修复轮) · plan_id:PLAN-015 ·
+  plan_revision:1 · outcome:**pass** ·
+  code_commit:auto-lang 11a2b9bb6(R015-F1 根修)+ 8ac159423(前置
+  chrome 配色+插桩,上一轮已入) · task_ids:T-02(重开部分) ·
+  evidence:evidence/015 重取证全套(t2 打字零乱码/t4 四项标签可见
+  含 "Interrupt"/t5 24^C 打断回提示符/菜单 item=3 trace;像素扫描
+  面板内标签亮像素 3461);根因:iced wgpu WeakParagraph 静默丢弃
+  (详见 DEBTS #17 修复节) ·
+  blockers:F-2 像素金样环境漂移仍红(晨绿午红二分已定案非代码,
+  merge 全量门前的环境归因独立完成,不阻本计划) ·
+  next:/auto-plan:review(F-3 已满足:全套 8 帧一致重取证)。
 
 ## 10. 待澄清事项
 

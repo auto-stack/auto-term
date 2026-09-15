@@ -43,10 +43,10 @@ term.rs 胶水同款解析序:env → exe 同目录 → 祖先 target)。
 - **右键菜单 Interrupt(PLAN-015)**:菜单第 4 项(载荷 3)→
   `term_menu_take()` → `term_interrupt()`(Break→C 双投递);显式触发
   不误伤 idle ash(裸 Ctrl+C 仍纯字节)。已知边界:ping 类在 26200
-  build 不可中断(DEBTS #12 残留);**菜单标签文字在 rust 轨 200% DPI
-  下暂不可见**(命中/载荷正常,DEBTS #17,归 auto-lang 像素台专项);
-  开发布局(app exe 住 auto-lang target)须设 `AUTOTERM_CTRLC_BIN` 指向
-  helper,dist 三件套同目录免设;
+  build 不可中断(DEBTS #12 残留);菜单标签渲染已根修(iced 弱引用
+  段落,DEBTS #17;同族 badge/preedit 待修);开发布局(app exe 住
+  auto-lang target)须设 `AUTOTERM_CTRLC_BIN` 指向 helper,dist 三件套
+  同目录免设;
 - 定时器:`timer { Tick (every_ms: 50) }` 驱动流式刷新——rust 轨经
   run_app_with_task_devtools 的 tick 订阅(014 补齐 with-task 变体),
   VM 轨经动态 timer 注册表;命令输出不再依赖按钮 tick;

@@ -239,25 +239,23 @@
   缺陷点,暂不盲改启动路径;处置 = 重试 + 留痕(017 桌面共存先例
   同族)。
 
-## #17 terminal 右键菜单标签在 rust 轨不可见(PLAN-015,2026-09-15)
+## #17 terminal 右键菜单标签在 rust 轨不可见(PLAN-015,2026-09-15)→ **已根修(菜单标签;同族 badge/preedit 待修)**
 
-- **现象**:rust 轨(a2r iced)右键菜单浮层 quad 正常渲染(深底+圆角
-  边框),四个菜单项标签文字不可见;命中区/载荷通道完全正常(点击
-  第 4 项 → payload 3 → 中断链实机全通,见 evidence/015)。
-- **取证(AUTO_IME_TRACE 门控插桩)**:draw 循环 4 次迭代全执行、
-  pos/bounds/颜色(固定亮色 0.87)逐项正确,para.min_bounds 非零
-  (37-94×16);四轮构造实验(with_text / with_spans 内嵌色 /
-  build_row_paragraph 行管线复用 / 固定色)全部排除构造与配色。
-- **精确像素扫描(200% DPI 桌面)**:面板实际渲染于 (215,261)-(370,384)
-  尺寸 156×124,而逻辑 rect=(100,100.5) 80×64——面板本身以 ~2× 尺寸+
-  位移渲染(DPI 变换疑似在 widget draw 路径双重施加);标签随之落在
-  面板外/不可见。rows 文本同帧正常(行坐标系正确)。
-- **归属与既有性**:013 起菜单即存在但 take_menu_item 此前无仓外消费
-  面,rust 轨从未被视觉验证;本计划 D1 新增第 4 项使缺陷首次用户可见。
-  与并发在途 renderer/vm_bridge WIP(auto-lang)区域重叠。
-- **处置**:待 auto-lang widget 像素测试台(iced_test simulator)专项
-  根因(DPI 变换/绘制坐标系);功能面不受影响。VM 轨菜单显示待同配方
-  复验。
+- **根因(修复轮定位)**:iced wgpu 渲染层 `fill_paragraph` 排队的是
+  `paragraph.downgrade()` **弱引用**(iced_wgpu layer.rs:76),flush 时
+  `upgrade()` 失败即**静默丢弃**(text.rs:469)——widget draw 内新建的
+  局部段落 fill 后即析构,弱引用必死,文字必然消失;quad 为值拷贝
+  不受影响(面板可见);行文本因 RowEntry 静态缓存强引用存活而正常。
+  该机制同时解释全部前期 forensic(四种构造全灭/坐标颜色全对/面板
+  2× 偏移为独立 DPI 现象与标签消失无关)。
+- **修复**(auto-lang 11a2b9bb6):菜单标签为静态串 → `MENU_PARAS`
+  静态缓存一次建入,强引用存活到 flush;实机四项标签全部可见,
+  打断链复验通过(evidence/015 重取证)。
+- **同族遗留(未修)**:badge(滚动偏移指示)与 preedit 自绘覆盖层
+  同为 draw 局部段落,同根因不可见——归属 auto-lang widget 顺手项,
+  修法同款(缓存强引用)。
+- **环境注记**:像素金样 selection/cursor 2 红为独立环境漂移
+  (见复审 R015-F2),与本缺陷及修复无关。
 
 ## #18 a2r 块尾值返回调用缺分号(PLAN-015,2026-09-15)
 

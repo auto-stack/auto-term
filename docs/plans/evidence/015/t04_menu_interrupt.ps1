@@ -147,7 +147,7 @@ try {
 
   # 2) 聚焦 + 等沉降(IME 英文起步 toggle 落位) + 起跑 /nobreak 倒计时
   Click $h 400 240 $false
-  Start-Sleep -Milliseconds 1500
+  Start-Sleep -Milliseconds 3500
   TypeLine "timeout /t 30 /nobreak"; Start-Sleep -Seconds 2
   Shot $h "$out\t2_countdown.png"
 
