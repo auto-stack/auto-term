@@ -5,6 +5,19 @@ AutoTerm 复刻应用的 automan 标准工程形态：一份 .at 源，三条标
 `autoterm_core.dll`。PLAN-017 起 `app/` 为 AutoTerm 唯一工程入口
 （at-app/ 目录已退役，桌面壳旧形态一并移除）。
 
+## 可见多终端 UI(PLAN-019)
+
+Tab 条常显(点击激活 / 右键关闭 / `+` 新建 / 横分 / 竖分 / 关Pane /
+Zoom / ◐ scheme 切换)+ 布局槽位消费(zoom 全屏 / 横向 row / 纵向
+col / 单 Pane;V1 分屏上限 = 树深 1,已分屏 Tab 再分拒绝)。每
+terminal 实例按 pane key 动态绑定;泵三档(焦点全量+键入 / 可见
+非焦点全量投喂 / 不可见 drain-only);打字随动焦点。快捷键(WT
+风格,Ctrl+Shift 前缀):T 新Tab / W 关Pane / E 横分 / O 纵分 /
+Z zoom / Tab、← 前 Tab / → 后 Tab / K scheme;命中即应用动作,
+未命中的键(含裸 Ctrl+C/Z)原样进终端。关末 Pane = 关其 Tab;
+关末 Tab 拒绝(app 常驻)。契约详见 docs/specs/terminal-mux-model.md
+V1 语义节。
+
 ## 布局
 
 | 文件 | 属性 | 说明 |
