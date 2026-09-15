@@ -1,6 +1,6 @@
 ---
 plan_id: PLAN-015
-status: execution_done
+status: reviewed
 feature_name: terminal 右键菜单 Interrupt 项——恢复引擎中断通路(014 回归修复)
 author: [zcode-session]
 created_at: 2026-09-13T12:05:00Z
@@ -234,6 +234,32 @@ Auto(.at 前端/后端)+ auto-lang(terminal 组件/registry/a2r codegen)
   blockers:F-2 像素金样环境漂移仍红(晨绿午红二分已定案非代码,
   merge 全量门前的环境归因独立完成,不阻本计划) ·
   next:/auto-plan:review(F-3 已满足:全套 8 帧一致重取证)。
+
+- 2026-09-15 stage:review(修复轮再审) · plan_id:PLAN-015 ·
+  plan_revision:1 · outcome:**pass** ·
+  reviewed_commit:auto-term 0112052(修复增量 936bc90..0112052,代码
+  面仅 auto-lang 11a2b9bb6) · base_commit:auto-term 936bc90(前次
+  review) ·
+  dependency_revisions:auto-lang 87eba67ab(11a2b9bb6 在祖先链;主
+  检出已洁净,并发 WIP 已落地;另注 87eba67ab 起本仓 L0 改动改走
+  worktree 为后续计划约束) ·
+  spec_inputs:同前次(DEBTS #12 附记/#17 根修/#18、app/README;无
+  docs/specs 触面说明维持,F-4 shim 2987 spec-sync 归 merge) ·
+  acceptance_results:**AC-01 pass**(独立复现:t4 菜单四项标签全部
+  可见含 "Interrupt",点击 → 25s `^C` 打断 ≤5s 回提示符,截图+trace
+  `menu item=3` 双证——前次 fail 项闭合)/AC-02 pass(修复轮未触键盘
+  路径,前次证据维持+本轮 trace 干净键入)/AC-03 pass(trace 同上)/
+  AC-04 pass(本计划触面:menu 单测绿、a2r 金样绿、双臂 check 绿、
+  auto-term workspace 0 fail——3ae065a 后 auto-term 零代码改动;
+  像素金样 2 红=R015-F2 环境漂移非回归,维持 merge 门前置)/AC-05
+  pass(DEBTS #17 根修节+#12 附记+README 同步在库) ·
+  findings:R015-F1 **resolved**(独立复现确认)/R015-F3 resolved
+  (全套一致重取证)/R015-F2 维持(merge 前置:环境归因+全量门复跑)/
+  R015-F4 维持(merge spec-sync);新增无 ·
+  evidence:docs/plans/evidence/015/(复审当日独立复现 8 帧+trace)、
+  auto-lang 11a2b9bb6/87eba67ab、auto-term 0112052 ·
+  复审限制声明:同会话复审,以独立重跑+工件重建定案 ·
+  next:merge(merge 门:F-2 环境归因后全量复跑;F-4 spec-sync)。
 
 ## 10. 待澄清事项
 
