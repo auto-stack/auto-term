@@ -1,42 +1,59 @@
 // app src/front/app.at — AutoTerm 标准 AutoUI 前端(PLAN-013 T5;
-// 014 直键入收口:整窗只渲染 terminal 本体,不再有输入行/按钮;
-// PLAN-017 at-app→app 置换,统一工程入口)
+// 014 直键入收口;017 at-app→app 置换;PLAN-019 可见多终端 UI)
 //
-// terminal 组件(props-feed 形态甲)+ oninput 直键入;四装载面同一源:
-//   auto run -r rust → a2r iced(View::Terminal 臂,T3)
-//   auto run -r vm   → AutoVM 动态轨(convert_terminal,OS-013 两臂)
-//   auto run -r vue  → Vite 页面(<pre> 最小视口臂,T4,只读)+ axum back
-//   auto-os 桌面     → 宿主 build_dynamic_component 进程内编译
-//                      (back 契约本地 src/back merged 委托,PLAN-017)
+// PLAN-019(T-B 形态,§9 勘定):Tab 条 + 布局消费视图——
+//   Tab 条  = row 直属 for 摊平按钮(auto-lang 028c53b5f 使能)+ "+"
+//             新建 + scheme 切换;点击激活,右键关闭(单 Tab 亦常显,
+//             Windows Terminal 同款形态);
+//   布局根  = 槽位投影 if 枚举(zoom 全屏 / axis1 横向 row / axis0 纵向
+//             col / 单 Pane),两 terminal 实例按 pane key 动态绑定
+//             (key: .keyN;028c53b5f 动态键使能);
+//   快捷键  = terminal onkeydown.* 捷径表(WT 风格,§5 D5 表;命中发
+//             .Shortcut(n) 不落 VT,未命中原样进终端)。
+// 泵三档在 back(db.at D1):焦点全量+键入泵 / 可见非焦点全量投喂 /
+// 不可见 drain-only——本视图每拍经 get_lines()+mux_pane_lines()*2 消费。
 //
-// 输入语义(像 Windows Terminal):点击终端获得焦点后直接键入;widget 把
-// 按键翻译成 VT 串入 TerminalCore 队列,消息 .KeyIn 只当触发器——
-// api.term_pump_input() 排空队列裸写引擎(无 \r\n 补缀),随后 api.get_lines()
-// 收割回显。timer 驱动 50ms 轮询,命令输出(含长跑任务)流式上屏,
-// 不再依赖按钮 tick。
+// 输入语义(像 Windows Terminal):点击某 Pane 获得焦点后直接键入;widget
+// 把按键翻译成 VT 串入 TerminalCore 队列,消息 .KeyIn 只当触发器——
+// api.term_pump_input() 逐可见 Pane 排空各自队列裸写各自引擎(打字
+// 随动焦点),随后槽位行快照回填。timer 驱动 50ms 轮询流式上屏。
 //
-// 014 积压报警:展示面(置顶横幅)已按用户裁定撤下;采样/计数仍在
-// back 契约面(api.at term_backlog_*)保留,供诊断消费。
-//
-// PLAN-017 T-02 实证裁定：api 调用统一**限定名**形态（`use back.api`
-// 模块导入 + `api.X()` 调用）——裸名导入在 merged VM/桌面动态编译下进
-// PLAN-053 no-op 桩（vm/codegen.rs 拦截仅匹配裸名），限定名直落本地
-// 字节码是唯一进程内可达形态；rust/vue 两发射器的限定名支持 =
-// auto-lang PLAN-627（模块形态契约枚举 + qualified head 裸名同发射）。
+// PLAN-017 实证裁定:api 调用统一限定名形态(`use back.api` + api.X())。
 
 use back.api
 
-// PLAN-018: scheme prop 可显式覆盖配色(scheme: N);缺省跟随桌面主题(V1 视图零变化)。
+// PLAN-018/019: scheme prop(0=dark 1=light;按钮循环切换,缺省 0 跟随
+// classic-dark 基线);shortcuts prop 面 = onkeydown.*(D4,028c53b5f)。
 
 widget App {
-    msg { Init, Tick, KeyIn, Menu }
+    msg { Init, Tick, KeyIn, Menu, TabActivate(int), TabClose(int), NewTab, Split(int), Zoom, SchemeToggle, Shortcut(int) }
 
     model {
-        var lines List<str> = []
         var cols int = 100
         var rows int = 30
-        var crow int = 0
-        var ccol int = 0
+        // Tab 条数据(tick 刷新;活动 Tab 标签带 "● " 前缀)
+        var tab_ids List<int> = []
+        var tab_labels List<str> = []
+        // 布局槽位(T-B 树深 1 投影;keyN = pane 模型 key)
+        var slot1 int = 0
+        var slot2 int = 0
+        var key1 str = "pane-1"
+        var key2 str = ""
+        var axis int = -1
+        var zoom int = 0
+        // scheme(0=classic-dark 1=light;按钮/快捷键循环)
+        var scheme int = 0
+        // 槽位消费面(行快照/几何/光标)
+        var lines1 List<str> = []
+        var lines2 List<str> = []
+        var g1c int = 100
+        var g1r int = 30
+        var g2c int = 100
+        var g2r int = 30
+        var cr1 int = 0
+        var cc1 int = 0
+        var cr2 int = 0
+        var cc2 int = 0
     }
 
     timer {
@@ -45,34 +62,214 @@ widget App {
 
     on {
         .Init -> {
-            .lines = api.get_lines()
-            .crow = api.term_cursor_row()
-            .ccol = api.term_cursor_col()
+            api.term_apply_resize()
+            api.get_lines()
+            var n int = api.mux_tab_count()
+            var ids List<int> = []
+            var labels List<str> = []
+            var i int = 0
+            loop {
+                if i >= n {
+                    break
+                }
+                ids.push(api.mux_tab_id_at(i))
+                var lbl str = api.mux_tab_title_at(i)
+                if api.mux_tab_is_active_at(i) == 1 {
+                    lbl = "● " + lbl
+                }
+                labels.push(lbl)
+                i = i + 1
+            }
+            .tab_ids = ids
+            .tab_labels = labels
+            .slot1 = api.mux_slot_pane_id(1)
+            .slot2 = api.mux_slot_pane_id(2)
+            .key1 = api.mux_slot_pane_key(1)
+            .key2 = api.mux_slot_pane_key(2)
+            .axis = api.mux_split_axis()
+            .zoom = api.mux_zoom_active()
+            .lines1 = api.mux_pane_lines(.slot1)
+            .lines2 = api.mux_pane_lines(.slot2)
+            .g1c = api.mux_pane_cols(.slot1)
+            .g1r = api.mux_pane_rows(.slot1)
+            .g2c = api.mux_pane_cols(.slot2)
+            .g2r = api.mux_pane_rows(.slot2)
+            .cr1 = api.mux_pane_cursor_row(.slot1)
+            .cc1 = api.mux_pane_cursor_col(.slot1)
+            .cr2 = api.mux_pane_cursor_row(.slot2)
+            .cc2 = api.mux_pane_cursor_col(.slot2)
+            .cols = api.term_cols()
+            .rows = api.term_rows()
         }
         .Tick -> {
             api.term_apply_resize()
+            api.get_lines()
+            var n int = api.mux_tab_count()
+            var ids List<int> = []
+            var labels List<str> = []
+            var i int = 0
+            loop {
+                if i >= n {
+                    break
+                }
+                ids.push(api.mux_tab_id_at(i))
+                var lbl str = api.mux_tab_title_at(i)
+                if api.mux_tab_is_active_at(i) == 1 {
+                    lbl = "● " + lbl
+                }
+                labels.push(lbl)
+                i = i + 1
+            }
+            .tab_ids = ids
+            .tab_labels = labels
+            .slot1 = api.mux_slot_pane_id(1)
+            .slot2 = api.mux_slot_pane_id(2)
+            .key1 = api.mux_slot_pane_key(1)
+            .key2 = api.mux_slot_pane_key(2)
+            .axis = api.mux_split_axis()
+            .zoom = api.mux_zoom_active()
+            .lines1 = api.mux_pane_lines(.slot1)
+            .lines2 = api.mux_pane_lines(.slot2)
+            .g1c = api.mux_pane_cols(.slot1)
+            .g1r = api.mux_pane_rows(.slot1)
+            .g2c = api.mux_pane_cols(.slot2)
+            .g2r = api.mux_pane_rows(.slot2)
+            .cr1 = api.mux_pane_cursor_row(.slot1)
+            .cc1 = api.mux_pane_cursor_col(.slot1)
+            .cr2 = api.mux_pane_cursor_row(.slot2)
+            .cc2 = api.mux_pane_cursor_col(.slot2)
             .cols = api.term_cols()
             .rows = api.term_rows()
-            .lines = api.get_lines()
-            .crow = api.term_cursor_row()
-            .ccol = api.term_cursor_col()
         }
         .KeyIn -> {
             api.term_pump_input()
-            .lines = api.get_lines()
-            .crow = api.term_cursor_row()
-            .ccol = api.term_cursor_col()
+            .lines1 = api.mux_pane_lines(.slot1)
+            .lines2 = api.mux_pane_lines(.slot2)
+            .cr1 = api.mux_pane_cursor_row(.slot1)
+            .cc1 = api.mux_pane_cursor_col(.slot1)
+            .cr2 = api.mux_pane_cursor_row(.slot2)
+            .cc2 = api.mux_pane_cursor_col(.slot2)
         }
         // PLAN-015:右键菜单 Interrupt 项(载荷 3)→ term_interrupt()
-        // (引擎 Break→C 双投递;0/1/2 组件内建语义,前端忽略)。
-        // 注:if 块尾不落值返回裸调用(a2r 块尾语句省 `;`,值调用
-        // 会使 if-无-else 臂类型错位,rustc E0308)——补一行 () 型收尾
-        // 顺带中断后即时刷新(a2r 缺口记 DEBTS,归 auto-lang 侧修缮)。
+        // (引擎 Break→C 双投递;焦点 Pane 门面)。
         .Menu -> {
             var item int = api.term_menu_take()
             if item == 3 {
                 api.term_interrupt()
-                .lines = api.get_lines()
+                .lines1 = api.mux_pane_lines(.slot1)
+                .lines2 = api.mux_pane_lines(.slot2)
+            }
+        }
+        .TabActivate(i) -> {
+            var tid int = api.mux_tab_id_at(i)
+            api.mux_activate_tab(tid)
+        }
+        .TabClose(i) -> {
+            var tid int = api.mux_tab_id_at(i)
+            api.mux_close_tab(tid)
+        }
+        .NewTab -> {
+            api.mux_new_tab()
+        }
+        // 分屏(axis 0=纵向堆叠 col 1=横向并排 row;V1 树深 1 上限)
+        .Split(axis) -> {
+            api.mux_split(axis)
+        }
+        .Zoom -> {
+            var fid int = api.mux_focus_id()
+            api.mux_zoom(fid)
+        }
+        .SchemeToggle -> {
+            if .scheme == 1 {
+                .scheme = 0
+            } else {
+                .scheme = 1
+            }
+        }
+        // WT 风格快捷键分派(§5 D5 表):1 新 Tab / 2 关焦点 Pane /
+        // 3 横分 / 4 纵分 / 5 zoom / 6·7 前 Tab(C-S-Tab / C-S-←) /
+        // 8 后 Tab(C-S-→) / 9 scheme 循环(C-S-K)。
+        .Shortcut(n) -> {
+            if n == 1 {
+                api.mux_new_tab()
+            }
+            if n == 2 {
+                var fid int = api.mux_focus_id()
+                api.mux_close_pane(fid)
+            }
+            if n == 3 {
+                api.mux_split(1)
+            }
+            if n == 4 {
+                api.mux_split(0)
+            }
+            if n == 5 {
+                var fid int = api.mux_focus_id()
+                api.mux_zoom(fid)
+            }
+            if n == 6 {
+                var cnt int = api.mux_tab_count()
+                var cur int = 0
+                var i int = 0
+                loop {
+                    if i >= cnt {
+                        break
+                    }
+                    if api.mux_tab_is_active_at(i) == 1 {
+                        cur = i
+                    }
+                    i = i + 1
+                }
+                var prv int = cur - 1
+                if prv < 0 {
+                    prv = cnt - 1
+                }
+                api.mux_activate_tab(api.mux_tab_id_at(prv))
+            }
+            if n == 7 {
+                var cnt int = api.mux_tab_count()
+                var cur int = 0
+                var i int = 0
+                loop {
+                    if i >= cnt {
+                        break
+                    }
+                    if api.mux_tab_is_active_at(i) == 1 {
+                        cur = i
+                    }
+                    i = i + 1
+                }
+                var prv int = cur - 1
+                if prv < 0 {
+                    prv = cnt - 1
+                }
+                api.mux_activate_tab(api.mux_tab_id_at(prv))
+            }
+            if n == 8 {
+                var cnt int = api.mux_tab_count()
+                var cur int = 0
+                var i int = 0
+                loop {
+                    if i >= cnt {
+                        break
+                    }
+                    if api.mux_tab_is_active_at(i) == 1 {
+                        cur = i
+                    }
+                    i = i + 1
+                }
+                var nxt int = cur + 1
+                if nxt >= cnt {
+                    nxt = 0
+                }
+                api.mux_activate_tab(api.mux_tab_id_at(nxt))
+            }
+            if n == 9 {
+                if .scheme == 1 {
+                    .scheme = 0
+                } else {
+                    .scheme = 1
+                }
             }
         }
     }
@@ -80,15 +277,153 @@ widget App {
     view {
         col {
             style: "w-full h-screen bg-background"
-            terminal {
-                key: "auto-term"
-                cols: .cols
-                rows: .rows
-                lines: .lines
-                cursor_row: .crow
-                cursor_col: .ccol
-                oninput: .KeyIn
-                onmenu: .Menu
+            row {
+                style: "w-full"
+                for i, label in .tab_labels {
+                    button (text: label) {
+                        onclick: .TabActivate(i)
+                        oncontextmenu: .TabClose(i)
+                    }
+                }
+                button (text: "+") {
+                    onclick: .NewTab
+                }
+                button (text: "◐") {
+                    onclick: .SchemeToggle
+                }
+            }
+            if .zoom == 1 {
+                terminal {
+                    key: .key1
+                    cols: .g1c
+                    rows: .g1r
+                    lines: .lines1
+                    cursor_row: .cr1
+                    cursor_col: .cc1
+                    scheme: .scheme
+                    oninput: .KeyIn
+                    onmenu: .Menu
+                    onkeydown.ctrl.shift.t: .Shortcut(1)
+                    onkeydown.ctrl.shift.w: .Shortcut(2)
+                    onkeydown.ctrl.shift.e: .Shortcut(3)
+                    onkeydown.ctrl.shift.o: .Shortcut(4)
+                    onkeydown.ctrl.shift.z: .Shortcut(5)
+                    onkeydown.ctrl.shift.tab: .Shortcut(6)
+                    onkeydown.ctrl.shift.left: .Shortcut(7)
+                    onkeydown.ctrl.shift.right: .Shortcut(8)
+                    onkeydown.ctrl.shift.k: .Shortcut(9)
+                }
+            } else {
+                if .axis == 1 {
+                    row {
+                        terminal {
+                            key: .key1
+                            cols: .g1c
+                            rows: .g1r
+                            lines: .lines1
+                            cursor_row: .cr1
+                            cursor_col: .cc1
+                            scheme: .scheme
+                            oninput: .KeyIn
+                            onmenu: .Menu
+                            onkeydown.ctrl.shift.t: .Shortcut(1)
+                            onkeydown.ctrl.shift.w: .Shortcut(2)
+                            onkeydown.ctrl.shift.e: .Shortcut(3)
+                            onkeydown.ctrl.shift.o: .Shortcut(4)
+                            onkeydown.ctrl.shift.z: .Shortcut(5)
+                            onkeydown.ctrl.shift.tab: .Shortcut(6)
+                            onkeydown.ctrl.shift.left: .Shortcut(7)
+                            onkeydown.ctrl.shift.right: .Shortcut(8)
+                            onkeydown.ctrl.shift.k: .Shortcut(9)
+                        }
+                        terminal {
+                            key: .key2
+                            cols: .g2c
+                            rows: .g2r
+                            lines: .lines2
+                            cursor_row: .cr2
+                            cursor_col: .cc2
+                            scheme: .scheme
+                            oninput: .KeyIn
+                            onmenu: .Menu
+                            onkeydown.ctrl.shift.t: .Shortcut(1)
+                            onkeydown.ctrl.shift.w: .Shortcut(2)
+                            onkeydown.ctrl.shift.e: .Shortcut(3)
+                            onkeydown.ctrl.shift.o: .Shortcut(4)
+                            onkeydown.ctrl.shift.z: .Shortcut(5)
+                            onkeydown.ctrl.shift.tab: .Shortcut(6)
+                            onkeydown.ctrl.shift.left: .Shortcut(7)
+                            onkeydown.ctrl.shift.right: .Shortcut(8)
+                            onkeydown.ctrl.shift.k: .Shortcut(9)
+                        }
+                    }
+                } else {
+                    if .axis == 0 {
+                        col {
+                            terminal {
+                                key: .key1
+                                cols: .g1c
+                                rows: .g1r
+                                lines: .lines1
+                                cursor_row: .cr1
+                                cursor_col: .cc1
+                                scheme: .scheme
+                                oninput: .KeyIn
+                                onmenu: .Menu
+                                onkeydown.ctrl.shift.t: .Shortcut(1)
+                                onkeydown.ctrl.shift.w: .Shortcut(2)
+                                onkeydown.ctrl.shift.e: .Shortcut(3)
+                                onkeydown.ctrl.shift.o: .Shortcut(4)
+                                onkeydown.ctrl.shift.z: .Shortcut(5)
+                                onkeydown.ctrl.shift.tab: .Shortcut(6)
+                                onkeydown.ctrl.shift.left: .Shortcut(7)
+                                onkeydown.ctrl.shift.right: .Shortcut(8)
+                                onkeydown.ctrl.shift.k: .Shortcut(9)
+                            }
+                            terminal {
+                                key: .key2
+                                cols: .g2c
+                                rows: .g2r
+                                lines: .lines2
+                                cursor_row: .cr2
+                                cursor_col: .cc2
+                                scheme: .scheme
+                                oninput: .KeyIn
+                                onmenu: .Menu
+                                onkeydown.ctrl.shift.t: .Shortcut(1)
+                                onkeydown.ctrl.shift.w: .Shortcut(2)
+                                onkeydown.ctrl.shift.e: .Shortcut(3)
+                                onkeydown.ctrl.shift.o: .Shortcut(4)
+                                onkeydown.ctrl.shift.z: .Shortcut(5)
+                                onkeydown.ctrl.shift.tab: .Shortcut(6)
+                                onkeydown.ctrl.shift.left: .Shortcut(7)
+                                onkeydown.ctrl.shift.right: .Shortcut(8)
+                                onkeydown.ctrl.shift.k: .Shortcut(9)
+                            }
+                        }
+                    } else {
+                        terminal {
+                            key: .key1
+                            cols: .g1c
+                            rows: .g1r
+                            lines: .lines1
+                            cursor_row: .cr1
+                            cursor_col: .cc1
+                            scheme: .scheme
+                            oninput: .KeyIn
+                            onmenu: .Menu
+                            onkeydown.ctrl.shift.t: .Shortcut(1)
+                            onkeydown.ctrl.shift.w: .Shortcut(2)
+                            onkeydown.ctrl.shift.e: .Shortcut(3)
+                            onkeydown.ctrl.shift.o: .Shortcut(4)
+                            onkeydown.ctrl.shift.z: .Shortcut(5)
+                            onkeydown.ctrl.shift.tab: .Shortcut(6)
+                            onkeydown.ctrl.shift.left: .Shortcut(7)
+                            onkeydown.ctrl.shift.right: .Shortcut(8)
+                            onkeydown.ctrl.shift.k: .Shortcut(9)
+                        }
+                    }
+                }
             }
         }
     }

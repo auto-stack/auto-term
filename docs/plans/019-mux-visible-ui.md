@@ -364,6 +364,42 @@ layout 策略(Tall/Grid/Stack,Phase 6 另半边)、Workspace 持久化
     (vue/HTTP 断言面)。前端 tick 走标量族,零字符串解析依赖。
   - next:T-01(back 泵可见性化+关闭语义+api 面)。
 
+- 2026-09-15 stage:work · PLAN-019 · rev1 · **T-01..T-04 执行记录**
+  (outcome:executing 进行中):
+  - **T-01 已交付**:back 泵三档(db.at)+ 关闭语义(关末 Pane=关
+    Tab;末 Tab 拒绝维持)+ 分屏 V1 深度上限 + D2 api 面 19 路;
+    curl 剧本 12 组断言全绿(evidence/019/t01-model-assertions.log);
+    auto-term 提交于 T-00+T-01 同笔。
+  - **T-03 已交付(auto-lang 028c53b5f + 752c9fc49)**:shortcuts
+    prop 五面 + row×for 摊平 + terminal 动态 key(.field 绑定)+
+    merged_db_delegate 参数面 i32/i64 同型校正(014 返回面镜像);
+    terminal 门 36/36 绿(4 件新单测在列)。
+  - **T-02/T-04 已落地(app.at 全量重写)**:Tab 条(for 摊平按钮,
+    点击激活/右键关闭/"+"新建/◐scheme)+ 布局槽位 if 枚举(zoom
+    全屏/横 row/纵 col/单叶)+ WT 风格快捷键表 9 键(terminal
+    onkeydown.* → .Shortcut(n) 分派 mux_*)。rust 形态全链编译绿。
+  - **实机取证(进行中,发现 1 开放缺陷)**:GUI 剧本 12 帧入
+    evidence/019(rust-gui-*.png,t02_seq.ps1 单进程驱动)+ MCP
+    state 探针。已实证:Tab 条初始渲染、直键入(pump keys trace)、
+    Ctrl+Shift+E 分屏模型态(axis=1/slot2=2)、泵三档、光标/几何
+    同步。**开放缺陷 V-1:rust 轨视图结构不随模型重建**——split 后
+    state axis=1 但屏面仍单 Pane(018 前 rust 轨从未行使过结构性
+    view 变更;疑 run_app_devtools 重建路径/iced diff 对 into_iced
+    自定义 widget 树的结构变更失效;Tab 条增删按钮同受累)。归
+    auto-lang 侧修复,按 87eba67ab 裁定走 lang-019 worktree 流程。
+  - **测试门观察**:terminal_pixel_preedit 全 gate 下偶发红(单测
+    过;015 F-2 同族环境漂移,非本计划代码面)——归 016 门跟踪,
+    复审时以单测/重跑为准。
+  - **协同事件(634 会话反馈,已处置)**:019 的 auto-lang D4 曾以
+    未提交 WIP 形态在 master 工作树(014-018 "master 直落" 惯例),
+    634 会话按 87eba67ab 裁定做 stash 保真处置并反馈。处置:①D4
+    已提交(028c53b5f),632 merge 已在其上构建,回撤重写会扰第
+    三方落地——维持;②剩余 WIP(rust_ui.rs 参数面校正)已补提交
+    (752c9fc49,提交语注明流程偏差与裁定张力);③master 工作区
+    余留 renderer.rs eprintln/vue.rs/633 文档均他方遗留,不处置;
+    ④本计划后续 auto-lang 改动(V-1 修复)改走 lang-019 worktree。
+  - next:V-1 修复(auto-lang worktree)→ T-05/T-06 收口。
+
 ## 10. 待澄清事项
 
 1. **快捷键风格**:V1 默认 Windows Terminal 风格组合键(§5 D5 表;

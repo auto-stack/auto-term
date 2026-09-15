@@ -975,6 +975,11 @@ pub fn mux_focus_key() str {
     return mux_focus_key_inner()
 }
 
+/// 焦点 Pane id(0 = 无;.Zoom 快捷键/按钮的 zoom 目标)。
+pub fn mux_focus_id() int {
+    return mux_focus_pane_id()
+}
+
 // ── PLAN-019 D2:可见多终端观测/消费面(db 侧实现;api.at 同名契约)
 // 标量 getter 族 = 前端 tick 消费面(018 §10.2 平行 List 先例,零
 // rec/Map、零字符串解析);记录面(mux_tabs/mux_layout)= vue/HTTP
@@ -1137,6 +1142,20 @@ pub fn mux_slot_pane_id(slot int) int {
         return leftmost_pane(node_second.get(ri))
     }
     return 0
+}
+
+/// 布局槽位 → pane 模型 key(T-B 视图 terminal 槽的动态 key 绑定面;
+/// 空槽返回 "")。
+pub fn mux_slot_pane_key(slot int) str {
+    var pid int = mux_slot_pane_id(slot)
+    if pid == 0 {
+        return ""
+    }
+    var pi int = pane_index(pid)
+    if pi < 0 {
+        return ""
+    }
+    return pane_keys.get(pi)
 }
 
 /// 当前 Tab 是否 zoom 中(1/0)。

@@ -257,6 +257,18 @@ pub fn mux_slot_pane_id(slot int) int {
     return db.mux_slot_pane_id(slot)
 }
 
+/// 布局槽位 → pane 模型 key(视图 terminal 槽动态 key 绑定面)。
+#[api(method = "GET", path = "/api/mux/slot-pane-key")]
+pub fn mux_slot_pane_key(slot int) str {
+    return db.mux_slot_pane_key(slot)
+}
+
+/// 焦点 Pane id(0 = 无;zoom 目标)。
+#[api(method = "GET", path = "/api/mux/focus-id")]
+pub fn mux_focus_id() int {
+    return db.mux_focus_id()
+}
+
 /// 当前 Tab 是否 zoom 中(1/0)。
 #[api(method = "GET", path = "/api/mux/zoom-active")]
 pub fn mux_zoom_active() int {
