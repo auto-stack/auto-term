@@ -20,7 +20,7 @@
 | 9 | spike 无统一文档 | 同 | **已清偿**:crates/* 正式结构 + 001 设计文档 | — |
 | 10 | 颜色表硬编码 | 16 色/xterm256 内置 | **已清偿**:palette.rs 全 NamedColor 映射(Dim×8/Bright/Dim 前景,TDD) | 主题系统可选;选中色已清偿(005 `--selection-color`) |
 | 11 | IME over-the-spot 运行时覆盖层不落屏(新) | — | 004 实测:iced_winit main-events 相相位丢弃 `State::Updated{input_method}`(381 次请求埋点实证),redraw 相相位应用链在本机不出画面;已按裁定降级自绘(可用) | 升级 iced 版本时重试 `Enabled{preedit: Some}` 路线,成则删自绘 |
-| 12 | **Ctrl+C 无法中断运行中命令(通路层,影响所有 shell)**(007 F2) | — | **已清偿(008,2026-09-06)**:辅助进程 `autoterm-ctrlc.exe`(手写 kernel32 FFI,零新依赖)AttachConsole 进 ConPTY 控制台广播控制事件;**实测(26200.9168)CTRL_C 广播被 ConPTY 客户端吞掉、CTRL_BREAK 可达** → `interrupt()`=Break→C 双发 + helper exit=0xC000013A 同判成功(handler 派发竞态:被事件杀死=事件已广播);UI 裸 Ctrl+C 双投递(事件+0x03),`--ctrl-c-mode auto\|byte\|event\|both`(默认 auto,ash 豁免仅字节);门禁 `tests/ctrl_event.rs`(cmd/timeout 5s 中断、pwsh 回提示符、helper 缺失降级),UI 铁证 cmd 死循环 both=停/byte=继续;机制全记录 `docs/designs/003-ash-compatibility.md` §4.1 | **残留缺口(26200 类 build)**:ping 类对 Break 特殊处理(打统计继续)仍不可中断,`#[ignore]` 复现器留档,健康 build 转红即 C 通道到位;分发约束:autoterm-ctrlc.exe 须与主程序同目录(缺失自动降级) |
+| 12 | **Ctrl+C 无法中断运行中命令(通路层,影响所有 shell)**(007 F2) | — | **已清偿(008,2026-09-06)**:辅助进程 `autoterm-ctrlc.exe`(手写 kernel32 FFI,零新依赖)AttachConsole 进 ConPTY 控制台广播控制事件;**实测(26200.9168)CTRL_C 广播被 ConPTY 客户端吞掉、CTRL_BREAK 可达** → `interrupt()`=Break→C 双发 + helper exit=0xC000013A 同判成功(handler 派发竞态:被事件杀死=事件已广播);UI 裸 Ctrl+C 双投递(事件+0x03),`--ctrl-c-mode auto\|byte\|event\|both`(默认 auto,ash 豁免仅字节);门禁 `tests/ctrl_event.rs`(cmd/timeout 5s 中断、pwsh 回提示符、helper 缺失降级),UI 铁证 cmd 死循环 both=停/byte=继续;机制全记录 `docs/designs/003-ash-compatibility.md` §4.1 | **残留缺口(26200 类 build)**:ping 类对 Break 特殊处理(打统计继续)仍不可中断,`#[ignore]` 复现器留档,健康 build 转红即 C 通道到位;分发约束:autoterm-ctrlc.exe 须与主程序同目录(缺失自动降级)。**前端入口附记(PLAN-015,2026-09-15)**:014 直键入收口删按钮后 `term_interrupt()` 失去调用者,本计划以右键菜单第 4 项 "Interrupt"(载荷 3)恢复显式入口——`.Menu` → `term_menu_take()`=3 → `term_interrupt()`(evidence/015 实机:timeout /nobreak 菜单打断 ≤5s 回提示符);开发布局(app exe 住 auto-lang target)须设 `AUTOTERM_CTRLC_BIN` 指 helper(dist 同目录免设,同上分发约束) |
 | 13 | ash 内建命令不可被 Ctrl+C 中断(ash 侧,跨仓协调) | — | 007 F1:内建全程 raw mode、ash 阻塞在 `std::thread::sleep`(auto-shell `cmd/commands/sleep.rs:35`)不读 stdin,0x03 排队到内建结束;Windows Terminal 下同样如此,与终端无关;外部子进程路径正常(ash `frontend/subprocess.rs:43` 临时退 raw mode)。归属 auto-shell 仓,本仓只记证不修复。**008 三态矩阵补证(003 §4.1)**:idle 态事件整体终止 ash(无 ctrl handler)→ auto 模式暂豁免 ash 为仅字节;builtin 态真事件也惰性(ash 存活至内建自然结束);external 态子进程中断正常 | auto-shell 侧:装 ctrl handler(idle 存活)+内建执行期处理事件即可撤 auto 豁免并打通内建中断;协调请附 003 §4.1 矩阵数据 |
 | 14 | **at-app 三形态后续(PLAN-013 开账)**:①定时器(sched.*)仅 VM 渲染靶支持,rust/vue 形态 tick 走按钮,实时流式刷新待生成器定时器故事;②a2r 对 `Time.sleep_ms` 路径限定跨 fn 泄漏(E0433 实证,db.at 有界忙等规避),转译器缺陷归 auto-lang 独立账;③at-gen 与 at/autoterm.at 冻结为 oracle,at-app 存在 TermApp 状态机临时副本,at-gen 退役时收敛;④vue 视口只读最小实现,交互面留白见 009 #4 | — | 全链实证(005 §4) | 复用/另立计划 |
 | 15 | **退化几何 resize 触发引擎重排爆炸(014,2026-09-13 三案)**:窗口最小化 → 014 几何随动把退化可用空间换算成 1×1 灌给 `Term::resize` → alacritty `Grid::shrink_columns` 把满滚动历史(ash+ping 刷出 ~10k 行×136 列)折叠重排成 ~1.36M 行、逐格 `Vec::insert(0,..)` O(n²) 前插,**GB 级瞬态分配冲死系统**(分配在 autoterm_core.dll 自有堆,宿主 GuardAlloc 盲区;三案 17:09/18:05/19:13,末案 at-suspend 挂起 + cdb 栈坐实 `Tick→apply_resize→Term::resize→shrink_columns→RtlReAllocateHeap`)。**责任划分**:①**触发在我们**——可见性事件误入几何通道(widget layout 对退化空间发请求;引擎封装边界无不变量守卫)——已修双仓:auto-lang `widget.rs` 退化空间不发请求 + 注册表 `MIN_RESIZE_COLS=2`,auto-term `TermSession::resize` 拒绝 cols<2/rows<1 且大幅收缩(列数减半)先 `clear_history()` 拆重排燃料;②**烈度在第三方**(alacritty_terminal 0.26:退化输入下瞬态内存无上界、重排用前插、API 无最小值前置条件文档)——不修依赖,可提上游 issue。**⚠ 嵌入契约(外来实现警示)**:任何宿主/嵌入方调用 `Term::resize`/`autoterm_engine_resize` 必须走 ≥2 列的合法几何;最小化/隐匿/零尺寸是**可见性事件,永不进入几何通道**;引擎侧护栏是兜底,不是许可 | 三案 dump/日志/观察哨曲线在案(%TEMP%/at-leak-191353.dmp、cdb 全栈导出) | 修复已落地(双仓);复现配方(ash+ping 静置→最小化)回归随 014 收口 | 上游 issue 可选;VM 轨同享 widget 修复 |
@@ -238,3 +238,35 @@
   300ms 重试环兜底、非死因。重试即成(3/3);无可确定性复现的代码
   缺陷点,暂不盲改启动路径;处置 = 重试 + 留痕(017 桌面共存先例
   同族)。
+
+## #17 terminal 右键菜单标签在 rust 轨不可见(PLAN-015,2026-09-15)
+
+- **现象**:rust 轨(a2r iced)右键菜单浮层 quad 正常渲染(深底+圆角
+  边框),四个菜单项标签文字不可见;命中区/载荷通道完全正常(点击
+  第 4 项 → payload 3 → 中断链实机全通,见 evidence/015)。
+- **取证(AUTO_IME_TRACE 门控插桩)**:draw 循环 4 次迭代全执行、
+  pos/bounds/颜色(固定亮色 0.87)逐项正确,para.min_bounds 非零
+  (37-94×16);四轮构造实验(with_text / with_spans 内嵌色 /
+  build_row_paragraph 行管线复用 / 固定色)全部排除构造与配色。
+- **精确像素扫描(200% DPI 桌面)**:面板实际渲染于 (215,261)-(370,384)
+  尺寸 156×124,而逻辑 rect=(100,100.5) 80×64——面板本身以 ~2× 尺寸+
+  位移渲染(DPI 变换疑似在 widget draw 路径双重施加);标签随之落在
+  面板外/不可见。rows 文本同帧正常(行坐标系正确)。
+- **归属与既有性**:013 起菜单即存在但 take_menu_item 此前无仓外消费
+  面,rust 轨从未被视觉验证;本计划 D1 新增第 4 项使缺陷首次用户可见。
+  与并发在途 renderer/vm_bridge WIP(auto-lang)区域重叠。
+- **处置**:待 auto-lang widget 像素测试台(iced_test simulator)专项
+  根因(DPI 变换/绘制坐标系);功能面不受影响。VM 轨菜单显示待同配方
+  复验。
+
+## #18 a2r 块尾值返回调用缺分号(PLAN-015,2026-09-15)
+
+- **现象**:handler 内 `if cond { api.fn() }`(块尾为值返回裸调用、
+  无 else)经 a2r 发射为 `if cond { fn() }`——块尾语句省 `;` 的发射
+  惯例使 if-无-else 臂类型错位,rustc E0308(expected `()`, found
+  `i32`)。VM 轨直译不受影响,仅 rust 发射面。
+- **现状规避**:app.at .Menu 处理器以 () 型语句收尾(赋值/刷新)绕行
+  (59cc630);已有 .Tick 等块首调用正常带 `;`,唯块尾值调用受影响。
+- **处置**:归 auto-lang a2r 语句发射器修缮(块尾表达式依所在块的
+  表达式/语句位置决定是否补 `;`),独立小项;修后回删 app.at 规避
+  注记。

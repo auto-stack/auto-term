@@ -1,12 +1,12 @@
 ---
 plan_id: PLAN-015
-status: executing
+status: execution_done
 feature_name: terminal 右键菜单 Interrupt 项——恢复引擎中断通路(014 回归修复)
 author: [zcode-session]
 created_at: 2026-09-13T12:05:00Z
 updated_at: 2026-09-15T09:30:00Z
 plan_revision: 1
-current_step: 3
+current_step: 6
 total_steps: 6
 supersedes_spec_components: []
 new_spec_components: []
@@ -137,13 +137,45 @@ Auto(.at 前端/后端)+ auto-lang(terminal 组件/registry/a2r codegen)
   Some 即返,镜像 take_any_resize);单测
   `menu_item_any_takes_across_terminals`;terminal 套件 31/31 绿。
 - T-03 D4+D5 侧车/db/app.at 接线(手工或 auto build 后 codegen 就绪)
-- T-04 T-03 完成后集成验证(008 口径三场景)
-- T-05 文档收尾(SD-01/02)
+- T-04 ✅ 集成验证(008 口径三场景,evidence/015 实机):
+  ①字节路径基线——`timeout /t 30 /nobreak` 倒计时中裸 Ctrl+C → 倒计时
+  继续(t3 截图,007 F2 基线成立);②菜单事件路径——右键浮层(四项)
+  → 点 "Interrupt" → `menu item=3` trace 留痕 + 倒计时 24s 被 `^C`
+  打断、≤5s 回提示符(t4/t5 截图);③AC-02——cmd 内启动 ash(idle)
+  → Ctrl+C → `echo alive2` 存活(t8 截图);④会话存活 `echo alive`
+  (t6);AC-03 日志留痕 = `[term-trace] menu item=3`(AUTO_TERM_TRACE)。
+  **边界外顺手项(用户当场指令)**:IME 聚焦默认中文修复(auto-lang
+  c9cc31ab3→029d80557,TSF 权威 Shift 切换 + 重试制;用户实测确认
+  "不默认中文了"),该修复同时解自动化取证键入被拼音劫持的死结。
+  开发布局发现:app exe 住 auto-lang target 时 helper 三级解析扑空,
+  脚本设 `AUTOTERM_CTRLC_BIN` 解决(dist 同目录免设,已记 SD-01 附记)。
+- T-05 ✅ 文档收尾:DEBTS #12 前端入口附记(SD-01)+ 新增 #17(菜单
+  标签 rust 轨 200% DPI 不可见——四轮实验+像素扫描取证,面板 2× 尺寸
+  偏移渲染,013 起既有,归 auto-lang 像素台专项)+ #18(a2r 块尾值
+  调用缺分号 E0308,app.at 已 () 型收尾规避);app/README 边界节更新
+  (SD-02);本计划 §9 work 记录与 frontmatter 终态。
 
 ## 9. 复审记录
 
 - 2026-09-13 stage:new · outcome:pass(可进入 work;T-01 有前置依赖)
   · next:/auto-plan:work(T-01 前置确认后)。
+
+- 2026-09-15 stage:work · plan_id:PLAN-015 · plan_revision:1 ·
+  outcome:**pass** ·
+  code_commit:auto-lang 0ce22c27d(D3)+ b0e603501(D1/D2)+ c240fb216
+  (D4-VM shim 2987)+ c9cc31ab3/f0dc16732/029d80557(IME 顺手项)+ 
+  8ac159423(菜单 chrome 配色);auto-term 59cc630(D4/D5 接线+T-00) ·
+  task_ids:T-00..T-05 全勾 ·
+  evidence:evidence/015(t1-t8 截图 + trace.log `menu item=3` +
+  t04_menu_interrupt.ps1 配方);门禁:terminal 套件 31/31(nextest)、
+  ui_gen 779 绿、catalog 完整性锁 3/3、双 feature 臂 check 绿、
+  `auto build -r rust` 全链 Finished、集成三场景实机过 ·
+  blockers:无 ·
+  findings(移交复审裁量):F-1 菜单标签 rust 轨 200% DPI 不可见
+  (013 起既有,DEBTS #17,功能链不受影响);F-2 a2r 块尾值调用缺
+  分号(DEBTS #18,已规避);F-3 IME 英文起步顺手项交付(用户需求,
+  边界外,DEBTS 无账/提交在案) ·
+  next:/auto-plan:review。
 
 ## 10. 待澄清事项
 

@@ -32,13 +32,21 @@ auto-os 桌面装载：`apps.manifest` auto-term 条目（repo `../auto-term/app
 `autoterm_core.dll`;`AUTOTERM_ENGINE_DLL` 指向它(VM shims 与
 term.rs 胶水同款解析序:env → exe 同目录 → 祖先 target)。
 
-## 已知边界(014 直键入收口时点)
+## 已知边界(PLAN-015 时点)
 
 - 直键入(像 Windows Terminal):点击终端获得焦点后直接键入;widget 把
   按键翻译成 VT 串(语义对齐 autoterm-ui 冻结 oracle `key_to_bytes`)
   入 TerminalCore 队列,`.KeyIn` 消息触发 `term_pump_input()` 排空队列
   裸写引擎(载荷不经消息,rust 侧车与 VM shim 同语义);IME 提交串整串
-  透传,Ctrl+C/Ctrl+D 等控制码原生可用;
+  透传,Ctrl+C/Ctrl+D 等控制码原生可用;IME 每次聚焦强制英文起步
+  (auto-lang c9cc31ab3→029d80557,TSF 权威切换;用户 Shift 仍可切中文);
+- **右键菜单 Interrupt(PLAN-015)**:菜单第 4 项(载荷 3)→
+  `term_menu_take()` → `term_interrupt()`(Break→C 双投递);显式触发
+  不误伤 idle ash(裸 Ctrl+C 仍纯字节)。已知边界:ping 类在 26200
+  build 不可中断(DEBTS #12 残留);**菜单标签文字在 rust 轨 200% DPI
+  下暂不可见**(命中/载荷正常,DEBTS #17,归 auto-lang 像素台专项);
+  开发布局(app exe 住 auto-lang target)须设 `AUTOTERM_CTRLC_BIN` 指向
+  helper,dist 三件套同目录免设;
 - 定时器:`timer { Tick (every_ms: 50) }` 驱动流式刷新——rust 轨经
   run_app_with_task_devtools 的 tick 订阅(014 补齐 with-task 变体),
   VM 轨经动态 timer 注册表;命令输出不再依赖按钮 tick;
@@ -47,5 +55,6 @@ term.rs 胶水同款解析序:env → exe 同目录 → 祖先 target)。
   窗口最大化/拖拽均跟随;光标格经 `term_cursor_row/col` 每拍回读喂入
   (非零才落位,(0,0) 为未喂入哨兵);
 - vue 形态视口为只读最小实现(`/api/term/pump` 恒 0——键入队列在窗口
-  进程;DEBTS 009 #4 的 xterm.js 类交互留白维持);
+  进程;`/api/term/menu-take` 恒 -1——菜单在窗口进程;DEBTS 009 #4 的
+  xterm.js 类交互留白维持);
 - at/autoterm.at 与 at-gen 冻结为对拍 oracle,不随本工程改动。
