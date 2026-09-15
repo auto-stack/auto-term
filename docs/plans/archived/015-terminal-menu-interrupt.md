@@ -1,6 +1,7 @@
 ---
 plan_id: PLAN-015
-status: reviewed
+status: archived
+completion_kind: delivered
 feature_name: terminal 右键菜单 Interrupt 项——恢复引擎中断通路(014 回归修复)
 author: [zcode-session]
 created_at: 2026-09-13T12:05:00Z
@@ -260,6 +261,25 @@ Auto(.at 前端/后端)+ auto-lang(terminal 组件/registry/a2r codegen)
   auto-lang 11a2b9bb6/87eba67ab、auto-term 0112052 ·
   复审限制声明:同会话复审,以独立重跑+工件重建定案 ·
   next:merge(merge 门:F-2 环境归因后全量复跑;F-4 spec-sync)。
+
+- 2026-09-15 stage:merge · PLAN-015:r1 收据 · outcome:pass ·
+  **prepared**:reviewed 基线 cad15f1(0112052+review 记录),依赖
+  auto-lang 11a2b9bb6∈87eba67ab 祖先链;canonical diff=terminal-mux-
+  model.md face 记录补 shim 2987(F-4)+ ledger P015-1..6 投影;
+  **landed**:delivery_commit 6e201aa(main 检出交付惯例 014-018
+  同款;实现提交 0ce22c27d/b0e603501/c240fb216/59cc630/3ae065a/
+  0112052 全在祖先链;auto-term workspace 28 套全绿复跑) ·
+  **ledger_refreshed**:specs.json P015-1..6 六节(reports/goals/
+  architecture/designs/tests/reviews),round-trip 保真写入+回读
+  校验过,文件指向 archived 路径 ·
+  **archived**:docs/plans/archived/015-terminal-menu-interrupt.md,
+  status archived + completion_kind delivered ·
+  **cleaned**:无 worktree/分支(主检出交付,git worktree list 仅
+  main),无需清理 ·
+  F-2 处置记录:像素金样 2 红=环境漂移(bisect 定案非代码),全量
+  复跑 workspace 全绿+像素维持 2 环境红;具体触发源(字体/远程桌面
+  候选)未定位,归 auto-lang 016 门持续跟踪,不阻交付 ·
+  PLAN-015 生命周期闭环。
 
 ## 10. 待澄清事项
 
