@@ -1,6 +1,6 @@
 ---
 plan_id: PLAN-019
-status: reviewed
+status: archived
 feature_name: 可见多终端 UI——Tab 条 + 分屏渲染 + 快捷键(006 蓝图 ①)
 author: [zcode-session]
 created_at: 2026-09-15T00:00:00Z
@@ -11,6 +11,7 @@ total_steps: 9
 supersedes_spec_components: []
 new_spec_components: []
 touched_goals: []
+completion_kind: delivered
 ---
 
 # PLAN-019 · 可见多终端 UI——Tab 条 + 分屏渲染 + 快捷键(006 蓝图 ①)
@@ -625,7 +626,9 @@ layout 策略(Tall/Grid/Stack,Phase 6 另半边)、Workspace 持久化
   - **ledger_refreshed**:.autoos/specs.json P019-1..6 六节入账
     (architecture file → docs/specs/terminal-mux-model.md,其余 →
     archived 路径;round-trip 校验+回读 OK)。
-  - archived / cleaned:待 2/3、3/3。
+  - **archived**(2/3):git mv docs/plans/archived/019-mux-visible-ui.md
+    + status archived + completion_kind delivered(0c6533a 复审 pass
+    之后的交付终态;前置检查点 1/3 2ca034f)。
 
 ## 10. 待澄清事项
 
