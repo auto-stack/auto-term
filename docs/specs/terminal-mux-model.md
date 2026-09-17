@@ -153,6 +153,22 @@ split 只继承 program/静态 cwd,**不承诺**动态 cwd 继承。
    V1 Tab 标题 = 序号 + shell 名(静态派生;动态 title 归 ③ OSC)。
 9. **前端 int=i32 / db int=i64 桥接**:merged 垫片返回面降位、参数
    面升位(014 返回面裁定的镜像,auto-man merged_db_delegate)。
+10. **滚动回看面(PLAN-019 冒烟期用户追加)**:滚动语义单源在引擎
+   `display_offset`(TermSession scroll/display_offset/history,
+   016 既有);widget 滚轮增量入 core 队列(正=上翻历史),rust
+   侧车与 vm glue 泵内 Key 侧带排水 → `autoterm_engine_scroll /
+   scroll_offset / history` 三导出回灌与回读,同拍快照即滚动视图;
+   **键入即贴底**(write_input 后 scroll_to_bottom,终端惯例);
+   自绘滚动条(3px 圆角拇指,scrollbar_style 官方形态)为过渡形态
+   ——已知问题清单与虚拟滚动容器演进记 auto-lang roadmap
+   Desktop生态(2026-09-17 用户裁定暂缓)。vue 臂只读视口臂不承诺。
+11. **配色方案面修订(2026-09-17 冒烟期用户授权)**:LIGHT 盘可读性
+   三修——白/亮白族反转深色(base16[7]=base01、[8]=base00、
+   [15]=base02;原 WT Solarized Light 官方盘 [15]=FDF6E3 与 def_bg
+   同色致 cmd 亮白文本整列隐身)、亮色族 vivid 化([10]/[12]/[14])、
+   def_fg=0x073642(base02)/def_bg=0xEEE8D5(base2)。护栏测
+   light_scheme_white_family_readable_on_bg(白族与 bg 亮度差>60);
+   auto-lang widget 回退副本表同值同修(引擎在线单源覆盖)。
 
 ## 控制面雏形(非 Control API)
 

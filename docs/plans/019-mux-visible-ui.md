@@ -613,6 +613,20 @@ layout 策略(Tall/Grid/Stack,Phase 6 另半边)、Workspace 持久化
   evidence:t06-* 七件 + light-selfcheck.ps1 + /tmp/tf_review.log
   摘录(3596/3597)。next:merge。
 
+- 2026-09-17 stage:merge · PLAN-019:r1 · 收据(逐检查点记入,2/3、3/3
+  提交补 archived/cleaned):
+  - **prepared**:复审基线 rev1 / base c7b2df4 / 019 末笔 9966a54 /
+    auto-lang 788a3369b;canonical diff = F3 补记
+    (terminal-mux-model.md V1 增第 10 条滚动回看面、第 11 条配色盘
+    修订);账本投影目标 .autoos/specs.json 六节 P019-1..6。
+  - **landed**:019 实现按主检出直落惯例随工作逐笔落于 main
+    (019 末笔 9966a54 在 main 祖先链;auto-lang 侧经 lang-019
+    worktree FF 落 master,788a3369b 在祖先链)。
+  - **ledger_refreshed**:.autoos/specs.json P019-1..6 六节入账
+    (architecture file → docs/specs/terminal-mux-model.md,其余 →
+    archived 路径;round-trip 校验+回读 OK)。
+  - archived / cleaned:待 2/3、3/3。
+
 ## 10. 待澄清事项
 
 1. **快捷键风格**:V1 默认 Windows Terminal 风格组合键(§5 D5 表;
