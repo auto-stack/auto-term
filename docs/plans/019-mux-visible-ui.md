@@ -558,6 +558,8 @@ layout 策略(Tall/Grid/Stack,Phase 6 另半边)、Workspace 持久化
     vm term_engine.rs)泵内 Key 侧带排水先于损伤重采(同拍快照即
     滚动视图)+display_offset 回写 badge。rust/vm 双形态同享(侧车
     与 vm glue 同载一 dll)。vue 臂只读视口臂不承诺(§0 边界)。
+    后续演进:虚拟滚动容器已记入 auto-lang 蓝图 roadmap Desktop生态
+    (837e3420e),官方落地后终端迁移复用、删除自绘滚动条。
   - next:用户复验浅色新配色 → 014 护栏顺手抽查 → T-08 锚定 →
     复审。
 
