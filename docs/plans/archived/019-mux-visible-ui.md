@@ -629,6 +629,11 @@ layout 策略(Tall/Grid/Stack,Phase 6 另半边)、Workspace 持久化
   - **archived**(2/3):git mv docs/plans/archived/019-mux-visible-ui.md
     + status archived + completion_kind delivered(0c6533a 复审 pass
     之后的交付终态;前置检查点 1/3 2ca034f)。
+  - **cleaned**(3/3):plan-019-dev 已全量并入 master(ancestor 校验)
+    → wt-guard clean → worktree 移除 + 分支删除(was 788a3369b)+
+    空 lang-019 组目录移除;spikes 探针产物按 T-00 惯例不入库
+    (红绿日志已入 evidence/019,金样语料已正式入库
+    test/ui/plan019_vm_own_module_link)。
 
 ## 10. 待澄清事项
 
