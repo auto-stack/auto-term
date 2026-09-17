@@ -422,6 +422,15 @@ db(back)                                front(view 消费)
   auto-lang 57353aa12/15872c439(ba77406eb FF)。next:用户实拖
   验收 → merge(或异常回 work)。
   验收 → merge(或异常回 work)。
+- 2026-09-17 stage:review(决断实验)· **mouse-area press 通道缺陷定论**:
+  双区探针(spikes/020-split-probe:300×300 大块 + 10px 细条,
+  onmousedown 各自计数)用户实点 **2/2 计数为 0**——VM 形态
+  mouse-area press→消息派发整体失效(与命中区尺寸无关;按钮
+  同窗口点击正常,隔离到 mouse_area 组件的消息路径)。影响:
+  AC-04 拖拽的前置 Press 不可用(AC-03 可见性已修复——重构后
+  分隔条全高渲染 ✓ 用户确认"现在显示分隔条了")。路由:归
+  auto-lang mouse_area press→VM dispatch 排查(021 专项范围或
+  独立修复),AC-04 在其修复前维持 partial。
 - 2026-09-17 stage:review(验收尝试补记)· 合成驱动最终结论:重新
   审视发现历史点击失败根因 = DPI 虚拟化坐标错配(桌面 200% 缩放,
   非 DPI 感知进程坐标 = 物理/2;DPI 感知后物理坐标下按钮中心
