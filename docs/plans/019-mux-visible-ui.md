@@ -548,6 +548,16 @@ layout 策略(Tall/Grid/Stack,Phase 6 另半边)、Workspace 持久化
     pal_key XOR 进 digest,任何换表即全行失效重建。terminal 门 32
     绿+像素金样绿;自证截图 t06-vm-light-toggle-fixed2.png(切浅色
     后旧行即深字,无需新输出)。
+  - **终端滚动回看接线(冒烟期用户追加授权)**:用户实测无法翻看
+    历史输出。引擎 TermSession scroll/display_offset/history 016
+    既有,断点 = FFI 无 scroll 出口 + glue 无排水( widget 滚轮仅
+    累 badge 计数)。接线:①引擎两导出 autoterm_engine_scroll(正=
+    上翻历史)/autoterm_engine_scroll_offset(回读)+ write_input
+    键入即贴底(scroll_to_bottom,终端惯例);②widget 滚轮增量入
+    core 队列(正=上翻,iced y>0=上);③双 glue(rust 侧车 term.rs/
+    vm term_engine.rs)泵内 Key 侧带排水先于损伤重采(同拍快照即
+    滚动视图)+display_offset 回写 badge。rust/vm 双形态同享(侧车
+    与 vm glue 同载一 dll)。vue 臂只读视口臂不承诺(§0 边界)。
   - next:用户复验浅色新配色 → 014 护栏顺手抽查 → T-08 锚定 →
     复审。
 
