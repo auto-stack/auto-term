@@ -95,19 +95,49 @@ split 只继承 program/静态 cwd,**不承诺**动态 cwd 继承。
 | 快照 | `engine_rows_for(handle,key)` | `engine_rows` |
 | 光标/视口/积压 | per-handle 存储(SessionState / CURSORS/VIEWPORTS 表) | 同名函数(签名不变,语义按柄) |
 
-## V1 语义
+## V1 语义(PLAN-019 修订)
 
-1. **关末 Pane / 末 Tab = 拒绝 no-op**(产品语义留 UI 计划)。
-2. **焦点切换新焦点 Pane 几何随动**(其渲染/泵由焦点门面驱动);
-   隐藏期间保持旧几何。
-3. **隐藏 Pane 每拍 drain-only**(收割引擎防 014 积压,不投喂
-   widget;`get_lines` tick 内联)。
+1. **关末 Pane = 关其 Tab**(018 §10.4 裁定承接;`mux_close_pane`
+   内部转 `mux_close_tab` 路径,焦点回落兄弟 Tab);**关末 Tab =
+   拒绝 no-op**(app 常驻;产品级"关末 Tab 退出"留后续裁定)。
+2. **焦点切换新焦点 Pane 几何随动**;**打字随动焦点**:逐可见 Pane
+   泵各自队列,有键入者记为其 Tab 焦点(V1 近似:纯点击不打字不
+   迁移焦点)。
+3. **泵三档可见性**(018"焦点全量+隐藏 drain-only"升级):焦点 Pane
+   = 全量泵 + 键入泵目标;可见非焦点 Pane = 全量投喂(各自 pane
+   key,分屏后画面不冻结);不可见 Pane(zoom 掩盖/他 Tab)=
+   drain-only(014 积压护栏维持)。
 4. **恒单 Workspace(id=1)**,模型不设上限。
-5. **V1 视口槽契约**:GUI 单一可见 terminal 组件 key = "auto-term"
-   (静态);焦点 Pane 的快照旁路/键入泵/几何请求经该 key 定向。
-   pane.key = "pane-<id>" 为模型身份(渲染 UI 计划启用多 widget)。
-   UI 降格 `render(state)/dispatch(action)` 在 V1 体现为:GUI 仍只
-   渲染焦点 Pane 全屏——视觉零变化,模型先行。
+5. **可见多终端视图契约(PLAN-019 D3,T-B 形态)**:GUI 消费槽位
+   投影——`mux_slot_pane_id(slot)` / `mux_slot_pane_key(slot)`:
+   zoom → slot1=zoomed;无分屏 → slot1=唯一叶;树深 1 分屏 →
+   slot1/2 = first/second 叶。**axis 语义:0=纵向堆叠(col)、
+   1=横向并排(row)**。视图 = Tab 条(常显,for 摊平按钮;点击
+   激活/右键关闭/"+ "新建/scheme 切换)+ 布局槽位 if 枚举;每
+   terminal 实例按 pane key 动态绑定(`key: .field`)。**V1 分屏
+   UI 上限 = 树深 1**(已分屏 Tab 再 split 拒绝 0,防不可见
+   Pane;更深嵌套归 View::Split 组件后续计划)。
+6. **Terminal shortcuts 契约(PLAN-019 D4)**:widget 键盘路径前置
+   查捷径表(规范化键名 "ctrl.shift.e" 族;字符键 shift 恒前缀 +
+   小写化),命中发消息不落 VT 队列不触发 on_input(双通道都断),
+   未命中原样 `key_event_to_vt`(终端内程序不受扰;裸控制码零变)。
+   .at 面 = `onkeydown.<键名>: .Msg` 事件;rust/vm 轨承诺。WT 风格
+   V1 表:C-S-T 新Tab / C-S-W 关焦点Pane / C-S-E 横分 / C-S-O 纵分
+   / C-S-Z zoom / C-S-Tab、C-S-← 前 Tab / C-S-→ 后 Tab / C-S-K
+   scheme 循环(全组只命中带 Shift 组合,裸控制码路径零扰)。
+7. **用户动作队列**:UI 线程处理器只 `mux_enqueue(code,arg)` 入队
+   (纯 push),`get_lines` 每拍 `mux_drain_actions()` 在 tick 线程
+   排水执行——引擎操作保持单线程序列化(所有权铁律执行面;UI 线程
+   直调引擎与 tick 并发会产生 db 锁 × 引擎锁 ABBA 死锁,实测
+   AppHangB1)。API 面:`POST /api/mux/enqueue`。
+8. **D2 观测/消费面**:`GET /api/mux/tabs`(记录 "id|active|title")
+   + 标量 getter 族(tab-count/id-at/is-active-at/title-at/
+   pane-lines/pane-cols/pane-rows/pane-cursor-row/pane-cursor-col/
+   visible-pane-count/split-axis/slot-pane-id/slot-pane-key/
+   zoom-active/focus-id/enqueue)+ `GET /api/mux/layout`(JSON DTO)。
+   V1 Tab 标题 = 序号 + shell 名(静态派生;动态 title 归 ③ OSC)。
+9. **前端 int=i32 / db int=i64 桥接**:merged 垫片返回面降位、参数
+   面升位(014 返回面裁定的镜像,auto-man merged_db_delegate)。
 
 ## 控制面雏形(非 Control API)
 
@@ -132,8 +162,11 @@ API 铺地基;**无** socket/CLI/权限分级,不是 Control API。
 
 - 引擎:`cargo test -p autoterm-engine-ffi-tests --test
   engine_ffi_integration`(cwd/argv/双柄隔离/palette 四组)。
-- 模型:`docs/plans/evidence/018/curl-mux-script.log`(axum back
-  curl 剧本全断言)。
+- 模型:`docs/plans/evidence/018/curl-mux-script.log`(018 剧本)+
+  `docs/plans/evidence/019/t01-model-assertions.log`(019:泵三档/
+  关末 Pane=关 Tab/深度上限/槽位投影,axum back curl 全断言)。
 - 泵面:`cargo test -p auto-lang --features ui-iced,iced-layout-tests
-  --lib terminal`(per-key 定向 + palette 解析 + 016 像素金样)。
+  --lib terminal`(per-key 定向 + palette 解析 + 016 像素金样;
+  019 增 shortcuts 命名/命中语义/发射金样/row×for 摊平)。
 - VM shim:SPAWNEX_OK 冒烟(auto-lang test/term_mux_pumps)。
+- 全量:`cargo test --workspace`(auto-term,019 起入门)。
