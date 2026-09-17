@@ -539,6 +539,15 @@ layout 策略(Tall/Grid/Stack,Phase 6 另半边)、Workspace 持久化
     autoterm-core 6 绿。备注:019 非目标"autoterm-core 零改动"指
     机制面(per-handle/scheme 面);本次为 016 配色数据面修订,用户
     授权,金样无 light 钉值故零重生成。
+  - **浅色切换旧行重着色修复(第二段,auto-lang eaf237f11)**:用户
+    复验发现切方案后**旧输出文字不重着色**(残留深底浅字不可读),
+    新输出才正确。插桩实证(cmd 默认文本 kind=0 语义 Default,引擎
+    语义穿传无恙)→ 病灶 = widget 段落缓存键:行 digest 只含语义值,
+    切方案语义不变 → 复用旧 palette 烤入的 Paragraph(构建时
+    to_iced_color 已定色)。修法 = draw 每帧把生效 [18] 表 hash 为
+    pal_key XOR 进 digest,任何换表即全行失效重建。terminal 门 32
+    绿+像素金样绿;自证截图 t06-vm-light-toggle-fixed2.png(切浅色
+    后旧行即深字,无需新输出)。
   - next:用户复验浅色新配色 → 014 护栏顺手抽查 → T-08 锚定 →
     复审。
 
