@@ -422,6 +422,24 @@ fn feed_snapshot_inner(handle: i64, target: FeedTarget<'_>) {
             unsafe extern "C" fn(*mut core::ffi::c_void) -> c_int,
         > = lib().get(b"autoterm_engine_feed_ready\0").unwrap();
         feed(h);
+        // PLAN-019 滚轮回灌:widget 滚轮队列 → 引擎 display_offset(排水先于
+        // 损伤重采;仅 Key 侧带,All 广播无 key 不重复排水)。
+        if let FeedTarget::Key(key) = target {
+            if let Some(core) = auto_lang::ui::terminal::terminal_core(key) {
+                let delta = auto_lang::ui::terminal::terminal_take_scroll_delta(core);
+                if delta != 0 {
+                    let scroll: libloading::Symbol<
+                        unsafe extern "C" fn(*mut core::ffi::c_void, c_int),
+                    > = lib().get(b"autoterm_engine_scroll ").unwrap();
+                    scroll(h, delta as c_int);
+                }
+                let soff: libloading::Symbol<
+                    unsafe extern "C" fn(*mut core::ffi::c_void) -> c_int,
+                > = lib().get(b"autoterm_engine_scroll_offset ").unwrap();
+                let off = soff(h);
+                auto_lang::ui::terminal::terminal_set_scroll_offset(core, off.max(0) as usize);
+            }
+        }
         let take: libloading::Symbol<
             unsafe extern "C" fn(*mut core::ffi::c_void, *mut c_int, c_int) -> c_int,
         > = lib().get(b"autoterm_engine_take_dirty_rows\0").unwrap();

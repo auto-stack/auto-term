@@ -160,6 +160,13 @@ impl TermSession {
         self.dirty = true;
     }
 
+    /// 贴底回实时(键入即回底,终端惯例;scroll_display(Bottom))。
+    pub fn scroll_to_bottom(&mut self) {
+        use alacritty_terminal::grid::Scroll;
+        self.term.scroll_display(Scroll::Bottom);
+        self.dirty = true;
+    }
+
     /// 当前回滚偏移(0 = 贴底实时)。
     pub fn display_offset(&self) -> usize {
         self.term.grid().display_offset()

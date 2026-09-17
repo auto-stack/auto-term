@@ -132,6 +132,7 @@ pub extern "C" fn autoterm_engine_spawn_ex(
 }
 
 /// 宿主→子进程字节(键盘输入)。空句柄/空缓冲为 no-op。
+/// 键入即贴底回实时(终端惯例;回滚浏览中打字自动回到底部)。
 #[unsafe(no_mangle)]
 pub extern "C" fn autoterm_engine_write_input(
     h: *mut AutotermEngine,
@@ -145,6 +146,22 @@ pub extern "C" fn autoterm_engine_write_input(
     // SAFETY: 调用方保证 bytes 至少 len 字节可读。
     let slice = unsafe { std::slice::from_raw_parts(bytes, len) };
     engine.inner.write_input(slice);
+    engine.inner.term.scroll_to_bottom();
+}
+
+/// 回滚浏览(PLAN-019 冒烟期用户追加):正=上翻历史,负=下回实时
+/// (alacritty Scroll::Delta 语义,按行计;UI 滚轮经宿主 glue 排水到此)。
+#[unsafe(no_mangle)]
+pub extern "C" fn autoterm_engine_scroll(h: *mut AutotermEngine, delta_lines: i32) {
+    let Some(engine) = ptr_or_null(h) else { return };
+    engine.inner.term.scroll(delta_lines);
+}
+
+/// 当前回滚偏移(0 = 贴底实时;历史区行数;空句柄 0)。
+#[unsafe(no_mangle)]
+pub extern "C" fn autoterm_engine_scroll_offset(h: *mut AutotermEngine) -> i32 {
+    let Some(engine) = ptr_or_null(h) else { return 0 };
+    engine.inner.term.display_offset() as i32
 }
 
 /// 收割 reader 线程积压并喂仿真核心。返回 1 = 喂到了字节(可能变脏),
