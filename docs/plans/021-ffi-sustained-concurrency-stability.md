@@ -232,8 +232,10 @@ press),取证时一次仪器化全覆盖,死法差异本身是断点定位证据
 - **T-04 [D4] 回归+实机**:全量门 + 020 t01 复跑 + vue 浸泡;
   DEBTS/spec 文档。前置 T-03。关联 AC-04/05。
 - **T-05 [D5] 管线取证+根修**:press/drag/wheel 一次仪器化;双区
-  探针复跑;断点修复(020 移交项落位)。前置:无(与线 A 并行)。
-  关联 AC-06。
+  探针复跑;断点修复(020 移交项落位)。排查入口配方(020 f5dab16
+  收据移交,rev2 复审补记):renderer.rs 21162 VM 动态臂入口 +
+  aura_view_builder convert_mouse_area 入口,AUTO_MA_DBG=1 门控
+  eprintln 插桩。前置:无(与线 A 并行)。关联 AC-06。
 - **T-06 [D6] 官方 scroll 组件**:各 panel 统一接入+按需修组件;
   对照实验结论在案。前置 T-05。关联 AC-07。
 - **T-07 [D7] 命中区+split 复验**:归属规则定稿实现(SD-02);三
@@ -251,6 +253,48 @@ press),取证时一次仪器化全覆盖,死法差异本身是断点定位证据
 - 2026-09-17 rev2:范围扩充二(用户指令,见 §0)——线 B 入案
   (D5-D7/T-05..07/AC-06..08/SD-02,收口改 T-08);rev1 复审结论
   仅覆盖线 A,扩充部分待复审后再进 work。
+- 2026-09-17 stage:review(rev2 设计稿复审)· PLAN-021 · rev2 ·
+  outcome:**pass**(带 F1-F3 补记/在案,均 P3 不阻 work)·
+  reviewed_commit c3b8d50 · base_commit c422796(rev1 内容源:
+  914fdb5 立项 + 2a6e148 020 移交扩充)· dependency_revisions:
+  auto-lang master 4579d59e3 · spec_inputs:
+  docs/specs/terminal-mux-model.md(020 a55b454 落库版)、
+  docs/specs/engine-ffi-color-encoding.md(SD-01 语义目标,已核实
+  存在)、docs/specs/terminal-widget-chrome.md(无滚动条命中面
+  记载)· 声明:实现会话内设计稿复审(线 B 无实现可验,验计划面
+  +代码事实),结论由读码与工件独立重建。
+  - **复审面与结果**:①代码事实核真——widget.rs:513-590(press 起
+    ScrollbarDrag→Moved→Released)/:606(WheelScrolled)/:1029
+    (SCROLLBAR_HIT_W=14.0)✓;AutoUI 官方 scroll 组件在库
+    (examples/ui_scroll.rs,Component/View 抽象 iced/gpui 双后端)
+    ✓;020 探针事实(press 2/2 计数 0/渲染臂正常/Button 对照正常)
+    与归档计划一致 ✓。②AC→T→D 映射完备无环(T-05→06→07;
+    T-08=T-04+T-07;AC-06..08 验证手段:探针复跑/实机操作/三联合
+    场景,均可在案复现)✓。③授权链:§4.1 两条用户记录 ✓。
+  - **佐证**:auto-lang 4579d59e3 用户已裁定虚拟滚动容器过渡形态
+    问题清单(拇指比例/拖拽位置漂移/拖拽表现/hover 加宽/pointer
+    联动/theme)暂缓、待官方组件统一解决——与线 B T-06 方向互为
+    印证,官方组件接入即收敛该批已知问题。
+  - **findings**:
+    - **F1(P3,记账一致性,已补记)**:020 f5dab16 cleaned 收据
+      声称"重加配方已录 PLAN-021 排查清单",但 021 在案文本原本
+      无此配方——本轮补记进 T-05(renderer.rs 21162 VM 动态臂 +
+      aura_view_builder convert_mouse_area 入口,AUTO_MA_DBG=1
+      门控)。(020 F3 同款处置。)
+    - **F2(P3,frontmatter,书面说明在案)**:supersedes/new_spec_
+      components 空而 SD-01/SD-02 在案——两 delta 精确 spec 路径
+      分别待 T-02/T-07 定稿回填,届时同步补记。
+    - **F3(P3,spec 漂移→SD-02 定稿输入)**:terminal-mux-model.md
+      §5 分隔条契约记 mouse-area **6px** 厚,020 rev2 实现
+      (2a6e148)已加粗 **8px**——spec 与代码漂移;T-07 定稿命中区
+      归属规则时以代码为准对齐,并定 SD-02 主落点
+      (terminal-mux-model.md 或 terminal-widget-chrome.md 择一,
+      另侧引用);terminal-widget-chrome.md 现无滚动条命中面记载。
+  - **evidence**:本计划读码记录(§0/§4.3)、020 归档计划与收据
+    (docs/plans/archived/020-nested-split-divider-drag.md)、
+    spikes/020-split-probe(探针)、auto-lang examples/ui_scroll.rs
+    · **next**:work(待用户指令;T-05 无前置可与线 A 并行即开,
+    status 维持 drafting 至 work 指令)。
 
 ## 10. 待澄清事项
 
