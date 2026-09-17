@@ -1,11 +1,12 @@
 ---
 plan_id: PLAN-020
-status: reviewed
+status: archived
 feature_name: 任意深度分屏 + 可视分隔条拖拽 + 比例磁吸(嵌套布局与分隔条交互)
 author: [zcode-session]
 created_at: 2026-09-17T00:00:00Z
 updated_at: 2026-09-17T12:00:00Z
 plan_revision: 2
+completion_kind: delivered
 current_step: 8
 total_steps: 8
 supersedes_spec_components: []
@@ -485,6 +486,20 @@ db(back)                                front(view 消费)
     探针 spikes/020-split-probe)。
   - next:merge(用户指令即执行;AC-04 实拖验证与 PLAN-021 修复
     后补证,不阻塞合并——缺陷与验收余项均已显式携带)。
+- 2026-09-17 stage:merge · PLAN-020:r2 收据 · outcome:pass ·
+  **prepared**:reviewed 基线 2a6e148(final review 94108dc),canonical
+  diff=terminal-mux-model.md V1 语义 §5 矩形投影/分隔条/磁吸/窗口面
+  契约(已在 a55b454 落库),ledger 投影目标=.autoos/specs.json
+  P020-1..6 · **landed**:交付提交已在 main 祖先链(0d2a304/9d9082a/
+  6a7f4e9/a55b454/2a6e148;主检出直落惯例 014-019 同款;全量门
+  77/0 复跑)· **ledger_refreshed**:specs.json P020-1..6 六节入账,
+  round-trip 校验+回读 OK,file 指向 archived 路径 ·
+  **archived**:docs/plans/archived/020-nested-split-divider-drag.md,
+  status archived + completion_kind delivered · **cleaned**:无
+  auto-term worktree(主检出直落);auto-lang lang-020 worktree
+  (plan-020-dev 已 FF master)按 87eba67ab 归 auto-lang 侧收口 ·
+  携带项:AC-04 实拖依赖 PLAN-021(mouse_area press 缺陷修复)·
+  PLAN-020 生命周期闭环。
 
 ## 10. 待澄清事项
 
