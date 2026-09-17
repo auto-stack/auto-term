@@ -1,0 +1,33 @@
+// PLAN-021 决断实验:mouse-area 点击通道对照(Button 控制组)。
+widget App {
+    msg { Init, Tick, HitBig, HitStrip, HitBtn }
+    model {
+        var hitsBig int = 0
+        var hitsStrip int = 0
+        var hitsBtn int = 0
+    }
+    timer { Tick (every_ms: 200) }
+    on {
+        .Init -> {}
+        .Tick -> {}
+        .HitBig -> { .hitsBig = .hitsBig + 1 }
+        .HitStrip -> { .hitsStrip = .hitsStrip + 1 }
+        .HitBtn -> { .hitsBtn = .hitsBtn + 1 }
+    }
+    view {
+        col {
+            style: "w-full h-screen bg-background"
+            text f"hitsBig=${.hitsBig} hitsStrip=${.hitsStrip} hitsBtn=${.hitsBtn}" {
+                style: "text-lg text-foreground"
+            }
+            row {
+                style: "w-full h-[320px]"
+                mouse-area (style: "w-[300px] h-[300px] bg-[#3366aa]", onmousedown: .HitBig) {}
+                mouse-area (style: "w-[10px] h-[300px] bg-[#8899aa]", onmousedown: .HitStrip) {}
+                button (style: "w-[120px] h-[40px] bg-[#aa3366]", onmousedown: .HitBtn) {
+                    text "BTN" { style: "text-foreground" }
+                }
+            }
+        }
+    }
+}

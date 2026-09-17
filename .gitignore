@@ -13,3 +13,4 @@ app/.auto/
 # PLAN-013 T7/017: app/ 桌面壳→统一入口 生成物（auto build/状态目录）
 app/.am/
 app/build/
+docs/plans/evidence/021/repro-edge-*

@@ -1,0 +1,132 @@
+[CALL_HANDLER] widget=App event_name=Init fn_name=handler_App_Init args=[]
+AutoUI MCP: bind 127.0.0.1:9247 failed: 通常每个套接字地址(协议/网络地址/端口)只允许使用一次。 (os error 10048) (retrying)
+AutoUI MCP: first state sync in view()
+[UI_EVENT] widget="App" event="Tick" input_val=None
+[VM_HANDLER_CALL] widget=App event=Tick args=[]
+[VM_EXEC] fn_name=handler_App_Tick state_obj_id=4000000 args=[]
+[VM_HANDLER_OK] widget=App event=Tick
+[UI_EVENT] widget="App" event="Tick" input_val=None
+[VM_HANDLER_CALL] widget=App event=Tick args=[]
+[VM_EXEC] fn_name=handler_App_Tick state_obj_id=4000000 args=[]
+[VM_HANDLER_OK] widget=App event=Tick
+[UI_EVENT] widget="App" event="Tick" input_val=None
+[VM_HANDLER_CALL] widget=App event=Tick args=[]
+[VM_EXEC] fn_name=handler_App_Tick state_obj_id=4000000 args=[]
+[VM_HANDLER_OK] widget=App event=Tick
+[UI_EVENT] widget="App" event="Tick" input_val=None
+[VM_HANDLER_CALL] widget=App event=Tick args=[]
+[VM_EXEC] fn_name=handler_App_Tick state_obj_id=4000000 args=[]
+[VM_HANDLER_OK] widget=App event=Tick
+AutoUI MCP: port 9247 busy — fell back to 9248 (set AUTOUI_MCP_PORT to pin)
+AutoUI MCP: listening on http://127.0.0.1:9248
+[UI_EVENT] widget="App" event="Tick" input_val=None
+[VM_HANDLER_CALL] widget=App event=Tick args=[]
+[VM_EXEC] fn_name=handler_App_Tick state_obj_id=4000000 args=[]
+[VM_HANDLER_OK] widget=App event=Tick
+[VM_HANDLER_CALL] widget=App event=Tick args=[]
+[VM_EXEC] fn_name=handler_App_Tick state_obj_id=4000000 args=[]
+[VM_HANDLER_OK] widget=App event=Tick
+[UI_EVENT] widget="App" event="Tick" input_val=None
+[VM_HANDLER_CALL] widget=App event=Tick args=[]
+[VM_EXEC] fn_name=handler_App_Tick state_obj_id=4000000 args=[]
+[VM_HANDLER_OK] widget=App event=Tick
+[UI_EVENT] widget="App" event="Tick" input_val=None
+[VM_HANDLER_CALL] widget=App event=Tick args=[]
+[VM_EXEC] fn_name=handler_App_Tick state_obj_id=4000000 args=[]
+[VM_HANDLER_OK] widget=App event=Tick
+[UI_EVENT] widget="App" event="Tick" input_val=None
+[VM_HANDLER_CALL] widget=App event=Tick args=[]
+[VM_EXEC] fn_name=handler_App_Tick state_obj_id=4000000 args=[]
+[VM_HANDLER_OK] widget=App event=Tick
+[UI_EVENT] widget="App" event="Tick" input_val=None
+[VM_HANDLER_CALL] widget=App event=Tick args=[]
+[VM_EXEC] fn_name=handler_App_Tick state_obj_id=4000000 args=[]
+[VM_HANDLER_OK] widget=App event=Tick
+[VM_HANDLER_CALL] widget=App event=Tick args=[]
+[VM_EXEC] fn_name=handler_App_Tick state_obj_id=4000000 args=[]
+[VM_HANDLER_OK] widget=App event=Tick
+[UI_EVENT] widget="App" event="Tick" input_val=None
+[VM_HANDLER_CALL] widget=App event=Tick args=[]
+[VM_EXEC] fn_name=handler_App_Tick state_obj_id=4000000 args=[]
+[VM_HANDLER_OK] widget=App event=Tick
+[UI_EVENT] widget="App" event="Tick" input_val=None
+[VM_HANDLER_CALL] widget=App event=Tick args=[]
+[VM_EXEC] fn_name=handler_App_Tick state_obj_id=4000000 args=[]
+[VM_HANDLER_OK] widget=App event=Tick
+[UI_EVENT] widget="App" event="Tick" input_val=None
+[VM_HANDLER_CALL] widget=App event=Tick args=[]
+[VM_EXEC] fn_name=handler_App_Tick state_obj_id=4000000 args=[]
+[VM_HANDLER_OK] widget=App event=Tick
+[UI_EVENT] widget="App" event="Tick" input_val=None
+[VM_HANDLER_CALL] widget=App event=Tick args=[]
+[VM_EXEC] fn_name=handler_App_Tick state_obj_id=4000000 args=[]
+[VM_HANDLER_OK] widget=App event=Tick
+[UI_EVENT] widget="App" event="Tick" input_val=None
+[VM_HANDLER_CALL] widget=App event=Tick args=[]
+[VM_EXEC] fn_name=handler_App_Tick state_obj_id=4000000 args=[]
+[VM_HANDLER_OK] widget=App event=Tick
+[UI_EVENT] widget="App" event="Tick" input_val=None
+[VM_HANDLER_CALL] widget=App event=Tick args=[]
+[VM_EXEC] fn_name=handler_App_Tick state_obj_id=4000000 args=[]
+[VM_HANDLER_OK] widget=App event=Tick
+[VM_HANDLER_CALL] widget=App event=Tick args=[]
+[VM_EXEC] fn_name=handler_App_Tick state_obj_id=4000000 args=[]
+[VM_HANDLER_OK] widget=App event=Tick
+[UI_EVENT] widget="App" event="Tick" input_val=None
+[VM_HANDLER_CALL] widget=App event=Tick args=[]
+[VM_EXEC] fn_name=handler_App_Tick state_obj_id=4000000 args=[]
+[VM_HANDLER_OK] widget=App event=Tick
+[UI_EVENT] widget="App" event="Tick" input_val=None
+[VM_HANDLER_CALL] widget=App event=Tick args=[]
+[VM_EXEC] fn_name=handler_App_Tick state_obj_id=4000000 args=[]
+[VM_HANDLER_OK] widget=App event=Tick
+[UI_EVENT] widget="App" event="Tick" input_val=None
+[VM_HANDLER_CALL] widget=App event=Tick args=[]
+[VM_EXEC] fn_name=handler_App_Tick state_obj_id=4000000 args=[]
+[VM_HANDLER_OK] widget=App event=Tick
+[UI_EVENT] widget="App" event="Tick" input_val=None
+[VM_HANDLER_CALL] widget=App event=Tick args=[]
+[VM_EXEC] fn_name=handler_App_Tick state_obj_id=4000000 args=[]
+[VM_HANDLER_OK] widget=App event=Tick
+[VM_HANDLER_CALL] widget=App event=Tick args=[]
+[VM_EXEC] fn_name=handler_App_Tick state_obj_id=4000000 args=[]
+[VM_HANDLER_OK] widget=App event=Tick
+[UI_EVENT] widget="App" event="Tick" input_val=None
+[VM_HANDLER_CALL] widget=App event=Tick args=[]
+[VM_EXEC] fn_name=handler_App_Tick state_obj_id=4000000 args=[]
+[VM_HANDLER_OK] widget=App event=Tick
+[UI_EVENT] widget="App" event="Tick" input_val=None
+[VM_HANDLER_CALL] widget=App event=Tick args=[]
+[VM_EXEC] fn_name=handler_App_Tick state_obj_id=4000000 args=[]
+[VM_HANDLER_OK] widget=App event=Tick
+[UI_EVENT] widget="App" event="Tick" input_val=None
+[VM_HANDLER_CALL] widget=App event=Tick args=[]
+[VM_EXEC] fn_name=handler_App_Tick state_obj_id=4000000 args=[]
+[VM_HANDLER_OK] widget=App event=Tick
+[UI_EVENT] widget="App" event="Tick" input_val=None
+[VM_HANDLER_CALL] widget=App event=Tick args=[]
+[VM_EXEC] fn_name=handler_App_Tick state_obj_id=4000000 args=[]
+[VM_HANDLER_OK] widget=App event=Tick
+[UI_EVENT] widget="App" event="Tick" input_val=None
+[VM_HANDLER_CALL] widget=App event=Tick args=[]
+[VM_EXEC] fn_name=handler_App_Tick state_obj_id=4000000 args=[]
+[VM_HANDLER_OK] widget=App event=Tick
+[VM_HANDLER_CALL] widget=App event=Tick args=[]
+[VM_EXEC] fn_name=handler_App_Tick state_obj_id=4000000 args=[]
+[VM_HANDLER_OK] widget=App event=Tick
+[UI_EVENT] widget="App" event="Tick" input_val=None
+[VM_HANDLER_CALL] widget=App event=Tick args=[]
+[VM_EXEC] fn_name=handler_App_Tick state_obj_id=4000000 args=[]
+[VM_HANDLER_OK] widget=App event=Tick
+[UI_EVENT] widget="App" event="Tick" input_val=None
+[VM_HANDLER_CALL] widget=App event=Tick args=[]
+[VM_EXEC] fn_name=handler_App_Tick state_obj_id=4000000 args=[]
+[VM_HANDLER_OK] widget=App event=Tick
+[UI_EVENT] widget="App" event="Tick" input_val=None
+[VM_HANDLER_CALL] widget=App event=Tick args=[]
+[VM_EXEC] fn_name=handler_App_Tick state_obj_id=4000000 args=[]
+[VM_HANDLER_OK] widget=App event=Tick
+[UI_EVENT] widget="App" event="Tick" input_val=None
+[VM_HANDLER_CALL] widget=App event=Tick args=[]
+[VM_EXEC] fn_name=handler_App_Tick state_obj_id=4000000 args=[]
+[VM_HANDLER_OK] widget=App event=Tick

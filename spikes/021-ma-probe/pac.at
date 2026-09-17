@@ -1,0 +1,13 @@
+// pac.at — PLAN-021 T-05 决断探针:mouse-area press 对照实验。
+// 大区(300×300)+ 细条(10×300)+ Button 对照(同 onmousedown 语义)。
+// 判读:Button 计数 >0 而 mouse-area 计数 =0 → 合成输入可达、管线断在
+// mouse-area 自身;Button 也 =0 → 合成输入未达 winit,需 iced_test 无头验证。
+name: "probe021"
+version: "0.1.0"
+description: "PLAN-021 mouse-area press control probe"
+scene: "ui"
+render: "vm"
+title: "probe021"
+window: "802x482"
+front_port: 17414
+back_port: 17415

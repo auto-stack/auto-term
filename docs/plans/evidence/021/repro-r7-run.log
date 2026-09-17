@@ -1,0 +1,104 @@
+---------------------------
+AutoNexus / Auto CLI
+---------------------------
+Loading AmConfig from Some("C:\\Users\\zhaop\\.auto\\auto-man\\am.at")...
+AmConfig: AmConfig {
+  name: default
+  index: {
+    soutek: git@codeup.aliyun.com:soutek/auto-stack/auto-index.git
+    boe: git@codeup.aliyun.com:soutek/boe/index.git
+    default: git@gitee.com:auto-stack/auto-index.git
+  }
+}
+
+
+Loaded port: windows_ninja
+port NAME: windows_ninja
+14:57:50 [0m[33m[WARN] [0mPac::new: skipping unknown target node 'rust_sidecar'
+all index: {"soutek": "git@codeup.aliyun.com:soutek/auto-stack/auto-index.git", "boe": "git@codeup.aliyun.com:soutek/boe/index.git", "default": "git@gitee.com:auto-stack/auto-index.git"}
+used index: ["default"]
+14:57:50 [0m[34m[INFO] [0mloading index store from C:/Users/zhaop/.auto/auto-man/index/default
+setting port builder: windows_ninja ninja, at build
+14:57:50 [0m[34m[INFO] [0mAutoCache initialized for project: auto-term
+  → split mode: frontend vue ↔ backend rust over HTTP
+  Backend API server port: 17401 (from pac.at)
+  Frontend dev server port: 17400 (from pac.at)
+  VM window size: 802x482 (from pac.at)
+  VM window title: 终端 (from pac.at)
+  UI theme: dark (from pac.at)
+14:57:50 [0m[34m[INFO] [0mRunning project ...
+
+------------ output ------------
+─────────────────────────────────
+Cache: 1 files, 1 artifacts cached
+─────────────────────────────────
+Running Vue dev server (backend: vue)
+Running Vue dev server (backend: vue)
+  app.at (cached)
+No changes detected, using cached files
+14:57:50 [0m[33m[WARN] [0mPac::new: skipping unknown target node 'rust_sidecar'
+14:57:50 [0m[34m[INFO] [0mDownloading deps
+14:57:50 [0m[34m[INFO] [0mdownload done!
+14:57:50 [0m[34m[INFO] [0m--- pac: auto-term ---
+
+╭──────┬──────┬────┬──────╮
+│[94m [39m[94mname[39m[94m [39m│[94m [39m[94mkind[39m[94m [39m│[94m [39m[94mat[39m[94m [39m│[94m [39m[94mdirs[39m[94m [39m│
+╰──────┴──────┴────┴──────╯
+14:57:50 [0m[34m[INFO] [0mLinking targets with dependencies
+14:57:50 [0m[34m[INFO] [0mScanning targets for srcs and incs, only major targets and their deps are scanned
+
+▶ Step 1/6: Checking source files...
+
+▶ Step 2/6: Generating API client...
+  ✓ Generated TypeScript client: dist/src/lib/api.ts
+  ✓ rust_sidecar applied to back crate
+  ✓ Generated Rust server: app-back/
+
+▶ Step 3/6: Materializing UI components...
+  ✓ Bundled ui components: 0 copied, 2 already present
+
+▶ Step 4/6: Installing dependencies...
+  ✓ Wrote .npmrc (build approvals for esbuild/vue-demi)
+
+▶ Installing dependencies...
+  Running: pnpm install
+✓ Lockfile passes supply-chain policies (verified 2d ago)
+Lockfile is up to date, resolution step is skipped
+Already up to date
+
+Done in 392ms using pnpm v11.6.0
+  ✓ Dependencies installed
+▶ shadcn-vue components already installed (skipping)
+
+▶ Step 5/6: Copying public assets...
+▶ No public assets to copy
+  ✓ rust_sidecar applied to back crate
+  ✓ Generated Rust server: app-back/
+
+▶ Starting API backend server (Rust axum)...
+  cargo run --manifest-path D:\autostack\auto-term\app\rust-workspace\app-back\Cargo.toml
+  ✓ API server starting (PID: 39668)...
+  Waiting for API server to be ready...
+Server running on http://127.0.0.1:17401
+CORS enabled for all origins
+  ✓ API server is ready on http://127.0.0.1:17401
+
+▶ Step 6/6: Starting dev server...
+
+▶ Starting dev server...
+
+═════════════════════════════════
+  Starting Vue dev server...
+═════════════════════════════════
+
+✓ Lockfile passes supply-chain policies (verified 2d ago)
+Lockfile is up to date, resolution step is skipped
+Already up to date
+
+Done in 463ms using pnpm v11.6.0
+
+  [32m[1mVITE[22m v5.4.21[39m  [2mready in [0m[1m275[22m[2m[0m ms[22m
+
+  [32m➜[39m  [1mLocal[22m:   [36mhttp://localhost:[1m17400[22m/[39m
+[2m  [32m➜[39m  [1mNetwork[22m[2m: use [22m[1m--host[22m[2m to expose[22m
+[ELIFECYCLE] Command failed with exit code 4294967295.

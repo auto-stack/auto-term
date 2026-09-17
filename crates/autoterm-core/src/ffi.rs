@@ -22,6 +22,83 @@ use crate::palette::{self, SCHEME_COUNT};
 use crate::term::{Color as TermColor, StyledChar};
 use crate::PtySession;
 
+// ── PLAN-021 T-02 DLL 侧仪器(AUTO_FFI_TRACE=1)─────────────────────────
+// 只包变异/重分配类导出(spawn/free/resize/scroll/write_input/feed_ready/
+// take_dirty_rows 等):这些是堆破坏嫌犯面(snapshot 重分配、vte 网格推进);
+// 纯读导出(row_text/row_style/cursor 等)不逐条记——读侧在飞行中与否由
+// glue 侧 feed 链重叠窗(FFI_OVERLAP)与变异标记对读得出,避免逐行读日志
+// 淹没时序(20 tick/s × 512 行读 = 10K 行/s)。格式与 glue 侧对齐,
+// DLL_ 前缀区分面。
+static DLL_TRACE: std::sync::OnceLock<bool> = std::sync::OnceLock::new();
+static DLL_SEQ: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(0);
+static DLL_T0: std::sync::OnceLock<std::time::Instant> = std::sync::OnceLock::new();
+
+fn dll_trace_on() -> bool {
+    *DLL_TRACE.get_or_init(|| std::env::var("AUTO_FFI_TRACE").map(|v| v == "1").unwrap_or(false))
+}
+
+/// 整行单次 write(glue 侧仪器持另一把 std 锁,逐片 eprintln 会跨锁撕裂)。
+fn dll_line(buf: &str) {
+    use std::io::Write;
+    let _ = std::io::stderr().lock().write_all(buf.as_bytes());
+}
+
+struct DllGuard {
+    op: &'static str,
+    h: usize,
+    seq: u64,
+    on: bool,
+}
+
+impl DllGuard {
+    fn enter(op: &'static str, h: *mut AutotermEngine) -> DllGuard {
+        if !dll_trace_on() {
+            return DllGuard { op, h: 0, seq: 0, on: false };
+        }
+        let seq = DLL_SEQ.fetch_add(1, std::sync::atomic::Ordering::Relaxed) + 1;
+        let t = DLL_T0.get_or_init(std::time::Instant::now).elapsed().as_micros();
+        let tid = format!("{:?}", std::thread::current().id());
+        let ha = h as usize;
+        dll_line(&format!("[DLL_ENTER] t={t}us seq={seq} tid={tid} op={op} ptr={ha:#x}\n"));
+        DllGuard { op, h: ha, seq, on: true }
+    }
+}
+
+impl Drop for DllGuard {
+    fn drop(&mut self) {
+        if !self.on {
+            return;
+        }
+        let t = DLL_T0.get_or_init(std::time::Instant::now).elapsed().as_micros();
+        let tid = format!("{:?}", std::thread::current().id());
+        dll_line(&format!("[DLL_EXIT] t={t}us seq={} tid={tid} op={} ptr={:#x}\n", self.seq, self.op, self.h));
+    }
+}
+
+// ── PLAN-021 T-03 根修:引擎 FFI 每柄串行化契约 ────────────────────────
+// 020 复审 P1(vue sustained 页面轮询 0xc0000374)根因:axum 多 worker
+// 对同柄并发 FFI,导出面全是 `ptr_or_null(h)` 裸 `&mut` 别名——
+// feed_ready∥feed_ready(drain→term.feed 双 &mut 推进 vte 网格)、
+// take_dirty_rows∥row_text(snapshot Vec 整体换 replaces 读侧悬垂)
+// 等腐蚀对,仪器在案(AUTO_FFI_TRACE OVERLAP + DLL 同 ptr 跨线程
+// feed_ready)。修复 = FFI 边界按引擎指针串行化:每个导出体先取
+// 每柄锁再触引擎;读类导出同锁(读的是变异方写的状态)。调用方
+// (三形态)从此无需外锁(SD-01 契约面)。表项按地址复用,生命周期
+// = 进程,上限 = 历史不同引擎地址数(实测个位数,无界性不成立)。
+static ENGINE_LOCKS: std::sync::OnceLock<std::sync::Mutex<std::collections::HashMap<usize, &'static std::sync::Mutex<()>>>> = std::sync::OnceLock::new();
+
+fn engine_lock(h: *mut AutotermEngine) -> Option<std::sync::MutexGuard<'static, ()>> {
+    if h.is_null() {
+        return None;
+    }
+    let key = h as usize;
+    let lock: &'static std::sync::Mutex<()> = {
+        let mut map = ENGINE_LOCKS.get_or_init(|| std::sync::Mutex::new(std::collections::HashMap::new())).lock().unwrap();
+        *map.entry(key).or_insert_with(|| Box::leak(Box::new(std::sync::Mutex::new(()))))
+    };
+    Some(lock.lock().unwrap())
+}
+
 /// Opaque engine session(PTY 子进程 + 仿真核心)。
 pub struct AutotermEngine {
     inner: PtySession,
@@ -61,6 +138,7 @@ pub extern "C" fn autoterm_engine_spawn(
     rows: i32,
     program: *const c_char,
 ) -> *mut AutotermEngine {
+    let _g = DllGuard::enter("spawn", std::ptr::null_mut());
     let cols = if cols <= 0 { 80 } else { cols as usize };
     let rows = if rows <= 0 { 24 } else { rows as usize };
     let prog = if program.is_null() {
@@ -104,6 +182,7 @@ pub extern "C" fn autoterm_engine_spawn_ex(
     cols: i32,
     rows: i32,
 ) -> *mut AutotermEngine {
+    let _g = DllGuard::enter("spawn_ex", std::ptr::null_mut());
     let cols = if cols <= 0 { 80 } else { cols as usize };
     let rows = if rows <= 0 { 24 } else { rows as usize };
     let prog = match read_c_string(program) {
@@ -139,6 +218,8 @@ pub extern "C" fn autoterm_engine_write_input(
     bytes: *const u8,
     len: usize,
 ) {
+    let _g = DllGuard::enter("write_input", h);
+    let _eng = engine_lock(h);
     let Some(engine) = ptr_or_null(h) else { return };
     if bytes.is_null() || len == 0 {
         return;
@@ -153,6 +234,8 @@ pub extern "C" fn autoterm_engine_write_input(
 /// (alacritty Scroll::Delta 语义,按行计;UI 滚轮经宿主 glue 排水到此)。
 #[unsafe(no_mangle)]
 pub extern "C" fn autoterm_engine_scroll(h: *mut AutotermEngine, delta_lines: i32) {
+    let _g = DllGuard::enter("scroll", h);
+    let _eng = engine_lock(h);
     let Some(engine) = ptr_or_null(h) else { return };
     engine.inner.term.scroll(delta_lines);
 }
@@ -160,6 +243,7 @@ pub extern "C" fn autoterm_engine_scroll(h: *mut AutotermEngine, delta_lines: i3
 /// 当前回滚偏移(0 = 贴底实时;历史区行数;空句柄 0)。
 #[unsafe(no_mangle)]
 pub extern "C" fn autoterm_engine_scroll_offset(h: *mut AutotermEngine) -> i32 {
+    let _eng = engine_lock(h);
     let Some(engine) = ptr_or_null(h) else { return 0 };
     engine.inner.term.display_offset() as i32
 }
@@ -167,6 +251,7 @@ pub extern "C" fn autoterm_engine_scroll_offset(h: *mut AutotermEngine) -> i32 {
 /// 回滚历史行数(已滚出视口的行数;滚动条拇指比例;空句柄 0)。
 #[unsafe(no_mangle)]
 pub extern "C" fn autoterm_engine_history(h: *mut AutotermEngine) -> i32 {
+    let _eng = engine_lock(h);
     let Some(engine) = ptr_or_null(h) else { return 0 };
     engine.inner.term.history_size() as i32
 }
@@ -175,6 +260,8 @@ pub extern "C" fn autoterm_engine_history(h: *mut AutotermEngine) -> i32 {
 /// 0 = 无字节,-1 = 空句柄。
 #[unsafe(no_mangle)]
 pub extern "C" fn autoterm_engine_feed_ready(h: *mut AutotermEngine) -> i32 {
+    let _g = DllGuard::enter("feed_ready", h);
+    let _eng = engine_lock(h);
     let Some(engine) = ptr_or_null(h) else { return -1 };
     if engine.inner.drain() {
         1
@@ -192,6 +279,8 @@ pub extern "C" fn autoterm_engine_take_dirty_rows(
     out_rows: *mut i32,
     cap: i32,
 ) -> i32 {
+    let _g = DllGuard::enter("take_dirty_rows", h);
+    let _eng = engine_lock(h);
     let Some(engine) = ptr_or_null(h) else { return -2 };
     let damage = engine.inner.term.take_damage();
     engine.snapshot = engine.inner.term.visible_styled_lines();
@@ -226,6 +315,7 @@ pub extern "C" fn autoterm_engine_row_text(
     out_buf: *mut c_char,
     cap: i32,
 ) -> i32 {
+    let _eng = engine_lock(h);
     let Some(engine) = ptr_or_null(h) else { return -1 };
     let Some(line) = engine.snapshot.get(row as usize) else { return -1 };
     let text: String = line.iter().map(|sc| sc.c).collect();
@@ -246,6 +336,7 @@ pub extern "C" fn autoterm_engine_row_style(
     out: *mut u32,
     cap: i32,
 ) -> i32 {
+    let _eng = engine_lock(h);
     let Some(engine) = ptr_or_null(h) else { return -1 };
     let Some(line) = engine.snapshot.get(row as usize) else { return -1 };
     if out.is_null() || cap < (line.len() * 2) as i32 {
@@ -267,6 +358,7 @@ pub extern "C" fn autoterm_engine_cursor(
     out_row: *mut i32,
     out_col: *mut i32,
 ) -> i32 {
+    let _eng = engine_lock(h);
     let Some(engine) = ptr_or_null(h) else { return -1 };
     match engine.inner.term.cursor() {
         Some((row, col)) => {
@@ -282,6 +374,7 @@ pub extern "C" fn autoterm_engine_cursor(
 /// 无界增长 = 产出侧失控或消费侧停摆)。空句柄 -1。
 #[unsafe(no_mangle)]
 pub extern "C" fn autoterm_engine_pending_bytes(h: *mut AutotermEngine) -> i32 {
+    let _eng = engine_lock(h);
     let Some(engine) = ptr_or_null(h) else { return -1 };
     engine.inner.pending_bytes().min(i32::MAX as u64) as i32
 }
@@ -290,6 +383,7 @@ pub extern "C" fn autoterm_engine_pending_bytes(h: *mut AutotermEngine) -> i32 {
 /// 1 = 暂停中,0 = 正常,空句柄 -1。
 #[unsafe(no_mangle)]
 pub extern "C" fn autoterm_engine_backlog_paused(h: *mut AutotermEngine) -> i32 {
+    let _eng = engine_lock(h);
     let Some(engine) = ptr_or_null(h) else { return -1 };
     if engine.inner.backpressure_engaged() { 1 } else { 0 }
 }
@@ -298,6 +392,7 @@ pub extern "C" fn autoterm_engine_backlog_paused(h: *mut AutotermEngine) -> i32 
 /// 无子进程/空句柄 -1。
 #[unsafe(no_mangle)]
 pub extern "C" fn autoterm_engine_shell_pid(h: *mut AutotermEngine) -> i32 {
+    let _eng = engine_lock(h);
     let Some(engine) = ptr_or_null(h) else { return -1 };
     match engine.inner.shell_pid() {
         Some(pid) if pid <= i32::MAX as u32 => pid as i32,
@@ -308,6 +403,7 @@ pub extern "C" fn autoterm_engine_shell_pid(h: *mut AutotermEngine) -> i32 {
 /// 014 环形缓冲溢出计数:被挤掉的输出块数(预警/取证;0 = 未溢出)。
 #[unsafe(no_mangle)]
 pub extern "C" fn autoterm_engine_overflow_count(h: *mut AutotermEngine) -> i32 {
+    let _eng = engine_lock(h);
     let Some(engine) = ptr_or_null(h) else { return -1 };
     engine.inner.overflow_dropped().min(i32::MAX as u64) as i32
 }
@@ -315,6 +411,8 @@ pub extern "C" fn autoterm_engine_overflow_count(h: *mut AutotermEngine) -> i32 
 /// resize(先仿真核心后 ConPTY 的既有顺序)。
 #[unsafe(no_mangle)]
 pub extern "C" fn autoterm_engine_resize(h: *mut AutotermEngine, cols: i32, rows: i32) {
+    let _g = DllGuard::enter("resize", h);
+    let _eng = engine_lock(h);
     let Some(engine) = ptr_or_null(h) else { return };
     let cols = if cols <= 0 { 80 } else { cols as usize };
     let rows = if rows <= 0 { 24 } else { rows as usize };
@@ -324,6 +422,7 @@ pub extern "C" fn autoterm_engine_resize(h: *mut AutotermEngine, cols: i32, rows
 /// Ctrl+C 中断注入(008 双投递语义)。1 = 事件广播成功,0 = 降级字节路径。
 #[unsafe(no_mangle)]
 pub extern "C" fn autoterm_engine_interrupt(h: *mut AutotermEngine) -> i32 {
+    let _eng = engine_lock(h);
     let Some(engine) = ptr_or_null(h) else { return -1 };
     if engine.inner.interrupt() {
         1
@@ -335,6 +434,7 @@ pub extern "C" fn autoterm_engine_interrupt(h: *mut AutotermEngine) -> i32 {
 /// 子进程是否已退出。1 = 是,0 = 否,-1 = 空句柄。
 #[unsafe(no_mangle)]
 pub extern "C" fn autoterm_engine_is_exited(h: *mut AutotermEngine) -> i32 {
+    let _eng = engine_lock(h);
     let Some(engine) = ptr_or_null(h) else { return -1 };
     if engine.inner.exited() {
         1
@@ -346,6 +446,8 @@ pub extern "C" fn autoterm_engine_is_exited(h: *mut AutotermEngine) -> i32 {
 /// kill 子进程(强杀;会话资源仍需 free 释放)。
 #[unsafe(no_mangle)]
 pub extern "C" fn autoterm_engine_kill(h: *mut AutotermEngine) {
+    let _g = DllGuard::enter("kill", h);
+    let _eng = engine_lock(h);
     let Some(engine) = ptr_or_null(h) else { return };
     engine.inner.kill();
 }
@@ -355,6 +457,7 @@ pub extern "C" fn autoterm_engine_kill(h: *mut AutotermEngine) {
 /// (per-handle,所有权铁律)。0 = 成功;-1 = 空句柄;-2 = 未知方案 id。
 #[unsafe(no_mangle)]
 pub extern "C" fn autoterm_engine_set_palette(h: *mut AutotermEngine, scheme_id: i32) -> i32 {
+    let _eng = engine_lock(h);
     let Some(engine) = ptr_or_null(h) else { return -1 };
     if palette::palette(scheme_id).is_none() {
         return -2;
@@ -377,6 +480,8 @@ pub extern "C" fn autoterm_engine_palette_color(scheme_id: i32, slot: i32, is_fg
 
 #[unsafe(no_mangle)]
 pub extern "C" fn autoterm_engine_free(h: *mut AutotermEngine) {
+    let _g = DllGuard::enter("free", h);
+    let _eng = engine_lock(h);
     if h.is_null() {
         return;
     }

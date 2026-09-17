@@ -116,6 +116,62 @@ fn check_overflow(dropped: i64) {
     }
 }
 
+// ── PLAN-021 T-02 仪器取证(AUTO_FFI_TRACE=1)──────────────────────────
+// FFI 调用面线程标记 + 进程级重叠检测。020 隔离实验:纯 HTTP 短并发
+// 不复现、需页面 sustained 轮询——本仪器回答"同柄 FFI 重叠是否发生 +
+// 崩溃首现前最后序列"(D2 嫌犯面)。门关 = 一次原子读,零路径不变。
+// 五包点 = 计划 D2 面罩:spawn / free / resize / pump / feed(链)。
+static FFI_TRACE: OnceLock<bool> = OnceLock::new();
+static FFI_SEQ: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(0);
+static FFI_INFLIGHT: std::sync::atomic::AtomicI64 = std::sync::atomic::AtomicI64::new(0);
+static FFI_T0: OnceLock<std::time::Instant> = OnceLock::new();
+
+fn ffi_trace_on() -> bool {
+    *FFI_TRACE.get_or_init(|| std::env::var("AUTO_FFI_TRACE").map(|v| v == "1").unwrap_or(false))
+}
+
+/// 入站/出站配对守卫:早退路径 Drop 兜底,进位计数不漂。行缓冲整行
+/// 单次 write——DLL 侧仪器持独立 std 锁,逐片 eprintln 会跨锁撕裂。
+struct FfiGuard {
+    op: &'static str,
+    handle: i64,
+    seq: Option<u64>,
+}
+
+fn ffi_line(buf: &str) {
+    use std::io::Write;
+    let _ = std::io::stderr().lock().write_all(buf.as_bytes());
+}
+
+impl FfiGuard {
+    fn enter(op: &'static str, handle: i64) -> FfiGuard {
+        if !ffi_trace_on() {
+            return FfiGuard { op, handle, seq: None };
+        }
+        let seq = FFI_SEQ.fetch_add(1, std::sync::atomic::Ordering::Relaxed) + 1;
+        let inflight = FFI_INFLIGHT.fetch_add(1, std::sync::atomic::Ordering::Relaxed) + 1;
+        let t = FFI_T0.get_or_init(std::time::Instant::now).elapsed().as_micros();
+        let tid = format!("{:?}", std::thread::current().id());
+        let mut b = String::with_capacity(128);
+        if inflight > 1 {
+            b.push_str(&format!("[FFI_OVERLAP] t={t}us seq={seq} tid={tid} op={op} h={handle} inflight={inflight}\n"));
+        }
+        b.push_str(&format!("[FFI_ENTER] t={t}us seq={seq} tid={tid} op={op} h={handle}\n"));
+        ffi_line(&b);
+        FfiGuard { op, handle, seq: Some(seq) }
+    }
+}
+
+impl Drop for FfiGuard {
+    fn drop(&mut self) {
+        let Some(seq) = self.seq else { return };
+        let inflight = FFI_INFLIGHT.fetch_sub(1, std::sync::atomic::Ordering::Relaxed) - 1;
+        let t = FFI_T0.get_or_init(std::time::Instant::now).elapsed().as_micros();
+        let tid = format!("{:?}", std::thread::current().id());
+        ffi_line(&format!("[FFI_EXIT] t={t}us seq={seq} tid={tid} op={} h={} inflight_left={inflight}\n", self.op, self.handle));
+    }
+}
+
 /// PLAN-018 D10:引擎 scheme 表装载(进程一次;FFI `palette_color` 纯
 /// 查询 → terminal 注册表缓存覆盖内置回退表)。旧 DLL 无符号 = 静默
 /// 保留内置(与 backlog_paused 同款皮实语义)。
@@ -246,6 +302,7 @@ where
             engine_suspend_child(h);
         }
     }));
+    let _ffi = FfiGuard::enter("spawn", 0);
     let h = spawn_call(lib());
     if h.is_null() {
         return 0;
@@ -317,6 +374,7 @@ fn pump_inner(handle: i64, keys: Vec<String>) -> i64 {
     if h.is_null() {
         return n;
     }
+    let _ffi = FfiGuard::enter("pump", handle);
     for key in &keys {
         write_raw(h, key.as_bytes());
     }
@@ -413,6 +471,7 @@ enum FeedTarget<'k> {
 }
 
 fn feed_snapshot_inner(handle: i64, target: FeedTarget<'_>) {
+    let _ffi = FfiGuard::enter("feed", handle);
     let h = ptr_of(handle);
     if h.is_null() {
         return;
@@ -690,6 +749,7 @@ pub fn engine_row_style(handle: i64, row: usize, out: &mut [u32]) -> i32 {
 }
 
 pub fn engine_resize(handle: i64, cols: i64, rows: i64) {
+    let _ffi = FfiGuard::enter("resize", handle);
     let h = ptr_of(handle);
     if h.is_null() {
         return;
@@ -743,6 +803,7 @@ pub fn engine_is_exited(handle: i64) -> bool {
 }
 
 pub fn engine_free(handle: i64) {
+    let _ffi = FfiGuard::enter("free", handle);
     let h = ptr_of(handle);
     if h.is_null() {
         return;

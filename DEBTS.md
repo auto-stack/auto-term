@@ -348,3 +348,25 @@
   Tab 条样式变更需同步;窗口尺寸面已给 client px,内容区 = client
   − tabH。
 
+
+## #25 引擎 FFI 导出面同柄并发零防护——已转正为每柄串行化契约(PLAN-021 根修,2026-09-17)
+
+- **现象**:vue 形态页面 sustained 轮询(~1-3 分钟)必然
+  STATUS_HEAP_CORRUPTION(0xc0000374,WER ×5 在案);纯 HTTP 短并发
+  与 boot 窗不复现(020 隔离矩阵)。
+- **根因**(PLAN-021 T-02 仪器定案):crates/autoterm-core ffi.rs
+  全部导出为 `ptr_or_null(h)` 裸 `&mut` 别名、零线程安全承诺;vue
+  back 的 axum 多 worker 对同柄 sustained 并发时,腐蚀对 =
+  feed_ready∥feed_ready(drain→term.feed 双 &mut 推进 vte 网格)、
+  take_dirty_rows∥row_text(snapshot Vec 整体替换 vs 读侧悬垂)、
+  resize∥*。仪器取证:OVERLAP 1062-1213 次/300s,含同 ptr 跨线程
+  feed_ready∥feed_ready(evidence/021/repro-r{4,6})。
+- **根修**(T-03):FFI 边界每柄串行化(ENGINE_LOCKS 按引擎指针
+  取锁,含读类导出;Box::leak 一次性锁,生命周期=进程)。金样
+  `cargo test -p autoterm-core --test ffi_concurrency_serialization`
+  (6 线程同柄混合流):去锁红相 0xc0000005,带锁绿。复现器浸泡
+  修复后 3×≥10min 零崩(evidence/021 r7-r9)。契约落 SD-01
+  (engine-ffi-color-encoding.md 并发契约节,merge 步入库)。
+- **遗留观察**:带全量仪器的轮次不再崩(日志开销收窄腐蚀窗口,
+  海森堡效应);20GB 内存实录(020 T-01)未在本案复现(全程
+  WS 13-15MB)——与 #23/#24 家族不同相,已关闭。
