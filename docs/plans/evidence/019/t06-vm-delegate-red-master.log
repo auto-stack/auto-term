@@ -1,0 +1,43 @@
+---------------------------
+AutoNexus / Auto CLI
+---------------------------
+Loading AmConfig from Some("C:\\Users\\zhaop\\.auto\\auto-man\\am.at")...
+AmConfig: AmConfig {
+  name: default
+  index: {
+    boe: git@codeup.aliyun.com:soutek/boe/index.git
+    soutek: git@codeup.aliyun.com:soutek/auto-stack/auto-index.git
+    default: git@gitee.com:auto-stack/auto-index.git
+  }
+}
+
+
+Loaded port: 
+port NAME: windows_ninja
+all index: {"boe": "git@codeup.aliyun.com:soutek/boe/index.git", "soutek": "git@codeup.aliyun.com:soutek/auto-stack/auto-index.git", "default": "git@gitee.com:auto-stack/auto-index.git"}
+used index: ["default"]
+05:58:48 [0m[34m[INFO] [0mloading index store from C:/Users/zhaop/.auto/auto-man/index/default
+setting port builder: windows_ninja ninja, at build
+05:58:48 [0m[34m[INFO] [0mAutoCache initialized for project: probe019vm
+  Backend API server port: 17413 (from pac.at)
+  Frontend dev server port: 17412 (from pac.at)
+  VM window size: 402x282 (from pac.at)
+  VM window title: probe019vm (from pac.at)
+05:58:48 [0m[34m[INFO] [0mRunning project ...
+
+------------ output ------------
+
+  ✓ vm+vm merged mode: backend runs in-process (no HTTP server)
+Running VM interpreter UI (backend: vm, merged)
+05:58:48 [0m[34m[INFO] [0mDownloading deps
+05:58:48 [0m[34m[INFO] [0mdownload done!
+05:58:48 [0m[34m[INFO] [0m--- pac: probe019vm ---
+
+╭──────┬──────┬────┬──────╮
+│[94m [39m[94mname[39m[94m [39m│[94m [39m[94mkind[39m[94m [39m│[94m [39m[94mat[39m[94m [39m│[94m [39m[94mdirs[39m[94m [39m│
+╰──────┴──────┴────┴──────╯
+05:58:48 [0m[34m[INFO] [0mLinking targets with dependencies
+05:58:48 [0m[34m[INFO] [0mScanning targets for srcs and incs, only major targets and their deps are scanned
+Error:   × VM UI error: DynamicComponent init failed: VmBridge init failed for 'App':
+  │ invalid state: link failed for 'App': Undefined symbol: bump in module App
+

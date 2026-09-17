@@ -4,9 +4,9 @@ status: executing
 feature_name: 可见多终端 UI——Tab 条 + 分屏渲染 + 快捷键(006 蓝图 ①)
 author: [zcode-session]
 created_at: 2026-09-15T00:00:00Z
-updated_at: 2026-09-15T00:00:00Z
+updated_at: 2026-09-17T00:00:00Z
 plan_revision: 1
-current_step: 1
+current_step: 7
 total_steps: 9
 supersedes_spec_components: []
 new_spec_components: []
@@ -488,7 +488,39 @@ layout 策略(Tall/Grid/Stack,Phase 6 另半边)、Workspace 持久化
     terminal_scheme_and_scroll_fieldaccess_bindings_emit。terminal
     门 36 绿(preedit 漂移已记账)。master 频繁并行推进,每次落地
     前先 merge master 入分支再 FF(本轮两度)。
-  - next:vm 委托合成修复(auto-lang)→ 复审。
+- 2026-09-17 stage:work · PLAN-019 · rev1 · **T-06 vm 链接阻塞解除**
+  (outcome:pass,lang-019 worktree → master FF f6a40d20a):
+  - **§10.6 归因翻案 + 根因定位**:真机探针 dump(loader.rs 临时插桩,
+    已撤;t06-vm-link-probe-dump.log)证实 App 模块导出齐全(全部带点
+    限定名),失败 reloc 为**裸名**——db.at 函数体内七处模块内裸调用
+    (mux_resize_branch/mux_tab_id_at/mux_rect_kind×2/mux_split_axis/
+    mux_slot_pane_id×2/mux_visible_pane_count)在 api.+db. 双同名导出
+    下歧义,unique-suffix 回退拒绝猜 → 裸 reloc 无法绑定(入口导出全
+    带点,Plan 545 own-module 回退只认 mod#sym 形)。原记录"GET 带参
+    路由未合成"系巧合归因(裸调用 fn 恰多带参;018 面未暴露是因前端
+    从不调用含裸调用的 fn;db.at 独立编译全通因独立编译不 qualify)。
+  - **修法(auto-lang f6a40d20a)**:Codegen.current_fn_module
+    (Stmt::Fn 编译期设置/恢复)+ resolved_func/resolve_call_symbol
+    own-module 绑定两臂(镜像 loader Plan 322/545 语义到 codegen 层;
+    resolve_call_symbol 臂配 fn_return_types 覆盖前向引用)。
+  - **验证五链**:①真机 019 app 探针前后对比(7 裸 reloc 全部转
+    own-module 带点解析);②最小语料红绿(master exe 红:Undefined
+    symbol: bump;修复 exe 绿:过链开窗,t06-vm-delegate-*.log);
+    ③金样 plan019_vm_own_module_link(语料 api.bump 语义差异化
+    x+100,v==4 钉死 own-module 绑定非误绑包装);④日常档 5006 跑
+    26 败=stash 基线逐名一致(预存漂移,零新增);⑤cargo tv
+    3743/3743 全绿。落地流程:plan-019-dev 提交 → merge master
+    (5de39dd55)→ FF 落 master,合并树金样复跑绿。
+  - **019 提交态真机 vm 过链**:临时 auto-term worktree(a47a18f,
+    已清)vm 形态开窗存活、0 Undefined symbol
+    (t06-vm-link-fixed-019state.log)。
+  - **残余面(归 020)**:主检出 020 WIP 新增 `use auto.term:
+    window_width/window_height` 无 VM 原生目录项,vm 全链在其 WIP 上
+    仍链接失败(term.window_width)——归 020 补原生注册;vm GUI 交互
+    冒烟(快捷键/Tab 条/两分屏帧)待其落定后按既定方法论(用户手动
+    +截图)补证。
+  - next:020 WIP 落定后补 vm GUI 冒烟 + 014 护栏抽查 → T-08 锚定 →
+    复审。
 
 ## 10. 待澄清事项
 
@@ -506,15 +538,14 @@ layout 策略(Tall/Grid/Stack,Phase 6 另半边)、Workspace 持久化
    另行立项。
 5. **Tab title 来源**:V1 = 序号 + shell 名(静态派生);动态
    title(OSC 转义/进程名感知)归 ③ OSC 计划。
-6. **【T-06 发现,阻塞 vm 形态冒烟】VM merged 桥的 api 委托合成
-   未覆盖新 D2 面**:`auto run -r vm` 链接失败——"Undefined symbol:
-   mux_tab_id_at in module App"(evidence/019 复现;清缓存无效)。
-   已证:①db.at 独立 VM 编译/链接/运行全通(standalone probe:
-   mux_init/split/tab_count/tab_id_at/tabs 全解析执行)——db 模块
-   无恙;②嫌疑面 = App 侧 api 委托合成(ui/handler_codegen
-   import_stmts 扁平化 + 限定名直落本地字节码)对 **GET 带参路由**
-   的处理——018 面全部为无参路由(唯一参数路由 mux_pane_lines 为
-   POST),mux_tab_count(无参)解析成功而 mux_tab_id_at(带参)
-   失败,高度指向带参委托未合成;③准确机制需 vm_bridge 合成路径
-   调试会话(auto-lang 侧,建议 lang-019 worktree 续作)。Rust/vue
-   两形态不受影响。
+6. **【T-06 发现 → 2026-09-17 已解除,归因修正】vm 形态链接失败**:
+   原记录"App 侧 api 委托合成对 GET 带参路由未合成"系巧合归因——
+   真机探针 dump 证实根因 = db.at 函数体内**模块内裸调用**(七处,
+   mux_resize_branch 族)在 api.+db. 双同名导出下歧义,unique-suffix
+   回退拒绝猜 → 裸名 reloc 无法绑定(与带参/GET 无关)。已根修:
+   auto-lang f6a40d20a(Codegen.current_fn_module + own-module 绑定
+   两臂,lang-019 worktree → master FF;五链验证见 §9 2026-09-17
+   记录)。019 提交态真机 vm 过链验证在案。残余:主检出 020 WIP 的
+   `use auto.term: window_width/window_height` 缺 VM 原生注册,其
+   WIP 上 vm 全链仍失败——归 020;vm GUI 交互冒烟待补证(用户手动
+   方法论)。
