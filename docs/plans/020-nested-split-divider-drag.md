@@ -1,12 +1,12 @@
 ---
 plan_id: PLAN-020
-status: execution_done
+status: executing
 feature_name: 任意深度分屏 + 可视分隔条拖拽 + 比例磁吸(嵌套布局与分隔条交互)
 author: [zcode-session]
 created_at: 2026-09-17T00:00:00Z
 updated_at: 2026-09-17T12:00:00Z
 plan_revision: 2
-current_step: 8
+current_step: 6
 total_steps: 8
 supersedes_spec_components: []
 new_spec_components: []
@@ -322,6 +322,47 @@ db(back)                                front(view 消费)
   渲染正常),但合成鼠标输入(mouse_event/SendInput/PostMessage)
   均不被 winit 消费,GUI 实拖取证留用户手动验证(019"浏览器目验
   留用户"同款口径,§10.7)· next:review。
+
+- 2026-09-17 stage:review · PLAN-020 · rev2 · outcome:**needs_fix** ·
+  reviewed_commit a55b454 · base_commit a47a18f · dependency_revisions:
+  auto-lang master 6e63c812a(含 020 提交 57353aa12/15872c439,经
+  ba77406eb FF)+ 并行 019/637/023 推进 · spec_inputs:
+  docs/specs/terminal-mux-model.md @ a55b454 · 声明:实现会话内复审,
+  结论由独立复现重建。
+  - **独立复现**:干净 back(18080,app_back.exe)重跑 t01 剧本全绿
+    (evidence/020/t01-model-review.log):深度2 布局/磁吸 480→500/
+    钳位 50→100/键盘 700/右列轴0 (750,250)→250/帽 -2/窗口面
+    1024x768 —— AC-01/02/05 + G6 **pass**;全量门 76/0(a55b454
+    当拍运行,代码未变,复用并述明理由)—— AC-06 套件分量 **pass**。
+  - **acceptance_results**:AC-01 pass · AC-02 pass · AC-03 partial
+    (divider 槽模型面✓;iced 实机条渲染未在分屏态截图取证——合成
+    输入不可用所致)· AC-04 partial(模型语义✓;端到端实拖未证,
+    见 F2)· AC-05 pass · AC-06 pass(套件)+ F1 稳定性finding ·
+    AC-07 partial(投影按活动 Tab 重算=代码审读;缺显式双 Tab
+    深度并存的 curl 证据)。
+  - **findings**:
+    - **F1(P1,稳定性,AC-06)**:vue 形态 back 在前端页面轮询下
+      STATUS_HEAP_CORRUPTION 崩溃(0xc0000374,vue-run.log 15:31:22
+      实录;重启后 30s+ 存活=间歇)。新视图 tick 每拍 ~60 个 API
+      调用(019 约 10 个),axum 并发下的引擎 FFI(get_lines/
+      pane_lines×6/apply_resize)疑似触发 #21 族的并发窗口。
+      **修正方向**:①几何刷新加 layout_version 门(廉价 GET 每拍,
+      变化才拉 rect-*,稳态调用量回落 019 水位);②引擎 FFI 并发
+      窗口排查(panes×FFI 并发矩阵);③复现脚本固化。
+    - **F2(P2,AC-04)**:端到端实拖取证缺——合成输入三通道
+      (mouse_event/SendInput/PostMessage)均不被 winit 消费;命名
+      前置 = 用户手持鼠标实拖,或引入可驱动的输入注入通道。
+    - **F3(P3,记账)**:plan frontmatter supersedes_spec_components/
+      new_spec_components 空——本次复审补记:SD-01 modify
+      docs/specs/terminal-mux-model.md(V1 语义 §5);new_spec_components
+      保持空(无新增 spec 组件;窗口尺寸面为 D7 契约,归同文件 §5)。
+    - **F4(P3,过程)**:共享映像名 taskkill 两度误伤并行会话进程
+      (文件管理器/015 notes back;8080 端口亦被 015 notes 占用,
+      独立 back 复跑需 AUTO_HTTP_PORT 指定)。过程教训记 Plan。
+  - evidence:evidence/020/t01-model-review.log(独立复现)+ vue-run.log
+    (heap corruption 实录)+ t02-*.png(三轨渲染)· **next**:work
+    (F1 修正 + AC-07 补证 + F2 用户实拖),受影响任务 T-02/T-04 已
+    重开,current_step 6/8。
 
 ## 10. 待澄清事项
 
