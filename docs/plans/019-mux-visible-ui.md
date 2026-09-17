@@ -519,7 +519,27 @@ layout 策略(Tall/Grid/Stack,Phase 6 另半边)、Workspace 持久化
     仍链接失败(term.window_width)——归 020 补原生注册;vm GUI 交互
     冒烟(快捷键/Tab 条/两分屏帧)待其落定后按既定方法论(用户手动
     +截图)补证。
-  - next:020 WIP 落定后补 vm GUI 冒烟 + 014 护栏抽查 → T-08 锚定 →
+- 2026-09-17 stage:work · PLAN-019 · rev1 · **vm GUI 冒烟(用户手动
+  方法论)+ 浅色配色修订**(outcome:pass 冒烟面;配色面随修):
+  - **冒烟结果(用户实机,浅色态截图为证)**:Tab 条(● 活动标记/
+    新建/切换/关闭)、横竖分屏、快捷键组、Zoom、关 Pane、scheme
+    切换全链正常——**AC-01/02/04/05 vm 形态实机通过**(用户原话
+    "其他操作都正常");014 护栏抽查待用户顺手(非阻塞)。
+  - **浅色配色修订(用户反馈:背景太亮、字体太浅对比不足)**:根因
+    = LIGHT 盘沿用 WT Solarized Light 官方值——base16[15](亮白)
+    =0xFDF6E3 与 def_bg 同色,cmd 文件名族走亮白 → 整列隐身(截图
+    实证);def_fg=0x586E75 偏浅;def_bg 高饱和奶油刺眼。三修:白/
+    亮白族反转深色(7=base01/8=base00/15=base02)+ 亮色族 vivid 化
+    (10/12/14)+ def_fg→0x073642(base02)/def_bg→0xEEE8D5(base2)。
+    落地:引擎单源 auto-term palette.rs(新护栏测
+    light_scheme_white_family_readable_on_bg:白族与 bg 亮度差>60
+    防回退)+ auto-lang widget 回退副本表同值同修(7af29ce8e,FF
+    d2a0032a8);palette_color 轴测试/widget fallback 测试随值更新;
+    016 像素金样 5/5 绿(dark 臂零涉)、widget terminal 门 27 绿、
+    autoterm-core 6 绿。备注:019 非目标"autoterm-core 零改动"指
+    机制面(per-handle/scheme 面);本次为 016 配色数据面修订,用户
+    授权,金样无 light 钉值故零重生成。
+  - next:用户复验浅色新配色 → 014 护栏顺手抽查 → T-08 锚定 →
     复审。
 
 ## 10. 待澄清事项
