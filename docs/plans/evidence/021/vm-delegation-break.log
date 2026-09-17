@@ -16,3 +16,27 @@
 # 附注:vue 轨不受影响(HTTP back,020 收据+本轮浸泡均可证)。
 # 生成 crate 链接主检出 auto-lang(app/rust-workspace/Cargo.toml
 # path=../../../auto-lang),与启动用 exe 无关。
+
+# ── 2026-09-18 凌晨 排查结论(修正立案时的假设)────────────────────────
+# 1) bisect 前提破产:788a3369b(019 收官父提交,纯 docs 差一步)今晚
+#    同样 feed=0 → 不存在"auto-lang 提交回归"。同栈昨日 16:04 可用
+#    (t06-vm-light-usercheck2.png 有 shell+Tab 标签),今晚全面失效。
+# 2) 逐变量排除(全部在案):DLL 新旧两版、两仓提交(021 前后的
+#    auto-term 树 A/B)、环境进程(全杀含 node)、生成物(全清重生成)、
+#    dist/.api_functions 清空重建 —— 均不改变症状。
+# 3) 真发现 = 缺陷簇,非单点:
+#    a. `auto run -r vm` 的 api 委托在 dev 跑法下静默失效(前台 tick
+#       照跑、api.* 零引擎调用、零报错;back 本体经 HTTP curl 全健康);
+#       019/020 实机会话从不走此跑法,走的是部署态 auto-term.exe
+#       (evidence/019/probe-steps.ps1:Start-Process auto-term.exe +
+#       AUTOTERM_ENGINE_DLL 注入)——部署态今夜复刻即活(shell+提示符
+#       +Tab 标签,dist-recipe-boot.png)。
+#    b. rust 轨 codegen 漂移:以 lang-021(master+021)运行时编译
+#       生成的 auto-term 前台 crate → 252 错(serde_json::Value vs
+#       i32/Vec<String>,mux_* 面签名不一致)——master 的 rust 轨
+#       codegen 与运行时接口漂移,被增量编译缓存长期掩盖。
+#    c. 部署态 auto-term.exe(Sep 17 14:48 构建)不含 021 mouse_area
+#       修复 → T-07 实点必须先重建部署态(链回 021 运行时)。
+# 4) 处置建议(新会话,非 021 范围):以 (a)(b) 为两个定因任务立
+#    auto-lang 侧缺陷计划;021 的 T-07 在部署态重建含 021 修复后
+#    实点收口。
