@@ -6,7 +6,7 @@ author: [zhaopuming/zcode-session]
 created_at: 2026-09-17T00:00:00Z
 updated_at: 2026-09-17T00:00:00Z
 plan_revision: 2
-current_step: 1
+current_step: 4
 total_steps: 8
 supersedes_spec_components: []
 new_spec_components: []
@@ -304,6 +304,34 @@ press),取证时一次仪器化全覆盖,死法差异本身是断点定位证据
 
 ## 9. 复审记录
 
+- 2026-09-17 stage:work(阶段交棒)· PLAN-021 · rev2 ·
+  outcome:**pass(线A 全闭环)+ blocked(线B 消费面待用户输入)** ·
+  code_commit: auto-term main 1cded12+c7f40d5 / auto-lang
+  plan-021-dev 6c6950f75 · base: auto-term e9f813d / auto-lang
+  master 75fb01808 · worktree: lang-021(wt-guard clean)+ 组内
+  auto-down(detached 3a05255)· task_ids: T-01..T-04 ✅(证据见
+  §8 逐条),T-05 修复+无头回归钉在案(AC-06 余"用户实点"一件),
+  T-06/T-07 未开工 ·
+  **线 A(FFI 堆破坏)AC-01..05 全达成**:复现器 3/3 崩→根因定案
+  (DLL 导出面裸 &mut 别名,腐蚀对仪器在案)→每柄串行化根修(金样
+  红 0xc0000005/绿 + 3×≥10min 浸泡零崩)→全量门 78/0 + 020 t01
+  十二步复跑绿 + DEBTS #25 + SD-01 精确化文本随案。SD-01 spec
+  目标路径定稿 = docs/specs/engine-ffi-color-encoding.md(merge 步
+  入库)。待澄清#1(20GB 实录)关闭:全程 WS 13-15MB 非同相。
+  **线 B(管线)AC-06 差一件**:根因证明(iced mouse_area 0×0
+  bounds)+ 双臂修复 + iced_test 无头回归钉红绿均已入库;实窗
+  合成输入三路不可达 winit(SetForegroundWindow 被拒等,取证在
+  案),"双区探针计数 0→非 0"须用户实点复验。
+  **blockers**:
+  1. T-05 收口/T-07 三联合场景:需用户实点(合成输入不可达,
+     scripts/repro/probe_ma.ps1 + spikes/021-ma-probe 已备好,开
+     探针后用户点三区读屏上计数即可);
+  2. T-06 范围勘定(待澄清#3):app.at 前端现无任何 scroll 消费面
+     (778 行全量 grep 零命中),官方组件在库(View::scrollable,
+     examples/ui_scroll.rs)——"哪些面板要滚动/终端自绘滚动条是否
+     换官方组件"是用户范围决策,勘定事实已录 §10;
+  3. SD-02(命中区归属规则)依赖 T-06 勘定后联合设计,同批。
+  next:用户指令(实点复验 + T-06 范围裁定后进 review 前收口)。
 - 2026-09-17 stage:new · PLAN-021 · rev1 · outcome:**pass** ·
   授权:用户 2026-09-17 裁定(020 复审 F1 三选之选项 1)·
   设计依据:020 复审隔离实验矩阵 + 崩溃实录 ×2 + DEBTS #21/#24
@@ -357,10 +385,18 @@ press),取证时一次仪器化全覆盖,死法差异本身是断点定位证据
 
 ## 10. 待澄清事项
 
-1. 20GB 内存实录(020 T-01 联调)与本案是否同根因——T-02 取证时
-   一并观察,同源则并案关闭。
-2. auto-lang 是否入役:a2r 生成代码全局两段锁至多丢更新,低先验;
-   仅证据指认时才动(届时按 worktree 流程)。
-3. "各个 panel"的滚动清单(终端外还有哪些面板需要 scroll)与官方
-   scroll 组件 API 接入面,及终端自绘滚动条是否由官方组件替换
-   ——T-06 开工前勘定回填。
+1. ~~20GB 内存实录(020 T-01 联调)与本案是否同根因~~ **已关闭
+   (T-02)**:本案全程 WS 13-15MB 无膨胀,非同相;20GB 归 #23
+   投影膨胀家族(020 已根修)。
+2. ~~auto-lang 是否入役~~ **已关闭(T-02 定案)**:根因在 DLL 导出
+   面,非 a2r 生成码——auto-lang 线 B 因 mouse_area 缺陷独立入役
+   (worktree lang-021),与线 A 无涉。
+3. **T-06 滚动清单(用户决策,开工前必答)**:勘定事实 =
+   ①app/src/front/app.at(778 行)现无任何 scrollable/overflow
+   消费面——UI 即终端槽 + Tab 条;②官方组件在库(View::scrollable,
+   examples/ui_scroll.rs 双后端);③终端自绘滚动条(SCROLLBAR_
+   HIT_W=14px,widget.rs)在案。待裁定:(a) 是否为 Tab 条(多
+   Tab 溢出)接入官方 scroll;(b) 终端自绘滚动条是否换官方组件
+   (换 = 重做 513-590 press 链与命中区,z 序/命中区联合设计随
+   SD-02);(c) 若无真消费面,T-06 降格为"组件在库可用性对照实验"
+   (探针页接 scrollable 验证链通)即关案。
