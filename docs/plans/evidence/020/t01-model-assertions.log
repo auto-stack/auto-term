@@ -1,0 +1,46 @@
+date: extra operand ‘%T’
+Try 'date --help' for more information.
+== PLAN-020 T-01 model assertions  ==
+--- [1] baseline single pane ---
+"{\"tab\":1,\"axis\":-1,\"slots\":[1,0],\"zoom\":0,\"visible\":1,\"focus\":1,\"rects\":[{\"pane\":1,\"x\":0,\"y\":0,\"w\":1000,\"h\":1000}],\"dividers\":[]}"
+--- [2] split horizontal (axis=1) ---
+split→2
+"{\"tab\":1,\"axis\":1,\"slots\":[1,2],\"zoom\":0,\"visible\":2,\"focus\":1,\"rects\":[{\"pane\":1,\"x\":0,\"y\":0,\"w\":500,\"h\":1000},{\"pane\":2,\"x\":500,\"y\":0,\"w\":500,\"h\":1000}],\"dividers\":[{\"branch\":3,\"axis\":1,\"x\":500,\"y\":0,\"w\":0,\"h\":1000}]}"
+--- [3] focus right pane, split vertical (axis=0) ---
+focus→2 split→3
+"{\"tab\":1,\"axis\":1,\"slots\":[1,2],\"zoom\":0,\"visible\":3,\"focus\":2,\"rects\":[{\"pane\":1,\"x\":0,\"y\":0,\"w\":500,\"h\":1000},{\"pane\":2,\"x\":500,\"y\":0,\"w\":500,\"h\":500},{\"pane\":3,\"x\":500,\"y\":500,\"w\":500,\"h\":500}],\"dividers\":[{\"branch\":3,\"axis\":1,\"x\":500,\"y\":0,\"w\":0,\"h\":1000},{\"branch\":5,\"axis\":0,\"x\":500,\"y\":500,\"w\":500,\"h\":0}]}"
+--- [4] rect getters (11 slots) ---
+slot1 kind=1 pane=1 x=0 y=0 w=500 h=1000 branch=0 axis=-1
+slot2 kind=1 pane=2 x=500 y=0 w=500 h=500 branch=0 axis=-1
+slot3 kind=1 pane=3 x=500 y=500 w=500 h=500 branch=0 axis=-1
+slot4 kind=0 pane=0 x=0 y=0 w=0 h=0 branch=0 axis=-1
+slot5 kind=0 pane=0 x=0 y=0 w=0 h=0 branch=0 axis=-1
+slot6 kind=0 pane=0 x=0 y=0 w=0 h=0 branch=0 axis=-1
+slot7 kind=2 pane=0 x=500 y=0 w=0 h=1000 branch=3 axis=1
+slot8 kind=2 pane=0 x=500 y=500 w=500 h=0 branch=5 axis=0
+slot9 kind=0 pane=0 x=0 y=0 w=0 h=0 branch=0 axis=0
+slot10 kind=0 pane=0 x=0 y=0 w=0 h=0 branch=0 axis=0
+slot11 kind=0 pane=0 x=0 y=0 w=0 h=0 branch=0 axis=0
+--- [5] drag root branch 500→300 (px=300, outside band) ---
+branch=3 resize(300,0)→300 (expect 300)
+"{\"tab\":1,\"axis\":1,\"slots\":[1,2],\"zoom\":0,\"visible\":3,\"focus\":2,\"rects\":[{\"pane\":1,\"x\":0,\"y\":0,\"w\":300,\"h\":1000},{\"pane\":2,\"x\":300,\"y\":0,\"w\":700,\"h\":500},{\"pane\":3,\"x\":300,\"y\":500,\"w\":700,\"h\":500}],\"dividers\":[{\"branch\":3,\"axis\":1,\"x\":300,\"y\":0,\"w\":0,\"h\":1000},{\"branch\":5,\"axis\":0,\"x\":300,\"y\":500,\"w\":700,\"h\":0}]}"
+--- [6] magnet: drag to 480 (inside ±40 band) → 500 ---
+resize(480,0)→500 (expect 500)
+--- [7] clamp: drag to 50 → 100 (MIN_PANE) ---
+resize(50,0)→100 (expect 100)
+--- [8] keyboard compat: mux_resize_pane(pane1, 700) → 700 ---
+pane=2 resize_pane(700)→700 (expect 700)
+--- [9] right-column branch drag (axis=0): py drives ---
+right-col branch=5 resize(750,250)→250 (expect 250)
+"{\"tab\":1,\"axis\":1,\"slots\":[1,2],\"zoom\":0,\"visible\":3,\"focus\":2,\"rects\":[{\"pane\":1,\"x\":0,\"y\":0,\"w\":100,\"h\":1000},{\"pane\":2,\"x\":100,\"y\":0,\"w\":900,\"h\":250},{\"pane\":3,\"x\":100,\"y\":250,\"w\":900,\"h\":750}],\"dividers\":[{\"branch\":3,\"axis\":1,\"x\":100,\"y\":0,\"w\":0,\"h\":1000},{\"branch\":5,\"axis\":0,\"x\":100,\"y\":250,\"w\":900,\"h\":0}]}"
+--- [10] MAX_PANES cap: split until 7th pane → -2 ---
+split#4 → 4
+split#5 → 5
+split#6 → 6
+split#7 → -2
+"{\"tab\":1,\"axis\":1,\"slots\":[4,2],\"zoom\":0,\"visible\":6,\"focus\":1,\"rects\":[{\"pane\":4,\"x\":50,\"y\":0,\"w\":50,\"h\":1000},{\"pane\":2,\"x\":100,\"y\":0,\"w\":900,\"h\":250},{\"pane\":3,\"x\":100,\"y\":250,\"w\":900,\"h\":750},{\"pane\":5,\"x\":25,\"y\":0,\"w\":25,\"h\":1000},{\"pane\":1,\"x\":0,\"y\":0,\"w\":12,\"h\":1000},{\"pane\":6,\"x\":12,\"y\":0,\"w\":13,\"h\":1000}],\"dividers\":[{\"branch\":3,\"axis\":1,\"x\":100,\"y\":0,\"w\":0,\"h\":1000},{\"branch\":7,\"axis\":1,\"x\":50,\"y\":0,\"w\":0,\"h\":1000},{\"branch\":5,\"axis\":0,\"x\":100,\"y\":250,\"w\":900,\"h\":0},{\"branch\":9,\"axis\":1,\"x\":25,\"y\":0,\"w\":0,\"h\":1000},{\"branch\":11,\"axis\":1,\"x\":12,\"y\":0,\"w\":0,\"h\":1000}]}"
+--- [11] window size face (vue back = headless defaults) ---
+window=1024x768 (expect 1024x768 headless defaults)
+--- [12] close pane → rects recompute ---
+"{\"tab\":1,\"axis\":1,\"slots\":[2,4],\"zoom\":0,\"visible\":5,\"focus\":1,\"rects\":[{\"pane\":2,\"x\":100,\"y\":0,\"w\":900,\"h\":1000},{\"pane\":4,\"x\":50,\"y\":0,\"w\":50,\"h\":1000},{\"pane\":5,\"x\":25,\"y\":0,\"w\":25,\"h\":1000},{\"pane\":1,\"x\":0,\"y\":0,\"w\":12,\"h\":1000},{\"pane\":6,\"x\":12,\"y\":0,\"w\":13,\"h\":1000}],\"dividers\":[{\"branch\":3,\"axis\":1,\"x\":100,\"y\":0,\"w\":0,\"h\":1000},{\"branch\":7,\"axis\":1,\"x\":50,\"y\":0,\"w\":0,\"h\":1000},{\"branch\":9,\"axis\":1,\"x\":25,\"y\":0,\"w\":0,\"h\":1000},{\"branch\":11,\"axis\":1,\"x\":12,\"y\":0,\"w\":0,\"h\":1000}]}"
+== done ==

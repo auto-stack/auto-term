@@ -378,6 +378,18 @@ pub fn engine_cursor_col(handle: i64) -> i64 {
     cursor_of(handle).1
 }
 
+/// PLAN-020 T-00b:窗口尺寸面(逻辑 px)——读 auto-lang 渲染器每帧刷新
+/// 的全局(theme::window_width/height;VM shim auto.term.window_width/
+/// window_height 同规约同源)。分屏矩形投影的前端 px 类几何标定源;
+/// 与引擎句柄零耦合。
+pub fn window_width() -> i64 {
+    auto_lang::ui::style::theme::window_width() as i64
+}
+
+pub fn window_height() -> i64 {
+    auto_lang::ui::style::theme::window_height() as i64
+}
+
 /// 收割引擎输出并刷新 glue 侧快照(feed + 损伤行全量重采 + 光标采样 +
 /// 逐格样式旁路)。`target` 决定样式上屏目标:旧件广播全部注册 terminal
 /// (单端行为不变);PLAN-018 D3 `engine_rows_for` 按 key 定向。

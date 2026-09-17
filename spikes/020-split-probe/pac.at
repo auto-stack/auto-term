@@ -1,0 +1,18 @@
+// pac.at — PLAN-020 T-00 开工门探针工程(矩形投影视图词汇判据)。
+// 探针面:①mouse-area 薄条 press/move/release 拖拽原语 + 拖拽中全幅
+// 捕获层切换(R1 关键件);②absolute inset-0 z-N hoist → Overlay 叠放
+// + 分数类(w-N/M → FillPortion)分数框几何 + 空槽零占位;③磁吸参数
+// (目标 500‰ ±40‰ 阈值)演示。模型面纯本地标量,零 back 依赖。
+// render: "vm" — 与 auto-term 生产形态同轨(aura_view_builder + iced
+// renderer + PointerArea),实机拖拽取证(T-00 ①)。
+
+name: "probe020"
+version: "0.1.0"
+description: "PLAN-020 T-00 split/drag/capture probe"
+
+scene: "ui"
+render: "vm"
+title: "probe020"
+window: "802x482"
+front_port: 17412
+back_port: 17413

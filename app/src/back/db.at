@@ -13,11 +13,12 @@
 // ratio_permille 千分比 0-1000,默认 500)。List 无中间删除原语 →
 // 删除走重建法(list_remove_* 助手)。
 //
-// V1 语义(§2.1;PLAN-019 D1 修订):①关末 Pane = 关其 Tab(末 Tab
-// 仍拒绝 no-op,app 常驻);②焦点切换新焦点 Pane 几何随动;③泵三档
-// ——焦点(全量+键入泵)/可见非焦点(全量投喂)/不可见(zoom 掩盖/
-// 他 Tab,drain-only);④恒单 Workspace(id=1);⑤分屏 V1 UI 上限 =
-// 树深 1 两分(T-B 渲染面,深分屏归 T-C)。
+// V1 语义(§2.1;PLAN-019 D1 修订;PLAN-020 rev2 修订):①关末 Pane =
+// 关其 Tab(末 Tab 仍拒绝 no-op,app 常驻);②焦点切换新焦点 Pane 几何
+// 随动;③泵三档——焦点(全量+键入泵)/可见非焦点(全量投喂)/不可见
+// (zoom 掩盖/他 Tab,drain-only);④恒单 Workspace(id=1);⑤分屏深度
+// 不限(PLAN-020:矩形投影消费,上限 = MAX_PANES 槽位帽,超限 split
+// 拒绝)。
 // pane.key = "pane-<id>"(模型身份,同时 = 可见多终端 UI 的视口槽
 // key;快照旁路/键入泵/几何请求都按 pane key 定向,PLAN-019)。
 //
@@ -28,7 +29,7 @@
 //   - engine_rows 的 List 返回必须落显式类型 var(否则 .len() 得 None);
 //   - 裸调用不得内联于 if 条件位(597 §9 挂起缺陷)——先赋值再比较。
 
-use auto.term: engine_spawn_ex, engine_free, engine_write_line, engine_rows_for, engine_pump_for, engine_apply_resize_for, engine_viewport_cols, engine_viewport_rows, engine_cursor_row, engine_cursor_col, engine_backlog_pending_mb, engine_backlog_paused, engine_backlog_take_alerts, engine_backlog_dropped, engine_interrupt, engine_is_exited, engine_menu_take
+use auto.term: engine_spawn_ex, engine_free, engine_write_line, engine_rows_for, engine_pump_for, engine_apply_resize_for, engine_viewport_cols, engine_viewport_rows, engine_cursor_row, engine_cursor_col, engine_backlog_pending_mb, engine_backlog_paused, engine_backlog_take_alerts, engine_backlog_dropped, engine_interrupt, engine_is_exited, engine_menu_take, window_width, window_height
 
 // ══════════════════════════════════════════════════════════════════
 // MuxCore 模型表(PLAN-018 D6;Workspace/Tab/LayoutTree/Pane)
@@ -65,6 +66,32 @@ var ws_active_tab int = 0
 var next_pane_id int = 1
 var next_tab_id int = 1
 var next_node_id int = 1
+
+// ── 矩形投影常量(PLAN-020 rev2 T-00 勘定落定;.at 无 const 字面,
+// 以模块变量+纪律代常量,勿写)────────────────────────────────
+// MAX_PANES = 单 Tab 可见 Pane 槽位帽(视图静态 6 槽);超限 split 拒绝。
+var MAX_PANES int = 6
+// 磁吸目标集 {500}(‰)与阈值 ±40;拖拽/键盘同一真相源(D2)。
+var MAGNET_TARGET int = 500
+var MAGNET_THRESH int = 40
+// 最小 Pane 尺寸(‰;钳位下限,上限 = 1000−MIN_PANE)。
+var MIN_PANE int = 100
+
+// ── 矩形投影缓存(PLAN-020 D1;epoch 失效)───────────────────────
+// 槽位表:1..6 = pane 槽(层序发现序),7..11 = divider 槽。全部 ‰。
+// kind:0=空 1=pane 2=divider。divider 的 w/h:轴 1(横排,竖条)时
+// w=0(前端以固定 6px 厚度渲染)、h=分支全高;轴 0 对偶。
+var layout_epoch int = 0
+var rect_cache_epoch int = -1
+var rect_kind List<int> = []
+var rect_pane List<int> = []
+var rect_key List<str> = []
+var rect_branch List<int> = []
+var rect_axis List<int> = []
+var rect_x List<int> = []
+var rect_y List<int> = []
+var rect_w List<int> = []
+var rect_h List<int> = []
 
 // ── 用户动作队列(PLAN-019 执行期修正,2026-09-15)──────────────────
 // 背景:按钮/快捷键处理器跑在 UI 线程,直接调 mux_*(含引擎
@@ -260,11 +287,15 @@ fn replace_child(tab_id int, old_child int, new_child int) int {
         if i >= n {
             break
         }
-        if node_first.get(i) == old_child {
-            node_first.set(i, new_child)
-        }
-        if node_second.get(i) == old_child {
-            node_second.set(i, new_child)
+        // PLAN-020 T-01 防御:新分支行自身(children 尚为 old_leaf)不得
+        // 被改写,否则 branch.first = branch 自环。
+        if node_ids.get(i) != new_child {
+            if node_first.get(i) == old_child {
+                node_first.set(i, new_child)
+            }
+            if node_second.get(i) == old_child {
+                node_second.set(i, new_child)
+            }
         }
         i = i + 1
     }
@@ -299,6 +330,428 @@ fn remove_pane_at(pi int) int {
     pane_rows = list_remove_int(pane_rows, pi)
     pane_exited = list_remove_bool(pane_exited, pi)
     return 1
+}
+
+/// 结构变异后失效矩形投影缓存(PLAN-020 D1;纯计数,廉价)。
+fn bump_layout_epoch() int {
+    layout_epoch = layout_epoch + 1
+    return layout_epoch
+}
+
+/// 矩形投影(PLAN-020 D1):对活动 Tab 可见子树做层序(BFS)遍历,
+/// 产出 pane 槽(≤MAX_PANES)与 divider 槽(≤MAX_PANES−1)的归一化
+/// 矩形(‰)。zoom 投影 = 单 pane 槽满幅、零 divider。纯循环 + 平行
+/// List 队列(018 平面表惯例;树深不限)。结果落缓存,getter 消费。
+fn rects_recompute() int {
+    rect_kind = []
+    rect_pane = []
+    rect_key = []
+    rect_branch = []
+    rect_axis = []
+    rect_x = []
+    rect_y = []
+    rect_w = []
+    rect_h = []
+    var ti int = active_tab_index()
+    if ti < 0 {
+        rect_cache_epoch = layout_epoch
+        return 0
+    }
+    var zoomed int = tab_zoomed_pane.get(ti)
+    if zoomed != 0 {
+        // zoom 投影:唯一可见 Pane 满幅(G5 语义保持)。
+        rect_kind.push(1)
+        rect_pane.push(zoomed)
+        var pi int = pane_index(zoomed)
+        if pi >= 0 {
+            rect_key.push(pane_keys.get(pi))
+        } else {
+            rect_key.push("")
+        }
+        rect_branch.push(0)
+        rect_axis.push(-1)
+        rect_x.push(0)
+        rect_y.push(0)
+        rect_w.push(1000)
+        rect_h.push(1000)
+        rect_cache_epoch = layout_epoch
+        return 1
+    }
+    // 槽序契约:1..6 = pane 槽(BFS 发现序),7..11 = divider 槽。
+    // BFS 先落临时表(pane_*/div_*),尾部拼接——视图静态槽数序稳定。
+    var p_kind List<int> = []
+    var p_pane List<int> = []
+    var p_key List<str> = []
+    var p_x List<int> = []
+    var p_y List<int> = []
+    var p_w List<int> = []
+    var p_h List<int> = []
+    var d_kind List<int> = []
+    var d_branch List<int> = []
+    var d_axis List<int> = []
+    var d_x List<int> = []
+    var d_y List<int> = []
+    var d_w List<int> = []
+    var d_h List<int> = []
+    // BFS 队列(节点 id + 归一化矩形)。
+    var q_node List<int> = []
+    var q_x List<int> = []
+    var q_y List<int> = []
+    var q_w List<int> = []
+    var q_h List<int> = []
+    q_node.push(tab_root_node.get(ti))
+    q_x.push(0)
+    q_y.push(0)
+    q_w.push(1000)
+    q_h.push(1000)
+    // PLAN-020 T-01 安全上界:并发缺陷(019 init 竞态在案)可致表成
+    // DAG/环,无界遍历会指数膨胀(20GB 实录,2026-09-17)。槽数本≤11,
+    // 512 步/256 队列是 20 倍余量的硬闸。
+    var head int = 0
+    var steps int = 0
+    loop {
+        if head >= q_node.len() {
+            break
+        }
+        if steps >= 512 {
+            break
+        }
+        if q_node.len() > 256 {
+            break
+        }
+        steps = steps + 1
+        var nid int = q_node.get(head)
+        var nx int = q_x.get(head)
+        var ny int = q_y.get(head)
+        var nw int = q_w.get(head)
+        var nh int = q_h.get(head)
+        head = head + 1
+        var ni int = node_index(nid)
+        if ni >= 0 {
+            var pane int = node_pane.get(ni)
+            if pane != 0 {
+                // 叶 → pane 临时槽。
+                p_kind.push(1)
+                p_pane.push(pane)
+                p_key.push(pane_keys.get(pane_index(pane)))
+                p_x.push(nx)
+                p_y.push(ny)
+                p_w.push(nw)
+                p_h.push(nh)
+            } else {
+                // 枝 → divider 槽 + 子矩形入队。axis 1=横排(左右,
+                // split X),0=纵叠(上下,split Y);ratio = first 占比(‰)。
+                var axis int = node_axis.get(ni)
+                var ratio int = node_ratio.get(ni)
+                d_kind.push(2)
+                d_branch.push(nid)
+                d_axis.push(axis)
+                if axis == 1 {
+                    d_x.push(nx + nw * ratio / 1000)
+                    d_y.push(ny)
+                    d_w.push(0)
+                    d_h.push(nh)
+                } else {
+                    d_x.push(nx)
+                    d_y.push(ny + nh * ratio / 1000)
+                    d_w.push(nw)
+                    d_h.push(0)
+                }
+                var fw int = nw
+                var fh int = nh
+                var sx int = nx
+                var sy int = ny
+                if axis == 1 {
+                    fw = nw * ratio / 1000
+                    sx = nx + fw
+                } else {
+                    fh = nh * ratio / 1000
+                    sy = ny + fh
+                }
+                q_node.push(node_first.get(ni))
+                q_x.push(nx)
+                q_y.push(ny)
+                q_w.push(fw)
+                q_h.push(fh)
+                q_node.push(node_second.get(ni))
+                q_x.push(sx)
+                q_y.push(sy)
+                // PLAN-020 T-01 修正:second 子的横轴尺寸按轴取——axis1
+                // 第二子高 = nh(原误 nh−fh = 0),axis0 第二子宽 = nw。
+                if axis == 1 {
+                    q_w.push(nw - fw)
+                    q_h.push(nh)
+                } else {
+                    q_w.push(nw)
+                    q_h.push(nh - fh)
+                }
+            }
+        }
+    }
+    // 拼接:pane 槽 1..6(不足垫空),divider 槽 7..11——槽位契约固定,
+    // 前端静态帧按号取用。
+    var i int = 0
+    loop {
+        if i >= MAX_PANES {
+            break
+        }
+        if i < p_kind.len() {
+            rect_kind.push(p_kind.get(i))
+            rect_pane.push(p_pane.get(i))
+            rect_key.push(p_key.get(i))
+            rect_x.push(p_x.get(i))
+            rect_y.push(p_y.get(i))
+            rect_w.push(p_w.get(i))
+            rect_h.push(p_h.get(i))
+        } else {
+            rect_kind.push(0)
+            rect_pane.push(0)
+            rect_key.push("")
+            rect_x.push(0)
+            rect_y.push(0)
+            rect_w.push(0)
+            rect_h.push(0)
+        }
+        rect_branch.push(0)
+        rect_axis.push(-1)
+        i = i + 1
+    }
+    i = 0
+    loop {
+        if i >= d_kind.len() {
+            break
+        }
+        rect_kind.push(d_kind.get(i))
+        rect_pane.push(0)
+        rect_key.push("")
+        rect_branch.push(d_branch.get(i))
+        rect_axis.push(d_axis.get(i))
+        rect_x.push(d_x.get(i))
+        rect_y.push(d_y.get(i))
+        rect_w.push(d_w.get(i))
+        rect_h.push(d_h.get(i))
+        i = i + 1
+    }
+    rect_cache_epoch = layout_epoch
+    return 1
+}
+
+/// 投影缓存就绪(惰性重建;epoch 失效)。
+fn rects_ready() int {
+    if rect_cache_epoch != layout_epoch {
+        rects_recompute()
+    }
+    return 1
+}
+
+/// 第 k 槽字段读取(k 1 起;越界 = 缺省)。plan:窗格/分隔条统一槽表。
+fn rect_at(kind List<int>, k int) int {
+    if k < 1 {
+        return 0
+    }
+    if k > kind.len() {
+        return 0
+    }
+    return kind.get(k - 1)
+}
+
+/// 第 k 槽类型(0=空 1=pane 2=divider)。
+pub fn mux_rect_kind(k int) int {
+    rects_ready()
+    return rect_at(rect_kind, k)
+}
+
+pub fn mux_rect_pane(k int) int {
+    rects_ready()
+    return rect_at(rect_pane, k)
+}
+
+/// 第 k 槽 pane 模型 key(pane 槽;空 = 非 pane 槽)。
+pub fn mux_rect_key(k int) str {
+    rects_ready()
+    if k < 1 {
+        return ""
+    }
+    if k > rect_key.len() {
+        return ""
+    }
+    return rect_key.get(k - 1)
+}
+
+pub fn mux_rect_branch(k int) int {
+    rects_ready()
+    return rect_at(rect_branch, k)
+}
+
+pub fn mux_rect_axis(k int) int {
+    rects_ready()
+    return rect_at(rect_axis, k)
+}
+
+pub fn mux_rect_x(k int) int {
+    rects_ready()
+    return rect_at(rect_x, k)
+}
+
+pub fn mux_rect_y(k int) int {
+    rects_ready()
+    return rect_at(rect_y, k)
+}
+
+pub fn mux_rect_w(k int) int {
+    rects_ready()
+    return rect_at(rect_w, k)
+}
+
+pub fn mux_rect_h(k int) int {
+    rects_ready()
+    return rect_at(rect_h, k)
+}
+
+/// 窗口客户区逻辑 px(PLAN-020 T-00b 窗口尺寸面;矩形投影 px 类
+/// 几何的标定源。VM = shim 读渲染器每帧全局;rust = 侧车同名;vue
+/// back 降级缺省槽位值)。
+pub fn mux_window_width() int {
+    return window_width()
+}
+
+pub fn mux_window_height() int {
+    return window_height()
+}
+
+/// 当前 Tab 根分支的矩形(‰;(0,0,1000,1000) = 无分屏/未初始化)。
+/// mux_resize_branch 的比例换算基准(D2;与投影同一 BFS 语义)。
+fn rect_of_node(node_id int) List<int> {
+    var out List<int> = [0, 0, 1000, 1000]
+    var ni int = node_index(node_id)
+    if ni < 0 {
+        return out
+    }
+    var ti int = tab_index(node_tab_ids.get(ni))
+    if ti < 0 {
+        return out
+    }
+    // 自根下行的迭代路径(栈深 = 树深;平面表平行栈)。
+    var s_node List<int> = []
+    var s_x List<int> = []
+    var s_y List<int> = []
+    var s_w List<int> = []
+    var s_h List<int> = []
+    s_node.push(tab_root_node.get(ti))
+    s_x.push(0)
+    s_y.push(0)
+    s_w.push(1000)
+    s_h.push(1000)
+    var guard int = 0
+    loop {
+        if s_node.len() == 0 {
+            break
+        }
+        if guard >= 512 {
+            break
+        }
+        if s_node.len() > 256 {
+            break
+        }
+        guard = guard + 1
+        var nid int = s_node.get(s_node.len() - 1)
+        var nx int = s_x.get(s_x.len() - 1)
+        var ny int = s_y.get(s_y.len() - 1)
+        var nw int = s_w.get(s_w.len() - 1)
+        var nh int = s_h.get(s_h.len() - 1)
+        s_node = list_remove_int(s_node, s_node.len() - 1)
+        s_x = list_remove_int(s_x, s_x.len() - 1)
+        s_y = list_remove_int(s_y, s_y.len() - 1)
+        s_w = list_remove_int(s_w, s_w.len() - 1)
+        s_h = list_remove_int(s_h, s_h.len() - 1)
+        var ci int = node_index(nid)
+        if nid == node_id {
+            out = [nx, ny, nw, nh]
+            return out
+        }
+        if ci >= 0 {
+            if node_pane.get(ci) == 0 {
+                var axis int = node_axis.get(ci)
+                var ratio int = node_ratio.get(ci)
+                var fw int = nw
+                var fh int = nh
+                var sx int = nx
+                var sy int = ny
+                if axis == 1 {
+                    fw = nw * ratio / 1000
+                    sx = nx + fw
+                } else {
+                    fh = nh * ratio / 1000
+                    sy = ny + fh
+                }
+                s_node.push(node_first.get(ci))
+                s_x.push(nx)
+                s_y.push(ny)
+                s_w.push(fw)
+                s_h.push(fh)
+                s_node.push(node_second.get(ci))
+                s_x.push(sx)
+                s_y.push(sy)
+                if axis == 1 {
+                    s_w.push(nw - fw)
+                    s_h.push(nh)
+                } else {
+                    s_w.push(nw)
+                    s_h.push(nh - fh)
+                }
+            }
+        }
+    }
+    return out
+}
+
+/// 分支级调比例(PLAN-020 D2;拖拽唯一写入口,键盘委托同此)。
+/// (px,py) = 指针在内容区的 ‰ 坐标(前端捕获层 coords 归一,取整后
+/// 传入;1‰ ≈ 1 格距,精度充分)。比例 = 指针沿分支轴在父矩形内的
+/// 位置;钳位 [MIN_PANE, 1000−MIN_PANE];磁吸 |r−500|≤40 → 500。
+/// 返回落定比例(负 = 未找到/叶无比例)。
+pub fn mux_resize_branch(branch_id int, px int, py int) int {
+    var ni int = node_index(branch_id)
+    if ni < 0 {
+        return -1
+    }
+    if node_pane.get(ni) != 0 {
+        return -1
+    }
+    var rect List<int> = rect_of_node(branch_id)
+    var bx int = rect.get(0)
+    var by int = rect.get(1)
+    var bw int = rect.get(2)
+    var bh int = rect.get(3)
+    var axis int = node_axis.get(ni)
+    var ratio int = 0
+    if axis == 1 {
+        if bw <= 0 {
+            return -1
+        }
+        ratio = (px - bx) * 1000 / bw
+    } else {
+        if bh <= 0 {
+            return -1
+        }
+        ratio = (py - by) * 1000 / bh
+    }
+    if ratio < MIN_PANE {
+        ratio = MIN_PANE
+    }
+    if ratio > 1000 - MIN_PANE {
+        ratio = 1000 - MIN_PANE
+    }
+    var d int = ratio - MAGNET_TARGET
+    if d < 0 {
+        d = 0 - d
+    }
+    if d <= MAGNET_THRESH {
+        ratio = MAGNET_TARGET
+    }
+    node_ratio.set(ni, ratio)
+    bump_layout_epoch()
+    return ratio
 }
 
 // ══════════════════════════════════════════════════════════════════
@@ -456,27 +909,35 @@ pub fn mux_init() int {
     return tab
 }
 
-/// 分屏:活动焦点 Pane 的叶位替换为分支(原叶 first、新 Pane second;
-/// axis 0=纵向 1=横向;比例 500‰)。返回新 Pane id(0 = 失败)。
-/// V1 UI 上限(PLAN-019 T-B 渲染面):Tab 已是分支(树深 1)→ 再分
-/// 拒绝(0)——视图投影面只到两 Pane,防不可见 Pane;上限解除归 T-C。
+/// 分屏:焦点 Pane 的叶位替换为分支(原叶 first、新 Pane second;
+/// axis 0=纵向 1=横向;比例 500‰)。返回新 Pane id(0 = 失败;-2 =
+/// 超过 MAX_PANES 槽位帽)。深度不限(PLAN-020:矩形投影消费)。
 pub fn mux_split(axis int) int {
     var ti int = active_tab_index()
     if ti < 0 {
         return 0
     }
     var tab_id int = tab_ids.get(ti)
+    // 槽位帽:单 Tab 可见 Pane 数 ≤ MAX_PANES(视图静态槽数)。
+    var cnt int = 0
+    var pi int = 0
+    var pn int = pane_ids.len()
+    loop {
+        if pi >= pn {
+            break
+        }
+        if pane_tab_ids.get(pi) == tab_id {
+            cnt = cnt + 1
+        }
+        pi = pi + 1
+    }
+    if cnt >= MAX_PANES {
+        return -2
+    }
     var focus int = tab_active_pane.get(ti)
     var old_leaf int = leaf_node_of_pane(focus)
     if old_leaf == 0 {
         return 0
-    }
-    var root int = tab_root_node.get(ti)
-    var ri int = node_index(root)
-    if ri >= 0 {
-        if node_pane.get(ri) == 0 {
-            return 0
-        }
     }
     var new_leaf int = spawn_pane_into_tab(tab_id, axis)
     if new_leaf == 0 {
@@ -488,11 +949,20 @@ pub fn mux_split(axis int) int {
     node_tab_ids.push(tab_id)
     node_axis.push(axis)
     node_ratio.push(500)
-    node_first.push(old_leaf)
-    node_second.push(new_leaf)
+    node_first.push(0)
+    node_second.push(0)
     node_pane.push(0)
 
+    // PLAN-020 T-01 根修(018 遗留缺陷):先空挂分支行、replace_child
+    // 链接父位、再落孩子——旧序先 push first=old_leaf 再 replace_child,
+    // 扫描会命中分支自己的行(其 first 恰为 old_leaf)→ branch.first =
+    // branch 自环(深度 1 上限时无人深遍历被掩盖;020 深度解锁+投影
+    // 遍历踩出,20GB/自环实录 2026-09-17)。
     replace_child(tab_id, old_leaf, branch)
+    var bi int = node_index(branch)
+    node_first.set(bi, old_leaf)
+    node_second.set(bi, new_leaf)
+    bump_layout_epoch()
     var ni int = node_index(new_leaf)
     return node_pane.get(ni)
 }
@@ -553,6 +1023,7 @@ pub fn mux_close_pane(pane_id int) int {
             tab_active_pane.set(ti2, next_focus)
         }
     }
+    bump_layout_epoch()
     return 1
 }
 
@@ -580,14 +1051,17 @@ pub fn mux_zoom(pane_id int) int {
     var cur int = tab_zoomed_pane.get(ti)
     if cur == pane_id {
         tab_zoomed_pane.set(ti, 0)
+        bump_layout_epoch()
         return 0
     }
     tab_zoomed_pane.set(ti, pane_id)
+    bump_layout_epoch()
     return 1
 }
 
-/// 调比例:pane 所在叶的父分支 ratio_permille(0-1000 钳位)。
-/// 返回新比例(负 = 未找到/无父分支)。
+/// 调比例(PLAN-020 D5 键盘兼容面):pane 所在叶的父分支比例,经
+/// mux_resize_branch 同一落定段(钳位 + 磁吸;G6 同一比例真相源)。
+/// 返回落定比例(负 = 未找到/无父分支)。
 pub fn mux_resize_pane(pane_id int, ratio int) int {
     var leaf int = leaf_node_of_pane(pane_id)
     if leaf == 0 {
@@ -611,15 +1085,11 @@ pub fn mux_resize_pane(pane_id int, ratio int) int {
     if hit < 0 {
         return -1
     }
-    var clamped int = ratio
-    if clamped < 0 {
-        clamped = 0
-    }
-    if clamped > 1000 {
-        clamped = 1000
-    }
-    node_ratio.set(hit, clamped)
-    return clamped
+    var branch int = node_ids.get(hit)
+    var rect List<int> = rect_of_node(branch)
+    var px int = rect.get(0) + rect.get(2) * ratio / 1000
+    var py int = rect.get(1) + rect.get(3) * ratio / 1000
+    return mux_resize_branch(branch, px, py)
 }
 
 /// 新 Tab(单 Pane;自动激活)。返回 tab id(0 = spawn 失败)。
@@ -636,6 +1106,7 @@ pub fn mux_new_tab() int {
     tab_active_pane.push(node_pane.get(ni))
     tab_zoomed_pane.push(0)
     ws_active_tab = tab
+    bump_layout_epoch()
     return tab
 }
 
@@ -690,6 +1161,7 @@ pub fn mux_close_tab(tab_id int) int {
             ws_active_tab = 0
         }
     }
+    bump_layout_epoch()
     return 1
 }
 
@@ -700,6 +1172,7 @@ pub fn mux_activate_tab(tab_id int) int {
         return -1
     }
     ws_active_tab = tab_id
+    bump_layout_epoch()
     return 1
 }
 
@@ -1166,54 +1639,37 @@ pub fn mux_split_axis() int {
     return node_axis.get(ri)
 }
 
-/// 布局槽位投影:slot(1/2) → 可见 Pane id(0 = 该槽无 Pane)。
-/// zoom → slot1 = zoomed;无分屏 → slot1 = 唯一叶;树深 1 →
-/// slot1/2 = first/second 叶(T-B 渲染面直接消费)。
+/// 布局槽位投影(PLAN-020 起为矩形投影委托,兼容保留):slot(1..6) →
+/// 第 slot 个可见 Pane id(0 = 该槽无 Pane)。zoom → slot1 = zoomed。
 pub fn mux_slot_pane_id(slot int) int {
-    var ti int = active_tab_index()
-    if ti < 0 {
+    rects_ready()
+    var k int = slot
+    if k < 1 {
+        k = 1
+    }
+    if k > MAX_PANES {
         return 0
     }
-    var zoomed int = tab_zoomed_pane.get(ti)
-    if zoomed != 0 {
-        if slot == 1 {
-            return zoomed
-        }
-        return 0
-    }
-    var root int = tab_root_node.get(ti)
-    var ri int = node_index(root)
-    if ri < 0 {
-        return 0
-    }
-    var pane int = node_pane.get(ri)
-    if pane != 0 {
-        if slot == 1 {
-            return pane
-        }
-        return 0
-    }
-    if slot == 1 {
-        return leftmost_pane(node_first.get(ri))
-    }
-    if slot == 2 {
-        return leftmost_pane(node_second.get(ri))
+    if mux_rect_kind(k) == 1 {
+        return rect_pane.get(k - 1)
     }
     return 0
 }
 
-/// 布局槽位 → pane 模型 key(T-B 视图 terminal 槽的动态 key 绑定面;
-/// 空槽返回 "")。
+/// 布局槽位 → pane 模型 key(视图 terminal 槽动态 key 绑定面;空槽 "")。
 pub fn mux_slot_pane_key(slot int) str {
-    var pid int = mux_slot_pane_id(slot)
-    if pid == 0 {
+    rects_ready()
+    var k int = slot
+    if k < 1 {
+        k = 1
+    }
+    if k > MAX_PANES {
         return ""
     }
-    var pi int = pane_index(pid)
-    if pi < 0 {
-        return ""
+    if mux_rect_kind(k) == 1 {
+        return rect_key.get(k - 1)
     }
-    return pane_keys.get(pi)
+    return ""
 }
 
 /// 当前 Tab 是否 zoom 中(1/0)。
@@ -1229,12 +1685,15 @@ pub fn mux_zoom_active() int {
 }
 
 /// 布局投影 DTO(当前 Tab;JSON 串;/api/mux/layout 断言面)。
+/// PLAN-020 扩建:rects = pane 槽矩形(‰)、dividers = 分隔条矩形
+/// (‰;w/h=0 表示前端以固定 6px 厚度渲染的那一轴)。
 pub fn mux_layout() str {
     var ti int = active_tab_index()
     if ti < 0 {
-        return "{\"tab\":0,\"axis\":-1,\"slots\":[0,0],\"zoom\":0,\"visible\":0,\"focus\":0}"
+        return "{\"tab\":0,\"axis\":-1,\"slots\":[0,0],\"zoom\":0,\"visible\":0,\"focus\":0,\"rects\":[],\"dividers\":[]}"
     }
     var zoomed int = tab_zoomed_pane.get(ti)
+    rects_ready()
     var out str = "{\"tab\":" + tab_ids.get(ti).str()
     out = out + ",\"axis\":" + mux_split_axis().str()
     out = out + ",\"slots\":[" + mux_slot_pane_id(1).str() + "," + mux_slot_pane_id(2).str() + "]"
@@ -1245,6 +1704,54 @@ pub fn mux_layout() str {
         out = out + "0"
     }
     out = out + ",\"visible\":" + mux_visible_pane_count().str()
-    out = out + ",\"focus\":" + mux_focus_pane_id().str() + "}"
+    out = out + ",\"focus\":" + mux_focus_pane_id().str()
+    // rects(pane 槽)。
+    out = out + ",\"rects\":["
+    var i int = 0
+    var n int = rect_kind.len()
+    var first int = 1
+    loop {
+        if i >= n {
+            break
+        }
+        if rect_kind.get(i) == 1 {
+            if first == 1 {
+                first = 0
+            } else {
+                out = out + ","
+            }
+            out = out + "{\"pane\":" + rect_pane.get(i).str()
+            out = out + ",\"x\":" + rect_x.get(i).str()
+            out = out + ",\"y\":" + rect_y.get(i).str()
+            out = out + ",\"w\":" + rect_w.get(i).str()
+            out = out + ",\"h\":" + rect_h.get(i).str() + "}"
+        }
+        i = i + 1
+    }
+    out = out + "]"
+    // dividers。
+    out = out + ",\"dividers\":["
+    i = 0
+    first = 1
+    loop {
+        if i >= n {
+            break
+        }
+        if rect_kind.get(i) == 2 {
+            if first == 1 {
+                first = 0
+            } else {
+                out = out + ","
+            }
+            out = out + "{\"branch\":" + rect_branch.get(i).str()
+            out = out + ",\"axis\":" + rect_axis.get(i).str()
+            out = out + ",\"x\":" + rect_x.get(i).str()
+            out = out + ",\"y\":" + rect_y.get(i).str()
+            out = out + ",\"w\":" + rect_w.get(i).str()
+            out = out + ",\"h\":" + rect_h.get(i).str() + "}"
+        }
+        i = i + 1
+    }
+    out = out + "]}"
     return out
 }

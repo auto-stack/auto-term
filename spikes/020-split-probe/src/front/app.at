@@ -1,0 +1,42 @@
+// app.at — PLAN-020 T-00 探针·诊断轮 4:分数映射判别。
+widget App {
+    msg { Init, Tick }
+    model { }
+    timer { Tick (every_ms: 200) }
+    on { .Init -> { } .Tick -> { } }
+    view {
+        col {
+            style: "w-full h-screen bg-background"
+            text "W1: w-2/3 first + w-1/3" { style: "text-xs" }
+            row {
+                style: "w-full h-10"
+                div { style: "w-2/3 h-full bg-[#1f3a5f]" }
+                div { style: "w-1/3 h-full bg-[#3a5f1f]" }
+            }
+            text "W2: w-3/12 + w-9/12 generic" { style: "text-xs" }
+            row {
+                style: "w-full h-10"
+                div { style: "w-3/12 h-full bg-[#1f3a5f]" }
+                div { style: "w-9/12 h-full bg-[#3a5f1f]" }
+            }
+            text "W3: w-700/1000 + w-300/1000" { style: "text-xs" }
+            row {
+                style: "w-full h-10"
+                div { style: "w-700/1000 h-full bg-[#1f3a5f]" }
+                div { style: "w-300/1000 h-full bg-[#3a5f1f]" }
+            }
+            text "W4: w-1/2 + w-[200px]" { style: "text-xs" }
+            row {
+                style: "w-full h-10"
+                div { style: "w-1/2 h-full bg-[#1f3a5f]" }
+                div { style: "w-[200px] h-full bg-[#3a5f1f]" }
+            }
+            text "W5: w-1/2 + w-1/2" { style: "text-xs" }
+            row {
+                style: "w-full h-10"
+                div { style: "w-1/2 h-full bg-[#1f3a5f]" }
+                div { style: "w-1/2 h-full bg-[#3a5f1f]" }
+            }
+        }
+    }
+}

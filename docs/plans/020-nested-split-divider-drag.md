@@ -1,13 +1,13 @@
 ---
 plan_id: PLAN-020
-status: drafting
+status: executing
 feature_name: 任意深度分屏 + 可视分隔条拖拽 + 比例磁吸(嵌套布局与分隔条交互)
 author: [zcode-session]
 created_at: 2026-09-17T00:00:00Z
-updated_at: 2026-09-17T00:00:00Z
-plan_revision: 1
+updated_at: 2026-09-17T12:00:00Z
+plan_revision: 2
 current_step: 0
-total_steps: 7
+total_steps: 8
 supersedes_spec_components: []
 new_spec_components: []
 touched_goals: []
@@ -171,6 +171,17 @@ db(back)                                front(view 消费)
 | D4 | 拖拽捕获层 | auto-term `app.at`:拖拽中在内容区顶置全幅透明 mouse_area 捕获层(Overlay/Stack 顶槽),防快速拖出薄条丢 move;release 撤层 | R1 关键件;若 T-00 实证 on_move 已够(薄条内)可降级 |
 | D5 | 键盘调比例兼容 | auto-term `db.at`:`mux_resize_pane` 转委托 `mux_resize_branch`(含磁吸一致语义) | G6 |
 | D6 | 文档 | `docs/specs/terminal-mux-model.md`(V1 语义节:槽位投影→矩形投影、深度上限解除→槽位帽、分隔条/磁吸契约)+ DEBTS 观察条 + app/README | SD-01/SD-02 |
+| D7(rev2 新增) | 窗口尺寸面 | auto-lang(主检 master 微增,lang-020 worktree 流程):`iced_adapter` 增 `window_height()` 全局(镜像既有 `window_width()`,renderer 同点 set)+ VM shim `auto.term.window_width/window_height`(native_catalog 2997/2998)+ rust 侧车 `term.rs` 同名函数(读同一全局) | rev2 T-00 勘定:分数/flex 宽度类 VM 实机失效(§9 附记矩阵),px 类为唯一可靠几何面;‰→px 换算需要内容区像素,现运行时无任何窗口尺寸 face 可消费——D3 的"模型算出偏移/尺寸"落 px 类即依赖本面。触发 §3 预留的 T-00 独立评估条款 |
+
+### rev2 几何实现修订(替代 rev1 的"分数框"设想)
+
+- 前端 N 槽 = absolute inset-0 z-N hoist(Overlay 叠放,实证可行)+
+  **任意 px 类**(`w-[Npx]/h-[Npx]/top-[Npx]/left-[Npx]`,实证唯一稳定
+  几何面)驱动;模型持内容区 px(= client px − Tab 条高常量),handler
+  内 ‰→px int 换算,view 零算术。磁吸/钳位仍在 back(D2 不变)。
+- 分隔条拖拽 = 薄条 onmousedown 记分支 + 拖拽中全幅捕获层(coords
+  "1000x1000" → on_move 直接得 ‰ 坐标,px 无关)+ onmouseup 落定;
+  float→int 用 `x.to_int()`(499 M3 先例)。D4 捕获层实证成立。
 
 ### 规范增量
 
@@ -222,13 +233,16 @@ db(back)                                front(view 消费)
   对 6 槽叠放 + 零尺寸隐藏的渲染实证(空槽不劫持事件);③磁吸
   参数(目标集/阈值/最小 Pane 尺寸)勘定与常量化。前置:无。
   产出:§9 勘定附记。关联 G1-G4。
+- **T-00b(rev2 新增)窗口尺寸面**:D7 auto-lang 微增(worktree
+  流程:branch plan-020-dev,金样回归,master FF)+ 三轨消费面核对
+  (vm shim/rust 侧车/vue back 降级 0)。前置 T-00。关联 D3/AC-03。
 - **T-01 [D1+D2] back 投影与磁吸**(db.at/api.at):mux_layout_rects/
   mux_dividers/mux_resize_branch + 磁吸钳位 + MAX_PANES 守卫 +
   mux_resize_pane 兼容委托。前置 T-00。关联 AC-01/02/05/07。
   验证:curl 剧本(测试 1)。
 - **T-02 [D3+D4] 前端 N 槽视图与分隔条**(app.at):stack 视图替换
-  槽位投影 + 分隔条交互 + 捕获层。前置 T-00/T-01。关联 AC-01..04。
-  验证:rust 实机 + 帧序列(测试 2/3)。
+  槽位投影 + px 类几何 + 分隔条交互 + 捕获层。前置 T-00b/T-01。
+  关联 AC-01..04。验证:rust 实机 + 帧序列(测试 2/3)。
 - **T-03 [D5] 键盘调比例兼容**(db.at/api.at)。前置 T-01。关联 G6。
   验证:curl(既有 mux_resize_pane 面行为不变)。
 - **T-04 集成取证**:测试 1-5 全量 + 回归(测试 4)。前置
@@ -248,6 +262,49 @@ db(back)                                front(view 消费)
   风险预判与处置:拖拽丢步(捕获层 D4)/视图递归缺口(R1 矩形
   投影绕开)/槽位帽(常量+守卫)· next:work(T-00 起,待用户
   复审本计划后指令)。
+
+- 2026-09-17 stage:work · PLAN-020 · rev2 · **T-00 勘定附记**
+  (outcome:pass,几何路线修订;status drafting→executing,用户
+  work 指令在案):
+  - **工作树勘定**:主检出直落(014/016/017/018/019 五例惯例;
+    auto-term 无 AGENTS.md 反向约束)。基点 a47a18f(020 预检:
+    019 T-07 spec 修订 48+ 行漏提交,本会话以独立提交归还 019
+    所有权后落座;工作区余 019 evidence/vm-run.log 与 tmp 文件
+    均他方遗留不处置)。auto-lang 改动(若 T-00b)按 87eba67ab
+    裁定走 lang-020 worktree。
+  - **探针工程** `spikes/020-split-probe/`(render vm,纯本地模型,
+    四轮诊断矩阵 + 像素级测量;证据 docs/plans/evidence/020/)。
+    实证四条:
+    (a) **absolute+z hoist 成立**:div style "absolute inset-0
+    z-N" → Overlay 叠放(iced stack,PLAN-536 fold_floats 同款),
+    分隔条浮层正确悬浮于 base 之上;与 024-charts tooltip 动态
+    class 先例同源;
+    (b) **任意 px 类是唯一稳定几何面**:`w-[Npx]/h-[Npx]` 与行高
+    类(h-16/h-[60px])渲染精确(物理面 ≈2× 一致缩放,比例不变);
+    **分数类全灭**:w-1/2、w-2/3+1/3、w-3/12+9/12、w-700/1000+
+    w-300/1000 五形态分别落"首件占满/等分退化/比例异常",关
+    AUTO_STYLE_CACHE 复测不变;flex-1 等分同样首件占满。根因未
+    穷(div 容器宽度消费链),记 DEBTS 观察条,不阻本计划;
+    (c) **窗口像素缺口**:px 类几何需要内容区 px,而运行时对
+    .at 无任何窗口尺寸 face——iced_adapter::window_width() 全局
+    仅渲染器内部响应式断点消费;native_catalog 全 262 项无
+    window/size 族;terminal 014 推断环只在"引擎 resize→cols/rows
+    回流"方向闭合,反向(app 读推断值)无面,且切分后无 Pane
+    覆盖全幅,E 无法标定 → rev1 §2 数据流的 ‰→px 换算环节立项时
+    未审视,为 T-00 判定的真缺口;
+    (d) **拖拽原语在库**:mouse-area onmousedown→on_press/onmouseup→
+    on_release/onmousemove+coords("WxH")→PointerArea 限频流
+    (≤30Hz,0.5px 量化,坐标引擎层换算);float→int 有正门
+    `x.to_int()`(024-charts 499 M3 在库先例);捕获层按
+    coords:"1000x1000" 设计 = on_move 直得 ‰ 坐标,px 无关。
+  - **裁定**:R1 路线保持;新增 **D7 窗口尺寸面**(auto-lang
+    微增:window_height 全局 + auto.term.window_width/window_height
+    shim 2997/2998 + rust 侧车同名,lang-020 worktree 流程);
+    D3 几何落 px 类 + 模型持内容区 px(client − Tab 条高常量);
+    磁吸参数定版:目标集 {500}、阈值 ±40‰、最小 Pane 100‰、
+    MAX_PANES=6(rev1 §10.1/10.2 的 V1 缺省就此落定)。计划
+    rev1→rev2(total_steps 7→8,§8 增 T-00b),AC 零变动。
+  - next:T-00b(lang-020 worktree)→ T-01。
 
 ## 10. 待澄清事项
 

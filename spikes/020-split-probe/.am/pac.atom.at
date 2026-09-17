@@ -1,0 +1,39 @@
+root {
+    version: "0.1.0"
+    all_incs: [
+        
+    ]
+    deps: [
+        
+    ]
+    devices: [
+        
+    ]
+    libs: [
+        
+    ]
+    apps: [
+        
+    ]
+    bags: [
+        
+    ]
+    tests: [
+        
+    ]
+    files: [
+        
+    ]
+    name: "probe020"
+    description: "PLAN-020 T-00 split/drag/capture probe"
+    scene: "ui"
+    render: "vm"
+    title: "probe020"
+    window: "802x482"
+    front_port: 17412
+    back_port: 17413
+    defines: [
+        
+    ]
+    relative_path: "/.."
+}

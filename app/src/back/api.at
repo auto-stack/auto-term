@@ -109,8 +109,8 @@ pub fn term_exited() bool {
 
 // ── PLAN-018 D7:MuxCore 结构操作(/api/mux/*;Action 单入口的契约面)──
 
-/// 分屏:活动焦点 Pane 叶位替换为分支(axis 0=纵向 1=横向)。
-/// V1 UI 上限 = 树深 1(已分屏 Tab 再分拒绝)。返回新 Pane id(0 = 失败)。
+/// 分屏:活动焦点 Pane 叶位替换为分支(axis 0=纵向 1=横向;深度不限)。
+/// 返回新 Pane id(0 = 失败;-2 = 超过 MAX_PANES 槽位帽,PLAN-020)。
 #[api(method = "POST", path = "/api/mux/split")]
 pub fn mux_split(axis int) int {
     return db.mux_split(axis)
@@ -285,4 +285,88 @@ pub fn mux_layout() str {
 #[api(method = "POST", path = "/api/mux/enqueue")]
 pub fn mux_enqueue(code int, arg int) int {
     return db.mux_enqueue(code, arg)
+}
+
+// ── PLAN-020 D1/D2:矩形投影消费面(/api/mux/rect-*;前端 tick 消费 +
+// curl 断言)────────────────────────────────────────────────────
+// 槽序契约:1..6 = pane 槽(BFS 发现序),7..11 = divider 槽。
+// 全部带参 GET 在 vm 形态有 api 委托合成缺口(019 §10.6 在案)——
+// 故带参读一律 POST(mux_pane_lines 先例),vm/rust/vue 三轨同源。
+
+/// 第 k 槽类型(0=空 1=pane 2=divider)。
+#[api(method = "POST", path = "/api/mux/rect-kind")]
+pub fn mux_rect_kind(k int) int {
+    return db.mux_rect_kind(k)
+}
+
+/// 第 k 槽 pane id(pane 槽;0 = 非 pane 槽)。
+#[api(method = "POST", path = "/api/mux/rect-pane")]
+pub fn mux_rect_pane(k int) int {
+    return db.mux_rect_pane(k)
+}
+
+/// 第 k 槽 pane 模型 key(pane 槽;"" = 非 pane 槽)。
+#[api(method = "POST", path = "/api/mux/rect-key")]
+pub fn mux_rect_key(k int) str {
+    return db.mux_rect_key(k)
+}
+
+/// 第 k 槽分支 id(divider 槽;0 = 非 divider 槽;拖拽目标)。
+#[api(method = "POST", path = "/api/mux/rect-branch")]
+pub fn mux_rect_branch(k int) int {
+    return db.mux_rect_branch(k)
+}
+
+/// 第 k 槽轴(1=横排竖条 0=纵叠横条;-1 = 非 divider 槽)。
+#[api(method = "POST", path = "/api/mux/rect-axis")]
+pub fn mux_rect_axis(k int) int {
+    return db.mux_rect_axis(k)
+}
+
+/// 第 k 槽矩形 x(‰)。
+#[api(method = "POST", path = "/api/mux/rect-x")]
+pub fn mux_rect_x(k int) int {
+    return db.mux_rect_x(k)
+}
+
+/// 第 k 槽矩形 y(‰)。
+#[api(method = "POST", path = "/api/mux/rect-y")]
+pub fn mux_rect_y(k int) int {
+    return db.mux_rect_y(k)
+}
+
+/// 第 k 槽矩形 w(‰;divider 竖条 = 0,前端固定 6px 厚)。
+#[api(method = "POST", path = "/api/mux/rect-w")]
+pub fn mux_rect_w(k int) int {
+    return db.mux_rect_w(k)
+}
+
+/// 第 k 槽矩形 h(‰;divider 横条 = 0,同上)。
+#[api(method = "POST", path = "/api/mux/rect-h")]
+pub fn mux_rect_h(k int) int {
+    return db.mux_rect_h(k)
+}
+
+/// 窗口客户区逻辑 px(T-00b;无参 GET,vm 形态安全)。
+#[api(method = "GET", path = "/api/mux/window-width")]
+pub fn mux_window_width() int {
+    return db.mux_window_width()
+}
+
+#[api(method = "GET", path = "/api/mux/window-height")]
+pub fn mux_window_height() int {
+    return db.mux_window_height()
+}
+
+/// 键盘调比例兼容面(D5;pane → 父分支,磁吸+钳位一致语义)。
+#[api(method = "POST", path = "/api/mux/resize-pane")]
+pub fn mux_resize_pane(pane_id int, ratio int) int {
+    return db.mux_resize_pane(pane_id, ratio)
+}
+
+/// 分支级调比例(拖拽写入口;磁吸+钳位在 back 落定)。
+/// (px,py) = 指针内容区 ‰ 坐标(to_int 取整)。返回落定比例。
+#[api(method = "POST", path = "/api/mux/resize-branch")]
+pub fn mux_resize_branch(branch_id int, px int, py int) int {
+    return db.mux_resize_branch(branch_id, px, py)
 }
