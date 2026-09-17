@@ -1,12 +1,12 @@
 ---
 plan_id: PLAN-020
-status: executing
+status: execution_done
 feature_name: 任意深度分屏 + 可视分隔条拖拽 + 比例磁吸(嵌套布局与分隔条交互)
 author: [zcode-session]
 created_at: 2026-09-17T00:00:00Z
 updated_at: 2026-09-17T12:00:00Z
 plan_revision: 2
-current_step: 7
+current_step: 8
 total_steps: 8
 supersedes_spec_components: []
 new_spec_components: []
@@ -412,6 +412,15 @@ db(back)                                front(view 消费)
   持续轮询形态)。本计划残余 = F2(AC-04 实拖,用户手动验证);
   实现与机器可证验收全部完成,plan 维持 execution_done 待用户
   实拖确认后复审/合并。
+- 2026-09-17 stage:work(收口)· **用户指令"020 先收尾"**:F1 已
+  转立项(PLAN-021,drafting,后续独立执行);F2(AC-04 实拖)按
+  019 前例("浏览器目验留用户")记为**用户验收余项**——实现、模型
+  语义、三轨渲染均已在案,待用户日常使用中手持实拖确认(拖动跟随/
+  松手落定/磁吸回中);若发现行为异常,回 work 修复。plan 维持
+  execution_done(current_step 8/8),交付面:
+  auto-term 0d2a304/9d9082a/6a7f4e9/a55b454/c564b05/本提交;
+  auto-lang 57353aa12/15872c439(ba77406eb FF)。next:用户实拖
+  验收 → merge(或异常回 work)。
 
 ## 10. 待澄清事项
 
