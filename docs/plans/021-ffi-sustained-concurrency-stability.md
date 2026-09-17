@@ -412,3 +412,13 @@ press),取证时一次仪器化全覆盖,死法差异本身是断点定位证据
    后续计划;顺带收敛 4579d59e3 暂缓的虚拟滚动容器问题清单:拇指
    比例/拖拽位置漂移/拖拽表现/hover 加宽/pointer 联动/theme);
    强化完成后再回来换装官方滚动条并重开命中区联合设计。
+4. **VM 轨 api 委托断供(2026-09-18 新缺陷,阻塞 T-07 全场景)**:
+   app VM 形态 UI 渲染正常但 api.* 委托零到达引擎(DLL 仅 boot
+   spawn_ex 一次即永寂;面板空、Tab/分屏全失效)。A/B 双 exe
+   (worktree 6c6950f75 / 主检出 75fb01808)同症 → 非 021 回归;
+   020 时点(4579d59e3)VM 实机正常 → 断点窗口 = auto-lang
+   4579d59e3..75fb01808 共 37 commits(637 fold 一带)。vue 轨不受
+   影响。证据:evidence/021/vm-delegation-break.log +
+   app-{user,main}-run.log。处置待用户裁定:(a) 021 会话内 bisect
+   定因 + fix worktree 根修;(b) 移交 637/639 归属方;(c) T-07 挂起
+   等修。
