@@ -164,6 +164,13 @@ pub extern "C" fn autoterm_engine_scroll_offset(h: *mut AutotermEngine) -> i32 {
     engine.inner.term.display_offset() as i32
 }
 
+/// 回滚历史行数(已滚出视口的行数;滚动条拇指比例;空句柄 0)。
+#[unsafe(no_mangle)]
+pub extern "C" fn autoterm_engine_history(h: *mut AutotermEngine) -> i32 {
+    let Some(engine) = ptr_or_null(h) else { return 0 };
+    engine.inner.term.history_size() as i32
+}
+
 /// 收割 reader 线程积压并喂仿真核心。返回 1 = 喂到了字节(可能变脏),
 /// 0 = 无字节,-1 = 空句柄。
 #[unsafe(no_mangle)]

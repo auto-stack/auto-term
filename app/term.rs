@@ -430,14 +430,18 @@ fn feed_snapshot_inner(handle: i64, target: FeedTarget<'_>) {
                 if delta != 0 {
                     let scroll: libloading::Symbol<
                         unsafe extern "C" fn(*mut core::ffi::c_void, c_int),
-                    > = lib().get(b"autoterm_engine_scroll ").unwrap();
+                    > = lib().get(b"autoterm_engine_scroll\0").unwrap();
                     scroll(h, delta as c_int);
                 }
                 let soff: libloading::Symbol<
                     unsafe extern "C" fn(*mut core::ffi::c_void) -> c_int,
-                > = lib().get(b"autoterm_engine_scroll_offset ").unwrap();
+                > = lib().get(b"autoterm_engine_scroll_offset\0").unwrap();
                 let off = soff(h);
                 auto_lang::ui::terminal::terminal_set_scroll_offset(core, off.max(0) as usize);
+                let hist: libloading::Symbol<
+                    unsafe extern "C" fn(*mut core::ffi::c_void) -> c_int,
+                > = lib().get(b"autoterm_engine_history\0").unwrap();
+                auto_lang::ui::terminal::terminal_set_history(core, hist(h).max(0) as usize);
             }
         }
         let take: libloading::Symbol<
