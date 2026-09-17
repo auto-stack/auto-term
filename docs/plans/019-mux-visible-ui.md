@@ -1,6 +1,6 @@
 ---
 plan_id: PLAN-019
-status: execution_done
+status: reviewed
 feature_name: 可见多终端 UI——Tab 条 + 分屏渲染 + 快捷键(006 蓝图 ①)
 author: [zcode-session]
 created_at: 2026-09-15T00:00:00Z
@@ -566,9 +566,6 @@ layout 策略(Tall/Grid/Stack,Phase 6 另半边)、Workspace 持久化
     知问题清单记入 auto-lang roadmap 同条目,待官方虚拟滚动组件统一
     解决。滚动基础能力(滚轮翻历史/贴底/开窗焦点)保留可用,**不作
     为 019 阻塞项**。
-  - next:用户复验浅色新配色 → 014 护栏顺手抽查 → T-08 锚定 →
-    复审。
-
 - 2026-09-17 stage:work · PLAN-019 · rev1 · **T-08 双仓锚定+收口**
   (outcome:pass,step 9/9,status → execution_done):
   - **用户终验三项全过**:①开窗即焦点(启动直接打字);②浅色配色
@@ -585,6 +582,36 @@ layout 策略(Tall/Grid/Stack,Phase 6 另半边)、Workspace 持久化
     term-019-smoke/term-019-verify 与隔离 target 均已清理
     (wt-guard clean);lang-019 worktree 留存供复审。
   - next:/auto-plan:review 复审。
+
+- 2026-09-17 stage:review · PLAN-019 · rev1 · outcome:**pass**
+  (在实现会话内复审,结论依据工件与可复现证据重建,非执行摘要)。
+  reviewed_commit: auto-term 9966a54(019 末笔;main tip c3b8d50 为
+  021 叠加)· base_commit: c7b2df4(019 立项点,40 提交)·
+  dependency_revisions: auto-lang master 788a3369b(含复审 F1 修复;
+  019 系 5de39dd55/7363111d1/4579d59e3)· spec_inputs:
+  docs/specs/terminal-mux-model.md @ a55b454(SD-01 九条在库;第 5 条
+  已被 020 rev2 按序演进为矩形投影契约,谱系一致)。
+  **AC 映射**:AC-01/02/04/05 = 用户 vm 形态实机全链通过("其他操作
+  都正常")+ rust 实机截图 evidence/019/rust-gui-*.png + 模型断言
+  t01-model-assertions.log;AC-03 = 泵三档断言 + 014 护栏用户通过
+  (最小化/恢复无爆炸、内容跟上);AC-06 = scheme 切换生效 + 016 像素
+  金样 5/5 绿(light 盘修订经用户授权,护栏测钉亮度差,light 不入
+  金样);AC-07 = 单 Pane 交互零回归(用户实机 + terminal 门 32 绿);
+  AC-08 = rust/vm 实机构建绿(自证多次)+ auto-term workspace exit 0
+  + parity 绿;AC-09 = SD-01 spec 九条 + DEBTS #19-#22 + evidence/
+  019 齐备(t06-* 五件 + 自证截图 + 复验脚本)。
+  **复审门禁**:auto-lang tv 3743 档 1 失败(见 F2)+ tf 全量
+  3596/3597(--no-fail-fast,唯一失败同 F2)+ terminal 门 32 绿 +
+  像素金样 5/5 绿;auto-term workspace 全绿。
+  **findings**:F1(019 引入,no-ui 编译回归)——滚动排水块缺 ui
+  特性门控,tv 档 E0433×4;已修复(apply_scroll_queue cfg ui/not(ui)
+  双臂,788a3369b)并复验。F2(master 基线,非 019)——plan367
+  real_sidebar 语料解析失败,归因 PLAN-637 B1 落地 415484a65 改
+  015-notes/sidebar.at 引入,路由 637 会话处置。F3(非阻塞文档缺口)
+  ——滚动回看面(scroll FFI+键入贴底)与浅色盘可读性修订尚未写入
+  terminal-mux-model.md,merge 折叠账本时补记。
+  evidence:t06-* 七件 + light-selfcheck.ps1 + /tmp/tf_review.log
+  摘录(3596/3597)。next:merge。
 
 ## 10. 待澄清事项
 
