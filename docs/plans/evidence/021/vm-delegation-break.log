@@ -50,3 +50,12 @@
 # 6) 推论:api 派发链有多模态/多断点(HTTP 轮询可达性 + 载荷/渲染
 #    消费),AUTO_FFI_TRACE 仅是显性开关之一;与 (b) rust 轨 codegen
 #    漂移同族(生成/运行时契约面不一致)。定因需 auto-lang 侧专项。
+
+# ── 2026-09-18 T-09 定性(收尾)────────────────────────────────────
+# codegen bisect 首轮判据失真(good 端点未过判据即起步):788a3369b
+# 从零生成亦 253 错 → rust 轨生成代码"从未可编译",14:48 exe =
+# 化石 main.rs(skip-if-exists)× 时代运行时;全清化石即暴露。
+# T-09 升级为 codegen 子系统整备:merged 生成器=CRUD 原型(语义
+# 不符)、split=强 Value 化(Plan 388 起)、正解=wrapper 直调进程内
+# db(017 merged 承诺)。p2 worktree(lang-021-p2,plan-021-p2-dev)
+# 已建,整备工作下次会话续做。

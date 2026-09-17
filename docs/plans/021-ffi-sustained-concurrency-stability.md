@@ -1,13 +1,13 @@
 ---
 plan_id: PLAN-021
 status: executing
-feature_name: VM 视图/事件管线稳定性专项(FFI sustained 堆破坏 + 指针事件派发/scroll/split 交互修复)
+feature_name: VM 视图/事件管线稳定性专项(FFI sustained 堆破坏 + 指针事件派发/scroll/split 交互修复 + auto-lang 跑法缺陷簇 Phase 2)
 author: [zhaopuming/zcode-session]
 created_at: 2026-09-17T00:00:00Z
-updated_at: 2026-09-17T00:00:00Z
-plan_revision: 2
+updated_at: 2026-09-18T00:00:00Z
+plan_revision: 3
 current_step: 6
-total_steps: 8
+total_steps: 11
 supersedes_spec_components: []
 new_spec_components: []
 touched_goals: []
@@ -16,6 +16,24 @@ touched_goals: []
 # PLAN-021 · VM 视图/事件管线稳定性专项(FFI sustained 堆破坏 + 指针事件/scroll/split)
 
 ## 0. 变更摘要
+
+**范围扩充三(2026-09-18,用户裁定,rev3 · Phase 2)**:T-07 排障
+发现的 auto-lang 跑法缺陷簇纳入本计划为 Phase 2(用户指令:"直接
+在当前计划文件里记录即可(新的 phase),但是工作可以开新的
+auto-lang 的 worktree 去工作"):
+- **T-09** rust 轨 codegen 漂移:以当前运行时从零编译生成的
+  app 前台 crate 252 错(serde_json::Value vs i32/Vec<String>,
+  mux_* 面签名不一致)——master 的 rust 轨 codegen 与运行时接口
+  漂移,被增量编译缓存长期掩盖;根修后才能重建含 021 修复的
+  rust 轨 app(T-07 载体)。
+- **T-10** dev 跑法 VM api 委托断供:`auto run -r vm` 前台 tick
+  照跑但 api.* 零到达(AUTO_FFI_TRACE 环境敏感 + 轮询/渲染多断
+  点,证据链 evidence/021/vm-delegation-break.log)。
+- **T-11** 部署态重建:rust 轨 auto-term.exe 链回含 021 修复的
+  运行时 + 修复版 DLL,作为 T-07 实点载体。
+bisect 终案与逐变量排除记录见 evidence/021/vm-delegation-break.log
+(结论:非提交回归;019/020 实机会话实际使用部署态 auto-term.exe
+跑法,见 evidence/019/probe-steps.ps1)。
 
 PLAN-020 复审发现(P1):vue 形态 back(app-back.exe)在浏览器页面
 打开并轮询 ~2 分钟后必然 **STATUS_HEAP_CORRUPTION**(0xc0000374)
@@ -317,6 +335,26 @@ press),取证时一次仪器化全覆盖,死法差异本身是断点定位证据
   联合场景;020 AC-04 关案。前置 T-06(已裁定结案,解除)。关联 AC-08。
 - **T-08 锚定与收口**:双仓 SHA 回填(线 B 必动 auto-lang)+
   status execution_done。前置 T-04 + T-07。
+
+**Phase 2(auto-lang 跑法缺陷簇,rev3 扩充;工作在 lang-021-p2
+worktree,branch plan-021-p2-dev,基线 master 75fb01808)**
+
+- **T-09 [Phase2] rust 轨 codegen 整备(范围升级,排障实证)**:
+  从零生成对任一时代运行时均 253 错——非回归而是**从未可编译**:
+  14:48 的 exe 依赖"化石 main.rs"(生成器 skip-if-exists 保留古老
+  产物,021 排障全清后暴露)。整备面:①merged 生成器是 CRUD 原型
+  (GET 全件/find-by-id),与 auto-term 声明式 api 契约(int/[]str)
+  语义不符;②split 生成器强 Value 化返回(Plan 388 起),调用点按
+  .at 声明类型消费;③正确形态 = rust 轨 wrapper 直调进程内吸收的
+  db 逻辑(017 merged 承诺)。规模 = codegen 子系统整备,非点修。
+  前置:无。关联 T-11。证据:bisect-codegen.log + 排障记录。
+- **T-10 [Phase2] dev 跑法 VM api 委托断供定因+根修**:
+  `auto run -r vm` api.* 静默失效(证据 vm-delegation-break.log
+  #5)。定因 VM api 派发断点;根修 + app 实机验证。
+  前置:无(与 T-09 并行)。
+- **T-11 [Phase2] 部署态重建**:rust 轨 auto-term.exe 以含
+  021 修复的运行时构建 + 修复版 DLL 同布;shell/Tab/内容三查。
+  前置 T-09。关联 T-07 载体。
 
 ## 9. 复审记录
 
