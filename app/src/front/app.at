@@ -702,43 +702,73 @@ widget App {
                         }
                     }
                 }
-                // ── 分隔条薄条(轴 1=竖条 6px 宽;轴 0=横条 6px 高)──
+                // ── 分隔条薄条(轴 1=竖条 8px 宽;轴 0=横条 8px 高;
+                // 定尺寸 div 承载视觉,mouse-area Fill 子件承载命中)──
                 if .dv1 != 0 {
                     if .dA1 == 1 {
-                        mouse-area (style: f"absolute z-20 top-[${.dY1}px] left-[${.dX1}px] w-[6px] h-[${.dH1}px] bg-[#8899aa]", onmousedown: .Press(7)) {}
+                        div {
+                            style: f"absolute z-20 top-[${.dY1}px] left-[${.dX1}px] w-[8px] h-[${.dH1}px] bg-[#8899aa]"
+                            mouse-area (style: "w-full h-full", onmousedown: .Press(7)) {}
+                        }
                     } else {
-                        mouse-area (style: f"absolute z-20 top-[${.dY1}px] left-[${.dX1}px] w-[${.dW1}px] h-[6px] bg-[#8899aa]", onmousedown: .Press(7)) {}
+                        div {
+                            style: f"absolute z-20 top-[${.dY1}px] left-[${.dX1}px] w-[${.dW1}px] h-[8px] bg-[#8899aa]"
+                            mouse-area (style: "w-full h-full", onmousedown: .Press(7)) {}
+                        }
                     }
                 }
                 if .dv2 != 0 {
                     if .dA2 == 1 {
-                        mouse-area (style: f"absolute z-20 top-[${.dY2}px] left-[${.dX2}px] w-[6px] h-[${.dH2}px] bg-[#8899aa]", onmousedown: .Press(8)) {}
+                        div {
+                            style: f"absolute z-20 top-[${.dY2}px] left-[${.dX2}px] w-[8px] h-[${.dH2}px] bg-[#8899aa]"
+                            mouse-area (style: "w-full h-full", onmousedown: .Press(8)) {}
+                        }
                     } else {
-                        mouse-area (style: f"absolute z-20 top-[${.dY2}px] left-[${.dX2}px] w-[${.dW2}px] h-[6px] bg-[#8899aa]", onmousedown: .Press(8)) {}
+                        div {
+                            style: f"absolute z-20 top-[${.dY2}px] left-[${.dX2}px] w-[${.dW2}px] h-[8px] bg-[#8899aa]"
+                            mouse-area (style: "w-full h-full", onmousedown: .Press(8)) {}
+                        }
                     }
                 }
                 if .dv3 != 0 {
                     if .dA3 == 1 {
-                        mouse-area (style: f"absolute z-20 top-[${.dY3}px] left-[${.dX3}px] w-[6px] h-[${.dH3}px] bg-[#8899aa]", onmousedown: .Press(9)) {}
+                        div {
+                            style: f"absolute z-20 top-[${.dY3}px] left-[${.dX3}px] w-[8px] h-[${.dH3}px] bg-[#8899aa]"
+                            mouse-area (style: "w-full h-full", onmousedown: .Press(9)) {}
+                        }
                     } else {
-                        mouse-area (style: f"absolute z-20 top-[${.dY3}px] left-[${.dX3}px] w-[${.dW3}px] h-[6px] bg-[#8899aa]", onmousedown: .Press(9)) {}
+                        div {
+                            style: f"absolute z-20 top-[${.dY3}px] left-[${.dX3}px] w-[${.dW3}px] h-[8px] bg-[#8899aa]"
+                            mouse-area (style: "w-full h-full", onmousedown: .Press(9)) {}
+                        }
                     }
                 }
                 if .dv4 != 0 {
                     if .dA4 == 1 {
-                        mouse-area (style: f"absolute z-20 top-[${.dY4}px] left-[${.dX4}px] w-[6px] h-[${.dH4}px] bg-[#8899aa]", onmousedown: .Press(10)) {}
+                        div {
+                            style: f"absolute z-20 top-[${.dY4}px] left-[${.dX4}px] w-[8px] h-[${.dH4}px] bg-[#8899aa]"
+                            mouse-area (style: "w-full h-full", onmousedown: .Press(10)) {}
+                        }
                     } else {
-                        mouse-area (style: f"absolute z-20 top-[${.dY4}px] left-[${.dX4}px] w-[${.dW4}px] h-[6px] bg-[#8899aa]", onmousedown: .Press(10)) {}
+                        div {
+                            style: f"absolute z-20 top-[${.dY4}px] left-[${.dX4}px] w-[${.dW4}px] h-[8px] bg-[#8899aa]"
+                            mouse-area (style: "w-full h-full", onmousedown: .Press(10)) {}
+                        }
                     }
                 }
                 if .dv5 != 0 {
                     if .dA5 == 1 {
-                        mouse-area (style: f"absolute z-20 top-[${.dY5}px] left-[${.dX5}px] w-[6px] h-[${.dH5}px] bg-[#8899aa]", onmousedown: .Press(11)) {}
+                        div {
+                            style: f"absolute z-20 top-[${.dY5}px] left-[${.dX5}px] w-[8px] h-[${.dH5}px] bg-[#8899aa]"
+                            mouse-area (style: "w-full h-full", onmousedown: .Press(11)) {}
+                        }
                     } else {
-                        mouse-area (style: f"absolute z-20 top-[${.dY5}px] left-[${.dX5}px] w-[${.dW5}px] h-[6px] bg-[#8899aa]", onmousedown: .Press(11)) {}
+                        div {
+                            style: f"absolute z-20 top-[${.dY5}px] left-[${.dX5}px] w-[${.dW5}px] h-[8px] bg-[#8899aa]"
+                            mouse-area (style: "w-full h-full", onmousedown: .Press(11)) {}
+                        }
                     }
                 }
-                // ── 拖拽捕获层:拖拽中顶置全幅,‰ 归一坐标直喂 back ──
                 if .dragging == 1 {
                     mouse-area (coords: "1000x1000", style: "absolute inset-0 z-30", onmousemove: .Drag, onmouseup: .Drop) {}
                 }

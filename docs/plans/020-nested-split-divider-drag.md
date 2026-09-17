@@ -421,7 +421,29 @@ db(back)                                front(view 消费)
   auto-term 0d2a304/9d9082a/6a7f4e9/a55b454/c564b05/本提交;
   auto-lang 57353aa12/15872c439(ba77406eb FF)。next:用户实拖
   验收 → merge(或异常回 work)。
+- 2026-09-17 stage:review(用户实测+终审隔离)· **AC-03 pass**
+  (重构后分隔条全高渲染,用户确认"现在显示分隔条了")·
+  **AC-04 判定:阻塞于 VM mouse_area press 缺陷,移交 PLAN-021**
+  ——用户实测拖拽无效;决断实验:双区探针实点 2/2 计数为 0
+  (300×300 大块亦失效,排除命中区尺寸),MCP/devtools 关闭、
+  DPI 感知修正、多实例均复现;同窗口 Button 点击正常(用户完成
+  横分+聚焦右+竖分的三窗布局操作)。AC-01/02 在用户实机亦证
+  (三窗布局+双独立 shell)。AC-04 修复归 PLAN-021 T-02
+  (mouse_area press 定位),修复后本计划补拖拽验证即闭环 ·
+  plan 维持 execution_done(交付面完整,AC-04 显式携带为
+  依赖 021 的已知阻塞项)· next:用户选择 merge 或等 021。
   验收 → merge(或异常回 work)。
+- 2026-09-17 stage:review(用户实测+终审隔离)· **AC-03 pass**
+  (重构后分隔条全高渲染,用户确认"现在显示分隔条了")·
+  **AC-04 判定:阻塞于 VM mouse_area press 缺陷,移交 PLAN-021**
+  ——用户实测拖拽无效;决断实验:双区探针实点 2/2 计数为 0
+  (300×300 大块亦失效,排除命中区尺寸),MCP/devtools 关闭、
+  DPI 感知修正、多实例均复现;同窗口 Button 点击正常(用户完成
+  横分+聚焦右+竖分的三窗布局操作)。AC-01/02 在用户实机亦证
+  (三窗布局+双独立 shell)。AC-04 修复归 PLAN-021 T-02
+  (mouse_area press 定位),修复后本计划补拖拽验证即闭环 ·
+  plan 维持 execution_done(交付面完整,AC-04 显式携带为
+  依赖 021 的已知阻塞项)· next:用户选择 merge 或等 021。
 - 2026-09-17 stage:review(决断实验)· **mouse-area press 通道缺陷定论**:
   双区探针(spikes/020-split-probe:300×300 大块 + 10px 细条,
   onmousedown 各自计数)用户实点 **2/2 计数为 0**——VM 形态
