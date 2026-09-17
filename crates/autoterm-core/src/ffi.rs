@@ -152,7 +152,12 @@ pub extern "C" fn autoterm_engine_spawn(
     };
     match PtySession::spawn(&prog, Vec::<String>::new(), cols, rows) {
         Ok(session) => Box::into_raw(Box::new(AutotermEngine { inner: session, snapshot: Vec::new(), palette: 0 })),
-        Err(_) => std::ptr::null_mut(),
+        Err(e) => {
+            // PLAN-021:spawn 失败必须留痕(此前静默返 null,宿主误判
+            // "dll 缺席降级",空面板无迹可查)。
+            eprintln!("[term-dll] spawn 失败: {e}");
+            std::ptr::null_mut()
+        }
     }
 }
 
@@ -206,7 +211,10 @@ pub extern "C" fn autoterm_engine_spawn_ex(
     let cwd_path = read_c_string(cwd).filter(|s| !s.is_empty()).map(PathBuf::from);
     match PtySession::spawn_in(&prog, args, cwd_path.as_deref(), cols, rows) {
         Ok(session) => Box::into_raw(Box::new(AutotermEngine { inner: session, snapshot: Vec::new(), palette: 0 })),
-        Err(_) => std::ptr::null_mut(),
+        Err(e) => {
+            eprintln!("[term-dll] spawn_ex 失败: {e}");
+            std::ptr::null_mut()
+        }
     }
 }
 
