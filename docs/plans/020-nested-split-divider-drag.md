@@ -1,12 +1,12 @@
 ---
 plan_id: PLAN-020
-status: execution_done
+status: executing
 feature_name: 任意深度分屏 + 可视分隔条拖拽 + 比例磁吸(嵌套布局与分隔条交互)
 author: [zcode-session]
 created_at: 2026-09-17T00:00:00Z
 updated_at: 2026-09-17T12:00:00Z
 plan_revision: 2
-current_step: 8
+current_step: 7
 total_steps: 8
 supersedes_spec_components: []
 new_spec_components: []
@@ -383,6 +383,28 @@ db(back)                                front(view 消费)
   - **F2(AC-04 实拖)仍留用户手动验证**(§10.7;合成输入不被
     winit 消费的根因未查,不影响交付——模型面/视图线均已证)。
   - next:review(re-review)。
+
+- 2026-09-17 stage:review(re-review)· PLAN-020 · rev2 · outcome:
+  **needs_fix**(维持;F1 未根除,其余维持)· reviewed_commit
+  6a7f4e9 · 声明:实现会话内复审,独立复现重建。
+  - **本轮 delta 复核**:F1 门控(9d9082a)实现正确——version 随
+    结构变化/窗口尺寸变化触发全量刷新,稳态请求回落;VM 过链零错、
+    实机渲染正常;AC-07 补证绿(双 Tab 深度并存交替激活,布局各自
+    正确重算)→ AC-07 升 **pass**;全量门 77/0。
+  - **F1 复现与隔离(关键进展)**:崩溃 2/2 确定性复现于"浏览器
+    页面打开并轮询"场景(vue-run.log 15:54:43 再次 0xc0000374);
+    隔离实验:①纯同端点并发(20×tick×3 轮)不崩;②混合端点并发
+    (tick+apply-resize+pane-lines+rect-* ×5 轮,含引擎 FFI)不崩;
+    ③boot 短轮询窗并发不崩——**纯 HTTP 并发无法复现,崩溃需页面
+    持续轮询形态**(长时叠加)。版本门降载不足以根除 → F1 根因在
+    引擎 FFI 层 sustained 调用下的缺陷(DLL 或胶水快照表),需专项
+    排查(并发矩阵 + DLL 侧线程安全审计),非门控可解。
+  - **范围裁定请示(F1)**:vue 臂为 019 声明非目标轨;崩溃仅现于
+    vue 页面轮询形态(VM/rust 生产面无 HTTP 轮询不受影响)。可选:
+    (a) vue 臂稳定性专项立项;(b) 引擎 FFI 全局串行化(auto-lang
+    侧);(c) 裁定 vue 臂降级为不受支持形态并记 DEBTS。请用户裁定。
+  - **F2 维持**:AC-04 实拖留用户手动(§10.7)。
+  - next:work(F1 专项或用户裁定后收口)+ 用户实拖。
 
 ## 10. 待澄清事项
 
