@@ -500,6 +500,12 @@ db(back)                                front(view 消费)
   (plan-020-dev 已 FF master)按 87eba67ab 归 auto-lang 侧收口 ·
   携带项:AC-04 实拖依赖 PLAN-021(mouse_area press 缺陷修复)·
   PLAN-020 生命周期闭环。
+- 2026-09-17 stage:merge(cleaned 补记)· lang-020 worktree 移除 +
+  plan-020-dev 分支删除(ba77406eb ∈ master 祖先);调试插桩
+  ([MA-BLD]/[MA-DBG]/[MA-RDV] eprintln)按规丢弃未提交——重加配方
+  已录 PLAN-021 排查清单(renderer.rs 21162 VM 动态臂入口 +
+  aura_view_builder convert_mouse_area 入口,AUTO_MA_DBG=1 门控)·
+  **cleaned** 确认,收据五检查点齐。
 
 ## 10. 待澄清事项
 
