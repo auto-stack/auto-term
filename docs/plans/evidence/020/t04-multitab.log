@@ -1,0 +1,15 @@
+== PLAN-020 AC-07 multi-tab independence 2026-09-17 ==
+--- [1] tab A: depth-2 (split-h, focus right, split-v) ---
+tabA panes: 1,2,3
+"{\"tab\":1,\"axis\":1,\"slots\":[1,2],\"zoom\":0,\"visible\":3,\"focus\":2,\"rects\":[{\"pane\":1,\"x\":0,\"y\":0,\"w\":500,\"h\":1000},{\"pane\":2,\"x\":500,\"y\":0,\"w\":500,\"h\":500},{\"pane\":3,\"x\":500,\"y\":500,\"w\":500,\"h\":500}],\"dividers\":[{\"branch\":3,\"axis\":1,\"x\":500,\"y\":0,\"w\":0,\"h\":1000},{\"branch\":5,\"axis\":0,\"x\":500,\"y\":500,\"w\":500,\"h\":0}]}"
+--- [2] new tab B (single pane, auto-active) ---
+"{\"tab\":2,\"axis\":-1,\"slots\":[4,0],\"zoom\":0,\"visible\":1,\"focus\":4,\"rects\":[{\"pane\":4,\"x\":0,\"y\":0,\"w\":1000,\"h\":1000}],\"dividers\":[]}"
+tabB focus pane=4 (expect single full rect, depth1)
+--- [3] tab B: split once (depth-1 own layout) ---
+tabB split→5
+"{\"tab\":2,\"axis\":0,\"slots\":[4,5],\"zoom\":0,\"visible\":2,\"focus\":4,\"rects\":[{\"pane\":4,\"x\":0,\"y\":0,\"w\":1000,\"h\":500},{\"pane\":5,\"x\":0,\"y\":500,\"w\":1000,\"h\":500}],\"dividers\":[{\"branch\":8,\"axis\":0,\"x\":0,\"y\":500,\"w\":1000,\"h\":0}]}"
+--- [4] activate tab A → A's depth-2 layout restored ---
+"{\"tab\":1,\"axis\":1,\"slots\":[1,2],\"zoom\":0,\"visible\":3,\"focus\":2,\"rects\":[{\"pane\":1,\"x\":0,\"y\":0,\"w\":500,\"h\":1000},{\"pane\":2,\"x\":500,\"y\":0,\"w\":500,\"h\":500},{\"pane\":3,\"x\":500,\"y\":500,\"w\":500,\"h\":500}],\"dividers\":[{\"branch\":3,\"axis\":1,\"x\":500,\"y\":0,\"w\":0,\"h\":1000},{\"branch\":5,\"axis\":0,\"x\":500,\"y\":500,\"w\":500,\"h\":0}]}"
+--- [5] activate tab B → B's layout intact ---
+"{\"tab\":2,\"axis\":0,\"slots\":[4,5],\"zoom\":0,\"visible\":2,\"focus\":4,\"rects\":[{\"pane\":4,\"x\":0,\"y\":0,\"w\":1000,\"h\":500},{\"pane\":5,\"x\":0,\"y\":500,\"w\":1000,\"h\":500}],\"dividers\":[{\"branch\":8,\"axis\":0,\"x\":0,\"y\":500,\"w\":1000,\"h\":0}]}"
+== done ==
