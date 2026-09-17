@@ -207,6 +207,19 @@
         "status": "published",
         "created": "2026-09-13",
         "last_modified": "2026-09-15"
+      },
+      {
+        "id": "P020-1",
+        "section": "reports",
+        "title": "任意深度分屏+分隔条拖拽+磁吸(嵌套布局与分隔条交互) — 变更摘要",
+        "content": "PLAN-019 的树深 1 上限解除:布局消费从槽位 if 枚举升级为**矩形投影**——back 对活动 Tab 可见子树 BFS 层序产出 pane 槽(1..6)与 divider 槽(7..11)的 ‰ 矩形表(带参读一律 POST,vm 带参 GET 缺口规避);前端静态 6 槽 absolute 浮层(px 类几何)消费。新增窗口尺寸面 mux_window_width/height(GET;VM shim 2998/2999+rust 侧车同名)。交付含 018 遗留缺陷根修:mux_split replace_child 自环(branch.first=branch,深度1上限掩盖,20GB 实录)。已知携带:AC-04 GUI 实拖阻塞于 VM mouse_area press 派发缺陷(移交 PLAN-021)。",
+        "file": "docs/plans/archived/020-nested-split-divider-drag.md",
+        "related": [
+          "PLAN-020"
+        ],
+        "status": "published",
+        "created": "2026-09-17",
+        "last_modified": "2026-09-17"
       }
     ],
     "goals": [
@@ -416,6 +429,19 @@
           "PLAN-018"
         ],
         "status": "proposed"
+      },
+      {
+        "id": "P020-2",
+        "section": "goals",
+        "title": "任意深度分屏+分隔条拖拽+磁吸(嵌套布局与分隔条交互) — 目标",
+        "content": "G1 任意深度分屏(横/竖交替不限,MAX_PANES=6 槽位帽);G2 分隔条可见(派生色,窗口 resize 随动);G3 拖拽实时调比例;G4 比例磁吸({500}±40);G5 交互完整性不回归(聚焦/键入路由/zoom/关闭语义/快捷键);G6 键盘调比例共存(同一比例真相源)。",
+        "file": "docs/plans/archived/020-nested-split-divider-drag.md",
+        "related": [
+          "PLAN-020"
+        ],
+        "status": "published",
+        "created": "2026-09-17",
+        "last_modified": "2026-09-17"
       }
     ],
     "architecture": [
@@ -641,6 +667,19 @@
         "status": "published",
         "created": "2026-09-13",
         "last_modified": "2026-09-15"
+      },
+      {
+        "id": "P020-3",
+        "section": "architecture",
+        "title": "任意深度分屏+分隔条拖拽+磁吸(嵌套布局与分隔条交互) — 架构方案",
+        "content": "矩形投影架构:back(db.at)对可见子树层序遍历出归一化 ‰ 矩形表(epoch 缓存);前端静态 6 槽 absolute 浮层消费,px 类几何=‰×内容区 px(标定源=窗口尺寸面 T-00b:VM shim auto.term.window_width/height+rust 侧车同名);分隔条=定尺寸 div(视觉)+Fill mouse-area(命中),拖拽中全幅捕获层(coords \"1000x1000\" 归一 ‰)直喂 back mux_resize_branch——轴判/换算/磁吸/钳位单一真相源在 back。014 几何随动在 px 容器内闭合。",
+        "file": "docs/plans/archived/020-nested-split-divider-drag.md",
+        "related": [
+          "PLAN-020"
+        ],
+        "status": "published",
+        "created": "2026-09-17",
+        "last_modified": "2026-09-17"
       }
     ],
     "designs": [
@@ -856,6 +895,19 @@
           "PLAN-018"
         ],
         "status": "stable"
+      },
+      {
+        "id": "P020-4",
+        "section": "designs",
+        "title": "任意深度分屏+分隔条拖拽+磁吸(嵌套布局与分隔条交互) — 详细设计",
+        "content": "D1 rects_recompute(BFS;pane 槽垫空至 6,divider 后置;epoch 失效);D2 mux_resize_branch(指针‰→比例,磁吸 500±40,钳位[100,900])+ mux_resize_pane 委托;D3 N 槽视图+捕获层;D5 键盘兼容;D7 窗口尺寸面。根修 018 缺陷 #23:mux_split 先空挂分支行→replace_child 链接→再落孩子(旧序自环 branch.first=branch);replace_child 防御跳过 new_child 行;遍历硬上界 512步/256队列。DEBTS #24:分数/flex 宽度类 VM 实机失效(px 类唯一稳定)——归 auto-lang。",
+        "file": "docs/plans/archived/020-nested-split-divider-drag.md",
+        "related": [
+          "PLAN-020"
+        ],
+        "status": "published",
+        "created": "2026-09-17",
+        "last_modified": "2026-09-17"
       }
     ],
     "tests": [
@@ -1068,6 +1120,19 @@
         "status": "verified",
         "created": "2026-09-13",
         "last_modified": "2026-09-15"
+      },
+      {
+        "id": "P020-5",
+        "section": "tests",
+        "title": "任意深度分屏+分隔条拖拽+磁吸(嵌套布局与分隔条交互) — 测试设计",
+        "content": "t01_model.sh curl 剧本 12 步(深度2 示例布局逐槽断言/磁吸 480→500/钳位 50→100/键盘 700/右列轴0/帽 -2/窗口面/close 重算;独立复现 log=t01-model-review.log);t04_multitab.sh 双 Tab 深度并存交替激活;全量门 cargo test --workspace 77/0;三轨(VM/rust/vue)渲染取证;用户实机三窗+双 shell 独立性目验。",
+        "file": "docs/plans/archived/020-nested-split-divider-drag.md",
+        "related": [
+          "PLAN-020"
+        ],
+        "status": "published",
+        "created": "2026-09-17",
+        "last_modified": "2026-09-17"
       }
     ],
     "reviews": [
@@ -1310,6 +1375,19 @@
         "status": "published",
         "created": "2026-09-13",
         "last_modified": "2026-09-15"
+      },
+      {
+        "id": "P020-6",
+        "section": "reviews",
+        "title": "任意深度分屏+分隔条拖拽+磁吸(嵌套布局与分隔条交互) — 验收与复审",
+        "content": "R1 needs_fix(独立复现+F1 门控方向);修复轮:F1 layout_version 门控+AC-07 双 Tab 补证绿;R2(re-review 终审)pass 带显式携带项:AC-01/02/03/05/06/07 pass(独立复现+用户实机双证),AC-04 carried(GUI 端到端阻塞于 VM mouse_area press 派发缺陷,经用户裁定移交 PLAN-021 T-02,修复后补拖拽验证即闭环)。reviewed_commit 2a6e148,final 94108dc,base a47a18f。",
+        "file": "docs/plans/archived/020-nested-split-divider-drag.md",
+        "related": [
+          "PLAN-020"
+        ],
+        "status": "published",
+        "created": "2026-09-17",
+        "last_modified": "2026-09-17"
       }
     ]
   }

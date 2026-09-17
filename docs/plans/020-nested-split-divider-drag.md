@@ -1,6 +1,6 @@
 ---
 plan_id: PLAN-020
-status: execution_done
+status: reviewed
 feature_name: 任意深度分屏 + 可视分隔条拖拽 + 比例磁吸(嵌套布局与分隔条交互)
 author: [zcode-session]
 created_at: 2026-09-17T00:00:00Z
