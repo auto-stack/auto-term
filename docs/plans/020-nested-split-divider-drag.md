@@ -460,6 +460,32 @@ db(back)                                front(view 消费)
   对注入输入的过滤或前台时序),AC-04 实拖确认正式移交用户;
   VM 实机门控版渲染正常(acc-measure.png 在案)。
 
+- 2026-09-17 stage:review(re-review 终审)· outcome:**pass**(带
+  显式携带项)· reviewed_commit 2a6e148 · base a47a18f(020 提交链:
+  0d2a304/9d9082a/6a7f4e9/a55b454/c564b05/1a6af86/2a6e148/本记)·
+  dependency_revisions:auto-lang master(含 57353aa12/15872c439
+  与 019 并行修复)· 声明:实现会话内复审,结论由工件与独立复现
+  重建;**用户两度实测 + 三项裁定在案**(F1→021 / AC-04 缺陷→021 /
+  020 收尾),授权链完整。
+  - **acceptance_results**:AC-01 pass(curl+用户实机三窗)·
+    AC-02 pass(curl 6-pane BSP)· AC-03 pass(重构后分隔条全高
+    渲染,用户确认)· **AC-04 carried**(模型语义证毕;GUI 端到端
+    阻塞于 VM mouse_area press 缺陷,经用户裁定移交 PLAN-021,
+    修复后补拖拽验证即闭环)· AC-05 pass(磁吸/钳位)· AC-06 pass
+    (全量门 77/0;019 交互面按钮/双 shell 独立性用户实机在案)·
+    AC-07 pass(双 Tab 深度并存交替激活)。
+  - **findings 处置**:F1(堆破坏)→ 移交 PLAN-021(用户裁定)✓ ·
+    F2(AC-04 实拖)→ 随 AC-04 携带,PLAN-021 修复后闭环 ✓ ·
+    F3(spec 字段)→ 已补记 ✓ · F4(过程教训)→ 已记档 ✓ ·
+    mouse_area press 缺陷 → PLAN-021 §0 范围扩充 + T-02 并入 ✓。
+  - **spec_inputs**:docs/specs/terminal-mux-model.md(SD-01 修订
+    在库,V1 语义 §5 矩形投影/分隔条/磁吸/窗口面契约=当前行为)。
+  - evidence:evidence/020/(t01-model-review.log 独立复现、
+    t04-multitab.log、t02-*.png 三轨渲染、acc-measure/实测截图、
+    探针 spikes/020-split-probe)。
+  - next:merge(用户指令即执行;AC-04 实拖验证与 PLAN-021 修复
+    后补证,不阻塞合并——缺陷与验收余项均已显式携带)。
+
 ## 10. 待澄清事项
 
 1. **磁吸目标集**:V1 = {50%};25%/75% 是否纳入首版(常量易调,
