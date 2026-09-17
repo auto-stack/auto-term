@@ -369,15 +369,6 @@ widget App {
                             scheme: .scheme
                             oninput: .KeyIn
                             onmenu: .Menu
-                            onkeydown.ctrl.shift.t: .Shortcut(1)
-                            onkeydown.ctrl.shift.w: .Shortcut(2)
-                            onkeydown.ctrl.shift.e: .Shortcut(3)
-                            onkeydown.ctrl.shift.o: .Shortcut(4)
-                            onkeydown.ctrl.shift.z: .Shortcut(5)
-                            onkeydown.ctrl.shift.tab: .Shortcut(6)
-                            onkeydown.ctrl.shift.left: .Shortcut(7)
-                            onkeydown.ctrl.shift.right: .Shortcut(8)
-                            onkeydown.ctrl.shift.k: .Shortcut(9)
                         }
                     }
                 } else {
@@ -413,15 +404,6 @@ widget App {
                                 scheme: .scheme
                                 oninput: .KeyIn
                                 onmenu: .Menu
-                                onkeydown.ctrl.shift.t: .Shortcut(1)
-                                onkeydown.ctrl.shift.w: .Shortcut(2)
-                                onkeydown.ctrl.shift.e: .Shortcut(3)
-                                onkeydown.ctrl.shift.o: .Shortcut(4)
-                                onkeydown.ctrl.shift.z: .Shortcut(5)
-                                onkeydown.ctrl.shift.tab: .Shortcut(6)
-                                onkeydown.ctrl.shift.left: .Shortcut(7)
-                                onkeydown.ctrl.shift.right: .Shortcut(8)
-                                onkeydown.ctrl.shift.k: .Shortcut(9)
                             }
                         }
                     } else {
