@@ -1,0 +1,18 @@
+# PLAN-021 T-07 排障附带发现:VM 轨 api 委托断供(非 021 回归)
+# 日期:2026-09-18;发现路径:用户实测 T-07 前置(app 终端无 shell)
+#
+# 症状:app/src/front app.at VM 形态窗口渲染正常(Tab 条五钮+空面板),
+# 但 Tick 的 api.term_apply_resize()/api.get_lines() 委托零到达引擎——
+# DLL 侧仅 boot spawn_ex 一次(成功返回),其后 feed_ready/take_dirty/
+# resize 永零调用;面板永空,Tab/分屏按钮无效果(同走 api 委托)。
+#
+# A/B 取证(同为 auto-term e9f813d+021 提交,同 DLL,日志见
+# app-user-run.log / app-main-run.log):
+#   worktree exe(plan-021-dev 6c6950f75):spawn_ex×1 → 0 feed
+#   主检出 exe(master 75fb01808):        spawn_ex×1 → 0 feed
+# → 与 021 mouse_area 修复无关;断点在 4579d59e3(020 时点 VM 实机
+# 正常,t00 拖拽证据)..75fb01808 之间 37 commits(637 fold 一带)
+# 的 VM api 委托/back-bridge 路径。rust 轨 50s 窗口未编完,未结论。
+# 附注:vue 轨不受影响(HTTP back,020 收据+本轮浸泡均可证)。
+# 生成 crate 链接主检出 auto-lang(app/rust-workspace/Cargo.toml
+# path=../../../auto-lang),与启动用 exe 无关。
