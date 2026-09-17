@@ -478,6 +478,16 @@ layout 策略(Tall/Grid/Stack,Phase 6 另半边)、Workspace 持久化
     多终端节。
   - **T-06 全量门**:cargo test --workspace exit 0 全绿(含 parity;
     引擎零改动)。vm 形态冒烟 = §10.6 阻塞项(保持 executing)。
+  - **用户反馈双修 + 补金样(auto-lang 9980c6e4f + 9129760bd,lang-019
+    worktree → master,期间并入并行会话 auto-musk/635 落地)**:
+    ①terminal 臂 scheme 支持 `.field` FieldAccess 绑定(此前仅认
+    Int 字面量/Ident,动态绑定静默回落 -1 → ◐ 按钮失效;用户实测
+    确认后修复);②捷径拦截摘出 pane 聚焦门 → 窗口全局语义(用户
+    期望:开窗即生效;app 面配套 = 捷径表只挂主槽一份去重);
+    ③scroll_offset 同类缺口一并补;④回归金样
+    terminal_scheme_and_scroll_fieldaccess_bindings_emit。terminal
+    门 36 绿(preedit 漂移已记账)。master 频繁并行推进,每次落地
+    前先 merge master 入分支再 FF(本轮两度)。
   - next:vm 委托合成修复(auto-lang)→ 复审。
 
 ## 10. 待澄清事项
