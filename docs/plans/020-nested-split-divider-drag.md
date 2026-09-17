@@ -1,12 +1,12 @@
 ---
 plan_id: PLAN-020
-status: executing
+status: execution_done
 feature_name: 任意深度分屏 + 可视分隔条拖拽 + 比例磁吸(嵌套布局与分隔条交互)
 author: [zcode-session]
 created_at: 2026-09-17T00:00:00Z
 updated_at: 2026-09-17T12:00:00Z
 plan_revision: 2
-current_step: 6
+current_step: 8
 total_steps: 8
 supersedes_spec_components: []
 new_spec_components: []
@@ -363,6 +363,26 @@ db(back)                                front(view 消费)
     (heap corruption 实录)+ t02-*.png(三轨渲染)· **next**:work
     (F1 修正 + AC-07 补证 + F2 用户实拖),受影响任务 T-02/T-04 已
     重开,current_step 6/8。
+
+- 2026-09-17 stage:work(needs_fix 修复轮)· PLAN-020 · rev2 ·
+  outcome:pass(F1 修正 + AC-07 补证落地;T-02/T-04 复闭,
+  current_step 8/8,status → execution_done)·
+  - **F1 修正**:back 增 `mux_layout_version()`(GET
+    /api/mux/layout-version,无参 vm 安全;返回 layout_epoch);
+    前端 Tick 改版本门控——version/client 尺寸任一变化才拉完整
+    rect-*(结构变化或窗口 resize 触发),行快照/光标每拍刷新且
+    仅对存在槽发起(空槽零调用零 FFI)——稳态请求量回落 019 水位,
+    axum 并发与引擎 FFI 争用窗口显著收窄。验证:version 7→8 随分
+    slice 递增 ✓;VM 过链零错+实机渲染正常
+    (evidence/020/t02-vm-gated-view.png);全量门 77/0 绿。
+  - **AC-07 补证**:t04_multitab.sh(evidence/020/t04-multitab.log)
+    ——Tab A 深度 2(3 pane)与 Tab B 深度 1/2 并存,交替激活,
+    各自矩形投影按活动 Tab 正确重算且互不串扰 ✓。过程注:a2r axum
+    的 GET 路由吃 JSON body 而非 query param(019 §[12] 同款怪癖,
+    脚本已按 body 形态)。
+  - **F2(AC-04 实拖)仍留用户手动验证**(§10.7;合成输入不被
+    winit 消费的根因未查,不影响交付——模型面/视图线均已证)。
+  - next:review(re-review)。
 
 ## 10. 待澄清事项
 

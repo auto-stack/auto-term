@@ -134,6 +134,8 @@ widget App {
         // 拖拽态(Press 记分支,Drop 清)
         var dragging int = 0
         var dragBranch int = 0
+        // 投影版本门(F1):变化才拉完整 rect-*,稳态请求数回落 019 水位
+        var lastVer int = 0 - 1
     }
 
     timer {
@@ -190,6 +192,7 @@ widget App {
             .key5 = api.mux_rect_key(5)
             .slot6 = api.mux_rect_kind(6)
             .key6 = api.mux_rect_key(6)
+            .lastVer = api.mux_layout_version()
             .cols = api.term_cols()
             .rows = api.term_rows()
         }
@@ -214,11 +217,31 @@ widget App {
             }
             .tab_ids = ids
             .tab_labels = labels
-            .clientW = api.mux_window_width()
-            .clientH = api.mux_window_height()
+            // ── F1 版本门:结构未变且窗口尺寸未变则跳过完整 rect 拉取
+            // (稳态 ~019 水位);窗口 resize 不改版本号,须单独触发 ──
+            var ver int = api.mux_layout_version()
+            var nw int = api.mux_window_width()
+            var nh int = api.mux_window_height()
             var cw int = .clientW
             var ch int = .clientH - .tabH
+            var geomChanged int = 0
+            if ver != .lastVer {
+                geomChanged = 1
+            }
+            if nw != .clientW {
+                geomChanged = 1
+            }
+            if nh != .clientH {
+                geomChanged = 1
+            }
+            if geomChanged == 1 {
+                .clientW = nw
+                .clientH = nh
+                cw = nw
+                ch = nh - .tabH
+            }
             // ── pane 槽 1..6:存在/键/px 矩形/网格/行快照/光标 ──
+            if geomChanged == 1 {
             .slot1 = api.mux_rect_kind(1)
             var p1 int = api.mux_rect_pane(1)
             .key1 = api.mux_rect_key(1)
@@ -322,6 +345,45 @@ widget App {
             .dY5 = api.mux_rect_y(11) * ch / 1000
             .dW5 = api.mux_rect_w(11) * cw / 1000
             .dH5 = api.mux_rect_h(11) * ch / 1000
+            .lastVer = ver
+            }
+            // 行快照/光标每拍刷新(活输出);网格/矩形仅在几何变化时更新
+            var q1 int = api.mux_rect_pane(1)
+            if .slot1 == 1 {
+                .lines1 = api.mux_pane_lines(q1)
+                .cr1 = api.mux_pane_cursor_row(q1)
+                .cc1 = api.mux_pane_cursor_col(q1)
+            }
+            var q2 int = api.mux_rect_pane(2)
+            if .slot2 == 1 {
+                .lines2 = api.mux_pane_lines(q2)
+                .cr2 = api.mux_pane_cursor_row(q2)
+                .cc2 = api.mux_pane_cursor_col(q2)
+            }
+            var q3 int = api.mux_rect_pane(3)
+            if .slot3 == 1 {
+                .lines3 = api.mux_pane_lines(q3)
+                .cr3 = api.mux_pane_cursor_row(q3)
+                .cc3 = api.mux_pane_cursor_col(q3)
+            }
+            var q4 int = api.mux_rect_pane(4)
+            if .slot4 == 1 {
+                .lines4 = api.mux_pane_lines(q4)
+                .cr4 = api.mux_pane_cursor_row(q4)
+                .cc4 = api.mux_pane_cursor_col(q4)
+            }
+            var q5 int = api.mux_rect_pane(5)
+            if .slot5 == 1 {
+                .lines5 = api.mux_pane_lines(q5)
+                .cr5 = api.mux_pane_cursor_row(q5)
+                .cc5 = api.mux_pane_cursor_col(q5)
+            }
+            var q6 int = api.mux_rect_pane(6)
+            if .slot6 == 1 {
+                .lines6 = api.mux_pane_lines(q6)
+                .cr6 = api.mux_pane_cursor_row(q6)
+                .cc6 = api.mux_pane_cursor_col(q6)
+            }
             .cols = api.term_cols()
             .rows = api.term_rows()
         }

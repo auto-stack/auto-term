@@ -347,6 +347,12 @@ pub fn mux_rect_h(k int) int {
     return db.mux_rect_h(k)
 }
 
+/// 投影版本号(无参 GET;前端每拍轮询,变化才拉 rect-*,F1 门控)。
+#[api(method = "GET", path = "/api/mux/layout-version")]
+pub fn mux_layout_version() int {
+    return db.mux_layout_version()
+}
+
 /// 窗口客户区逻辑 px(T-00b;无参 GET,vm 形态安全)。
 #[api(method = "GET", path = "/api/mux/window-width")]
 pub fn mux_window_width() int {

@@ -608,6 +608,13 @@ pub fn mux_rect_h(k int) int {
     return rect_at(rect_h, k)
 }
 
+/// 投影版本号(PLAN-020 复审 F1:layout_version 门控)——结构变异时
+/// 递增的廉价读;前端每拍先读本值,变化才拉完整 rect-*(把稳态请求量
+/// 压回 019 水位,降低 axum 并发与引擎 FFI 争用窗口)。
+pub fn mux_layout_version() int {
+    return layout_epoch
+}
+
 /// 窗口客户区逻辑 px(PLAN-020 T-00b 窗口尺寸面;矩形投影 px 类
 /// 几何的标定源。VM = shim 读渲染器每帧全局;rust = 侧车同名;vue
 /// back 降级缺省槽位值)。
