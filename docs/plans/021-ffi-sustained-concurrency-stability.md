@@ -1,12 +1,12 @@
 ---
 plan_id: PLAN-021
-status: drafting
+status: executing
 feature_name: VM 视图/事件管线稳定性专项(FFI sustained 堆破坏 + 指针事件派发/scroll/split 交互修复)
 author: [zhaopuming/zcode-session]
 created_at: 2026-09-17T00:00:00Z
 updated_at: 2026-09-17T00:00:00Z
 plan_revision: 2
-current_step: 0
+current_step: 1
 total_steps: 8
 supersedes_spec_components: []
 new_spec_components: []
@@ -179,7 +179,7 @@ press),取证时一次仪器化全覆盖,死法差异本身是断点定位证据
 
 | delta_id | add/modify/retire | docs/specs/... target | before/after rule | rationale | acceptance IDs |
 |---|---|---|---|---|---|
-| SD-01 | add(或 modify) | docs/specs/engine-ffi-color-encoding.md(或 engine 契约所在 spec;T-02 定位后定稿) | 前:引擎 FFI 线程安全承诺未明示。后:明示引擎并发调用契约(串行化承诺或线程安全等级) | 崩溃根因落档为契约;调用方(三形态)按契约使用 | AC-02/03 |
+| SD-01 | add | docs/specs/engine-ffi-color-encoding.md(T-02 定稿:引擎契约面即本 spec,增"并发契约"节) | 前:引擎 FFI 线程安全承诺未明示。后:明示**每柄串行化契约**——FFI 边界按引擎指针串行化(每柄锁),同柄全部导出(含读类)互斥;调用方(VM shim/rust 侧车/vue back)无需外锁;导出不重入(不得持柄锁再调其它导出)。回归 = tests/ffi_concurrency_serialization.rs 金样 | 崩溃根因落档为契约;调用方(三形态)按契约使用 | AC-02/03 |
 
 | SD-02 | add | docs/specs/…(VM 交互命中区契约;T-07 定稿回填精确路径) | 前:滚动条命中条与分隔条命中区无归属规则。后:面板边界处两命中区的宽度/优先级/z-order 归属规则成文 | 链修通后防"边缘互吞"回归 | AC-08 |
 
@@ -225,17 +225,76 @@ press),取证时一次仪器化全覆盖,死法差异本身是断点定位证据
 
 - **T-01 [D1] 复现固化**:无头复现器;基线 3/3 崩溃。前置:无。
   关联 AC-01。
+  [✅ 已完成 2026-09-17] scripts/repro/vue_crash_repro.ps1(无头
+  Edge + 页面轮询驱动,WER Event-1000 判崩 + 内存看门狗);基线
+  3/3 = 0xc0000374(r1 65s / r2 65s / r3 140s,页面打开→崩均 ≤3min,
+  WER 时间戳 evidence/021/repro-r{1,2,3}-wer.txt);全程 WS ~13MB
+  无膨胀(20GB 实录未复现,待澄清#1 初证:非同相)。
 - **T-02 [D2] 仪器取证**:线程标记 + 首现序列;产出根因结论
   (更新本表 SD-01 的 spec 目标路径)。前置 T-01。关联 AC-02。
+  [✅ 已完成 2026-09-17] 仪器 = glue `FfiGuard`(spawn/free/resize/
+  pump/feed 五包点,AUTO_FFI_TRACE=1,t/seq/tid/in-flight+OVERLAP)+
+  DLL `DllGuard`(变异类导出整行标记;读类由 glue feed 链窗口覆盖)。
+  **根因结论(AC-02 三选一:DLL 内部)**:引擎 FFI 导出面全部是
+  `ptr_or_null(h)` 裸 `&mut` 别名,零线程安全承诺——vue back 的
+  axum 多 worker 对同柄 sustained 并发时,腐蚀对 = feed_ready∥
+  feed_ready(drain→term.feed 双 &mut 推进 vte 网格 → Vec 元数据
+  堆腐坏)、take_dirty_rows∥row_text(snapshot Vec 整体替换 vs 读
+  侧悬垂 UAF)、resize∥*(网格重分配)。证据:①无仪器复现 3/3
+  (65/65/140s);②仪器轮 OVERLAP 1062-1213 次/300s,**含同 ptr
+  跨线程 feed_ready∥feed_ready**(r4 撕裂日志/r6 整行日志均在案,
+  evidence/021/repro-r{4,6}-run.err.log);③静态读码 ffi.rs
+  (feed_ready→drain→term.feed 需 &mut;take_dirty_rows 无条件
+  `engine.snapshot = visible_styled_lines()`);④金样去锁红相 =
+  6 线程同柄混合流 STATUS_ACCESS_VIOLATION(0xc0000005)。
+  **海森堡附记(如实)**:带全量仪器的轮次 r4/r5/r6 计 ~26 分钟
+  sustained 轮询不再崩(日志开销收窄腐蚀窗口)——"崩溃瞬间最后
+  序列"不可得,以"同 ptr 跨线程相邻序列"(r6 seq 12611-12613,
+  ThreadId(4)/ThreadId(1) 交替 take_dirty_rows/feed_ready)+ 上列
+  四联证定案。a2r 生成码排除(仅调用方);胶水侧属触发面
+  (多 worker 无收敛),根修落 DLL 内(见 T-03)。20GB 内存实录
+  未复现(全程 WS 13-15MB,待澄清#1 关闭:非同相)。
 - **T-03 [D3] 根修**:按定位实施;复现器 3/3 通过;套件绿。
   前置 T-02。关联 AC-03。
+  [✅ 已完成 2026-09-17] DLL 内每柄串行化(ffi.rs ENGINE_LOCKS
+  按引擎指针取锁,全部导出含读类;Box::leak 一次性锁,表项地址
+  复用,锁序 = 柄锁→内部 ring 锁单向无环)。验证:①金样
+  `cargo test -p autoterm-core --test
+  ffi_concurrency_serialization`(6 线程同柄 feed/take/读/resize/
+  键入混合流 6s):去锁红相 = 进程 STATUS_ACCESS_VIOLATION
+  (0xc0000005),带锁绿;②复现器修复后 3×≥10min 浸泡零崩
+  (r7 629s/r8 626s/r9 623s,WER 无新事件);③014 面零回归
+  (resize_guard 等全量门内绿)。commit auto-term 1cded12。
 - **T-04 [D4] 回归+实机**:全量门 + 020 t01 复跑 + vue 浸泡;
   DEBTS/spec 文档。前置 T-03。关联 AC-04/05。
+  [✅ 已完成 2026-09-17,用户目验件待补] `cargo test --workspace`
+  78 过 0 挂(两次全跑一致);020 t01 十二步剧本对修复后 back
+  复跑全绿(magnet/clamp/键盘/MAX_PANES/关 Pane 重算逐断言,
+  evidence/021/t01-model-r21.log);014 冒烟 = resize_guard(014
+  T-06)随门内绿 + t01 resize 路径;vue 浸泡 = r7-r9 即浸泡本体,
+  headless 截图 vue-soak-visual.png(Tab 条五钮渲染正常;用户目验
+  tab 条/布局交互留待用户,与 T-07 实点同场)。DEBTS #25 立案
+  (根修+红绿+浸泡在案);SD-01 契约文本已精确化随案,merge 步
+  落 docs/specs/engine-ffi-color-encoding.md。commit auto-term
+  1cded12。
 - **T-05 [D5] 管线取证+根修**:press/drag/wheel 一次仪器化;双区
   探针复跑;断点修复(020 移交项落位)。排查入口配方(020 f5dab16
   收据移交,rev2 复审补记):renderer.rs 21162 VM 动态臂入口 +
   aura_view_builder convert_mouse_area 入口,AUTO_MA_DBG=1 门控
   eprintln 插桩。前置:无(与线 A 并行)。关联 AC-06。
+  [✅ 修复在案 2026-09-17,实点复验待用户] 根因 = iced 0.14
+  mouse_area layout 直通子件 + 事件面 `!cursor.is_over(自身
+  bounds)` 早退:尺寸类挂外层 build_container、空内容 → 自身
+  0×0 bounds → press/hover 全死而渲染正常。证据链:①iced
+  0.14.2 mouse_area.rs 源码读码;②[MA_BUILD] 探针 press=true
+  w=Fixed(300/10)(接线本无恙);③iced_test 无头回归钉×2 红绿
+  (修复前块中心点击 FAILED,修复后 PASS+条外静默,layout_tests
+  ma_press_*)。修复 = auto-lang 双臂(renderer.rs VM 动态臂 +
+  IntoIcedElement 臂)内容侧镜像宽高透明容器,命中区=可视区,
+  外层树形不动;commit plan-021-dev 6c6950f75。实窗合成输入三路
+  (SetCursorPos+mouse_event/PostMessage/SetForegroundWindow 被
+  拒均取证在案)不可达 winit——020"Button 正常"系用户实点,实点
+  复验(计数 0→非 0)留待用户,与 T-07 三联合场景同场。
 - **T-06 [D6] 官方 scroll 组件**:各 panel 统一接入+按需修组件;
   对照实验结论在案。前置 T-05。关联 AC-07。
 - **T-07 [D7] 命中区+split 复验**:归属规则定稿实现(SD-02);三
