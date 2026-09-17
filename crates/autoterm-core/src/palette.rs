@@ -36,13 +36,18 @@ pub const CLASSIC_DARK: Palette = Palette {
     ],
 };
 
-/// scheme 1:Solarized Light(Windows Terminal 官方盘值;xterm 0-15 序)。
+/// scheme 1:浅底深字(Solarized Light 族底,2026-09-17 用户实机裁定
+/// 可读性修订:原 Windows Terminal 官方盘亮白族=近底色致 cmd 亮白
+/// 文本隐身、def_fg 偏浅、def_bg 饱和刺眼——三修:
+/// ①白/亮白族反转深色(7=base01、8=base00、15=base02,亮白族原为
+///   FDF6E3=与 bg 同色);②亮色族 vivid 化(10/12/14 原灰调);③
+/// def_fg=base02 深青灰、def_bg=base2 柔和米白(原 base3 高亮奶油)。
 pub const LIGHT: Palette = Palette {
-    def_fg: 0x586E75,
-    def_bg: 0xFDF6E3,
+    def_fg: 0x073642,
+    def_bg: 0xEEE8D5,
     base16: [
-        0x002B36, 0xDC322F, 0x859900, 0xB58900, 0x268BD2, 0xD33682, 0x2AA198, 0xEEE8D5, //
-        0x93A1A1, 0xCB4B16, 0x586E75, 0x657B83, 0x839496, 0x6C71C4, 0x93A1A1, 0xFDF6E3,
+        0x002B36, 0xDC322F, 0x859900, 0xB58900, 0x268BD2, 0xD33682, 0x2AA198, 0x586E75, //
+        0x657B83, 0xCB4B16, 0x859900, 0xB58900, 0x268BD2, 0x6C71C4, 0x2AA198, 0x073642,
     ],
 };
 
@@ -101,12 +106,30 @@ mod tests {
     fn palette_color_slot_axes_and_invalid() {
         assert_eq!(palette_color(0, 0, 1), Some(0xE8E8E8));
         assert_eq!(palette_color(0, 1, 0), Some(0x060709));
-        assert_eq!(palette_color(1, 0, 1), Some(0x586E75));
-        assert_eq!(palette_color(1, 1, 0), Some(0xFDF6E3));
+        assert_eq!(palette_color(1, 0, 1), Some(0x073642));
+        assert_eq!(palette_color(1, 1, 0), Some(0xEEE8D5));
         assert_eq!(palette_color(0, 2, 0), Some(0x000000));
-        assert_eq!(palette_color(1, 17, 0), Some(0xFDF6E3));
+        assert_eq!(palette_color(1, 17, 0), Some(0x073642));
         assert_eq!(palette_color(99, 0, 1), None, "未知方案");
         assert_eq!(palette_color(0, 18, 0), None, "槽位越界");
         assert_eq!(palette_color(0, 0, 2), None, "is_fg 非法轴");
+    }
+
+    #[test]
+    fn light_scheme_white_family_readable_on_bg() {
+        // 2026-09-17 可读性修订护栏:白/亮白族在浅底上不得隐身——
+        // 原 WT Solarized Light 官方盘 7=EEE8D5(近底)/15=FDF6E3(=bg
+        // 同色),cmd 亮白文本(文件名族)整列不可见(用户实机反馈)。
+        let pal = palette(SCHEME_LIGHT).unwrap();
+        let bg = pal.def_bg;
+        let lum = |c: u32| {
+            let (r, g, b) = (c >> 16, (c >> 8) & 0xFF, c & 0xFF);
+            0.2126 * r as f32 + 0.7152 * g as f32 + 0.0722 * b as f32
+        };
+        for slot in [7usize, 8, 15] {
+            let d = (lum(pal.base16[slot]) - lum(bg)).abs();
+            assert!(d > 60.0, "亮白族槽 {} 与 bg 亮度差不足: {:06X}", slot, pal.base16[slot]);
+        }
+        assert_ne!(pal.base16[15], bg, "亮白不得与 bg 同色");
     }
 }
