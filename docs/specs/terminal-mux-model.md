@@ -108,15 +108,30 @@ split 只继承 program/静态 cwd,**不承诺**动态 cwd 继承。
    key,分屏后画面不冻结);不可见 Pane(zoom 掩盖/他 Tab)=
    drain-only(014 积压护栏维持)。
 4. **恒单 Workspace(id=1)**,模型不设上限。
-5. **可见多终端视图契约(PLAN-019 D3,T-B 形态)**:GUI 消费槽位
-   投影——`mux_slot_pane_id(slot)` / `mux_slot_pane_key(slot)`:
-   zoom → slot1=zoomed;无分屏 → slot1=唯一叶;树深 1 分屏 →
-   slot1/2 = first/second 叶。**axis 语义:0=纵向堆叠(col)、
-   1=横向并排(row)**。视图 = Tab 条(常显,for 摊平按钮;点击
-   激活/右键关闭/"+ "新建/scheme 切换)+ 布局槽位 if 枚举;每
-   terminal 实例按 pane key 动态绑定(`key: .field`)。**V1 分屏
-   UI 上限 = 树深 1**(已分屏 Tab 再 split 拒绝 0,防不可见
-   Pane;更深嵌套归 View::Split 组件后续计划)。
+5. **可见多终端视图契约(PLAN-019 D3 立项;PLAN-020 rev2 升级为
+   矩形投影)**:GUI 消费**矩形投影**——back 对活动 Tab 可见子树
+   BFS 层序遍历,产出**槽位表**:pane 槽 1..MAX_PANES(层序发现
+   序)、divider 槽 7..11;每槽 (kind, pane, key, branch, axis,
+   x, y, w, h),矩形为归一化 ‰(内容区坐标系,zoom 投影 = 单
+   pane 槽满幅、零 divider)。消费面 = `POST /api/mux/rect-{kind|
+   pane|key|branch|axis|x|y|w|h}`(带参读一律 POST——vm 形态带参
+   GET 委托缺口,mux_pane_lines 先例)+ 旧 `mux_slot_pane_id/key`
+   保留为投影委托。**axis 语义:0=纵向堆叠(col)、1=横向并排
+   (row)**;divider 的 w/h 中被固定 6px 厚度取代的一轴记 0。
+   **深度不限,上限 = MAX_PANES=6 槽位帽**(超限 split 返 -2;
+   rev1 的树深 1 上限由此解除)。视图 = Tab 条(常显)+ 静态
+   6 槽 absolute 浮层(px 类几何 = ‰ × 内容区 px;019 T-00 视
+   图语言限制的绕开)。
+   **分隔条契约(PLAN-020 D2/D3/D4)**:薄条 mouse-area(6px 厚,
+   派生色 #8899aa)onmousedown 记分支号挂**全幅捕获层**(coords
+   "1000x1000" → onmousemove 引擎层归一 ‰ 坐标直喂
+   `POST /api/mux/resize-branch`,轴判/比例换算/磁吸/钳位全在
+   back 落定;float→int = to_int,499 M3 先例);onmouseup 撤层
+   落定。**磁吸:目标 {500}±40,最小 Pane 100‰(钳位
+   [100,900])**;拖拽与键盘(`POST /api/mux/resize-pane` = 委托
+   同一落定段)同一比例真相源。窗口尺寸标定源 =
+   `GET /api/mux/window-width|height`(逻辑 px;T-00b D7 面,
+   auto.term shim 2998/2999 + rust 侧车同名)。
 6. **Terminal shortcuts 契约(PLAN-019 D4)**:widget 键盘路径前置
    查捷径表(规范化键名 "ctrl.shift.e" 族;字符键 shift 恒前缀 +
    小写化),命中发消息不落 VT 队列不触发 on_input(双通道都断),

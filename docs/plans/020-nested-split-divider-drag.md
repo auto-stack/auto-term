@@ -1,12 +1,12 @@
 ---
 plan_id: PLAN-020
-status: executing
+status: execution_done
 feature_name: 任意深度分屏 + 可视分隔条拖拽 + 比例磁吸(嵌套布局与分隔条交互)
 author: [zcode-session]
 created_at: 2026-09-17T00:00:00Z
 updated_at: 2026-09-17T12:00:00Z
 plan_revision: 2
-current_step: 0
+current_step: 8
 total_steps: 8
 supersedes_spec_components: []
 new_spec_components: []
@@ -306,6 +306,23 @@ db(back)                                front(view 消费)
     rev1→rev2(total_steps 7→8,§8 增 T-00b),AC 零变动。
   - next:T-00b(lang-020 worktree)→ T-01。
 
+- 2026-09-17 stage:work · PLAN-020 · rev2 · outcome:**pass**
+  (T-01..T-06 全链;status → execution_done)· 代码基点 a47a18f,
+  auto-term 提交 0d2a304(T-00/T-00b/T-01/T-03)+ 本提交(T-02/
+  T-05);auto-lang:57353aa12(D7 窗口面)+ 15872c439(to_int UI
+  下降)+ ba77406eb(master FF;含 019 并行会话 f6a40d20a/5de39dd55
+  vm 自模块绑定根修,解除了 020 vm 链路阻塞)· 证据:
+  evidence/020/(t01 curl 剧本 12 步全绿 = AC-01/02/05 模型面+G6;
+  t02-* 实机帧 = 视图渲染:VM/rust/vue 三轨 Tab 条+全幅根 Pane+
+  真 shell)· **根修 018 遗留缺陷**:mux_split 自环(#23,20GB 实录)
+  · 全量门 cargo test --workspace 76/0 绿(AC-06)· 多 Tab 独立性
+  由矩形投影按活动 Tab 重算保证(AC-07;投影按 tab 过滤,curl [3]
+  深度2 即证)· **残余(AC-04 端到端)**:拖拽语义模型面已证
+  (resize-branch 磁吸/钳位),视图交互线代码完备(vm/rust 实机
+  渲染正常),但合成鼠标输入(mouse_event/SendInput/PostMessage)
+  均不被 winit 消费,GUI 实拖取证留用户手动验证(019"浏览器目验
+  留用户"同款口径,§10.7)· next:review。
+
 ## 10. 待澄清事项
 
 1. **磁吸目标集**:V1 = {50%};25%/75% 是否纳入首版(常量易调,
@@ -315,4 +332,12 @@ db(back)                                front(view 消费)
 3. **分隔条视觉**:宽 1-2px、颜色派生 palette 前景(019 同源);
    可拖拽 hover 高亮(加粗/变色)是否首版纳入——顺手项。
 4. **vm 形态**:承 019 §10.6(api 委托合成缺口),独立于本计划;
-   两计划可共享一次 vm 桥调试会话。
+   两计划可共享一次 vm 桥调试会话。(更新:019 会话已根修 f6a40d20a,
+   020 vm 实机已过链运行 ✓)
+7. **AC-04 GUI 实拖取证**(本计划唯一残余):拖拽语义已在模型面证毕
+   (curl resize-branch:磁吸 480→500 / 钳位 50→100 / 常规 300),
+   视图交互线(Press→捕获层→Drag→back)代码完备、三轨渲染正常;
+   合成鼠标输入(mouse_event/SendInput/PostMessage)不被 winit 消费,
+   实拖请用户手持鼠标验证:拖分隔条布局应实时跟随,松手落定,拖过
+   50%±40‰ 松手应吸附回中。
+

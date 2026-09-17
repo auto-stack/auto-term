@@ -318,3 +318,33 @@
   018 的 App.vue onUnmounted 重复导入缺陷已消失(019 复测单导入)。
 - **像素金样**:terminal_pixel_preedit 全 gate 偶发红(单测恒过;
   015 F-2 同族环境漂移,归 016 门跟踪)。
+
+## #23 mux_split replace_child 自环——branch.first = branch(PLAN-018 立案,PLAN-020 根修,2026-09-17)→ **已根修(020 T-01)**
+
+- **现象**:mux_split 先 push 分支行(first=old_leaf)再 replace_child
+  (old_leaf→branch);replace_child 全表扫描命中**分支自身行**(其
+  first 恰等于 old_leaf),改写 branch.first = branch → 树成自环。
+- **为什么潜伏**:019 深度 1 上限使每 Tab 仅一次 split,且无任何
+  深遍历消费面;焦点/兄弟收编等既有面未触雷。
+- **如何暴露**:020 深度解锁 + 矩形投影 BFS;自环使投影队列指数
+  膨胀——叠加 019 init 竞态(并发 tick 双 init)产生的僵尸态,实测
+  app-back 单进程 20GB(2026-09-17 T-01 联调)。
+- **根修**:空挂分支行→replace_child 链接父位→再落孩子;replace_child
+  防御跳过 node_id == new_child 的行;投影遍历硬上界(512 步/256
+  队列,正常态 20 倍余量)——任何未来的环/DAG 不可能再膨胀。
+
+## #24 观察条(PLAN-020):分数/flex 宽度类 VM 实机失效;DAG 化树面待收敛
+
+- **分数宽度失效**:`w-1/2`/`w-7/12`/`w-500/1000`/`flex-1` 等比例
+  类在 VM 实机渲染面全部不生效(等分退化/首件占满/比例异常,五形态
+  矩阵复测;AUTO_STYLE_CACHE=0 无效;解析层单测在库全过)——消费链
+  (Style→IcedStyle→iced Length)某环丢失。020 因此改走 px 类几何
+  (D7 窗口尺寸面为标定源)。归 auto-lang 探针定位,独立项。
+- **019 init 竞态**:mux_init 的 check-then-act 无并发保护,前端
+  50ms 轮询下曾产生双 tab/僵尸 pane(跨 tab 的 focus/leaf 错配)。
+  020 遍历已加硬上界兜底;竞态本身归 019 债(建议 mux_init 加
+  initialized 原子标志或动作队列化)。
+- **D7 面的 Tab 条高标定**:前端 tabH 为实测常量(40 逻辑 px),
+  Tab 条样式变更需同步;窗口尺寸面已给 client px,内容区 = client
+  − tabH。
+

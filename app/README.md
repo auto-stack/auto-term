@@ -5,6 +5,22 @@ AutoTerm 复刻应用的 automan 标准工程形态：一份 .at 源，三条标
 `autoterm_core.dll`。PLAN-017 起 `app/` 为 AutoTerm 唯一工程入口
 （at-app/ 目录已退役，桌面壳旧形态一并移除）。
 
+## 任意深度分屏 + 分隔条拖拽 + 磁吸(PLAN-020)
+
+- **矩形投影**:back 对活动 Tab 可见子树层序遍历出 pane 槽(1..6)与
+  divider 槽(7..11)的 ‰ 矩形表;前端静态 6 槽 absolute 浮层(px 类
+  几何)消费,terminal 按槽键绑定,014 可用空间反推在槽内闭合。深度
+  不限,上限 = MAX_PANES=6(超限 split 返 -2)。
+- **分隔条**:6px 薄条(#8899aa),按住挂全幅捕获层(coords
+  "1000x1000" 归一 ‰),onmousemove 直喂 `/api/mux/resize-branch`——
+  轴判/比例换算/**磁吸({500}±40)**/**钳位([100,900])**全在 back
+  落定;键盘 `/api/mux/resize-pane` 同一真相源。
+- **窗口尺寸面**:`GET /api/mux/window-width|height`(逻辑 px;内容区
+  = client − Tab 条高 40)。三轨:VM shim(2998/2999)/rust 侧车/vue
+  back(无窗降级 1024x768)。
+- **测试**:curl 剧本 `docs/plans/evidence/020/t01_model.sh`(12 步断言);
+  实机拖拽用鼠标直接操作(合成输入在 winit 不可靠)。
+
 ## 可见多终端 UI(PLAN-019)
 
 Tab 条常显(点击激活 / 右键关闭 / `+` 新建 / 横分 / 竖分 / 关Pane /
