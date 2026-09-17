@@ -1,12 +1,12 @@
 ---
 plan_id: PLAN-019
-status: executing
+status: execution_done
 feature_name: 可见多终端 UI——Tab 条 + 分屏渲染 + 快捷键(006 蓝图 ①)
 author: [zcode-session]
 created_at: 2026-09-15T00:00:00Z
 updated_at: 2026-09-17T00:00:00Z
 plan_revision: 1
-current_step: 7
+current_step: 9
 total_steps: 9
 supersedes_spec_components: []
 new_spec_components: []
@@ -568,6 +568,23 @@ layout 策略(Tall/Grid/Stack,Phase 6 另半边)、Workspace 持久化
     为 019 阻塞项**。
   - next:用户复验浅色新配色 → 014 护栏顺手抽查 → T-08 锚定 →
     复审。
+
+- 2026-09-17 stage:work · PLAN-019 · rev1 · **T-08 双仓锚定+收口**
+  (outcome:pass,step 9/9,status → execution_done):
+  - **用户终验三项全过**:①开窗即焦点(启动直接打字);②浅色配色
+    (背景柔和、文字对比清晰);③014 护栏(ping -t 挂载 → 最小化/
+    恢复布局无爆炸、内容跟上)。滚动条自绘形态按用户裁定暂缓
+    (已知问题清单见 auto-lang roadmap,非阻塞)。
+  - **双仓锚定**:auto-lang master = 4579d59e3(019 相关:f6a40d20a
+    vm 委托合成根因修复、7af29ce8e 配色副本表、7363111d1 滚动条交互
+    与 eaf237f11 前 palette cache 键、837e3420e/4579d59e3 roadmap);
+    auto-term 019 链末笔 = 9966a54(链:33a9649 vm 链接记账 → c23a8ce
+    浅色配色 → 8f0f35e 冒烟记账 → 5ab0381/5f34ac7/337f612 滚动接线 →
+    c422796/9966a54 蓝图交叉与暂缓裁定;main 当前 tip c3b8d50 为
+    021 的提交,叠于其上)。临时 worktree
+    term-019-smoke/term-019-verify 与隔离 target 均已清理
+    (wt-guard clean);lang-019 worktree 留存供复审。
+  - next:/auto-plan:review 复审。
 
 ## 10. 待澄清事项
 
