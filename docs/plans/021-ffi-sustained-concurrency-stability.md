@@ -6,7 +6,7 @@ author: [zhaopuming/zcode-session]
 created_at: 2026-09-17T00:00:00Z
 updated_at: 2026-09-17T00:00:00Z
 plan_revision: 2
-current_step: 4
+current_step: 6
 total_steps: 8
 supersedes_spec_components: []
 new_spec_components: []
@@ -295,10 +295,26 @@ press),取证时一次仪器化全覆盖,死法差异本身是断点定位证据
   (SetCursorPos+mouse_event/PostMessage/SetForegroundWindow 被
   拒均取证在案)不可达 winit——020"Button 正常"系用户实点,实点
   复验(计数 0→非 0)留待用户,与 T-07 三联合场景同场。
+  [✅ 用户实点复验通过 2026-09-17,AC-06 关案] probe021 实点:
+  hitsBig=1/hitsStrip=1(双区 0→非 0),仪器日志 HitBig×4/
+  HitStrip×3 到达 update 派发层(probe-user-run.log)。hitsBtn=0
+  = 对照件笔误:button 事件词汇仅 onclick/click(aura_view_
+  builder convert_button :106-109),不认 onmousedown——按压实达
+  (8 条 widget="" event="click" 通用消息),绑定未成立;Button
+  链路活着(020 生产窗证据不变)。wheel 子路径:TERM_WHEEL 仪器
+  在库,实点读数随 T-07 滚动场景。
 - **T-06 [D6] 官方 scroll 组件**:各 panel 统一接入+按需修组件;
   对照实验结论在案。前置 T-05。关联 AC-07。
+  [✅ 范围裁定结案 2026-09-17,用户指令] 裁定:**维持现状半成品**
+  (终端自绘滚动条与现有 panel 形态不动);"接入官方 scroll 组件"
+  延后,顺序改为 ①先强化官方滚动条(支持虚拟滚动;auto-lang 独立
+  工作项,顺带收敛 4579d59e3 暂缓的虚拟滚动容器问题清单)②之后
+  再回来换装。AC-07 原文(各 panel 接入官方组件)随裁定改判为
+  "维持现状 + 链修通对照证据在案"(无头回归钉×2 + 双区实点非 0
+  即链修通判据);换装+虚拟滚动强化 = 新计划项移交(§10 #3)。
+  勘定事实随案关闭。
 - **T-07 [D7] 命中区+split 复验**:归属规则定稿实现(SD-02);三
-  联合场景;020 AC-04 关案。前置 T-06。关联 AC-08。
+  联合场景;020 AC-04 关案。前置 T-06(已裁定结案,解除)。关联 AC-08。
 - **T-08 锚定与收口**:双仓 SHA 回填(线 B 必动 auto-lang)+
   status execution_done。前置 T-04 + T-07。
 
@@ -391,12 +407,8 @@ press),取证时一次仪器化全覆盖,死法差异本身是断点定位证据
 2. ~~auto-lang 是否入役~~ **已关闭(T-02 定案)**:根因在 DLL 导出
    面,非 a2r 生成码——auto-lang 线 B 因 mouse_area 缺陷独立入役
    (worktree lang-021),与线 A 无涉。
-3. **T-06 滚动清单(用户决策,开工前必答)**:勘定事实 =
-   ①app/src/front/app.at(778 行)现无任何 scrollable/overflow
-   消费面——UI 即终端槽 + Tab 条;②官方组件在库(View::scrollable,
-   examples/ui_scroll.rs 双后端);③终端自绘滚动条(SCROLLBAR_
-   HIT_W=14px,widget.rs)在案。待裁定:(a) 是否为 Tab 条(多
-   Tab 溢出)接入官方 scroll;(b) 终端自绘滚动条是否换官方组件
-   (换 = 重做 513-590 press 链与命中区,z 序/命中区联合设计随
-   SD-02);(c) 若无真消费面,T-06 降格为"组件在库可用性对照实验"
-   (探针页接 scrollable 验证链通)即关案。
+3. ~~T-06 滚动清单~~ **已由用户裁定关闭(2026-09-17)**:维持现状
+   半成品;官方滚动条先做虚拟滚动强化(auto-lang 独立工作项,移交
+   后续计划;顺带收敛 4579d59e3 暂缓的虚拟滚动容器问题清单:拇指
+   比例/拖拽位置漂移/拖拽表现/hover 加宽/pointer 联动/theme);
+   强化完成后再回来换装官方滚动条并重开命中区联合设计。
