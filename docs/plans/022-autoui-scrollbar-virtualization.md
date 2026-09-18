@@ -209,7 +209,20 @@ evidence/021/t07-field-notes.md):
   合并(vue.rs +243 行;022 diff 的 auto-man 仅 rust_ui.rs 11 行=master
   修复并入),非本计划回归,路由 642 归属方/用户裁定;④014 几何随动
   冒烟 ✓(实测 pane 缩槽后引擎 resize;app.at 的 g 值刷新缺口
-  [仅 geomChanged 门] 另记 §10.7)。
+  [仅 geomChanged 门] 已修:app.at 每拍刷新槽位 cols/rows,实测
+  g1=53x45 随槽收敛)。
+- 2026-09-18 stage:work 补记(用户问询"vue 版打开无 cmd 输出"诊断):
+  vue 轨空白根因 = **back API 生成器把带参 GET 路由(tab-id-at/
+  tab-title-at/tab-is-active-at 族)生成为 GET + `Json` 提取器**——
+  axum 对无 body GET 一律 400("Expected request with Content-Type:
+  application/json",实测 curl 复现);前端每拍轮询到 tab-id-at?i=0
+  即抛错,循环中断 → tab_labels/槽位/终端永不渲染(受控浏览器实测:
+  静态按钮渲染、fetch 28 次/3s、bad=[tab-id-at 400×6])。019 规范
+  明文"带参读一律 POST"(rect-* 面即如此),tab-* GET 面生成违反。
+  归属 master 侧 back/api 生成(642/643 合并族;022 diff 未触及),
+  路由归属方;修复方向 = GET+Json 改 Query 提取或按规范改 POST+Json。
+  叠加层:dev 跑法 back 引擎 DLL 解析失败(需 AUTOTERM_ENGINE_DLL,
+  否则 tick panic app-back/src/term.rs:225)+ 投影单幅化(见 T-06③)。
 - **T-07 锚定收口**(双仓 SHA + status execution_done)。前置 T-05+T-06。
 
 ## 9. 复审记录
