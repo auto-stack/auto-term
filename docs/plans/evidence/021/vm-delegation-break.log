@@ -59,3 +59,16 @@
 # 不符)、split=强 Value 化(Plan 388 起)、正解=wrapper 直调进程内
 # db(017 merged 承诺)。p2 worktree(lang-021-p2,plan-021-p2-dev)
 # 已建,整备工作下次会话续做。
+
+# ── codegen bisect 判据脚本输出摘录(持久化;原 /tmp 日志易失)──────
+# 脚本:scripts/repro/bisect-codegen-test.sh(全清生成树→该提交 exe
+# 从零生成→path 指回该检出→cargo build 数错;0=good/>0=bad)
+# RESULT head=762ed0f00 errors=253
+# RESULT head=d0cac5df9 errors=253
+# RESULT head=788a3369b errors=253   ← good 端点亦 bad:判据揭示
+#   "rust 轨生成代码从未可编译"(非提交回归),bisect 结论作废,
+#   转入 T-09 化石机制定性(正文见上)。master 全清基线 = 253。
+# 复审轮(auto-plan-review):从零构建(修复后 codegen)= 0 错;
+#   auto-man 套件 297 过 / 2 环境性失败(vue.rs 轮转:
+#   plan609/desktop_extra_app_roots/incremental_parse——本机缺
+#   auto-os mirror 文件 + fs 时序 flaky;无修复代码时同败,与 021 无涉)。
