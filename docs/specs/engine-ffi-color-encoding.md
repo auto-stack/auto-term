@@ -6,6 +6,8 @@
 > (`at-app/term.rs`)、at-gen 冻结胶水(`at-gen/src/engine.rs`)。
 > PLAN-018(SD-03,2026-09-15)增补**配色方案面**(§scheme):kind_color
 > 编码零改,渲染端 Default/base16 解析换表;face 17→19。
+> PLAN-021(SD-01,2026-09-18 复审通过)增补**并发契约**(§并发契约):
+> FFI 边界每柄串行化;kind_color 编码与配色面零改。
 
 ## 契约
 
@@ -82,3 +84,24 @@ auto-lang `ui::terminal`,内置值同源):
 ffi `palette_*` 三用例 + 016 像素金样(`--lib terminal`,dark 臂
 逐字节)+ 双端 light 实机截图(evidence/018/rust-gui-light-scheme1.png、
 vm-gui-light-scheme1.png)。
+
+## 并发契约(PLAN-021 SD-01;FFI 边界每柄串行化)
+
+FFI 边界按**引擎指针每柄串行化**:全部导出——含纯读类
+(`row_text`/`row_style`/`cursor` 等)——进入即取每柄锁,同柄调用
+互斥;调用方三形态(VM shim、rust 侧车、vue back)无需外锁。导出
+**不重入**(不得持柄锁再调其它导出)。
+
+- **不变量(防复发)**:任何新导出必须在入口取每柄锁;锁序 = 柄锁
+  → 引擎内部锁(ring)单向,禁止反向嵌套。
+- **背景(事故档案)**:vue 形态页面 sustained 轮询下,axum 多
+  worker 对同柄并发 FFI,导出面裸 `&mut` 别名——腐蚀对
+  `feed_ready∥feed_ready`(vte 网格双写)与
+  `take_dirty_rows∥row_text`(快照整体替换 vs 读侧悬垂)触发
+  STATUS_HEAP_CORRUPTION(0xc0000374;020 复审 P1,DEBTS #25)。
+  仪器证据:同柄重叠 1062-1213 次/300s,含同 ptr 跨线程
+  feed_ready(evidence/021/)。
+- **回归**:`cargo test -p autoterm-core --test
+  ffi_concurrency_serialization`(6 线程同柄混合流;去锁红相 =
+  进程级 0xc0000005)+ 复现器浸泡 `scripts/repro/vue_crash_repro.ps1`
+  (修复后 3×≥10min 零崩)。
