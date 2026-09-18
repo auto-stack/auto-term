@@ -389,10 +389,17 @@ worktree,branch plan-021-p2-dev,基线 master 75fb01808)**
 
 ## 9. 复审记录
 
-- 2026-09-18 stage:merge · PLAN-021:r3 · checkpoint:**ledger_refreshed** ·
+- 2026-09-18 stage:merge · PLAN-021:r3 · checkpoint:**archived** ·
+  git mv → docs/plans/archived/021-ffi-sustained-concurrency-
+  stability.md;status archived;completion_kind delivered ·
+  归档前五检查点:prepared(SD-01 落 spec)/landed(auto-lang 双折
+  fc8c9561b+7132bb136,门禁 41 红=基线零新增)/ledger_refreshed
+  (P021-1..6 回读校验)均已完成 · next:cleaned(wt-guard +
+  lang-021/lang-021-p2 worktree 与分支移除)。
+- 2026-09-18 stage:work(阶段交棒)· PLAN-021 · rev2 ·- 2026-09-18 stage:merge · PLAN-021:r3 · checkpoint:**ledger_refreshed** ·
   .autoos/specs.json 六节 P021-1..6 入账(reports/goals/designs/tests/
   reviews → 归档路径;architecture → docs/specs/engine-ffi-color-encoding.md
-  SD-01 权威源);round-trit 回读校验 OK(6 items 计数+file 链);
+  SD-01 权威源);round-trip 回读校验 OK(6 items 计数+file 链);
   投影脚本 scripts/repro/ledger_p021_projection.py 入库 · next:archive。
 - 2026-09-18 stage:work(阶段交棒)· PLAN-021 · rev2 ·- 2026-09-18 stage:merge · PLAN-021:r3 · checkpoint:**landed** ·
   auto-lang master 折回:plan-021-dev → fc8c9561b(renderer.rs
