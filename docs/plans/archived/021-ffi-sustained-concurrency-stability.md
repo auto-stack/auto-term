@@ -389,7 +389,15 @@ worktree,branch plan-021-p2-dev,基线 master 75fb01808)**
 
 ## 9. 复审记录
 
-- 2026-09-18 stage:merge · PLAN-021:r3 · checkpoint:**archived** ·
+- 2026-09-18 stage:merge · PLAN-021:r3 · checkpoint:**cleaned** ·
+  祖先校验:6c6950f75/ef5e0538c 均为 auto-lang master 祖先 ✓;
+  wt-guard clean ×2 ✓;worktree 移除:lang-021/auto-lang、
+  lang-021-p2/auto-lang、lang-021-p2/auto-lang-788(复审探针)、
+  auto-down 兄弟×2;分支删除:plan-021-dev(6c6950f75)、
+  plan-021-p2-dev(ef5e0538c);空组目录 lang-021/lang-021-p2 已删 ·
+  **merge 全检查点完成(prepared/landed/ledger_refreshed/archived/
+  cleaned)· PASS 终态**。
+- 2026-09-18 stage:work(阶段交棒)· PLAN-021 · rev2 ·- 2026-09-18 stage:merge · PLAN-021:r3 · checkpoint:**archived** ·
   git mv → docs/plans/archived/021-ffi-sustained-concurrency-
   stability.md;status archived;completion_kind delivered ·
   归档前五检查点:prepared(SD-01 落 spec)/landed(auto-lang 双折
