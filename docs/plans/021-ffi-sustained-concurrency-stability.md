@@ -388,7 +388,15 @@ worktree,branch plan-021-p2-dev,基线 master 75fb01808)**
 
 ## 9. 复审记录
 
-- 2026-09-18 stage:review · PLAN-021 · rev3 · outcome:**pass** ·
+- 2026-09-18 stage:merge · PLAN-021:r3 · checkpoint:**prepared** ·
+  复审基线 auto-term 526ff51(rev3 pass)+ lang-021 6c6950f75 +
+  lang-021-p2 ef5e0538c · canonical diff:SD-01 →
+  docs/specs/engine-ffi-color-encoding.md §并发契约(已写入,提交
+  见 git log;SD-02 随官方滚动条计划移出)· 投影目标:specs.json
+  P021 项(landed 后刷新)· 交付 commit:auto-term main(spec 提交
+  即 landed 前置)+ auto-lang 两分支折回 master · next:fold→tf 门
+  →landed→ledger→archive→cleaned。
+- 2026-09-18 stage:review · PLAN-021 · rev3 · outcome:**pass** ·- 2026-09-18 stage:review · PLAN-021 · rev3 · outcome:**pass** ·
   reviewed_commit:auto-term main 526ff51(+ 复审轮测试修正
   lang-021-p2 ef5e0538c)· base_commit:auto-term e9f813d ·
   dependency_revisions:lang-021 plan-021-dev 6c6950f75(base
