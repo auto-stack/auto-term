@@ -388,7 +388,17 @@ worktree,branch plan-021-p2-dev,基线 master 75fb01808)**
 
 ## 9. 复审记录
 
-- 2026-09-18 stage:merge · PLAN-021:r3 · checkpoint:**prepared** ·
+- 2026-09-18 stage:merge · PLAN-021:r3 · checkpoint:**landed** ·
+  auto-lang master 折回:plan-021-dev → fc8c9561b(renderer.rs
+  +59/widget.rs +15/layout_tests)、plan-021-p2-dev → 7132bb136
+  (rust_ui.rs +59/-14);零冲突,另一会话 WIP(643)未受扰 ·
+  merge 门:tf 全量在基线即编译失败(E0433,019 已在案谱系,
+  plan024 文件折叠区间零改动)→ 改跑 cargo t --no-fail-fast
+  5073 测:折叠后 41 红 vs 折叠前 2de64ba08 同 41 红(红名逐一
+  相同,含两个谱系自带新红 conditional_style/palette_has_no_drift
+  在 2de64ba08 同败)——**零新增红,门过**;auto-term 侧
+  workspace 78/0 复跑 ✓ · next:ledger→archive→cleaned。
+- 2026-09-18 stage:work(阶段交棒)· PLAN-021 · rev2 ·- 2026-09-18 stage:merge · PLAN-021:r3 · checkpoint:**prepared** ·
   复审基线 auto-term 526ff51(rev3 pass)+ lang-021 6c6950f75 +
   lang-021-p2 ef5e0538c · canonical diff:SD-01 →
   docs/specs/engine-ffi-color-encoding.md §并发契约(已写入,提交
