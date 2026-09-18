@@ -211,6 +211,18 @@ evidence/021/t07-field-notes.md):
   冒烟 ✓(实测 pane 缩槽后引擎 resize;app.at 的 g 值刷新缺口
   [仅 geomChanged 门] 已修:app.at 每拍刷新槽位 cols/rows,实测
   g1=53x45 随槽收敛)。
+- 2026-09-19 stage:work 补二(用户实点 fed back):横分/分隔条渲染+拖拽 ✓
+  (路径重置修复后);**残留阻塞 = 交互投递死亡**:首层交互后右侧面板
+  无法聚焦输入、滚动条/滚轮失效——headless 确定性复现已入册
+  (lang-022 `p022_stack_click_tests.rs` #[ignore]:交替点击两浮层第一轮
+  后计数冻结;已排除 Opaque 满幅捕获与终端 mouse_interaction 抬升,
+  移除 opaque 后轨迹不变),需要 iced Stack/Opaque/运行时交互投递层的
+  内部分析,超出本计划范围 → 随 T-06 移交 review 路由(独立调查计划)。
+  另:**PLAN-653 已被并行会话执行完毕**(execution_done,全 5 任务,
+  AC-01..06 实测证据;653 计划文件随其会话重组移位)——vue 轨修复在
+  plan-653-dev 待 review/merge;本计划 rust 载具的剩余症状与 653 无关。
+  载具构建陷阱固化:每次 `auto build -r rust` 会重置 Cargo.toml 路径
+  覆盖(见 §10.6),022/653 合并前重生成后必须重新指向。
 - 2026-09-18 stage:work 补记(用户问询"vue 版打开无 cmd 输出"诊断):
   vue 轨空白根因 = **back API 生成器把带参 GET 路由(tab-id-at/
   tab-title-at/tab-is-active-at 族)生成为 GET + `Json` 提取器**——

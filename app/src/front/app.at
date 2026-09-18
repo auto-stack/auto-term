@@ -131,9 +131,14 @@ widget App {
         var dH3 int = 0
         var dH4 int = 0
         var dH5 int = 0
-        // 拖拽态(Press 记分支,Drop 清)
+        // 拖拽态(Press 记分支,Drop 清)。dragW/H = 捕获层几何(常驻渲染,
+        // 空闲 0x0 不挡点击;拖拽=全幅)——消除"按压后下一帧才出现捕获层"
+        // 的帧差竞速(PLAN-022 T-05 实测:快速拖拽丢移动+丢 Drop,
+        // dragging 卡死 1 → 全屏捕获层吃掉一切输入)。
         var dragging int = 0
         var dragBranch int = 0
+        var dragW int = 0
+        var dragH int = 0
         // 投影版本门(F1):变化才拉完整 rect-*,稳态请求数回落 019 水位
         var lastVer int = 0 - 1
     }
@@ -563,6 +568,8 @@ widget App {
             var b int = api.mux_rect_branch(k)
             .dragBranch = b
             .dragging = 1
+            .dragW = .clientW
+            .dragH = .clientH - .tabH
         }
         .Drag(x, y) -> {
             api.mux_resize_branch(.dragBranch, x.to_int(), y.to_int())
@@ -570,6 +577,8 @@ widget App {
         .Drop -> {
             .dragging = 0
             .dragBranch = 0
+            .dragW = 0
+            .dragH = 0
         }
     }
 
@@ -720,12 +729,12 @@ widget App {
                     if .dA1 == 1 {
                         div {
                             style: f"absolute z-20 top-[${.dY1}px] left-[${.dX1}px] w-[8px] h-[${.dH1}px] bg-[#8899aa]"
-                            mouse-area (style: "w-full h-full", onmousedown: .Press(7)) {}
+                            mouse-area (style: "w-full h-full", onmousedown: .Press(7), onmouseup: .Drop) {}
                         }
                     } else {
                         div {
                             style: f"absolute z-20 top-[${.dY1}px] left-[${.dX1}px] w-[${.dW1}px] h-[8px] bg-[#8899aa]"
-                            mouse-area (style: "w-full h-full", onmousedown: .Press(7)) {}
+                            mouse-area (style: "w-full h-full", onmousedown: .Press(7), onmouseup: .Drop) {}
                         }
                     }
                 }
@@ -733,12 +742,12 @@ widget App {
                     if .dA2 == 1 {
                         div {
                             style: f"absolute z-20 top-[${.dY2}px] left-[${.dX2}px] w-[8px] h-[${.dH2}px] bg-[#8899aa]"
-                            mouse-area (style: "w-full h-full", onmousedown: .Press(8)) {}
+                            mouse-area (style: "w-full h-full", onmousedown: .Press(8), onmouseup: .Drop) {}
                         }
                     } else {
                         div {
                             style: f"absolute z-20 top-[${.dY2}px] left-[${.dX2}px] w-[${.dW2}px] h-[8px] bg-[#8899aa]"
-                            mouse-area (style: "w-full h-full", onmousedown: .Press(8)) {}
+                            mouse-area (style: "w-full h-full", onmousedown: .Press(8), onmouseup: .Drop) {}
                         }
                     }
                 }
@@ -746,12 +755,12 @@ widget App {
                     if .dA3 == 1 {
                         div {
                             style: f"absolute z-20 top-[${.dY3}px] left-[${.dX3}px] w-[8px] h-[${.dH3}px] bg-[#8899aa]"
-                            mouse-area (style: "w-full h-full", onmousedown: .Press(9)) {}
+                            mouse-area (style: "w-full h-full", onmousedown: .Press(9), onmouseup: .Drop) {}
                         }
                     } else {
                         div {
                             style: f"absolute z-20 top-[${.dY3}px] left-[${.dX3}px] w-[${.dW3}px] h-[8px] bg-[#8899aa]"
-                            mouse-area (style: "w-full h-full", onmousedown: .Press(9)) {}
+                            mouse-area (style: "w-full h-full", onmousedown: .Press(9), onmouseup: .Drop) {}
                         }
                     }
                 }
@@ -759,12 +768,12 @@ widget App {
                     if .dA4 == 1 {
                         div {
                             style: f"absolute z-20 top-[${.dY4}px] left-[${.dX4}px] w-[8px] h-[${.dH4}px] bg-[#8899aa]"
-                            mouse-area (style: "w-full h-full", onmousedown: .Press(10)) {}
+                            mouse-area (style: "w-full h-full", onmousedown: .Press(10), onmouseup: .Drop) {}
                         }
                     } else {
                         div {
                             style: f"absolute z-20 top-[${.dY4}px] left-[${.dX4}px] w-[${.dW4}px] h-[8px] bg-[#8899aa]"
-                            mouse-area (style: "w-full h-full", onmousedown: .Press(10)) {}
+                            mouse-area (style: "w-full h-full", onmousedown: .Press(10), onmouseup: .Drop) {}
                         }
                     }
                 }
@@ -772,18 +781,16 @@ widget App {
                     if .dA5 == 1 {
                         div {
                             style: f"absolute z-20 top-[${.dY5}px] left-[${.dX5}px] w-[8px] h-[${.dH5}px] bg-[#8899aa]"
-                            mouse-area (style: "w-full h-full", onmousedown: .Press(11)) {}
+                            mouse-area (style: "w-full h-full", onmousedown: .Press(11), onmouseup: .Drop) {}
                         }
                     } else {
                         div {
                             style: f"absolute z-20 top-[${.dY5}px] left-[${.dX5}px] w-[${.dW5}px] h-[8px] bg-[#8899aa]"
-                            mouse-area (style: "w-full h-full", onmousedown: .Press(11)) {}
+                            mouse-area (style: "w-full h-full", onmousedown: .Press(11), onmouseup: .Drop) {}
                         }
                     }
                 }
-                if .dragging == 1 {
-                    mouse-area (coords: "1000x1000", style: "absolute inset-0 z-30", onmousemove: .Drag, onmouseup: .Drop) {}
-                }
+                mouse-area (coords: "1000x1000", style: f"absolute z-30 top-0 left-0 w-[${.dragW}px] h-[${.dragH}px]", onmousemove: .Drag, onmouseup: .Drop) {}
             }
         }
     }
