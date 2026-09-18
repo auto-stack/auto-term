@@ -1,6 +1,6 @@
 ---
 plan_id: PLAN-021
-status: execution_done
+status: reviewed
 feature_name: VM 视图/事件管线稳定性专项(FFI sustained 堆破坏 + 指针事件派发/scroll/split 交互修复 + auto-lang 跑法缺陷簇 Phase 2)
 author: [zhaopuming/zcode-session]
 created_at: 2026-09-17T00:00:00Z
@@ -9,7 +9,8 @@ plan_revision: 3
 current_step: 8
 total_steps: 11
 supersedes_spec_components: []
-new_spec_components: []
+new_spec_components:
+  - docs/specs/engine-ffi-color-encoding.md#并发契约(SD-01,merge 步发布)
 touched_goals: []
 ---
 
@@ -387,7 +388,62 @@ worktree,branch plan-021-p2-dev,基线 master 75fb01808)**
 
 ## 9. 复审记录
 
-- 2026-09-18 stage:work(终态交棒)· PLAN-021 · rev3 ·
+- 2026-09-18 stage:review · PLAN-021 · rev3 · outcome:**pass** ·
+  reviewed_commit:auto-term main 526ff51(+ 复审轮测试修正
+  lang-021-p2 ef5e0538c)· base_commit:auto-term e9f813d ·
+  dependency_revisions:lang-021 plan-021-dev 6c6950f75(base
+  75fb01808)/ lang-021-p2 plan-021-p2-dev ca1d1260e+ef5e0538c
+  (base 776fe8f6c)/ auto-down 兄弟检出 detached · spec_inputs:
+  docs/specs/engine-ffi-color-encoding.md(SD-01 目标,存在)、
+  docs/specs/terminal-mux-model.md、docs/specs/terminal-widget-chrome.md ·
+  声明:实现会话内复审,结论自工件重建(测试实跑 + 日志/截图在案
+  复核),未采信执行者摘要。
+  - **acceptance_results**(AC→T→证据):
+    - AC-01 pass:复现器 3/3 崩(65/65/140s,WER repro-r{1,2,3}-wer.txt;
+      复用理由=修复后运行时不可能复现修复前崩溃,基线证据不可变)。
+    - AC-02 pass:仪器定因链(OVERLAP 1062-1213 次/300s、同 ptr 跨线程
+      feed_ready、静态 UB 读码)——vm-delegation-break.log + repro-r4/
+      r6 日志(已入库)复核。
+    - AC-03 pass:**本轮实跑** 金样 ffi_concurrency_serialization 过
+      (workspace 78/0 内含)+ 浸泡 r7-r9 日志复用(修复后无崩溃不可
+      重演,同 AC-01 理由)。
+    - AC-04 pass:**本轮实跑** cargo test --workspace 78/0;020 t01
+      十二步剧本日志(t01-model-r21.log)复用(t01 后 back 仅加 spawn
+      失败留痕,成功路径零行为变化);014 冒烟 = resize_guard 门内绿。
+    - AC-05 pass:DEBTS #25 在 DEBTS.md 复核 ✓;SD-01 契约文本随案
+      (§5)与实现一致(每柄串行化);canonical spec 未发布(merge 步)
+      合规。
+    - AC-06 pass:**本轮实跑** ma_press 无头回归 2/2 + 用户实点
+      (probe-user-run.log HitBig×4/HitStrip×3)+ wheel 实测如实记录
+      (t07-field-notes.md #4)。
+    - AC-07 pass-per-ruling:裁定链在案(§8 T-06),交付 = 链修复实证。
+    - AC-08 pass-per-ruling:实测 + 缺陷清单移交(t07-field-notes.md),
+      SD-02/020 AC-04 随官方滚动条计划。
+    - T-09 pass:**复审轮从零构建 0 错** + 契约锁定测试新增(标量 POST
+      阻塞反序列化);T-10 移交在案;T-11 pass(载体实测)。
+  - **findings**:
+    - **F1(已修,ef5e0538c)**:过期断言 test_w1_get_body(断言旧
+      Option→Value 形状)——随 T-09 契约更新(类型化 + flatten 断言)
+      + 新增标量 POST 契约锁定测试。
+    - **F2(环境基线,无行动)**:vue.rs 三测试轮转失败(plan609/
+      desktop_extra_app_roots/incremental_parse——本机缺 auto-os
+      mirror 文件 + fs 时序 flaky;无修复代码时同败;与 rust_ui.rs
+      改动无涉)。归 auto-lang 环境整备,非 021 项。
+    - **F3(已修)**:计划引用的 bisect-codegen.log 当时未持久化——
+      已补判据输出摘录入 vm-delegation-break.log(证据持久化要求)。
+  - **SD-01 delta 复核**:语义 = FFI 边界每柄串行化(与实现逐条对
+    应:ENGINE_LOCKS 含读类、Box::leak 单次锁、锁序柄锁→ring 单向);
+    目标路径存在;描述当前行为非执行日记 ✓;frontmatter
+    new_spec_components 已定稿。SD-02 随官方滚动条计划移出本计划
+    (§8 T-07 裁定在案)。冻结件 = 本计划 §5 SD-01 行(计划文件
+    已提交,哈希随仓)。
+  - evidence:evidence/021/(repro-r*/wer/mem、probe-user-run.log、
+    t01-model-r21.log、t07-field-notes.md、t07-rust-vehicle.png、
+    vm-delegation-break.log)、workspace 78/0 本轮实跑记录(§上)、
+    ma_press 2/2 本轮实跑。· **next**:merge(auto-plan-merge;
+    merge 门含 auto-lang 侧全量 tf——本轮以受影响 crate 测试 + 载体
+    实测代替,full tf 留 merge 前置门)。
+- 2026-09-18 stage:work(阶段交棒)· PLAN-021 · rev2 ·- 2026-09-18 stage:work(终态交棒)· PLAN-021 · rev3 ·
   outcome:**pass**(裁定改判后全范围交付;移交项显式在案)·
   code_commit:auto-term main(T-01..T-04 工作线 1cded12 起 + T-07/
   T-08 记录线)/ auto-lang plan-021-dev 6c6950f75(线B 管线修复)/
