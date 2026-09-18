@@ -339,7 +339,7 @@ press),取证时一次仪器化全覆盖,死法差异本身是断点定位证据
 **Phase 2(auto-lang 跑法缺陷簇,rev3 扩充;工作在 lang-021-p2
 worktree,branch plan-021-p2-dev,基线 master 75fb01808)**
 
-- **T-09 [Phase2] rust 轨 codegen 整备(范围升级,排障实证)**:
+- **T-09 [Phase2] rust 轨 codegen 整备(范围升级,排障实证) [✅ 根修完成 2026-09-18]**:
   从零生成对任一时代运行时均 253 错——非回归而是**从未可编译**:
   14:48 的 exe 依赖"化石 main.rs"(生成器 skip-if-exists 保留古老
   产物,021 排障全清后暴露)。整备面:①merged 生成器是 CRUD 原型
@@ -348,6 +348,13 @@ worktree,branch plan-021-p2-dev,基线 master 75fb01808)**
   .at 声明类型消费;③正确形态 = rust 轨 wrapper 直调进程内吸收的
   db 逻辑(017 merged 承诺)。规模 = codegen 子系统整备,非点修。
   前置:无。关联 T-11。证据:bisect-codegen.log + 排障记录。
+  根修(plan-021-p2-dev,rust_ui.rs):①generate_api_client 优先
+  db.at 进程内吸收(merged_db_impl 类型化直调,017 承诺),吸收
+  不可用才回落 split-HTTP;②split 返回类型按 api.at 声明类型化
+  (auto_type_to_rust),未知类型回落占位;③POST 标量返回 local_
+  result 占位 → 阻塞反序列化;④GET Option 声明类型直反序列化。
+  验证:rust-workspace 全清从零生成 → cargo build = 0 错;实机
+  shell 横幅/提示符/●shell 1 全活(t07-rust-vehicle.png)。
 - **T-10 [Phase2] dev 跑法 VM api 委托断供定因+根修**:
   `auto run -r vm` api.* 静默失效(证据 vm-delegation-break.log
   #5)。定因 VM api 派发断点;根修 + app 实机验证。
@@ -355,6 +362,9 @@ worktree,branch plan-021-p2-dev,基线 master 75fb01808)**
 - **T-11 [Phase2] 部署态重建**:rust 轨 auto-term.exe 以含
   021 修复的运行时构建 + 修复版 DLL 同布;shell/Tab/内容三查。
   前置 T-09。关联 T-07 载体。
+  [✅ 完成 2026-09-18] auto-term.exe(lang-021-p2 运行时)+
+  修复版 autoterm_core.dll 同目录;三查全过(t07-rust-vehicle.png)。
+  T-07 实点载体就绪。
 
 ## 9. 复审记录
 
