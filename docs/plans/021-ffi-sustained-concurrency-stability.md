@@ -388,7 +388,12 @@ worktree,branch plan-021-p2-dev,基线 master 75fb01808)**
 
 ## 9. 复审记录
 
-- 2026-09-18 stage:merge · PLAN-021:r3 · checkpoint:**landed** ·
+- 2026-09-18 stage:merge · PLAN-021:r3 · checkpoint:**ledger_refreshed** ·
+  .autoos/specs.json 六节 P021-1..6 入账(reports/goals/designs/tests/
+  reviews → 归档路径;architecture → docs/specs/engine-ffi-color-encoding.md
+  SD-01 权威源);round-trit 回读校验 OK(6 items 计数+file 链);
+  投影脚本 scripts/repro/ledger_p021_projection.py 入库 · next:archive。
+- 2026-09-18 stage:work(阶段交棒)· PLAN-021 · rev2 ·- 2026-09-18 stage:merge · PLAN-021:r3 · checkpoint:**landed** ·
   auto-lang master 折回:plan-021-dev → fc8c9561b(renderer.rs
   +59/widget.rs +15/layout_tests)、plan-021-p2-dev → 7132bb136
   (rust_ui.rs +59/-14);零冲突,另一会话 WIP(643)未受扰 ·
