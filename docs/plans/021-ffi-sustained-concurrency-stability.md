@@ -1,12 +1,12 @@
 ---
 plan_id: PLAN-021
-status: executing
+status: execution_done
 feature_name: VM 视图/事件管线稳定性专项(FFI sustained 堆破坏 + 指针事件派发/scroll/split 交互修复 + auto-lang 跑法缺陷簇 Phase 2)
 author: [zhaopuming/zcode-session]
 created_at: 2026-09-17T00:00:00Z
 updated_at: 2026-09-18T00:00:00Z
 plan_revision: 3
-current_step: 6
+current_step: 8
 total_steps: 11
 supersedes_spec_components: []
 new_spec_components: []
@@ -238,6 +238,10 @@ press),取证时一次仪器化全覆盖,死法差异本身是断点定位证据
   并实现;三联合场景(带滚动条面板旁拖分隔条、拖 thumb、接缝
   点击归属符合规则)通过;020 AC-04 携带项关案。验证:实机三
   场景 + 规则落档。
+  **(rev3 裁定改判)**:三联合场景实测暴露自绘滚动条度量/绘制与
+  rust 轨分屏渲染缺陷簇,用户裁定连同 SD-02/020 AC-04 一并移交
+  官方滚动条(虚拟滚动)计划;021 交付事件链修复(thumb 可拖 +
+  滚轮可滚,实机在案)。
 
 ## 8. 执行步骤
 
@@ -333,8 +337,20 @@ press),取证时一次仪器化全覆盖,死法差异本身是断点定位证据
   勘定事实随案关闭。
 - **T-07 [D7] 命中区+split 复验**:归属规则定稿实现(SD-02);三
   联合场景;020 AC-04 关案。前置 T-06(已裁定结案,解除)。关联 AC-08。
+  [✅ 实测完成 + 裁定收口 2026-09-18,见 t07-field-notes.md] 载体
+  = T-11 rust 轨 app。实测:①thumb 拖拽基本可拖(021 事件链修复
+  实机证实);②滚轮文字可滚(链活);③自绘滚动条度量/绘制缺陷
+  (thumb 太小/未对齐右缘/比例不对无法到最早/不随滚轮跟随);④
+  rust 轨分屏:右面板未渲染+分隔条未出(分屏渲染缺陷)。用户裁定:
+  自绘滚动条与分屏打磨**就此打住**,移交官方滚动条(虚拟滚动)计划
+  (与 T-06 裁定同向);SD-02 命中区归属规则随该计划定稿;020 AC-04
+  携带项改判移交同一目标。021 线 B 交付物维持"事件链修复"(已证)。
 - **T-08 锚定与收口**:双仓 SHA 回填(线 B 必动 auto-lang)+
   status execution_done。前置 T-04 + T-07。
+  [✅ 完成 2026-09-18] 锚定:auto-term main c7f40d5..(工作线)+ 
+  lang-021 plan-021-dev 6c6950f75(线B 管线修复)+ lang-021-p2
+  plan-021-p2-dev(T-09 codegen 根修,SHA 见该 worktree HEAD)+
+  组内 auto-down 兄弟检出(detached)。明细见 §9 交棒记录。
 
 **Phase 2(auto-lang 跑法缺陷簇,rev3 扩充;工作在 lang-021-p2
 worktree,branch plan-021-p2-dev,基线 master 75fb01808)**
@@ -359,6 +375,9 @@ worktree,branch plan-021-p2-dev,基线 master 75fb01808)**
   `auto run -r vm` api.* 静默失效(证据 vm-delegation-break.log
   #5)。定因 VM api 派发断点;根修 + app 实机验证。
   前置:无(与 T-09 并行)。
+  **(rev3 移交)**:独立 auto-lang 缺陷,不阻塞任何 021 交付物
+  (019/020 实机会话所用部署态跑法不受影响)——移交 auto-lang
+  侧后续缺陷计划,与 codegen 整备同批。
 - **T-11 [Phase2] 部署态重建**:rust 轨 auto-term.exe 以含
   021 修复的运行时构建 + 修复版 DLL 同布;shell/Tab/内容三查。
   前置 T-09。关联 T-07 载体。
@@ -368,7 +387,31 @@ worktree,branch plan-021-p2-dev,基线 master 75fb01808)**
 
 ## 9. 复审记录
 
-- 2026-09-17 stage:work(阶段交棒)· PLAN-021 · rev2 ·
+- 2026-09-18 stage:work(终态交棒)· PLAN-021 · rev3 ·
+  outcome:**pass**(裁定改判后全范围交付;移交项显式在案)·
+  code_commit:auto-term main(T-01..T-04 工作线 1cded12 起 + T-07/
+  T-08 记录线)/ auto-lang plan-021-dev 6c6950f75(线B 管线修复)/
+  auto-lang plan-021-p2-dev(T-09 codegen 根修,见该分支)·
+  worktree:lang-021 + lang-021-p2(均待 merge)·
+  task_ids:T-01..T-06、T-08、T-09、T-11 完成(证据见 §8 逐条),
+  T-07 实测+裁定收口,T-10 移交 ·
+  **交付面**:①线 A(FFI sustained 堆破坏):复现器 3/3→仪器定因
+  (DLL 导出面裸 &mut 别名)→每柄串行化根修(金样红 0xc0000005/
+  绿 + 3×≥10min 浸泡零崩)→全量门 78/0 + 020 t01 十二步绿 +
+  DEBTS #25;AC-01..05 达成。②线 B(指针事件链):iced mouse_area
+  0×0 bounds 根因 + 双臂修复 + 无头回归钉红绿 + 用户实点关案
+  (probe021 双区 0→非 0);AC-06 达成。③线 B 消费面(AC-07/
+  AC-08):两轮用户裁定改判移交——官方滚动条(虚拟滚动)计划承接
+  自绘滚动条整备 + SD-02 + 020 AC-04;021 交付链修复实证。④
+  Phase 2(T-09/T-11):rust 轨 codegen 根修(进程内吸收优先 +
+  类型化返回 + 阻塞标量 POST),从零构建 0 错,部署态载体实测
+  shell/Tab/内容全活;T-10 移交 auto-lang 缺陷计划。·
+  **移交清单(后续计划输入)**:官方滚动条(虚拟滚动)计划 = 自绘
+  滚动条缺陷簇(thumb 尺寸/对齐/比例/跟随)+ wheel 半屏钳位 +
+  rust 轨分屏渲染 + SD-02 + 020 AC-04 + T-06 换装;auto-lang 缺陷
+  计划 = T-10 dev 跑法 api 委托断供 + codegen 整备未尽面(merged
+  CRUD 原型退役)。· blockers:无 · next:review(auto-plan-review)。
+- 2026-09-18 stage:work(阶段交棒)· PLAN-021 · rev2 ·- 2026-09-17 stage:work(阶段交棒)· PLAN-021 · rev2 ·
   outcome:**pass(线A 全闭环)+ blocked(线B 消费面待用户输入)** ·
   code_commit: auto-term main 1cded12+c7f40d5 / auto-lang
   plan-021-dev 6c6950f75 · base: auto-term e9f813d / auto-lang
