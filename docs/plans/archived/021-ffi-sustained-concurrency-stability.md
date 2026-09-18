@@ -1,6 +1,6 @@
 ---
 plan_id: PLAN-021
-status: reviewed
+status: archived
 feature_name: VM 视图/事件管线稳定性专项(FFI sustained 堆破坏 + 指针事件派发/scroll/split 交互修复 + auto-lang 跑法缺陷簇 Phase 2)
 author: [zhaopuming/zcode-session]
 created_at: 2026-09-17T00:00:00Z
@@ -11,6 +11,7 @@ total_steps: 11
 supersedes_spec_components: []
 new_spec_components:
   - docs/specs/engine-ffi-color-encoding.md#并发契约(SD-01,merge 步发布)
+completion_kind: delivered
 touched_goals: []
 ---
 
