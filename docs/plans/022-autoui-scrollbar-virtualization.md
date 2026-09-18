@@ -1,12 +1,12 @@
 ---
 plan_id: PLAN-022
-status: drafting
+status: executing
 feature_name: AutoUI 官方滚动条(虚拟滚动)整备——自绘滚动条退役 + SD-02 命中区 + 020 AC-04 关案 + rust 轨分屏渲染修复
 author: [zhaopuming/zcode-session]
 created_at: 2026-09-18T00:00:00Z
 updated_at: 2026-09-18T00:00:00Z
 plan_revision: 1
-current_step: 0
+current_step: 3
 total_steps: 8
 supersedes_spec_components: []
 new_spec_components:
@@ -160,11 +160,42 @@ evidence/021/t07-field-notes.md):
 
 - **T-00 [D1] 调查与语义定稿**(bounded investigation,决策工件):
   scrollable 现状/虚拟滚动设计/分屏缺陷定界。前置:无。关联 AC-01。
+  [x] ✅ 已完成 2026-09-18:决策工件 evidence/022/t00-decision.md——
+  虚拟滚动语义定稿(引擎 display_offset 单源、scrollable offset=视图
+  投影、CELL_H 量化无损、读写双臂映射);分屏定界=分隔条缺陷代码级
+  闭合(rust codegen 丢 mouse-area/事件 → 空层跳过),slot2 蓝屏留
+  T-03 实机探针(两候选在案);§10 澄清项 1/2/3 裁定。
 - **T-01 [D2] 虚拟滚动实现**(auto-lang worktree)。前置 T-00。
   关联 AC-01/02。
+  [x] ✅ 已完成 2026-09-18:lang-022 提交 50a2d4ad4——TerminalCore 同步
+  态三字段 + view_y⇄offset 行量化换算 + observe/bind 双臂状态机
+  (scroll_to 回声抑制);virtual_scroll_tests 4/4 绿。
 - **T-02 [D3] 终端换装 + 自绘条退役**(auto-lang worktree +
   auto-term 主检出)。前置 T-01。关联 AC-03/04。
+  [x] ✅ 已完成 2026-09-18:同提交 50a2d4ad4——renderer View::Terminal
+  臂包官方 scrollable(id=terminal_scroll_<key>,scrollbar_style 现款),
+  virtual_scroll=true 虚拟画布((rows+history)×CELL_H);自绘条全集退役
+  (SCROLLBAR_*、ScrollbarDrag、metrics、press/wheel/drag 臂、draw thumb、
+  Grab 形态);014 几何随动改 VIEWPORT_H 记账(scrollable 内子件滚动轴
+  无穷约束);scroll_offset prop 非零哨兵。实机:单面板满幅渲染,蓝带
+  消失(对比 021 t07 载体)。scoped 门:--lib terminal 40 过(1 失败=
+  preedit 像素顺序 flaky,基线同败)。
 - **T-03 [D4] rust 轨分屏渲染修复**。前置 T-00(定界)。关联 AC-06。
+  [~] 进行中 2026-09-18(auto-lang 侧交付已提交,vehicle 渲染链残留
+  一层待续):已落 lang-022 三提交——0bfa1f4af(rust codegen 补
+  `mouse-area`→View::MouseArea 发射:onmousedown→on_click 槽/
+  onmouseup→on_release/onmousemove→PointerMoveHandler+logical_extent,
+  消息值直发非闭包)+ 空层判定加固(带 bg 空容器不判空,防分隔条
+  chrome 消失)+ 62b3d6251(窗口尺寸面 rust 轨修复:run_app/
+  run_app_devtools 双漏斗 Resized→theme thread_local + boot 种子 +
+  0×0 退化尺寸拒收——此前 thread_local 恒默认 1024×768,投影 px 全错;
+  实测 cw 1024 假值→1280 真值,slot 矩形随窗正确)。实机探针
+  (evidence/022/auto-split.png + t05-slotlog.err):模型侧 slot 矩形
+  非零且正确(s1 640,0,640,760 / s2 0,0,320,760 / dv 640),shell
+  进程确证存活(auto-term 名下 3 cmd,DLL 双柄 spawn 测试 7/7 绿);
+  **残留**:渲染仍呈单幅满窗(槽位绝对定位视觉未生效,多层叠加
+  假象)+ Init 疑似双跑(enqueue 一次得 ver=3/pane-3)。用户裁定
+  2026-09-18:split 链路测试暂停,此根因未明前不进 T-05 实点。
 - **T-04 [D5] SD-02 命中区归属定稿实现**。前置 T-02。关联 AC-05。
 - **T-05 020 AC-04 实机关案**(三联合场景用户实点)。前置
   T-02+T-03+T-04。关联 AC-05/07。
@@ -177,12 +208,47 @@ evidence/021/t07-field-notes.md):
   pass`(起草授权 = 021 两轮用户裁定移交;T-00 调查任务为首批可执行
   项)。`next: work`(work 前按惯例 `/auto-plan:review`;D1/D2 深设计
   在 T-00 决策工件后细化属计划内演进)。
+- 2026-09-18 stage:work 进入:status drafting→executing(起草授权
+  = 021 移交裁定,§4.1 在案)。worktree 布局:auto-lang 走
+  `D:/autostack/.wt/lang-022/auto-lang`(branch plan-022-dev,基线
+  master 1f4e3e32c);auto-term 主检出直落(020/021 惯例,主检
+  tracked 代码零 WIP,untracked 遗留件 = 020/021 证据/spike/repro
+  脚本,不构成代码 WIP)。并行会话占用面勘定:lang-026(p026
+  native display)/lang-642/lang-647 在途,与本计划冲突面待 T-00
+  改动前复查。
+- 2026-09-18 stage:work · plan_id PLAN-022 · rev1 · outcome:
+  **pass(部分)**——T-00/T-01/T-02 完成,T-03 auto-lang 侧两提交
+  落库(0bfa1f4af + 62b3d6251,已并 master 1fc4772d9)。code_commit:
+  auto-lang plan-022-dev 62b3d6251;auto-term 主检出 tracked 零改动
+  (main.rs 生成物为 untracked,DBG 门控探针随重生成消失)。task_ids:
+  T-00/T-01/T-02 完成,T-03 进行中(残留第三层:槽位绝对定位渲染
+  不生效 + Init 双跑疑点),T-04..T-07 未动。evidence:
+  evidence/022/t00-decision.md + 探针截图/日志/脚本 7 件。blockers:
+  用户裁定 2026-09-18——split 链路测试暂停(新面板空置观感,spawn
+  已证活着,渲染/合成链待根因),T-05 顺延;AC-06 未关。next:
+  work 续 T-03 残留(§10.6 vehicle 复建配方)→ T-04 → T-05..T-07。
 
 ## 10. 待澄清事项
 
 1. 虚拟滚动行高/量化语义(等宽字符网格假设是否成立,长行折行?);
+   **已裁定 2026-09-18 T-00**:等高网格 CELL_H=16 成立,量化无损;
 2. 换装清单:终端之外哪些面板需要 scroll(021 §10 #3 勘定遗留);
-3. 滚动条视觉规格(宽度/配色/悬停行为,对齐 stella 主题);
-4. rust 轨分屏渲染缺陷归属(auto-term codegen vs auto-lang IntoIced
-   轨)——T-00 定界输出;
-5. 与并行会话(643/645+)的 auto-lang 冲突面协调。
+3. 滚动条视觉规格:已裁定沿用 iced 官方 scrollbar_style() 现款;
+4. rust 轨分屏渲染缺陷归属:**T-00/T-03 已定界两层**——①rust codegen
+   丢 mouse-area(已修,0bfa1f4af);②窗口尺寸面断供(已修,
+   62b3d6251);**残留第三层**:槽位绝对定位渲染不生效(模型矩形正确、
+   样式解析正确、视觉仍单幅满窗)+ Init 双跑疑点,根因待查(用户裁定
+   2026-09-18:此未明前暂停 split 链路测试,T-05 顺延);
+5. 与并行会话(642/646/647+)的 auto-lang 冲突面:本计划 surface =
+   terminal/iced/widget.rs、ui_gen/rust.rs(mouse-area 臂)、renderer.rs
+   (Terminal 臂/TickWrap/devtools 窗口尺寸臂)——已并 master
+   1fc4772d9,继续开发前需重新对 master;
+6. **vehicle 复建配方(下一会话用)**:①worktree lang-022 构建
+   codegen `cargo build -p auto`;②`app/` 下
+   `<worktree>/target/debug/auto.exe build -r rust` 重新生成 main.rs;
+   ③`app/rust-workspace/Cargo.toml` 的 auto-lang path 临时指向
+   `../../../.wt/lang-022/auto-lang/crates/auto-lang` 后
+   `cargo build -p auto-term`(产物在 auto-term 根 target/debug,经
+   AUTOTERM_ENGINE_DLL 挂 autoterm_core.dll);④探针脚本
+   evidence/022/t03-probe-*.ps1,AUTO_MA_DBG=1 开 slot 数值日志
+   (main.rs 探针补丁为 DBG 门控,重新生成即消失)。
