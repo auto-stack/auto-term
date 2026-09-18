@@ -6,7 +6,7 @@ author: [zhaopuming/zcode-session]
 created_at: 2026-09-18T00:00:00Z
 updated_at: 2026-09-18T00:00:00Z
 plan_revision: 1
-current_step: 3
+current_step: 5
 total_steps: 8
 supersedes_spec_components: []
 new_spec_components:
@@ -181,25 +181,35 @@ evidence/021/t07-field-notes.md):
   消失(对比 021 t07 载体)。scoped 门:--lib terminal 40 过(1 失败=
   preedit 像素顺序 flaky,基线同败)。
 - **T-03 [D4] rust 轨分屏渲染修复**。前置 T-00(定界)。关联 AC-06。
-  [~] 进行中 2026-09-18(auto-lang 侧交付已提交,vehicle 渲染链残留
-  一层待续):已落 lang-022 三提交——0bfa1f4af(rust codegen 补
-  `mouse-area`→View::MouseArea 发射:onmousedown→on_click 槽/
-  onmouseup→on_release/onmousemove→PointerMoveHandler+logical_extent,
-  消息值直发非闭包)+ 空层判定加固(带 bg 空容器不判空,防分隔条
-  chrome 消失)+ 62b3d6251(窗口尺寸面 rust 轨修复:run_app/
-  run_app_devtools 双漏斗 Resized→theme thread_local + boot 种子 +
-  0×0 退化尺寸拒收——此前 thread_local 恒默认 1024×768,投影 px 全错;
-  实测 cw 1024 假值→1280 真值,slot 矩形随窗正确)。实机探针
-  (evidence/022/auto-split.png + t05-slotlog.err):模型侧 slot 矩形
-  非零且正确(s1 640,0,640,760 / s2 0,0,320,760 / dv 640),shell
-  进程确证存活(auto-term 名下 3 cmd,DLL 双柄 spawn 测试 7/7 绿);
-  **残留**:渲染仍呈单幅满窗(槽位绝对定位视觉未生效,多层叠加
-  假象)+ Init 疑似双跑(enqueue 一次得 ver=3/pane-3)。用户裁定
-  2026-09-18:split 链路测试暂停,此根因未明前不进 T-05 实点。
+  [x] ✅ 已完成 2026-09-18:三层根因全修——①rust codegen 补
+  `mouse-area` 发射(0bfa1f4af);②窗口尺寸面双漏斗+种子+退化护栏
+  (62b3d6251);③into_iced Column/Row 臂镜像 PLAN-530 absolute 分区
+  + run_app_devtools 单次构造(Init 双跑根除,9df7c5a5e)。实机实锤
+  (screen-split.png,屏幕捕获+校验):50/50 双终端各带活 shell、分隔
+  条清晰;模型面 [P22] s1/s2/dv 全对;进程面 5 子进程=双面板(原 3
+  cmd=Init 双跑)。PrintWindow 在 wgpu 上服务旧缓冲——探针配方改
+  屏幕区域捕获+灰条校验。AC-06 功能闭合。
 - **T-04 [D5] SD-02 命中区归属定稿实现**。前置 T-02。关联 AC-05。
+  [x] ✅ 已完成 2026-09-18:SD-01 落 docs/specs/terminal-widget-chrome.md
+  (滚动条命中归 scrollable 组件/分隔条 8px 命中归 app/z-20>z-10 结构
+  操作优先/视觉=scrollbar_style 现款);SD-02 落 docs/specs/
+  terminal-mux-model.md §V1.10 修订(官方滚动条虚拟滚动契约:单源不变/
+  视图投影缓存/坐标映射/读出写臂/回声抑制/键入贴底)。
 - **T-05 020 AC-04 实机关案**(三联合场景用户实点)。前置
   T-02+T-03+T-04。关联 AC-05/07。
+  [~] 就绪待用户实点:载具已重建(从零生成+022 运行时,0 错),启动器
+  evidence/022/t05-launcher.ps1 + 实点清单(①拖分隔条磁吸钳位 ②造
+  历史后拖 thumb 全程/跟随 ③接缝命中归属)。合成输入探针被前台桌面
+  阻断(135 帧日志 drag=0,按压未达 app)——实点本就归属用户。
 - **T-06 回归门**(§6.4 全项)。前置 T-02..T-04。关联 AC-08。
+  [~] 部分完成 2026-09-18:①auto-term workspace 全绿 ✓(27/27,含
+  engine_ffi 7);②rust 轨从零构建 0 错 ✓(master 路径与 022 运行时
+  路径双验);③**020 t01 剧本受阻****:vue back(17401)投影
+  单幅化(visible=5 但 rects 单 pane 满幅)——归属 master 侧 642/643
+  合并(vue.rs +243 行;022 diff 的 auto-man 仅 rust_ui.rs 11 行=master
+  修复并入),非本计划回归,路由 642 归属方/用户裁定;④014 几何随动
+  冒烟 ✓(实测 pane 缩槽后引擎 resize;app.at 的 g 值刷新缺口
+  [仅 geomChanged 门] 另记 §10.7)。
 - **T-07 锚定收口**(双仓 SHA + status execution_done)。前置 T-05+T-06。
 
 ## 9. 复审记录

@@ -153,15 +153,29 @@ split 只继承 program/静态 cwd,**不承诺**动态 cwd 继承。
    V1 Tab 标题 = 序号 + shell 名(静态派生;动态 title 归 ③ OSC)。
 9. **前端 int=i32 / db int=i64 桥接**:merged 垫片返回面降位、参数
    面升位(014 返回面裁定的镜像,auto-man merged_db_delegate)。
-10. **滚动回看面(PLAN-019 冒烟期用户追加)**:滚动语义单源在引擎
+10. **滚动回看面(PLAN-019 冒烟期用户追加;PLAN-022 SD-02 修订:
+       官方滚动条虚拟滚动契约,2026-09-18)**:滚动语义单源在引擎
    `display_offset`(TermSession scroll/display_offset/history,
-   016 既有);widget 滚轮增量入 core 队列(正=上翻历史),rust
-   侧车与 vm glue 泵内 Key 侧带排水 → `autoterm_engine_scroll /
-   scroll_offset / history` 三导出回灌与回读,同拍快照即滚动视图;
-   **键入即贴底**(write_input 后 scroll_to_bottom,终端惯例);
-   自绘滚动条(3px 圆角拇指,scrollbar_style 官方形态)为过渡形态
-   ——已知问题清单与虚拟滚动容器演进记 auto-lang roadmap
-   Desktop生态(2026-09-17 用户裁定暂缓)。vue 臂只读视口臂不承诺。
+   016 既有)——**不变**;scrollbar 视觉/交互自 PLAN-022 起归
+   AutoUI 官方 scrollable(iced),自绘条(3px 拇指)退役。契约:
+   - **scrollable 像素 offset = 视图投影缓存,不得反向成为滚动
+     状态源**(019 铁律延续)。虚拟画布高 =
+     `(rows + history) × CELL_H + 2×PAD`,可见窗仅物化引擎快照
+     rows 行(display_offset..display_offset+rows)。
+   - **坐标映射**(终端回滚语义,文本生长反向):
+     `content_y(display_offset d) = (history − d) × CELL_H`;
+     d=0(贴底实时)→ 画布底,d=history(最早)→ 画布顶。
+     CELL_H=16 等高网格量化无损(016 契约)。
+   - **读出臂**(用户 wheel/thumb):视图 y → 行量化
+     `d_target = history − round(y/CELL_H)`,相对视图目标基线
+     (core.scroll_view_target)取差值经 scroll 队列回灌引擎;
+     程序化 scroll_to 回声由 bind_suppress 吞一次,防回灌环路。
+   - **写臂**(引擎侧滚动:键入贴底等):引擎 offset 回写 ≠ 上次
+     绑定值 → Plan 043 pending 队列发 scroll_to 同位,thumb 跟随、
+     单拍收敛。
+   - **键入即贴底**(write_input 后 scroll_to_bottom,终端惯例)
+     与"正=上翻历史"回灌约定(019 原语义)不变。
+   - vue 臂只读视口臂不承诺(019 边界维持)。
 11. **配色方案面修订(2026-09-17 冒烟期用户授权)**:LIGHT 盘可读性
    三修——白/亮白族反转深色(base16[7]=base01、[8]=base00、
    [15]=base02;原 WT Solarized Light 官方盘 [15]=FDF6E3 与 def_bg

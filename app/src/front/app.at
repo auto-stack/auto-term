@@ -353,36 +353,48 @@ widget App {
                 .lines1 = api.mux_pane_lines(q1)
                 .cr1 = api.mux_pane_cursor_row(q1)
                 .cc1 = api.mux_pane_cursor_col(q1)
+                .g1c = api.mux_pane_cols(q1)
+                .g1r = api.mux_pane_rows(q1)
             }
             var q2 int = api.mux_rect_pane(2)
             if .slot2 == 1 {
                 .lines2 = api.mux_pane_lines(q2)
                 .cr2 = api.mux_pane_cursor_row(q2)
                 .cc2 = api.mux_pane_cursor_col(q2)
+                .g2c = api.mux_pane_cols(q2)
+                .g2r = api.mux_pane_rows(q2)
             }
             var q3 int = api.mux_rect_pane(3)
             if .slot3 == 1 {
                 .lines3 = api.mux_pane_lines(q3)
                 .cr3 = api.mux_pane_cursor_row(q3)
                 .cc3 = api.mux_pane_cursor_col(q3)
+                .g3c = api.mux_pane_cols(q3)
+                .g3r = api.mux_pane_rows(q3)
             }
             var q4 int = api.mux_rect_pane(4)
             if .slot4 == 1 {
                 .lines4 = api.mux_pane_lines(q4)
                 .cr4 = api.mux_pane_cursor_row(q4)
                 .cc4 = api.mux_pane_cursor_col(q4)
+                .g4c = api.mux_pane_cols(q4)
+                .g4r = api.mux_pane_rows(q4)
             }
             var q5 int = api.mux_rect_pane(5)
             if .slot5 == 1 {
                 .lines5 = api.mux_pane_lines(q5)
                 .cr5 = api.mux_pane_cursor_row(q5)
                 .cc5 = api.mux_pane_cursor_col(q5)
+                .g5c = api.mux_pane_cols(q5)
+                .g5r = api.mux_pane_rows(q5)
             }
             var q6 int = api.mux_rect_pane(6)
             if .slot6 == 1 {
                 .lines6 = api.mux_pane_lines(q6)
                 .cr6 = api.mux_pane_cursor_row(q6)
                 .cc6 = api.mux_pane_cursor_col(q6)
+                .g6c = api.mux_pane_cols(q6)
+                .g6r = api.mux_pane_rows(q6)
             }
             .cols = api.term_cols()
             .rows = api.term_rows()
