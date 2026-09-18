@@ -114,9 +114,15 @@ split 只继承 program/静态 cwd,**不承诺**动态 cwd 继承。
    序)、divider 槽 7..11;每槽 (kind, pane, key, branch, axis,
    x, y, w, h),矩形为归一化 ‰(内容区坐标系,zoom 投影 = 单
    pane 槽满幅、零 divider)。消费面 = `POST /api/mux/rect-{kind|
-   pane|key|branch|axis|x|y|w|h}`(带参读一律 POST——vm 形态带参
-   GET 委托缺口,mux_pane_lines 先例)+ 旧 `mux_slot_pane_id/key`
-   保留为投影委托。**axis 语义:0=纵向堆叠(col)、1=横向并排
+   pane|key|branch|axis|x|y|w|h}`(rect-* 族带参读一律 POST——vm
+   形态带参 GET 委托缺口,mux_pane_lines 先例)+ 旧
+   `mux_slot_pane_id/key` 保留为投影委托。**带参读取契约分域
+   (PLAN-653 SD-01 修订)**:rect-*/命令型投影族维持一律 POST;
+   标量 getter 族(tab-id-at / tab-is-active-at / tab-title-at /
+   pane-cols / pane-rows / pane-cursor-* 等)为**纯读幂等面,
+   契约 = GET + Query 查询串**——前端客户端生成器按 `?i=` 形态
+   发射,rust back 生成器以 `{Fn}Query`-struct 提取对齐(653 前
+   该族误发 Json 提取器,无 body GET 恒 400,轮询断链)。**axis 语义:0=纵向堆叠(col)、1=横向并排
    (row)**;divider 的 w/h 中被固定 6px 厚度取代的一轴记 0。
    **深度不限,上限 = MAX_PANES=6 槽位帽**(超限 split 返 -2;
    rev1 的树深 1 上限由此解除)。视图 = Tab 条(常显)+ 静态

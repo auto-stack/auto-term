@@ -5,7 +5,11 @@
 //! (`use crate::term::{…}`)由此闭合。快照缓存在 glue 侧,`engine_rows` 回读。
 //!
 //! DLL 解析顺序:AUTOTERM_ENGINE_DLL 环境变量 → exe 同目录(dist 布局)
-//! → ../target/debug → ../../target/debug(组内两仓布局均覆盖)。
+//! → exe 目录祖先逐级 target/debug(取 6 级)→ CWD 祖先逐级 target/debug
+//! (取 4 级;PLAN-653 T-02:dev 跑法 `auto run -r vue` 的 back exe 实落
+//! `<app>/rust-workspace/<name>-back` 的默认 target——CWD=app 目录,
+//! 仓根 target/debug(autoterm_core.dll 唯一常规落点)距 exe 目录 5 级
+//! 祖先,旧 take(4) 链恒落空 → 首 tick panic;CWD 链两级内命中)。
 
 use libloading::Library;
 use std::ffi::{c_char, c_int, CStr, CString};
@@ -205,8 +209,8 @@ fn load_palettes_once(lib: &Library) {
 fn lib() -> &'static Library {
     LIB.get_or_init(|| {
         // 解析顺序:env → exe 目录同目录(003 §5 dist 布局:三件套同
-        // 目录分发,PLAN-011 T2)→ 当前 exe 目录向上 4 级的 target/debug
-        // (组内布局稳健,不受 CWD 影响;仿 autoterm-ctrlc 的 helper 解析)。
+        // 目录分发,PLAN-011 T2)→ exe 目录祖先 target/debug(6 级)→
+        // CWD 祖先 target/debug(4 级;PLAN-653 T-02,理由见模块注释)。
         let mut candidates: Vec<std::path::PathBuf> = Vec::new();
         if let Ok(p) = std::env::var("AUTOTERM_ENGINE_DLL") {
             candidates.push(std::path::PathBuf::from(p));
@@ -214,9 +218,14 @@ fn lib() -> &'static Library {
         if let Ok(exe) = std::env::current_exe() {
             if let Some(dir) = exe.parent() {
                 candidates.push(dir.join("autoterm_core.dll"));
-                for anc in dir.ancestors().take(4) {
+                for anc in dir.ancestors().take(6) {
                     candidates.push(anc.join("target/debug/autoterm_core.dll"));
                 }
+            }
+        }
+        if let Ok(cwd) = std::env::current_dir() {
+            for anc in cwd.ancestors().take(4) {
+                candidates.push(anc.join("target/debug/autoterm_core.dll"));
             }
         }
         let path = candidates
