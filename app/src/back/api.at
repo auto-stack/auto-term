@@ -129,6 +129,12 @@ pub fn mux_focus(pane_id int) int {
     return db.mux_focus(pane_id)
 }
 
+/// 方向聚焦导航(0 上 1 下 2 左 3 右;Alt+WASD 消费)。
+#[api(method = "POST", path = "/api/mux/focus-dir")]
+pub fn mux_focus_dir(d int) int {
+    return db.mux_focus_dir(d)
+}
+
 /// 缩放开关。1=缩放中 0=取消 -1=未找到。
 #[api(method = "POST", path = "/api/mux/zoom")]
 pub fn mux_zoom(pane_id int) int {

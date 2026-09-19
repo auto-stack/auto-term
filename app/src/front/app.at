@@ -559,6 +559,19 @@ widget App {
                     .scheme = 1
                 }
             }
+            // 10-13 方向切 pane(Alt+WASD;PLAN-022 T-06 用户指令)。
+            if n == 10 {
+                api.mux_focus_dir(0)
+            }
+            if n == 11 {
+                api.mux_focus_dir(1)
+            }
+            if n == 12 {
+                api.mux_focus_dir(2)
+            }
+            if n == 13 {
+                api.mux_focus_dir(3)
+            }
         }
         // 分隔条交互(PLAN-020 D3/D4):k = back 槽号 7..11;按住查分支
         // 挂捕获层;捕获层 onmousemove(coords "1000x1000")把内容区 ‰
@@ -640,6 +653,10 @@ widget App {
                             onkeydown.ctrl.shift.left: .Shortcut(7)
                             onkeydown.ctrl.shift.right: .Shortcut(8)
                             onkeydown.ctrl.shift.k: .Shortcut(9)
+                            onkeydown.alt.w: .Shortcut(10)
+                            onkeydown.alt.s: .Shortcut(11)
+                            onkeydown.alt.a: .Shortcut(12)
+                            onkeydown.alt.d: .Shortcut(13)
                         }
                     }
                 }
@@ -656,6 +673,10 @@ widget App {
                             scheme: .scheme
                             oninput: .KeyIn
                             onmenu: .Menu
+                            onkeydown.alt.w: .Shortcut(10)
+                            onkeydown.alt.s: .Shortcut(11)
+                            onkeydown.alt.a: .Shortcut(12)
+                            onkeydown.alt.d: .Shortcut(13)
                         }
                     }
                 }
@@ -672,6 +693,10 @@ widget App {
                             scheme: .scheme
                             oninput: .KeyIn
                             onmenu: .Menu
+                            onkeydown.alt.w: .Shortcut(10)
+                            onkeydown.alt.s: .Shortcut(11)
+                            onkeydown.alt.a: .Shortcut(12)
+                            onkeydown.alt.d: .Shortcut(13)
                         }
                     }
                 }
@@ -688,6 +713,10 @@ widget App {
                             scheme: .scheme
                             oninput: .KeyIn
                             onmenu: .Menu
+                            onkeydown.alt.w: .Shortcut(10)
+                            onkeydown.alt.s: .Shortcut(11)
+                            onkeydown.alt.a: .Shortcut(12)
+                            onkeydown.alt.d: .Shortcut(13)
                         }
                     }
                 }
@@ -704,6 +733,10 @@ widget App {
                             scheme: .scheme
                             oninput: .KeyIn
                             onmenu: .Menu
+                            onkeydown.alt.w: .Shortcut(10)
+                            onkeydown.alt.s: .Shortcut(11)
+                            onkeydown.alt.a: .Shortcut(12)
+                            onkeydown.alt.d: .Shortcut(13)
                         }
                     }
                 }
@@ -720,6 +753,10 @@ widget App {
                             scheme: .scheme
                             oninput: .KeyIn
                             onmenu: .Menu
+                            onkeydown.alt.w: .Shortcut(10)
+                            onkeydown.alt.s: .Shortcut(11)
+                            onkeydown.alt.a: .Shortcut(12)
+                            onkeydown.alt.d: .Shortcut(13)
                         }
                     }
                 }

@@ -867,6 +867,85 @@ pub fn mux_enqueue(code int, arg int) int {
     return 1
 }
 
+/// 方向聚焦导航(PLAN-022 T-06 用户指令:Alt+WASD 切换 split 子窗口)。
+/// d 0=上 1=下 2=左 3=右;按 pane 槽位矩形中心选方向半平面内最近邻
+/// (主轴×1000 + 正交绝对值评分),命中即切焦;贴边无邻居保持原焦点。
+/// zoom 态仅一槽可见,无邻居,自然保持。
+fn mux_focus_dir(d int) int {
+    var cur int = mux_focus_pane_id()
+    if cur == 0 {
+        return 0
+    }
+    var ci int = -1
+    var cx int = 0
+    var cy int = 0
+    var i int = 0
+    loop {
+        if i >= MAX_PANES {
+            break
+        }
+        if rect_kind.get(i) == 1 && rect_pane.get(i) == cur {
+            ci = i
+            cx = rect_x.get(i) + rect_w.get(i) / 2
+            cy = rect_y.get(i) + rect_h.get(i) / 2
+        }
+        i = i + 1
+    }
+    if ci < 0 {
+        return 0
+    }
+    var best int = -1
+    var best_score int = 0
+    i = 0
+    loop {
+        if i >= MAX_PANES {
+            break
+        }
+        if i != ci && rect_kind.get(i) == 1 {
+            var ox int = rect_x.get(i) + rect_w.get(i) / 2 - cx
+            var oy int = rect_y.get(i) + rect_h.get(i) / 2 - cy
+            var ok int = 0
+            var primary int = 0
+            var cross int = 0
+            if d == 0 && oy < 0 {
+                ok = 1
+                primary = 0 - oy
+                cross = ox
+            }
+            if d == 1 && oy > 0 {
+                ok = 1
+                primary = oy
+                cross = ox
+            }
+            if d == 2 && ox < 0 {
+                ok = 1
+                primary = 0 - ox
+                cross = oy
+            }
+            if d == 3 && ox > 0 {
+                ok = 1
+                primary = ox
+                cross = oy
+            }
+            if ok == 1 {
+                if cross < 0 {
+                    cross = 0 - cross
+                }
+                var score int = primary * 1000 + cross
+                if best < 0 || score < best_score {
+                    best = rect_pane.get(i)
+                    best_score = score
+                }
+            }
+        }
+        i = i + 1
+    }
+    if best >= 0 {
+        return mux_focus(best)
+    }
+    return 0
+}
+
 /// 动作排水(tick 专用,单线程;每拍至多 8 条防饿死视图)。
 fn mux_drain_actions() int {
     var guard int = 0
