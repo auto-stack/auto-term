@@ -67,7 +67,15 @@ rust 轨 iced terminal widget(`auto-lang ui/terminal/iced/widget.rs`)的
 - 禁止为预取改动 `crates/autoterm-core`(AC-07:引擎 FFI 面零 diff;
   瞬态 scroll 采样走既有 `scroll`/`row_text`/`row_style` 导出)。
 
-## 悬置(T-04 判决)
+### 6. 泵节拍门(即时泵,T-04)
 
-滚动即时泵(事件驱动补泵)豁免转 DEBT:预取 N=8 后残余仅极端连滚
-薄带,50ms 泵兜底;启用条件 = 实机验收仍见可见薄带。
+- 悬置条款(2026-09-20 一轮)曾豁免;同日二轮实机(快拖半屏空白)
+  触发启用。
+- 计时器 16ms;`db.tick_gate()`:满拍间隔 ≥3 拍(~48ms,与旧 50ms
+  Tick 等阶)或**任一可见 Pane 滚动增量待排**(`term_scroll_pending`,
+  peek 探针 `engine_scroll_pending_for` → `terminal_scroll_delta_pending`,
+  不排空)即开满拍(get_lines 全量泵)。
+- 预取 N 随之 8 → 24(16ms 泵周期内极端滚轮 ~11 行 + 触控板像素滚 +
+  余量);滚动期泵最密 60Hz,静止回落 ~20Hz。
+- 语义:视图先行量在超出预取覆盖**之前**即被满拍追平——快滚/快拖
+  空白带清零(模型断言:p025 门控场景两档速率 0 行 0 帧)。
