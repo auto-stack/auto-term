@@ -18,7 +18,7 @@
 use back.api
 
 widget App {
-    msg { Init, Tick, KeyIn, Menu, TabActivate(int), TabClose(int), NewTab, Split(int), Zoom, CloseFocusPane, SchemeToggle, Shortcut(int), Press(int), Drag(float, float), Drop }
+    msg { Init, Tick, KeyIn, Menu, TabActivate(int), TabClose(int), NewTab, NewTabProfile(int), ProfileMenu, Split(int), Zoom, CloseFocusPane, SchemeToggle, Shortcut(int), Press(int), Drag(float, float), Drop }
 
     model {
         var cols int = 100
@@ -141,6 +141,9 @@ widget App {
         var dragH int = 0
         // 投影版本门(F1):变化才拉完整 rect-*,稳态请求数回落 019 水位
         var lastVer int = 0 - 1
+        // ── PLAN-025 T-08:profile 菜单面(Init 一次装载;右键 + 开)──
+        var profile_names List<str> = []
+        var profile_menu int = 0
     }
 
     timer {
@@ -200,6 +203,9 @@ widget App {
             .lastVer = api.mux_layout_version()
             .cols = api.term_cols()
             .rows = api.term_rows()
+            // PLAN-025 T-08:profile 名单一次装载(空配置 = 空菜单,
+            // 右键 + 仍可用——default 建_TAB回落缺省 shell)。
+            .profile_names = api.term_profile_names()
         }
         .Tick -> {
             api.term_apply_resize()
@@ -449,6 +455,20 @@ widget App {
         .NewTab -> {
             api.mux_enqueue(1, 0)
         }
+        // PLAN-025 T-08:profile 菜单选型建_TAB(槽位 1 起编码入队;
+        // 建后收菜单)。
+        .NewTabProfile(i) -> {
+            api.mux_enqueue(1, i + 1)
+            .profile_menu = 0
+        }
+        // 右键 + 开/收 profile 菜单(与 Tab 条右键关闭同形态)。
+        .ProfileMenu -> {
+            if .profile_menu == 1 {
+                .profile_menu = 0
+            } else {
+                .profile_menu = 1
+            }
+        }
         // 分屏(ax 0=纵向堆叠 col 1=横向并排 row;深度不限,MAX_PANES 帽)。
         // 注:参数名不可叫 axis——与模型字段同名时 a2r 处理器体把它
         // 译成 self.axis(载荷被遮蔽,实测点按钮分出 axis=-1 的屏)。
@@ -608,6 +628,19 @@ widget App {
                 }
                 button (text: "+") {
                     onclick: .NewTab
+                    oncontextmenu: .ProfileMenu
+                }
+                // PLAN-025 T-08:profile 子菜单(右键 + 展开;选中建_TAB,
+                // ✕ 收起;空配置不渲染)。
+                if .profile_menu == 1 {
+                    for j, pname in .profile_names {
+                        button (text: pname) {
+                            onclick: .NewTabProfile(j)
+                        }
+                    }
+                    button (text: "✕") {
+                        onclick: .ProfileMenu
+                    }
                 }
                 button (text: "横分") {
                     onclick: .Split(1)

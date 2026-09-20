@@ -29,6 +29,12 @@ use metrics::GridMetrics;
 #[derive(Clone, Debug)]
 pub struct AppConfig {
     pub shell: String,
+    /// shell 参数(PLAN-025 T-09:profile commandline 拆分;显式
+    /// --shell 时为空)。
+    pub argv: Vec<String>,
+    /// 起始目录(PLAN-025 T-09:profile starting_directory;None =
+    /// 继承宿主)。
+    pub cwd: Option<String>,
     /// 选中高亮色(005 T6;默认 e8e8e8@25%)。
     pub selection_color: Color,
     /// Ctrl+C 投递模式(008;默认 Auto)。
@@ -292,8 +298,15 @@ struct DevSelectSpec {
 
 impl App {
     pub fn new(config: AppConfig, cols: usize, rows: usize) -> anyhow::Result<Self> {
-        let mut session =
-            PtySession::spawn(&config.shell, std::iter::empty::<&str>(), cols, rows)?;
+        // PLAN-025 T-09:profile 三元组经 018 SpawnSpec 变体投递
+        // (spawn_in 带 cwd;引擎零改动,AC-07)。
+        let mut session = PtySession::spawn_in(
+            &config.shell,
+            config.argv.iter().map(String::as_str),
+            config.cwd.as_deref().map(std::path::Path::new),
+            cols,
+            rows,
+        )?;
         let notify_slot = Arc::new(Mutex::new(session.take_notify_receiver()));
         let metrics = metrics::measure();
         let now = Instant::now();

@@ -13,9 +13,16 @@ use autoterm_ui::{
 #[derive(Parser, Debug)]
 #[command(name = "autoterm", about = "AutoTerm — AutoOS 通用终端")]
 struct Args {
-    /// shell 可执行文件(默认 pwsh)
-    #[arg(long, default_value = "pwsh")]
-    shell: String,
+    /// shell 可执行文件(显式覆盖 --profile 与配置文件;缺省见
+    /// --profile 解析链:显式 --shell > --profile > config.toml
+    /// default_profile > pwsh,PLAN-025 T-09)
+    #[arg(long)]
+    shell: Option<String>,
+
+    /// 配置文件 profile 名(config.toml;未命中报错退出 1;空串 =
+    /// default_profile)
+    #[arg(long)]
+    profile: Option<String>,
 
     /// 选中高亮色(RRGGBB[AA] 十六进制;非法回退默认 e8e8e8@25%)
     #[arg(long = "selection-color", default_value = "e8e8e840")]
@@ -72,8 +79,44 @@ fn main() -> Result<()> {
     #[cfg(feature = "dev-tools")]
     env_logger::Builder::from_env(env_logger::Env::default().default_filter_or("info")).init();
     let args = Args::parse();
+    // PLAN-025 T-09 spawn 解析链:显式 --shell > --profile(未命中 =
+    // 报错退出 1,信息含配置搜索路径)> 配置 default_profile > 既有
+    // pwsh 缺省(COMSPEC 兜底属 app 轨 spawn 面,CLI 维持兼容缺省)。
+    let file_config = autoterm_config::Config::load_default();
+    let (program, argv, cwd): (String, Vec<String>, Option<String>) = if let Some(shell) = &args.shell {
+        (shell.clone(), Vec::new(), None)
+    } else {
+        let wanted = args.profile.as_deref();
+        let profile = match wanted {
+            Some(name) if !name.is_empty() => file_config.profile(name),
+            // 空串或未给 = default_profile。
+            _ => file_config.default_profile(),
+        };
+        match profile {
+            Some(p) => {
+                let spec = autoterm_config::Config::spawn_spec(p);
+                let cwd = if spec.cwd.is_empty() { None } else { Some(spec.cwd) };
+                (spec.program, spec.argv, cwd)
+            }
+            None => {
+                if args.profile.is_some() {
+                    eprintln!(
+                        "错误:--profile {:?} 未命中任何 profile(配置搜索路径:{})",
+                        args.profile.as_deref().unwrap_or(""),
+                        autoterm_config::default_path()
+                            .map(|p| p.display().to_string())
+                            .unwrap_or_else(|| "<exe 目录不可得>".to_owned())
+                    );
+                    std::process::exit(1);
+                }
+                ("pwsh".to_owned(), Vec::new(), None)
+            }
+        }
+    };
     let config = AppConfig {
-        shell: args.shell.clone(),
+        shell: program,
+        argv,
+        cwd,
         selection_color: parse_hex_color(&args.selection_color)
             .unwrap_or(DEFAULT_SELECTION_COLOR),
         ctrl_c_mode: parse_ctrl_c_mode(&args.ctrl_c_mode).unwrap_or_else(|| {

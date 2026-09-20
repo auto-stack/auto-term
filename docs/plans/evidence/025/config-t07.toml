@@ -1,0 +1,10 @@
+default_profile = "cmd"
+
+[[profiles]]
+name = "cmd"
+commandline = 'cmd.exe'
+starting_directory = 'D:\autostack'
+
+[[profiles]]
+name = "marker"
+commandline = 'cmd.exe /k echo P025MARK'

@@ -29,7 +29,7 @@
 //   - engine_rows 的 List 返回必须落显式类型 var(否则 .len() 得 None);
 //   - 裸调用不得内联于 if 条件位(597 §9 挂起缺陷)——先赋值再比较。
 
-use auto.term: engine_spawn_ex, engine_free, engine_write_line, engine_rows_for, engine_pump_for, engine_apply_resize_for, engine_viewport_cols, engine_viewport_rows, engine_cursor_row, engine_cursor_col, engine_backlog_pending_mb, engine_backlog_paused, engine_backlog_take_alerts, engine_backlog_dropped, engine_interrupt, engine_is_exited, engine_menu_take, window_width, window_height
+use auto.term: engine_spawn_ex, engine_free, engine_write_line, engine_rows_for, engine_pump_for, engine_apply_resize_for, engine_viewport_cols, engine_viewport_rows, engine_cursor_row, engine_cursor_col, engine_backlog_pending_mb, engine_backlog_paused, engine_backlog_take_alerts, engine_backlog_dropped, engine_interrupt, engine_is_exited, engine_menu_take, window_width, window_height, config_profiles, config_default_profile, config_profiles_full, config_spawn_program, config_spawn_argv, config_spawn_cwd
 
 // ══════════════════════════════════════════════════════════════════
 // MuxCore 模型表(PLAN-018 D6;Workspace/Tab/LayoutTree/Pane)
@@ -827,12 +827,23 @@ fn mux_visible_pane_ids() List<int> {
     return out
 }
 
-/// 建新 Pane(引擎 spawn_ex + 表落账)→ 返回其叶节点 id(0 = 失败)。
-fn spawn_pane_into_tab(tab_id int, axis int) int {
+/// 建新 Pane(引擎 spawn + 表落账)→ 返回其叶节点 id(0 = 失败)。
+/// PLAN-025 T-07:profile 参数("" = default_profile)——命中经
+/// SpawnSpec(program/argv/cwd)spawn_ex;未命中回落缺省 shell
+/// (COMSPEC,引擎 FFI default_shell 兜底,G6)。
+fn spawn_pane_into_tab(tab_id int, axis int, profile str) int {
     var pid int = next_pane_id
     next_pane_id = next_pane_id + 1
     var key str = "pane-" + pid.str()
-    var h int = engine_spawn_ex("", [], "", 100, 30)
+    var program str = config_spawn_program(profile)
+    var h int = 0
+    if program != "" {
+        var argv List<str> = config_spawn_argv(profile)
+        var cwd str = config_spawn_cwd(profile)
+        h = engine_spawn_ex(program, argv, cwd, 100, 30)
+    } else {
+        h = engine_spawn_ex("", [], "", 100, 30)
+    }
     if h == 0 {
         return 0
     }
@@ -840,7 +851,7 @@ fn spawn_pane_into_tab(tab_id int, axis int) int {
     pane_handles.push(h)
     pane_keys.push(key)
     pane_tab_ids.push(tab_id)
-    pane_programs.push("")
+    pane_programs.push(program)
     pane_cwds.push("")
     pane_cols.push(100)
     pane_rows.push(30)
@@ -961,7 +972,8 @@ fn mux_drain_actions() int {
         act_codes = list_remove_int(act_codes, 0)
         act_args = list_remove_int(act_args, 0)
         if code == 1 {
-            mux_new_tab()
+            // PLAN-025 T-07:arg = profile 槽位(1 起;0 = default)。
+            mux_new_tab(profile_name_of_arg(arg))
         }
         if code == 2 {
             mux_split(arg)
@@ -986,13 +998,27 @@ fn mux_drain_actions() int {
 
 /// V1 单 Workspace + 初始 Tab + 初始 Pane(缺省 shell,继承宿主 cwd;
 /// 100×30 存档几何)。已初始化 = no-op(0)。
+/// PLAN-025 T-07:初始 Pane 按 default_profile spawn(配置缺席回落
+/// 缺省 shell,G4/G6)。
 pub fn mux_init() int {
     if ws_active_tab != 0 {
         return 0
     }
-    var tab int = mux_new_tab()
+    var tab int = mux_new_tab("")
     ws_active_tab = tab
     return tab
+}
+
+/// profile 槽位 → 名字(动作队列编码面:1 起;0/越界 = "" = default)。
+fn profile_name_of_arg(arg int) str {
+    if arg <= 0 {
+        return ""
+    }
+    var names List<str> = config_profiles()
+    if arg > names.len() {
+        return ""
+    }
+    return names.get(arg - 1)
 }
 
 /// 分屏:焦点 Pane 的叶位替换为分支(原叶 first、新 Pane second;
@@ -1025,7 +1051,7 @@ pub fn mux_split(axis int) int {
     if old_leaf == 0 {
         return 0
     }
-    var new_leaf int = spawn_pane_into_tab(tab_id, axis)
+    var new_leaf int = spawn_pane_into_tab(tab_id, axis, "")
     if new_leaf == 0 {
         return 0
     }
@@ -1178,11 +1204,12 @@ pub fn mux_resize_pane(pane_id int, ratio int) int {
     return mux_resize_branch(branch, px, py)
 }
 
-/// 新 Tab(单 Pane;自动激活)。返回 tab id(0 = spawn 失败)。
-pub fn mux_new_tab() int {
+/// 新 Tab(单 Pane;自动激活;profile 名 "" = default_profile,未命中
+/// 回落缺省 shell)。返回 tab id(0 = spawn 失败)。
+pub fn mux_new_tab(profile str) int {
     var tab int = next_tab_id
     next_tab_id = next_tab_id + 1
-    var leaf int = spawn_pane_into_tab(tab, 0)
+    var leaf int = spawn_pane_into_tab(tab, 0, profile)
     if leaf == 0 {
         return 0
     }
@@ -1601,6 +1628,20 @@ pub fn mux_focus_id() int {
 // 标量 getter 族 = 前端 tick 消费面(018 §10.2 平行 List 先例,零
 // rec/Map、零字符串解析);记录面(mux_tabs/mux_layout)= vue/HTTP
 // 断言面。V1 静态标题派生:序号 + shell 名(动态 title 归 ③ OSC)。
+
+// ── PLAN-025 T-07:profile 观测面(前端菜单 + HTTP 契约)──────────────
+
+/// profile 名字表(声明序;空配置 = 空)。`+` 子菜单数据面(T-08;
+/// api/db 同名直通,a2r 映射 Vec<String>)。
+pub fn term_profile_names() []str {
+    return config_profiles()
+}
+
+/// profile 表记录面("name|commandline|cwd";/api/term/profiles 契约,
+/// vue/HTTP 消费面)。
+pub fn term_profiles() []str {
+    return config_profiles_full()
+}
 
 /// Tab 表记录面("id|active|title";vue/HTTP 消费与断言面)。
 pub fn mux_tabs() []str {

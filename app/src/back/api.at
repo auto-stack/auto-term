@@ -141,10 +141,24 @@ pub fn mux_zoom(pane_id int) int {
     return db.mux_zoom(pane_id)
 }
 
-/// 新 Tab(自动激活)。返回 tab id。
+/// 新 Tab(自动激活;profile 名空 = default_profile,未命中回落缺省
+/// shell)。返回 tab id。
 #[api(method = "POST", path = "/api/mux/new-tab")]
-pub fn mux_new_tab() int {
-    return db.mux_new_tab()
+pub fn mux_new_tab(profile str) int {
+    return db.mux_new_tab(profile)
+}
+
+/// profile 表("name|commandline|cwd" 记录数组;PLAN-025 契约面,
+/// VM/desktop 臂同契约后补)。
+#[api(method = "GET", path = "/api/term/profiles")]
+pub fn term_profiles() []str {
+    return db.term_profiles()
+}
+
+/// profile 名字表(声明序;前端菜单面)。
+#[api(method = "GET", path = "/api/term/profile-names")]
+pub fn term_profile_names() []str {
+    return db.term_profile_names()
 }
 
 /// 关 Tab。1=已关 0=末 Tab 拒绝 -1=未找到。

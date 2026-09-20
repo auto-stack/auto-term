@@ -246,6 +246,75 @@ fn snapshots() -> std::sync::MutexGuard<'static, SnapMap> {
     SNAPSHOTS.lock().unwrap()
 }
 
+// ── PLAN-025 T-07:配置文件消费面(profile registry)───────────────────
+// autoterm-config 单源装载(Init 期一次;文件缺席/损坏 = 空集,消费方
+// 回落 COMSPEC——G6)。db.at 经 `use auto.term:` 导入;a2r 映射
+// Vec<String> ↔ List<str>(engine_rows_for 同款先例)。
+
+static CONFIG: OnceLock<autoterm_config::Config> = OnceLock::new();
+
+fn config() -> &'static autoterm_config::Config {
+    CONFIG.get_or_init(autoterm_config::Config::load_default)
+}
+
+/// name 空 = default_profile(未配置 = None)。
+fn resolve_profile(profile: &str) -> Option<&'static autoterm_config::Profile> {
+    let cfg = config();
+    if profile.is_empty() {
+        cfg.default_profile()
+    } else {
+        cfg.profile(profile)
+    }
+}
+
+/// profile 名字表(声明序;空配置 = 空)。前端 profile 菜单面(T-08)。
+pub fn config_profiles() -> Vec<String> {
+    config().profiles.iter().map(|p| p.name.clone()).collect()
+}
+
+/// default_profile 名(未声明/未命中 = "")。
+pub fn config_default_profile() -> String {
+    config().default_profile().map(|p| p.name.clone()).unwrap_or_default()
+}
+
+/// profile 表记录面("name|commandline|cwd";HTTP 契约 /api/term/profiles)。
+pub fn config_profiles_full() -> Vec<String> {
+    config()
+        .profiles
+        .iter()
+        .map(|p| {
+            format!(
+                "{}|{}|{}",
+                p.name,
+                p.commandline,
+                p.starting_directory.clone().unwrap_or_default()
+            )
+        })
+        .collect()
+}
+
+/// 按 profile 名解析 spawn 三元组(name 空 = default profile;
+/// program 空 = 未命中,调用方回落缺省 shell spawn)。
+pub fn config_spawn_program(profile: &str) -> String {
+    resolve_profile(profile)
+        .map(|p| autoterm_config::Config::spawn_spec(p).program)
+        .unwrap_or_default()
+}
+
+/// spawn argv(未命中 = 空)。
+pub fn config_spawn_argv(profile: &str) -> Vec<String> {
+    resolve_profile(profile)
+        .map(|p| autoterm_config::Config::spawn_spec(p).argv)
+        .unwrap_or_default()
+}
+
+/// spawn cwd(未命中/未配置 = 空 = 继承宿主)。
+pub fn config_spawn_cwd(profile: &str) -> String {
+    resolve_profile(profile)
+        .map(|p| autoterm_config::Config::spawn_spec(p).cwd)
+        .unwrap_or_default()
+}
+
 
 /// spawn(缺省 shell = COMSPEC/cmd);返回句柄(0 = 失败)。
 /// PLAN-018 D3:会话态入 per-handle SessionState(光标/视口/积压)。
@@ -479,12 +548,116 @@ enum FeedTarget<'k> {
     Key(&'k str),
 }
 
+/// 采样引擎视口一行(当前 display_offset 下的可见行 r)→ (文本,
+/// styled cells)。None = 行越界(视口外)。PLAN-025 T-03:主采样循环
+/// 与预取窗共用。
+fn sample_engine_row(
+    h: *mut core::ffi::c_void,
+    r: i32,
+) -> Option<(String, Vec<auto_lang::ui::terminal::TermCell>)> {
+    unsafe {
+        let row_text: libloading::Symbol<
+            unsafe extern "C" fn(*mut core::ffi::c_void, c_int, *mut c_char, c_int) -> c_int,
+        > = lib().get(b"autoterm_engine_row_text\0").unwrap();
+        let mut buf = [0 as c_char; 512];
+        let need = row_text(h, r, buf.as_mut_ptr(), 512);
+        if need < 0 {
+            return None;
+        }
+        let n = (need as usize).saturating_sub(1).min(511);
+        let bytes: Vec<u8> = buf[..n].iter().map(|&c| c as u8).collect();
+        let text = String::from_utf8_lossy(&bytes).into_owned();
+        let row_style: libloading::Symbol<
+            unsafe extern "C" fn(*mut core::ffi::c_void, c_int, *mut u32, c_int) -> c_int,
+        > = lib().get(b"autoterm_engine_row_style\0").unwrap();
+        let mut styles = [0u32; 1024];
+        let styled = row_style(h, r, styles.as_mut_ptr(), 1024);
+        let pairs = (styled.max(0) as usize) / 2;
+        let mut cells: Vec<auto_lang::ui::terminal::TermCell> = Vec::with_capacity(pairs);
+        for (ci, ch) in text.chars().enumerate() {
+            if ci >= pairs {
+                break;
+            }
+            cells.push(auto_lang::ui::terminal::TermCell {
+                ch,
+                fg: decode_style_color(styles[ci * 2]),
+                bg: decode_style_color(styles[ci * 2 + 1]),
+            });
+        }
+        Some((text, cells))
+    }
+}
+
+/// PLAN-025 T-03 预取窗采样:引擎瞬态 scroll 上/下各 N 行,采完恢复
+/// 原 offset(终态恒为泵目标 o;display_offset 单源契约不动)。上翻
+/// 钳位 [0, history](引擎同界),id 数学与引擎状态零漂移。
+///
+/// id 推导:offset o 的视口顶绝对行 = anchor(= h − o);offset o+n 的
+/// 视口行 r 绝对行 = anchor − n + r。
+fn prefetch_window(
+    h: *mut core::ffi::c_void,
+    key: &str,
+    anchor: i64,
+    off: i32,
+    hist: i32,
+    rows: i32,
+) {
+    const N: i32 = 8;
+    if rows <= 0 {
+        return;
+    }
+    unsafe {
+        let scroll: libloading::Symbol<
+            unsafe extern "C" fn(*mut core::ffi::c_void, c_int),
+        > = lib().get(b"autoterm_engine_scroll\0").unwrap();
+        // 上方预取(滚轮回滚方向):offset +n → 行 r ∈ [0, n) 的绝对行
+        // = anchor − n + r ∈ [anchor − n, anchor)。
+        let n_up = N.min(hist - off).min(rows);
+        if n_up > 0 {
+            let mut stash: Vec<Vec<auto_lang::ui::terminal::TermCell>> = Vec::new();
+            scroll(h, n_up);
+            for r in 0..n_up {
+                match sample_engine_row(h, r) {
+                    Some((_, cells)) => stash.push(cells),
+                    None => break,
+                }
+            }
+            scroll(h, -n_up);
+            if !stash.is_empty() {
+                let base = anchor - stash.len() as i64;
+                auto_lang::ui::terminal::terminal_feed_window_for(key, base, &stash);
+            }
+        }
+        // 下方预取(下回实时方向):offset −n → 行 r ∈ [rows−n, rows)
+        // 的绝对行 = anchor + n + r ∈ [anchor + rows, anchor + rows + n)。
+        let n_down = N.min(off).min(rows);
+        if n_down > 0 {
+            let mut below: Vec<Vec<auto_lang::ui::terminal::TermCell>> = Vec::new();
+            scroll(h, -n_down);
+            for r in (rows - n_down).max(0)..rows {
+                match sample_engine_row(h, r) {
+                    Some((_, cells)) => below.push(cells),
+                    None => break,
+                }
+            }
+            scroll(h, n_down);
+            if !below.is_empty() {
+                let base = anchor + n_down as i64 + (rows - n_down).max(0) as i64;
+                auto_lang::ui::terminal::terminal_feed_window_for(key, base, &below);
+            }
+        }
+    }
+}
+
 fn feed_snapshot_inner(handle: i64, target: FeedTarget<'_>) {
     let _ffi = FfiGuard::enter("feed", handle);
     let h = ptr_of(handle);
     if h.is_null() {
         return;
     }
+    // PLAN-025 T-02:Key 侧泵回写的绝对行锚(主采样循环同步入
+    // window_store 用;All 广播臂恒 None)。
+    let mut anchor_opt: Option<i64> = None;
     unsafe {
         let feed: libloading::Symbol<
             unsafe extern "C" fn(*mut core::ffi::c_void) -> c_int,
@@ -509,7 +682,22 @@ fn feed_snapshot_inner(handle: i64, target: FeedTarget<'_>) {
                 let hist: libloading::Symbol<
                     unsafe extern "C" fn(*mut core::ffi::c_void) -> c_int,
                 > = lib().get(b"autoterm_engine_history\0").unwrap();
-                auto_lang::ui::terminal::terminal_set_history(core, hist(h).max(0) as usize);
+                let hist_v = hist(h).max(0);
+                auto_lang::ui::terminal::terminal_set_history(core, hist_v as usize);
+                // PLAN-025 T-02 快照窗绝对行锚:行窗首行绝对行号
+                // (id = history − display_offset;不可变 scrollback 语义,
+                // 同 id 恒同内容)。widget 据此按绝对行号键行缓存(T-03);
+                // 未写锚的泵臂(vm/desktop)自动回落槽位语义零回归。
+                let (off_v, hist_v) = (off.max(0), hist_v);
+                let anchor = hist_v as i64 - off_v as i64;
+                auto_lang::ui::terminal::terminal_set_window_anchor(core, anchor);
+                // PLAN-025 T-03 预取窗:引擎瞬态 scroll 采样可见区上/下
+                // 各 N 行入 window_store(绝对 id 寻址);终态 offset 恒
+                // 恢复 o。N 取值依据 evidence/025/t01-verdict.md(常规
+                // 滚轮滞后 3 行×多帧,N=8 清零;引擎零改动,AC-07)。
+                let rows_v = viewport_of(handle).1 as i32;
+                prefetch_window(h, key, anchor, off_v, hist_v, rows_v);
+                anchor_opt = Some(anchor);
             }
         }
         let take: libloading::Symbol<
@@ -529,13 +717,9 @@ fn feed_snapshot_inner(handle: i64, target: FeedTarget<'_>) {
         }
         // Full(-1)或脏行集都全量重采(行数由 rows 文本直至 -1 决定;
         // 上限 256 行,resize 钳位 MAX_RESIZE_ROWS=200 在册)。逐行取
-        // 文本 + 逐格样式:文本进快照,样式走组件旁路上色。
-        let row_text: libloading::Symbol<
-            unsafe extern "C" fn(*mut core::ffi::c_void, c_int, *mut c_char, c_int) -> c_int,
-        > = lib().get(b"autoterm_engine_row_text\0").unwrap();
-        let row_style: libloading::Symbol<
-            unsafe extern "C" fn(*mut core::ffi::c_void, c_int, *mut u32, c_int) -> c_int,
-        > = lib().get(b"autoterm_engine_row_style\0").unwrap();
+        // 文本 + 逐格样式(sample_engine_row;文本进快照,样式走组件
+        // 旁路上色)。PLAN-025 T-03:视口行同步收集,拍尾入 window_store
+        // (绝对 id 寻址,与预取行合流)。
         // 014 泄漏定位:reader→drain 积压字节(暴涨时此项无界增长即坐实)。
         let pending: libloading::Symbol<
             unsafe extern "C" fn(*mut core::ffi::c_void) -> c_int,
@@ -548,45 +732,34 @@ fn feed_snapshot_inner(handle: i64, target: FeedTarget<'_>) {
         let mut lines = Vec::new();
         let mut fed_rows = 0usize;
         let mut fed_bytes = 0usize;
+        let mut viewport_window: Vec<Vec<auto_lang::ui::terminal::TermCell>> = Vec::new();
         for r in 0..256i32 {
-            let mut buf = [0 as c_char; 512];
-            let need = row_text(h, r, buf.as_mut_ptr(), 512);
-            if need < 0 {
+            let Some((text, cells)) = sample_engine_row(h, r) else {
                 break;
-            }
-            let n = (need as usize).saturating_sub(1).min(511);
-            let bytes: Vec<u8> = buf[..n].iter().map(|&c| c as u8).collect();
+            };
             fed_rows += 1;
-            fed_bytes += n;
-            let text = String::from_utf8_lossy(&bytes).into_owned();
-            // 逐格样式:fg/bg 交错 u32(kind<<24|value),2×cols 容量。
-            let mut styles = [0u32; 1024];
-            let styled = row_style(h, r, styles.as_mut_ptr(), 1024);
-            let pairs = (styled.max(0) as usize) / 2;
-            let mut cells: Vec<auto_lang::ui::terminal::TermCell> = Vec::with_capacity(pairs);
-            for (ci, ch) in text.chars().enumerate() {
-                if ci >= pairs {
-                    break;
-                }
-                cells.push(auto_lang::ui::terminal::TermCell {
-                    ch,
-                    fg: decode_style_color(styles[ci * 2]),
-                    bg: decode_style_color(styles[ci * 2 + 1]),
-                });
-            }
+            fed_bytes += text.len();
             if !cells.is_empty() {
                 match target {
                     FeedTarget::All => {
-                        auto_lang::ui::terminal::terminal_feed_cells_all(r as usize, cells)
+                        auto_lang::ui::terminal::terminal_feed_cells_all(r as usize, cells.clone())
                     }
                     FeedTarget::Key(key) => auto_lang::ui::terminal::terminal_feed_cells_for(
                         key,
                         r as usize,
-                        cells,
+                        cells.clone(),
                     ),
                 }
             }
+            viewport_window.push(cells);
             lines.push(text);
+        }
+        // PLAN-025 T-03:视口行入 window_store(与预取行合流;绝对 id
+        // 寻址,槽位面不受扰)。
+        if let (FeedTarget::Key(key), Some(anchor)) = (&target, anchor_opt) {
+            if !viewport_window.is_empty() {
+                auto_lang::ui::terminal::terminal_feed_window_for(key, anchor, &viewport_window);
+            }
         }
         snapshots().insert(handle, lines);
         if trace_on() {

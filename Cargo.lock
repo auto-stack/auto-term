@@ -371,6 +371,7 @@ name = "autoterm-ui"
 version = "0.1.0"
 dependencies = [
  "anyhow",
+ "autoterm-config",
  "autoterm-core",
  "clap",
  "cosmic-text",
