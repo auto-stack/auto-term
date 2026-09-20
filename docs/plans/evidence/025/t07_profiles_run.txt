@@ -1,0 +1,21 @@
+== PLAN-025 T-07 profile assertions 2026-09-20_15:07:58 ==
+--- [1] profile-names(声明序) ---
+["cmd","marker"]
+PASS names
+--- [2] profiles 记录面(name|commandline|cwd) ---
+["cmd|cmd.exe|D:\\autostack","marker|cmd.exe /k echo P025MARK|"]
+PASS record-cmd
+PASS record-marker
+--- [3] 首_TAB default profile(cmd)+ cwd(prompt 证据) ---
+PASS default-spawn
+PASS cwd(D:\autostack prompt)
+--- [4] new-tab(profile=marker):argv 经 spawn_ex 生效 ---
+new-tab(marker)→2
+PASS marker-argv
+--- [5] new-tab(未命中 ghost):回落缺省 shell 不崩(G6) ---
+new-tab(ghost)→3 (expect >0)
+PASS ghost-fallback
+--- [6] Tab 计数(3) ---
+["1|0|shell 1","2|0|shell 2","3|1|shell 3"]
+PASS tabs-3
+== done ==
