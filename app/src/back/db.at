@@ -29,7 +29,7 @@
 //   - engine_rows 的 List 返回必须落显式类型 var(否则 .len() 得 None);
 //   - 裸调用不得内联于 if 条件位(597 §9 挂起缺陷)——先赋值再比较。
 
-use auto.term: engine_spawn_ex, engine_free, engine_write_line, engine_rows_for, engine_pump_for, engine_apply_resize_for, engine_viewport_cols, engine_viewport_rows, engine_cursor_row, engine_cursor_col, engine_backlog_pending_mb, engine_backlog_paused, engine_backlog_take_alerts, engine_backlog_dropped, engine_interrupt, engine_is_exited, engine_menu_take, window_width, window_height, config_profiles, config_default_profile, config_profiles_full, config_spawn_program, config_spawn_argv, config_spawn_cwd
+use auto.term: engine_spawn_ex, engine_free, engine_write_line, engine_rows_for, engine_pump_for, engine_apply_resize_for, engine_viewport_cols, engine_viewport_rows, engine_cursor_row, engine_cursor_col, engine_backlog_pending_mb, engine_backlog_paused, engine_backlog_take_alerts, engine_backlog_dropped, engine_interrupt, engine_is_exited, engine_menu_take, window_width, window_height, config_profiles, config_default_profile, config_profiles_full, config_spawn_program, config_spawn_argv, config_spawn_cwd, engine_scroll_pending_for
 
 // ══════════════════════════════════════════════════════════════════
 // MuxCore 模型表(PLAN-018 D6;Workspace/Tab/LayoutTree/Pane)
@@ -1630,6 +1630,48 @@ pub fn mux_focus_id() int {
 // 断言面。V1 静态标题派生:序号 + shell 名(动态 title 归 ③ OSC)。
 
 // ── PLAN-025 T-07:profile 观测面(前端菜单 + HTTP 契约)──────────────
+
+// ── PLAN-025 T-04 即时泵:泵节拍门(滚动待排即满拍)──────────────────
+// 计时器 16ms;满拍(~48ms,与旧 50ms Tick 等阶)或任一可见 Pane 滚动
+// 增量待排(view 先行量将超预取覆盖)即开——消灭快拖/急滚半屏空白
+//(2026-09-20 用户二轮实机实录)。探针 peek 不排空;泵排水后自然归零。
+
+var tick_counter int = 0
+var last_full_tick int = 0
+
+/// 任一可见 Pane 滚动增量待排(即时泵探针;1/0)。
+pub fn term_scroll_pending() int {
+    var vis List<int> = mux_visible_pane_ids()
+    var i int = 0
+    var n int = vis.len()
+    loop {
+        if i >= n {
+            break
+        }
+        var pi int = pane_index(vis.get(i))
+        if pi >= 0 {
+            if engine_scroll_pending_for(pane_handles.get(pi), pane_keys.get(pi)) != 0 {
+                return 1
+            }
+        }
+        i = i + 1
+    }
+    return 0
+}
+
+/// 泵节拍门:满拍间隔(≥3 拍 ≈ 48ms)或滚动待排即开(1/0)。
+pub fn tick_gate() int {
+    tick_counter = tick_counter + 1
+    if tick_counter - last_full_tick >= 3 {
+        last_full_tick = tick_counter
+        return 1
+    }
+    if term_scroll_pending() == 1 {
+        last_full_tick = tick_counter
+        return 1
+    }
+    return 0
+}
 
 /// profile 名字表(声明序;空配置 = 空)。`+` 子菜单数据面(T-08;
 /// api/db 同名直通,a2r 映射 Vec<String>)。

@@ -368,6 +368,16 @@ pub fn engine_spawn_ex(program: &str, argv: Vec<String>, cwd: &str, cols: i64, r
     )
 }
 
+/// PLAN-025 T-04 即时泵探针:该 key 滚动增量是否待排(peek,不排空;
+/// 泵节拍门消费)。句柄参数保持泵族 face 对称(增量存 core 侧);
+/// key 按值收(a2r 发射 .clone() 形态)。
+pub fn engine_scroll_pending_for(_handle: i64, key: String) -> i64 {
+    match auto_lang::ui::terminal::terminal_core(key.as_str()) {
+        Some(core) => auto_lang::ui::terminal::terminal_scroll_delta_pending(core) as i64,
+        None => 0,
+    }
+}
+
 /// spawn 共同尾:登记句柄表(SessionState)+ 内存哨兵挂钩(幂等)。
 fn spawn_inner<F>(spawn_call: F, geom: (i64, i64)) -> i64
 where
@@ -602,7 +612,10 @@ fn prefetch_window(
     hist: i32,
     rows: i32,
 ) {
-    const N: i32 = 8;
+    // N=24:T-04 即时泵(16ms 节拍门)落地后的快速连滚覆盖余量
+    //(极端滚轮 ~3 notch/16ms ≈ 11 行 + 触控板像素滚 + 余量;判决工件
+    // N=8 为 50ms 泵周期口径)。
+    const N: i32 = 24;
     if rows <= 0 {
         return;
     }

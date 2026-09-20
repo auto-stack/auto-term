@@ -15,6 +15,12 @@ pub fn get_lines() []str {
     return db.get_lines()
 }
 
+/// 泵节拍门(PLAN-025 T-04:满拍 ~48ms 或滚动待排即开;1/0)。
+#[api(method = "POST", path = "/api/term/tick-gate")]
+pub fn tick_gate() int {
+    return db.tick_gate()
+}
+
 /// 宿主 → 子进程一行输入。
 #[api(method = "POST", path = "/api/term/send")]
 pub fn term_send(line str) {
