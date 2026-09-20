@@ -873,7 +873,7 @@ widget App {
             // 同径),分屏拓扑无关;编辑器状态栏同款。内容 = 焦点 pane
             // 计数 + 引擎网格几何。
             row {
-                style: "w-full h-[24px] rounded-b-2xl bg-[#e9e4d8] px-3 items-center justify-between"
+                style: "w-full h-[24px] rounded-b-[15px] bg-[#e9e4d8] px-3 items-center justify-between"
                 text "◉ AutoTerm mux" { style: "text-xs" }
                 text f"${.cols}×${.rows}" { style: "text-xs" }
             }
