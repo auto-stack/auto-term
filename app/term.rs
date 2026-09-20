@@ -679,6 +679,13 @@ fn feed_snapshot_inner(handle: i64, target: FeedTarget<'_>) {
                 > = lib().get(b"autoterm_engine_scroll_offset\0").unwrap();
                 let off = soff(h);
                 auto_lang::ui::terminal::terminal_set_scroll_offset(core, off.max(0) as usize);
+                // PLAN-025 T-05 实机复测修:用户滚动回灌的 offset 变化
+                // = 视图已知位,标 bound 防 bind 写臂行量化 scroll_to
+                // 回拉(iced 滚轮 60px/notch ≠ CELL_H 行距,回拉 = 每
+                // 拍 4px 抖动)。外部源(键入贴底/程序滚动)不标。
+                if delta != 0 {
+                    auto_lang::ui::terminal::terminal_mark_view_bound(core);
+                }
                 let hist: libloading::Symbol<
                     unsafe extern "C" fn(*mut core::ffi::c_void) -> c_int,
                 > = lib().get(b"autoterm_engine_history\0").unwrap();
