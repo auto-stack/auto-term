@@ -882,7 +882,7 @@ pub fn mux_enqueue(code int, arg int) int {
 /// d 0=上 1=下 2=左 3=右;按 pane 槽位矩形中心选方向半平面内最近邻
 /// (主轴×1000 + 正交绝对值评分),命中即切焦;贴边无邻居保持原焦点。
 /// zoom 态仅一槽可见,无邻居,自然保持。
-fn mux_focus_dir(d int) int {
+pub fn mux_focus_dir(d int) int {
     var cur int = mux_focus_pane_id()
     if cur == 0 {
         return 0
