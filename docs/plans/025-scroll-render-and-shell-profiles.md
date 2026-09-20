@@ -6,7 +6,7 @@ author: [agent]
 created_at: 2026-09-20T00:00:00Z
 updated_at: 2026-09-20T00:00:00Z
 plan_revision: 1
-current_step: 2
+current_step: 8
 total_steps: 10
 supersedes_spec_components: []
 new_spec_components:
@@ -250,17 +250,40 @@ commandline = 'cmd.exe'
   (残余仅极端连滚 1-2 行薄带,50ms 泵兜底)。复现器
   p025_scroll_render_tests 4 绿,`AUTO_MA_DBG=1` 实机埋点 `[P25-ROWS]`
   在册。
-- **T-02** 快照窗绝对行锚(auto-term 泵链 + auto-lang core glue):
+- [x] **T-02** 快照窗绝对行锚(auto-term 泵链 + auto-lang core glue):
   display_offset 单源下把行窗绝对锚带出引擎,widget `snapshot()`
   消费。依赖:T-01。关联:AC-01/AC-02。验证:auto-lang 单测(锚
   随滚动正确递变)。
-- **T-03** 行缓存绝对行号键 + 预取窗(auto-lang widget.rs:901 一带
+  [✅ 已完成 2026-09-20 · lang-025 fd380a64f + auto-term 231ddac]
+  TerminalCore `window_anchor`(= h − o,泵回写,几何替换承载,
+  `WINDOW_ANCHOR_UNSET` 哨兵 = 未锚回退);term.rs 泵 Key 侧同拍
+  回写;p025_anchor_and_store_roundtrip 锚往返/哨兵/几何承载绿。
+- [x] **T-03** 行缓存绝对行号键 + 预取窗(auto-lang widget.rs:901 一带
   改造)。依赖:T-02。关联:AC-01/AC-02。验证:p025 重排数断言绿。
-- **T-04** 滚动即时泵(视 T-01 判决取舍;若主因纯属候选 1 可记
+  [✅ 已完成 2026-09-20 · lang-025 fd380a64f]三件套:①ROW_CACHES
+  槽位键→行 id 键(digest 门控,容量 512 护栏);②预取窗 N=8
+  (window_store 绝对 id→cells/digest;泵瞬态 scroll 采样上/下各
+  8 行,终态 offset 恢复,引擎零改动);③视图锚定内容层(可见行
+  区间由视口矩形推导,行位 id×CELL_H;槽位/cursor/selection 面保持
+  引擎锚位移)。p025 断言翻转绿:每 notch 30→3、打印 1 行 30→1、
+  预取覆盖先行视图零空白、未锚回退槽位语义;terminal 系回归 47 绿;
+  rust 轨实车 boot 冒烟 `[P25-ROWS]` 增量重建生效(首帧 30→内容帧
+  3→稳态 0),无 panic。
+- [x] **T-04** 滚动即时泵(视 T-01 判决取舍;若主因纯属候选 1 可记
   DEBT 豁免)。依赖:T-01。关联:AC-01。验证:headless 时序断言或
   判决豁免记录。
+  [✅ 已豁免转 DEBT 2026-09-20]判决(evidence/025/t01-verdict.md):
+  预取 N=8 后残余仅极端连滚(≥5 notch/帧持续)1-2 行瞬态薄带,
+  50ms 泵周期兜底;事件驱动补泵的接线收益不足以抵消 022 回声抑制
+  状态机扰动风险。启用条件 = 实机验收仍见可见薄带。见 §10.5。
 - **T-05** A 部门禁:022/023 回归 + 三轨零回归 + 实机滚动录屏与
   用户验收。依赖:T-03(及 T-04 若执行)。关联:AC-01/02/03。
+  [进行中 2026-09-20]已毕:auto-lang terminal 系回归 47 绿(p022/
+  p023/虚拟滚动/terminal::);rust 轨 boot 冒烟绿(P25 增量重建
+  生效无 panic);全量套件基线对照毕(失败集差分 ≤4 项且单测重跑
+  全绿 = 抖动/环境项,非 025 回归,详见 §10.7)。待办:vm 直跑冒烟、
+  020 t01_model.sh 回归、**实机滚动录屏 + 用户肉眼验收(闪屏消失)
+  ——用户门**。
 - [x] **T-06** `crates/autoterm-config` 新 crate(schema/解析/路径解析
   + 单测)。依赖:无(B 部可并行启动)。关联:AC-04/06。
   [✅ 已完成 2026-09-20 · auto-term 87d94c9]schema V1 解析全绿
@@ -268,16 +291,44 @@ commandline = 'cmd.exe'
   裸名拆分/相对路径透传/env 覆盖路径/文件往返);缺席与损坏回落空集
   不崩,坏条目跳过 + stderr 告警;SpawnSpec(program/argv/cwd)映射
   与 engine_spawn_ex 一一对应。
-- **T-07** back 接线:db.at registry + `mux_new_tab(profile)` +
+- [x] **T-07** back 接线:db.at registry + `mux_new_tab(profile)` +
   api.at `/api/term/profiles` + term.rs spawn 链消费 profile。依赖:
   T-06。关联:AC-04/05。验证:curl 剧本。
-- **T-08** app.at 前端:`+` 语义与 profile 子菜单(沿既有菜单形态)。
+  [✅ 已完成 2026-09-20 · auto-term 231ddac]term.rs 配置 sidecar
+  (config_profiles/_full/default/spawn 三元组,Init 一次装载);
+  db.at spawn_pane_into_tab(tab,axis,profile)/mux_new_tab(profile)
+  /动作槽位编码/profile_name_of_arg;api.at /api/term/profiles +
+  /api/term/profile-names + new-tab(profile)。剧本
+  `evidence/025/t07_profiles.sh` 干净跑 **8/8 PASS**
+  (t07_profiles_run.log:names/records/default-spawn+cwd/marker
+  argv/ghost 回落/tabs 计数)。
+- [x] **T-08** app.at 前端:`+` 语义与 profile 子菜单(沿既有菜单形态)。
   依赖:T-07。关联:AC-05。验证:实机点检。
-- **T-09** CLI `--profile`(crates/autoterm-ui)+ 配置默认值接入。
+  [✅ 已完成 2026-09-20 · auto-term 231ddac]`+` 左键 = default
+  (NewTab→arg 0,既有语义零变);`+` 右键 = ProfileMenu 开/收
+  (与 Tab 条右键关闭同形态,§10.4 取形落地);菜单 = 行内按钮组
+  (Init 一次装载 api.term_profile_names;空配置不渲染,右键仍可用);
+  选中 NewTabProfile(i)→mux_enqueue(1, i+1) 建后收菜单。编译绿 +
+  剧本面等价断言;实机点检归 T-10 用户门。
+- [x] **T-09** CLI `--profile`(crates/autoterm-ui)+ 配置默认值接入。
   依赖:T-06。关联:AC-06。验证:autoterm.exe 冒烟。
+  [✅ 已完成 2026-09-20 · auto-term 231ddac]`--shell` 改可选(显式
+  覆盖),新增 `--profile`;解析链 显式 shell > profile > 配置
+  default > pwsh 兼容缺省(COMSPEC 兜底属 app 轨 spawn 面——与计划
+  G6 字面差异已记 §10.6);AppConfig 增 argv/cwd,PtySession::
+  spawn_in 投递(引擎零改动)。冒烟:`--profile ghost` → 明确报错
+  含搜索路径 **exit 1**;`--profile cmd --dev-exit-after 3 --dev-dump`
+  → 转储含 `D:\autostack>` prompt(cwd 经 spawn_in 生效)。
 - **T-10** B 部门禁:实机配方三则 + vue 轨 + oracle 零 diff 门 +
   specs 落盘(SD-01/02/03)。依赖:T-07/T-08/T-09。关联:
   AC-04/05/06/07。
+  [进行中 2026-09-20]已毕:specs 落盘(docs/specs/terminal-scroll-
+  render.md 新增;app-unified-entry.md/terminal-mux-model.md 增补);
+  oracle 与 autoterm-core `git diff` 零文件(AC-07);vue back HTTP
+  剧本 T-07 8/8;CLI 冒烟(exit 1 + cwd prompt)。待办:rust 轨
+  实机配方三则(default ash 首_TAB/profile 菜单建_TAB/删配置降级
+  cmd)+ vue 轨 `auto run -r vue` 冒烟——**用户门**;vue 前端
+  prod 构建 TS 报错为 646 遗留(§10.8)。
 
 新路径:`crates/autoterm-config/`(新 crate)、
 `docs/specs/terminal-scroll-render.md`(新 spec)、
@@ -288,6 +339,14 @@ commandline = 'cmd.exe'
 - 2026-09-20 · stage: new · PLAN-025 rev1 起草 handoff。
   取证完成(闪屏根因候选锚到 widget.rs 行号;profile 接入点锚到
   spawn_ex/db.at/api.at/CLI);A/B 两部独立可并行;待用户放行 work。
+- 2026-09-20 · stage: work · PLAN-025 · rev1 · 执行中场记录(非
+  execution_done)· code: auto-lang `fd380a64f`(+`bb6dd5d22` 仪器)/
+  auto-term `231ddac`(+`87d94c9`)· tasks: T-01..T-04, T-06..T-09
+  完成(T-04 判决豁免转 DEBT)· evidence: evidence/025/t01-verdict.md
+  (判决曲线)、t07_profiles.sh + _run.log(8/8)、CLI 冒烟 exit1 +
+  cwd prompt、rust 轨 boot `[P25-ROWS]` 增量重建、terminal 系回归
+  47 绿、oracle/autoterm-core 零 diff · blockers: 无 · next: T-05/
+  T-10 用户实机门(滚动录屏肉眼验收 + 配方三则 + vue 轨冒烟)。
 
 ## 10. 待澄清事项
 
@@ -302,3 +361,30 @@ commandline = 'cmd.exe'
    schema 易语义分叉;记 DEBT 待两轨策略统一后进 V2。
 4. **`+` 菜单形态**:右键/长按/下拉三选一,倾向右键(与 Tab 条
    既有右键关闭一致),T-08 实现时按 app.at 菜单既有能力取形。
+   [已定 2026-09-20:T-08 取右键 + 行内按钮组形态落地。]
+5. **T-04 即时泵 DEBT**:判决豁免(见 T-01 判决工件与 spec 悬置节)。
+   启用条件 = 实机验收仍见可见薄带(极端连滚下 1-2 行、≤50ms)。
+6. **CLI 缺省差异**:计划 G6 字面 = "显式参数 > 配置文件 > COMSPEC";
+   CLI 实现为 … > pwsh 兼容缺省(既有 `--shell` default pwsh 的行为
+   保持,避免破坏现有用户;COMSPEC 兜底属 app 轨 spawn 面且已生效)。
+   复审可改判统一为 COMSPEC。
+7. **全量套件基线归属**:auto-lang lib 全量(ui-iced,iced-layout-tests)
+   在 master 基线即有 ~270-280 红且逐跑抖动(夹具编译/文件系统/图像
+   注入类)。025 工作树对照:失败集差分 ≤4 项,单测重跑全绿(抖动/
+   环境项:app_registry 聚合、mcp thumbs、charts、plan536);terminal
+   域(025 战场)全绿。结论:非 025 回归。022 期"~25 项存量红"为
+   无 iced-layout-tests 组合下的口径,本组合基线红更多,属在案事实。
+8. **vue 前端 prod 构建失败(既有)**:`auto build -r vue` 的
+   `vue-tsc` 报 `import.meta.env`(PLAN-646 模板代码,vite/client
+   类型缺席)——025 之前已存在,与本计划改动无关(gen 未变更);
+   B 部 vue 验收走 back HTTP 剧本(020 惯例),不依赖前端 prod
+   build。归属 646 遗留,待另立修复。
+9. **app-back main.rs 路由表**:`-r vue` 再生成链在前端 TS 失败点中断,
+   未重写 main.rs 路由表(手补 2 行过审;生成物不入库,合并期全量
+   再生即消)。与 §10.8 同根。
+10. **PLAN-024 合流协调**:024 分支(auto-term-dev,未并 master)有
+   9 个 `fix(term)` 提交触及 ui/terminal(widget +322 行:抖动根修/
+   圆角/几何源),与 025 A 部同文件不同域(025 = 行缓存/内容层,
+   024 = bind 状态机/样式)。master 基线开发成立;合并时
+   observe/bind 区可能文本冲突,按两计划语义调和(025 不动 bind
+   语义,024 不动行缓存)。

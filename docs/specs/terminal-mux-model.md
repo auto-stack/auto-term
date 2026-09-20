@@ -67,7 +67,7 @@ auto-lang terminal widget            ← Pane 的视图(Registry 按 key 多实�
 | `mux_focus(id)` | 焦点切换 | 1/-1 |
 | `mux_zoom(id)` | 活动 Tab 缩放开关 | 1=缩放 0=取消 |
 | `mux_resize_pane(id,r)` | 父分支 ratio_permille(0-1000 钳位) | 新比例/负=未找到 |
-| `mux_new_tab()` | 新 Tab(单 Pane,自动激活) | tab id |
+| `mux_new_tab(profile)` | 新 Tab(单 Pane,自动激活;profile 名空 = default_profile,未命中回落缺省 shell,PLAN-025 SD-03) | tab id |
 | `mux_close_tab(id)` | 全 Pane 引擎 free + 表行摘除 | 1/0=末 Tab 拒绝/-1 |
 | `mux_activate_tab(id)` | 激活 Tab | 1/-1 |
 | `mux_init()` | V1 单 Workspace(id=1)+ 初始 Tab/Pane(幂等) | tab id/0 |
@@ -81,6 +81,12 @@ NULL/空 = 继承宿主;旧 `autoterm_engine_spawn` 语义零改动。
 真身(旧 spawn 薄委托;portable-pty `CommandBuilder::cwd` 接线)。
 domain/env 字段预留(Phase 5),V1 不实现;OSC 7/133 缺席,V1 的
 split 只继承 program/静态 cwd,**不承诺**动态 cwd 继承。
+
+profile 消费(PLAN-025 SD-03):profile 集合为 **back registry 单源**
+(Init 期一次装载,`config.toml` 契约见
+[app-unified-entry.md](app-unified-entry.md) §配置文件与 profiles);
+`mux_new_tab(profile)` 的 spawn 经上述 SpawnSpec 投递三元组;动作
+队列 NewTab 的 arg 编码 = profile 槽位(1 起;0 = default)。
 
 ## per-key / per-handle 泵契约
 

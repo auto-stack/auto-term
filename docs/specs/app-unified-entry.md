@@ -40,6 +40,34 @@ shims 进程内引擎**;`#[api]` 调用必须走**限定名形态**
 exe 祖先 `target/{debug,release}`),色彩契约见
 [engine-ffi-color-encoding.md](engine-ffi-color-encoding.md)。
 
+## 配置文件与 profiles(PLAN-025 SD-02)
+
+默认 shell 与 profile 集经 `config.toml` 定义,crate
+`crates/autoterm-config` 单源解析(仅 autoterm-ui CLI 与 app-back
+消费;autoterm-core 零依赖面不动):
+
+- **位置**:`AUTOTERM_CONFIG` 环境变量(非空)→ 缺省 exe 同目录
+  `config.toml`(三件套同目录分发契约)。
+- **Schema V1**(TOML):顶层 `default_profile = "<名>"`;`[[profiles]]`
+  数组,每条 `name`(必)/`commandline`(必,引号包带空格路径)/
+  `starting_directory`(可选,空 = 继承宿主)。`ctrl_c_mode` V1 不进
+  schema(两轨 Ctrl+C 策略不同源,PLAN-025 §10.3 DEBT)。
+- **降级语义(G6)**:文件缺席/解析失败 = 空 profile 集(行为等价无
+  配置现状,spawn 回落 COMSPEC/cmd 兜底,不崩);单条 profile 字段
+  非法 = 跳过该条 + stderr 告警;重名 = 后者覆盖 + 告警;
+  `default_profile` 未命中名 = 忽略(不回落首个)。
+- **解析优先级**:显式参数(`--shell`) > `--profile` > 配置文件
+  `default_profile` > 轨道缺省(app 轨 COMSPEC 兜底;CLI 维持既有
+  pwsh 兼容缺省)。`--profile` 未命中 = 报错退出 1(信息含配置搜索
+  路径)。
+- **spawn 投递**:profile → `(program, argv, cwd)` 三元组
+  (`Config::resolve` 拆分 commandline)→ 既有 SpawnSpec
+  (`engine_spawn_ex` / `PtySession::spawn_in`)生效,引擎层零改动。
+- **消费面**:back registry Init 期一次装载(term.rs sidecar
+  `config_*` 函数族);HTTP 契约 `/api/term/profiles`
+  ("name|commandline|cwd" 记录数组)与 `/api/term/profile-names`;
+  vm/desktop 臂同契约后补(PLAN-025 非目标,§10.2)。
+
 ## 验收与回归
 
 - 桌面门三面:整窗 terminal 形态 + 几何随动(快照 cols/rows ≠ 模型
