@@ -144,6 +144,17 @@ profile 消费(PLAN-025 SD-03):profile 集合为 **back registry 单源**
    同一落定段)同一比例真相源。窗口尺寸标定源 =
    `GET /api/mux/window-width|height`(逻辑 px;T-00b D7 面,
    auto.term shim 2998/2999 + rust 侧车同名)。
+   **窗口尺寸面桌面轨语义(PLAN-024 SD-01)**:shim 读序 =
+   **per-app override → theme 全局回落**——桌面轨由宿主 session
+   拆借点(`split_mut_at`/`split_ref_at` desktop 分支)按该 App
+   虚拟窗内容区(`vwin_content_size`:rect 外沿扣 chrome,
+   退化钳 ≥1)注入 override,launch 期于组件构建前按将落位 rect
+   预注入(Init 期真值,防上一 App 残值);rust 独立窗轨
+   (run_app WindowResized)与动态轨(`__window_resized`)不注入,
+   读路径既有行为零变化。**消费承诺面 = rust/vm/vue + desktop 四轨**
+   (024 起;桌面轨投影 `px = rect‰ × override`,前端 Tick 轮询
+   `mux_window_width|height` 变化即重投影 → 终端件自测 → 引擎
+   resize/光标随动)。快捷键契约(下条)承诺面同步扩 desktop 轨。
 6. **Terminal shortcuts 契约(PLAN-019 D4)**:widget 键盘路径前置
    查捷径表(规范化键名 "ctrl.shift.e" 族;字符键 shift 恒前缀 +
    小写化),命中发消息不落 VT 队列不触发 on_input(双通道都断),

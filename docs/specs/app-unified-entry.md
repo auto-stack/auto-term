@@ -74,6 +74,15 @@ exe 祖先 `target/{debug,release}`),色彩契约见
   缺省 100×30)+ 色彩契约(整屏零 RGB(128,0,0);背景 #060709)。
   证据:`docs/plans/evidence/017/desktop-terminal-live-r2.png`
   (2026-09-14 R2 门,验收通道 AUTOUI_ACCEPTANCE=1)。
+- **桌面门 mux 形态(PLAN-024 SD-02 升级)**:mux 形态(Tab 条/
+  分屏槽位/分隔条/底部状态栏)+ 窗口尺寸面桌面轨语义(标定源 =
+  该 App 虚拟窗内容区,shim override 读序,见
+  terminal-mux-model.md "窗口尺寸面桌面轨语义")+ 滚动链(输出
+  跟随贴底/增长漂移重绑/在途回声吞没)+ 圆角契约(pane 槽全方角;
+  窗框左右下圆角由状态栏 `rounded-b-[15px]` 承担——窗框环 16、
+  客户区内缩 1 的同心解;语言层 RoundedSize::Px 任意值刻度)。
+  证据:`docs/plans/evidence/024/`(TRACE 滚动轨迹/状态栏/圆角
+  序列,t00-decision.md 决策链)。
 - 独立入口:`auto build -r rust` Finished 零错、exe 可运行
   (2026-09-14 基线复现,post-627 master CLI)。
 - 单入口断言:`at-app/` 目录不存在;`git grep at-app` 功能残留为零
