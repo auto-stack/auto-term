@@ -297,9 +297,20 @@ commandline = 'cmd.exe'
   根因 = 预取 N=8 覆盖不足 + 50ms 泵滞后(视图先行量超覆盖即空白,
   T-04 悬置条款触发)。修:T-04 即时泵启用(泵节拍门 16ms + N=24,
   lang-025 3f3187885 + auto-term 65bd133);p025 9/9、载具重建
-  boot 冒烟绿(门生成生效 tick_interval_ms=16)。**待用户三轮
-  复测**。待办:vm 直跑冒烟、020 t01_model.sh 回归、**实机滚动
-  录屏 + 用户肉眼验收(闪屏/抖动/半屏空白全消)——用户门**。
+  boot 冒烟绿(门生成生效 tick_interval_ms=16)。
+  [VM 轨开通 2026-09-20 · lang-025 69661c091 + auto-term 0066b7d]
+  vm shim 同款修复链接线(锚/防抖标记/预取/探针;config_* 空集
+  stub=§10.2 非目标);VM 轨现行架构实证 = vm front + rust back
+  split(pac `api: rust`,17401;merged 为 017 前旧形态)。开通
+  清障四件:db.at mux_focus_dir 转 pub(022 遗留私有 fn 卡
+  generate_api)、sidecar 注入器 path: 依赖形态(pac.at 声明
+  autoterm-config,再生成幂等)、AUTO_LANG_CRATE 环境覆盖
+  (worktree 联调口子)、component.rs drain_bitmap_uploads 特性
+  门控(ui-only back 单独编译既有炸点)。VM 实机:back 17401
+  build+ready,tick 出 cmd banner,窗口在案。**待用户 VM 版滚动
+  复测**(rust 轨三轮复测一并)。待办:020 t01_model.sh 回归、
+  **实机滚动录屏 + 用户肉眼验收(闪屏/抖动/半屏空白全消,rust
+  +VM 两轨)——用户门**。
 - [x] **T-06** `crates/autoterm-config` 新 crate(schema/解析/路径解析
   + 单测)。依赖:无(B 部可并行启动)。关联:AC-04/06。
   [✅ 已完成 2026-09-20 · auto-term 87d94c9]schema V1 解析全绿
