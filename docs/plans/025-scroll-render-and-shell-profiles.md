@@ -281,9 +281,17 @@ commandline = 'cmd.exe'
   [进行中 2026-09-20]已毕:auto-lang terminal 系回归 47 绿(p022/
   p023/虚拟滚动/terminal::);rust 轨 boot 冒烟绿(P25 增量重建
   生效无 panic);全量套件基线对照毕(失败集差分 ≤4 项且单测重跑
-  全绿 = 抖动/环境项,非 025 回归,详见 §10.7)。待办:vm 直跑冒烟、
-  020 t01_model.sh 回归、**实机滚动录屏 + 用户肉眼验收(闪屏消失)
-  ——用户门**。
+  全绿 = 抖动/环境项,非 025 回归,详见 §10.7)。
+  [实机复测一轮 2026-09-20]用户报:闪屏消失,但滚动条抖动——根因
+  定性 = 022 遗留 bind 写臂行量化回拉(iced 滚轮每 notch 硬编码
+  60px ≠ CELL_H 16px,泵拍把视图 scroll_to 回整行位 = 每拍 ~4px
+  回拉;iced 源码 `TODO: Configurable speed` 在案),非 025 引入
+  (025 视图锚定修好内容闪动后残留显形)。修:auto-lang 3363b8242
+  `terminal_mark_view_bound`(用户滚动回灌标 bound,bind 不回拉;
+  外部源照常 bind)+ auto-term 8349669 泵侧 delta≠0 标记;回归
+  p025 8/8 + terminal 系 48 绿;载具重建 boot 冒烟绿。**待用户二轮
+  复测**。待办:vm 直跑冒烟、020 t01_model.sh 回归、**实机滚动
+  录屏 + 用户肉眼验收(闪屏消失+抖动消失)——用户门**。
 - [x] **T-06** `crates/autoterm-config` 新 crate(schema/解析/路径解析
   + 单测)。依赖:无(B 部可并行启动)。关联:AC-04/06。
   [✅ 已完成 2026-09-20 · auto-term 87d94c9]schema V1 解析全绿
