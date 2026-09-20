@@ -33,6 +33,9 @@ widget App {
         var clientW int = 802
         var clientH int = 450
         var tabH int = 40
+        // PLAN-024:底部状态栏高(窗框圆角承载层——pane 全方角,左右下
+        // 圆角由状态栏 rounded-b-2xl 承担,分屏拓扑无关;编辑器同款)
+        var statusH int = 24
         // pane 槽 1..6:存在/键/px 矩形/网格/行快照/光标
         var slot1 int = 0
         var slot2 int = 0
@@ -181,9 +184,9 @@ widget App {
             var p1 int = api.mux_rect_pane(1)
             .key1 = api.mux_rect_key(1)
             .x1 = api.mux_rect_x(1) * .clientW / 1000
-            .y1 = api.mux_rect_y(1) * (.clientH - .tabH) / 1000
+            .y1 = api.mux_rect_y(1) * (.clientH - .tabH - .statusH) / 1000
             .w1 = api.mux_rect_w(1) * .clientW / 1000
-            .h1 = api.mux_rect_h(1) * (.clientH - .tabH) / 1000
+            .h1 = api.mux_rect_h(1) * (.clientH - .tabH - .statusH) / 1000
             .g1c = api.mux_pane_cols(p1)
             .g1r = api.mux_pane_rows(p1)
             .lines1 = api.mux_pane_lines(p1)
@@ -192,9 +195,9 @@ widget App {
             .slot2 = api.mux_rect_kind(2)
             .key2 = api.mux_rect_key(2)
             .x2 = api.mux_rect_x(2) * .clientW / 1000
-            .y2 = api.mux_rect_y(2) * (.clientH - .tabH) / 1000
+            .y2 = api.mux_rect_y(2) * (.clientH - .tabH - .statusH) / 1000
             .w2 = api.mux_rect_w(2) * .clientW / 1000
-            .h2 = api.mux_rect_h(2) * (.clientH - .tabH) / 1000
+            .h2 = api.mux_rect_h(2) * (.clientH - .tabH - .statusH) / 1000
             .slot3 = api.mux_rect_kind(3)
             .key3 = api.mux_rect_key(3)
             .slot4 = api.mux_rect_kind(4)
@@ -237,7 +240,7 @@ widget App {
             var nw int = api.mux_window_width()
             var nh int = api.mux_window_height()
             var cw int = .clientW
-            var ch int = .clientH - .tabH
+            var ch int = .clientH - .tabH - .statusH
             var geomChanged int = 0
             if ver != .lastVer {
                 geomChanged = 1
@@ -605,7 +608,7 @@ widget App {
             .dragBranch = b
             .dragging = 1
             .dragW = .clientW
-            .dragH = .clientH - .tabH
+            .dragH = .clientH - .tabH - .statusH
         }
         .Drag(x, y) -> {
             api.mux_resize_branch(.dragBranch, x.to_int(), y.to_int())
@@ -864,6 +867,15 @@ widget App {
                     }
                 }
                 mouse-area (coords: "1000x1000", style: f"absolute z-30 top-0 left-0 w-[${.dragW}px] h-[${.dragH}px]", onmousemove: .Drag, onmouseup: .Drop) {}
+            }
+            // ── 底部状态栏(PLAN-024):窗框圆角承载层——pane 槽全方角,
+            // 左右下圆角由本栏 rounded-b-2xl 承担(与虚拟窗框 WIN_RADIUS
+            // 同径),分屏拓扑无关;编辑器状态栏同款。内容 = 焦点 pane
+            // 计数 + 引擎网格几何。
+            row {
+                style: "w-full h-[24px] rounded-b-2xl bg-[#e9e4d8] px-3 items-center justify-between"
+                text "◉ AutoTerm mux" { style: "text-xs" }
+                text f"${.cols}×${.rows}" { style: "text-xs" }
             }
         }
     }
