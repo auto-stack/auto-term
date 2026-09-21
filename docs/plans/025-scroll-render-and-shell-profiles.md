@@ -301,6 +301,15 @@ commandline = 'cmd.exe'
   T-04 悬置条款触发)。修:T-04 即时泵启用(泵节拍门 16ms + N=24,
   lang-025 3f3187885 + auto-term 65bd133);p025 9/9、载具重建
   boot 冒烟绿(门生成生效 tick_interval_ms=16)。
+  [VM 挂起二段根修 2026-09-21 · lang-025 e6053171e]泄漏修后
+  仍复现(用户截图)→ netstat 实录 **6986 条 TIME_WAIT**(17401):
+  simple_http_json 每请求 Client::new()=每调用新 TCP 连接,高频
+  api 轮询打爆临时端口池;reqwest 无默认超时 → 端口耗尽后请求
+  线程永久挂起 → tick task 堆积 = 无响应+内存涨。修:split 形态
+  api.* 共享 keep-alive 客户端(10s 超时);实测修后 TIME_WAIT
+  6986→0、稳态 2 条 ESTABLISHED 复用、后端 5MB 平。split 通用
+  缺陷,全应用受益。前端残余 ~MB/分钟缓爬 = VM 字符串 arena 只增
+  (VM 级既有,另立债)。
   [VM 挂起+内存爬升根修 2026-09-21 · lang-025 935a3cd61]用户勘正
   两点成立:auto.http.* native 异步非阻塞(Plan 349 yield/retry 设计,
   "同步阻塞 UI"表述作废);泄漏 = ASYNC_RESULTS 表消费(get_mut+take)
