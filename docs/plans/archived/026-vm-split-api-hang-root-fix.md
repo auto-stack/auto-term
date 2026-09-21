@@ -483,5 +483,8 @@ review-rerun-summary.txt)+ 既有 t06/probe 全档 | next: **merge**
   验证 P026 ids 齐;原子替换)。
 - `archived`:docs/plans/archived/026-vm-split-api-hang-root-fix.md
   (git mv),status: archived,completion_kind: **delivered**。
-- `cleaned`:(待执行——inv-026 worktree + plan-026-dev 分支 +
-  .wt/auto-down junction + 组目录;wt-guard 门)。
+- `cleaned`:wt-guard clean(reparse 零)→ `.wt/auto-down` junction
+  摘除(rmdir 链接本体)→ inv-026 worktree remove + plan-026-dev 分支
+  删除(was a3032dcc4 = master tip,提交全落地)→ 组目录移除(空)。
+  对照二进制(auto-premerge-026.exe)随 worktree 消亡;调查/判决证据
+  全档 docs/plans/evidence/026/(git 保全)。
