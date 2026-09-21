@@ -29,7 +29,7 @@
 //   - engine_rows 的 List 返回必须落显式类型 var(否则 .len() 得 None);
 //   - 裸调用不得内联于 if 条件位(597 §9 挂起缺陷)——先赋值再比较。
 
-use auto.term: engine_spawn_ex, engine_free, engine_write_line, engine_rows_for, engine_pump_for, engine_apply_resize_for, engine_viewport_cols, engine_viewport_rows, engine_cursor_row, engine_cursor_col, engine_backlog_pending_mb, engine_backlog_paused, engine_backlog_take_alerts, engine_backlog_dropped, engine_interrupt, engine_is_exited, engine_menu_take, window_width, window_height, config_profiles, config_default_profile, config_profiles_full, config_spawn_program, config_spawn_argv, config_spawn_cwd, engine_scroll_pending_for
+use auto.term: engine_spawn_ex, engine_free, engine_write_line, engine_write_raw, engine_rows_for, engine_pump_for, engine_apply_resize_for, engine_viewport_cols, engine_viewport_rows, engine_cursor_row, engine_cursor_col, engine_backlog_pending_mb, engine_backlog_paused, engine_backlog_take_alerts, engine_backlog_dropped, engine_interrupt, engine_is_exited, engine_menu_take, window_width, window_height, config_profiles, config_default_profile, config_profiles_full, config_spawn_program, config_spawn_argv, config_spawn_cwd, engine_scroll_pending_for
 
 // ══════════════════════════════════════════════════════════════════
 // MuxCore 模型表(PLAN-018 D6;Workspace/Tab/LayoutTree/Pane)
@@ -1635,6 +1635,14 @@ fn drain_invisible() int {
 pub fn term_send(line str) {
     var handle int = mux_focus_handle()
     engine_write_line(handle, line)
+}
+
+/// 键入 VT 串原样裸写(PLAN-026 needs_fix:split 形态键入载荷跨进程
+/// 通道——组件队列在前端进程,泵在 back 永不相交;载荷经消息 $event
+/// → HTTP 抵达,本端点直写焦点 Pane 引擎;merged 形态同路径直调)。
+pub fn term_send_keys(vt str) {
+    var handle int = mux_focus_handle()
+    engine_write_raw(handle, vt)
 }
 
 /// Ctrl+C 中断(Break→C 双发语义,引擎契约 003 §4.1;焦点 Pane)。

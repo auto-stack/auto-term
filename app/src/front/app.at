@@ -26,7 +26,7 @@
 use back.api
 
 widget App {
-    msg { Init, Tick, KeyIn, Menu, TabActivate(int), TabClose(int), NewTab, NewTabProfile(int), ProfileMenu, Split(int), Zoom, CloseFocusPane, SchemeToggle, Shortcut(int), Press(int), Drag(float, float), Drop }
+    msg { Init, Tick, KeyIn(str), Menu, TabActivate(int), TabClose(int), NewTab, NewTabProfile(int), ProfileMenu, Split(int), Zoom, CloseFocusPane, SchemeToggle, Shortcut(int), Press(int), Drag(float, float), Drop }
 
     model {
         var cols int = 100
@@ -610,10 +610,12 @@ widget App {
             }
         }
 
-        .KeyIn -> {
-            // PLAN-026 T-03 rev5:键入路径同双端点快照(修前 12 次调用/击;
-            // nums 定位槽/光标,snapshot 取行段)。
-            api.term_pump_input()
+        .KeyIn(k) -> {
+            // PLAN-026 needs_fix: 载荷直写(split 形态键入队列在前端进程、
+            // 泵在 back 永不相交——$event 侧车把 VT 串随消息跨进程,
+            // send_keys 裸写焦点 Pane;merged 同路径直调。快照刷新面
+            // 不变(rev5 双端点)。
+            api.term_send_keys(k)
             var ns List<int> = api.mux_tick_nums()
             var ss List<str> = api.mux_tick_snapshot()
             var one int = 1
@@ -961,7 +963,7 @@ widget App {
                             cursor_row: .cr1
                             cursor_col: .cc1
                             scheme: .scheme
-                            oninput: .KeyIn
+                            oninput: .KeyIn($event)($event)
                             onmenu: .Menu
                             onkeydown.ctrl.shift.t: .Shortcut(1)
                             onkeydown.ctrl.shift.w: .Shortcut(2)
@@ -990,7 +992,7 @@ widget App {
                             cursor_row: .cr2
                             cursor_col: .cc2
                             scheme: .scheme
-                            oninput: .KeyIn
+                            oninput: .KeyIn($event)($event)
                             onmenu: .Menu
                             onkeydown.alt.w: .Shortcut(10)
                             onkeydown.alt.s: .Shortcut(11)
@@ -1010,7 +1012,7 @@ widget App {
                             cursor_row: .cr3
                             cursor_col: .cc3
                             scheme: .scheme
-                            oninput: .KeyIn
+                            oninput: .KeyIn($event)($event)
                             onmenu: .Menu
                             onkeydown.alt.w: .Shortcut(10)
                             onkeydown.alt.s: .Shortcut(11)
@@ -1030,7 +1032,7 @@ widget App {
                             cursor_row: .cr4
                             cursor_col: .cc4
                             scheme: .scheme
-                            oninput: .KeyIn
+                            oninput: .KeyIn($event)($event)
                             onmenu: .Menu
                             onkeydown.alt.w: .Shortcut(10)
                             onkeydown.alt.s: .Shortcut(11)
@@ -1050,7 +1052,7 @@ widget App {
                             cursor_row: .cr5
                             cursor_col: .cc5
                             scheme: .scheme
-                            oninput: .KeyIn
+                            oninput: .KeyIn($event)($event)
                             onmenu: .Menu
                             onkeydown.alt.w: .Shortcut(10)
                             onkeydown.alt.s: .Shortcut(11)
@@ -1070,7 +1072,7 @@ widget App {
                             cursor_row: .cr6
                             cursor_col: .cc6
                             scheme: .scheme
-                            oninput: .KeyIn
+                            oninput: .KeyIn($event)($event)
                             onmenu: .Menu
                             onkeydown.alt.w: .Shortcut(10)
                             onkeydown.alt.s: .Shortcut(11)

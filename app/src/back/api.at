@@ -27,6 +27,12 @@ pub fn term_send(line str) {
     db.term_send(line)
 }
 
+/// 键入 VT 串原样裸写(PLAN-026 needs_fix:split 键入跨进程通道)。
+#[api(method = "POST", path = "/api/term/send-keys")]
+pub fn term_send_keys(vt str) {
+    db.term_send_keys(vt)
+}
+
 /// Ctrl+C 中断。
 #[api(method = "POST", path = "/api/term/interrupt")]
 pub fn term_interrupt() int {
