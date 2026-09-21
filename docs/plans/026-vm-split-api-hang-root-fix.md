@@ -403,3 +403,14 @@ ui_gen rust 轨 \$event 占位保编译(rust 轨键入载荷断裂与 025 同态
 带参 oninput 生成器另档 §10.7)。实机:SendKeys→回显进快照绿。
 auto-lang plan-026-dev + auto-term 双侧提交在案;~/.auto 安装副本
 term.at/term.vm.at 已同步(部署件契约)。
+
+### [needs_fix 3 观测 2026-09-21 深夜,用户实机反馈:内存慢爬]
+
+用户观察:内存慢爬至 ~355MB+。实测:+1.7MB/min 线性(≈1.4KB/拍,
+两实例同斜率)。**分流(AUTO_VM_MEM=1 池观测)**:VM 侧 strings 池
+(698 条/17KB)与 heap_objects **稳定**,泄漏在 **rust 层**(HTTP/
+渲染,候选 reqwest 每请求分配、iced 文本布局缓存)。**斜率与 025 期
+实录按 tick 速率换算吻合**(025 期 8-9 拍/s ≈0.6MB/min ↔ 026 后
+20 拍/s ≈1.4MB/min)= **既有 per-tick 债,非 026 引入**(026 挂起
+根修使每拍真正执行,泄漏随之提速显形)。heap 剖析定位与修复**另档
+§10.8**;本观测工具([VM-MEM],env 门控)随库留存。
