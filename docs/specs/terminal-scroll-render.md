@@ -69,9 +69,13 @@ rust 轨 iced terminal widget(`auto-lang ui/terminal/iced/widget.rs`)的
 
 ### 6. 泵周期与快滚覆盖(终态)
 
-- **计时器恒 50ms**(三代修正:16ms 节拍门在分离轨 VM/vue 上每拍
+- **计时器恒 50ms**(三代修正:16ms 节拍门在 **split 形态**下每拍
   一次 HTTP 同步往返,占死前端 UI 线程 = 无响应 + 内存爬升,用户
-  2026-09-20 实录——即时泵只对进程内直调的 rust 轨零成本,分轨不可用)。
+  2026-09-20 实录)。形态轴注记:merged/split 两轨皆有(非 rust/vm
+  之别)——split(VM+rust HTTP;本项目 VM 轨因 pac `api: rust` 经
+  run 命令默认锁定 split)api.* 走 HTTP;merged(VM+VM 进程内
+  natives 直调;rust 轨编译直连;auto-os 桌面装载即 merged)零
+  HTTP 成本,16ms 门在该形态可用,但 50ms+N=24 已全覆盖故不启用。
 - **快滚/快拖覆盖由预取 N=24 独担**:50ms 泵周期内常规 3 行、快速
   (10ms/notch)≤15 行,均 < 24 → 空白带清零(模型断言:p025 两档
   速率 0 行 0 帧);滚动条瞬移(一次数百行)余 ≤1 泵拍瞬态空白,
