@@ -259,6 +259,19 @@
         "status": "published",
         "created": "2026-09-21",
         "last_modified": "2026-09-21"
+      },
+      {
+        "id": "P025-1",
+        "section": "reports",
+        "title": "滚动闪屏根修 + 默认 shell 配置文件与 profiles — 执行报告",
+        "content": "T-01 判决(槽位键整窗重排主因:每 notch 30/30、打印 1 行亦 30/30;泵滞后次因 3-9 行×多帧)→ T-02/T-03 根修(绝对行锚 window_anchor + 行 id 键 ROW_CACHES + 预取窗 window_store + 视图锚定内容层)→ 用户四轮实机收敛(闪屏→无/抖动→修/快拖半屏→修/TIME_WAIT 挂起→修)→ T-04 三轮终态(计时器恒 50ms + 预取 N=24 独担)。B 部:autoterm-config crate(schema V1 十测)+ back registry/api /api/term/profiles + app.at + 右键菜单 + CLI --profile。VM 面 split 通用两根修:TIME_WAIT 风暴(6986→0,共享 keep-alive 客户端)+ ASYNC_RESULTS 泄漏(map.remove)。合并后 VM 前端宿主挂起未解(非终端代码域)剥离新计划。",
+        "file": "docs/plans/archived/025-scroll-render-and-shell-profiles.md",
+        "related": [
+          "PLAN-025"
+        ],
+        "status": "published",
+        "created": "2026-09-21",
+        "last_modified": "2026-09-21"
       }
     ],
     "goals": [
@@ -516,6 +529,19 @@
         "file": "docs/plans/archived/024-mux-desktop-delivery.md",
         "related": [
           "PLAN-024"
+        ],
+        "status": "published",
+        "created": "2026-09-21",
+        "last_modified": "2026-09-21"
+      },
+      {
+        "id": "P025-2",
+        "section": "goals",
+        "title": "滚动闪屏根修 + profiles — 目标影响",
+        "content": "touched_goals=[P003-2, P017-2, P018-2]:A 部推进 P003-2 绘制级损伤剪裁(重排预算纪律入规范:滚动 K notch 重建数≤新暴露行+预取增量;输出流打印 1 行→1 行);B 部扩展 P017-2 统一入口的配置文件与 profiles 面;SD-03 扩 P018-2 mux 动作族 mux_new_tab(profile) 语义。",
+        "file": "docs/plans/archived/025-scroll-render-and-shell-profiles.md",
+        "related": [
+          "PLAN-025"
         ],
         "status": "published",
         "created": "2026-09-21",
@@ -797,6 +823,19 @@
         "status": "published",
         "created": "2026-09-21",
         "last_modified": "2026-09-21"
+      },
+      {
+        "id": "P025-3",
+        "section": "architecture",
+        "title": "终端滚动渲染契约(SD-01)+ 配置文件与 profiles(SD-02)+ mux_new_tab(profile)(SD-03)",
+        "content": "SD-01 docs/specs/terminal-scroll-render.md:行缓存绝对行号键(digest 门控,容量 512 护栏)、预取窗 N=24(引擎瞬态 scroll 采样,终态 offset 恢复,引擎零改动)、视图锚定内容层(视口矩形推导,id×CELL_H)、计时器恒 50ms 终态、禁止事项(禁回槽位键/禁泵外写锚/禁动 autoterm-core)。SD-02 docs/specs/app-unified-entry.md 增配置节:AUTOTERM_CONFIG→exe 同目录 config.toml、schema V1、优先级 显式--shell>--profile>配置 default>轨道缺省、缺席/损坏降级空集不崩。SD-03 docs/specs/terminal-mux-model.md:mux_new_tab(profile) 缺省 default_profile,profile 集合 back registry 单源,NewTab 动作 arg=profile 槽位。",
+        "file": "docs/plans/archived/025-scroll-render-and-shell-profiles.md",
+        "related": [
+          "PLAN-025"
+        ],
+        "status": "published",
+        "created": "2026-09-21",
+        "last_modified": "2026-09-21"
       }
     ],
     "designs": [
@@ -1064,6 +1103,19 @@
         "status": "published",
         "created": "2026-09-21",
         "last_modified": "2026-09-21"
+      },
+      {
+        "id": "P025-4",
+        "section": "designs",
+        "title": "滚动闪屏根修 + profiles — 详细设计",
+        "content": "判决方法论:headless 复现器三层同构(伪引擎不可变 scrollback→泵步进→draw 真码)+ ROW_REBUILDS 埋点 + AUTO_MA_DBG=1 实机 [P25-ROWS] 留痕。修复件:window_anchor=history−display_offset(几何替换承载,WINDOW_ANCHOR_UNSET 未锚回退槽位语义);window_store 绝对 id→cells+digest;行位 id×CELL_H,槽位索引语义面(cursor/selection/pixel_to_cell)保持引擎锚位移。B 部:Config::resolve 拆分 commandline(引号/裸名)→(program,argv,cwd) SpawnSpec 三元组;CLI 解析链 显式 shell>profile>配置 default>pwsh 兼容缺省(COMSPEC 兜底属 app 轨 spawn 面)。",
+        "file": "docs/plans/archived/025-scroll-render-and-shell-profiles.md",
+        "related": [
+          "PLAN-025"
+        ],
+        "status": "published",
+        "created": "2026-09-21",
+        "last_modified": "2026-09-21"
       }
     ],
     "tests": [
@@ -1324,6 +1376,19 @@
         "file": "docs/plans/archived/024-mux-desktop-delivery.md",
         "related": [
           "PLAN-024"
+        ],
+        "status": "published",
+        "created": "2026-09-21",
+        "last_modified": "2026-09-21"
+      },
+      {
+        "id": "P025-5",
+        "section": "tests",
+        "title": "滚动闪屏根修 + profiles — 测试设计",
+        "content": "auto-lang:p025 10(重排曲线收敛/输出流 1 行/预取覆盖/未锚回退/锚往返/防抖标记/pending 探针/两档速率零空白)+ p022 6 + p023 4 + ui::terminal 46。auto-term:autoterm-config 10 + autoterm-core 全套件(零改动基线)。剧本:t07_profiles.sh 8/8(profile 路由/记录面/default spawn+cwd/marker argv/ghost 回落/tabs)+ 020 t01_model.sh 回归。CLI 冒烟:ghost exit 1 含搜索路径、cmd profile dump 含 D:\u0007utostack> prompt。boot 冒烟:[P25-ROWS] 首帧 30→内容帧 3→稳态 0 无 panic。基线 flaky:terminal_pixel_preedit 批量红(master 同红实证,非 025 回归)。oracle at/autoterm.at 与 at-gen 零 diff。",
+        "file": "docs/plans/archived/025-scroll-render-and-shell-profiles.md",
+        "related": [
+          "PLAN-025"
         ],
         "status": "published",
         "created": "2026-09-21",
@@ -1618,6 +1683,19 @@
         "file": "docs/plans/archived/024-mux-desktop-delivery.md",
         "related": [
           "PLAN-024"
+        ],
+        "status": "published",
+        "created": "2026-09-21",
+        "last_modified": "2026-09-21"
+      },
+      {
+        "id": "P025-6",
+        "section": "reviews",
+        "title": "滚动闪屏根修 + profiles — 复审与合并收据",
+        "content": "review r1 pass @ auto-term 43d73eb(delivery 7772514)/ auto-lang 57fe0efee:AC-01..07 全过(t07 8/8 复跑/CLI 两臂/boot 冒烟曲线/p022 6/零 diff 门);F-01 spec §3 N=8→24 勘正、F-02 preedit 批量红=master 既有、F-03 touched_goals 补齐、F-04 脏面盘点(025 实现零未提交)。merge:lang rebase 落地 22b650a76(range-diff 8 全等+3 并集解重放+merge e753639c5 平展;终态树等价除 terminal/mod.rs 结构体字段序非语义残差);auto-term 实现已随 87d94c9..43d73eb 在 main。独立性:实现会话复审,工件全量复跑重建。",
+        "file": "docs/plans/archived/025-scroll-render-and-shell-profiles.md",
+        "related": [
+          "PLAN-025"
         ],
         "status": "published",
         "created": "2026-09-21",

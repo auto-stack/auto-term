@@ -1,6 +1,7 @@
 ---
 plan_id: PLAN-025
-status: reviewed
+status: archived
+completion_kind: delivered
 feature_name: 滚动闪屏根修(绝对行键行缓存+滚动位移渲染) + 默认 shell 配置文件与 profiles
 author: [agent]
 created_at: 2026-09-20T00:00:00Z
@@ -477,6 +478,36 @@ commandline = 'cmd.exe'
   已授权 review→merge 链);合并注意:auto-lang plan-025-dev →
   master(master 已前移,含 024 修复与 671/672 文档提交);auto-term
   侧实现已在 main 无代码合并;worktree lang-025 清理留痕。
+
+- 2026-09-21 · stage: merge · PLAN-025:r1 · 收据:
+  - **prepared**:复审基线 auto-term `43d73eb`(docs-only 后裔
+    `7772514` = delivery)/ auto-lang `57fe0efee`;冻结增量 SD-01/
+    02/03(T-10 落盘 + F-01 勘正);重叠检查空(master 新增仅
+    docs/plans 671-674,无代码面)。
+  - **landed**:auto-lang plan-025-dev rebase 至 master(50dbb68e9,
+    11 实提交重放;冲突三处按 e753639c5 并集裁定解:mod.rs 双侧
+    字段并集 + component.rs/sidecar.rs 整文件取 merge 版;merge
+    commit e753639c5 平展折入)→ 主检出 `git merge --ff-only`
+    **master = 22b650a76 = 分支 tip**(11 文件 +971/−70)。映射
+    (range-diff):8 全等(bb6dd5d22→69ec8d971/3363b8242→05a6bf225/
+    3f3187885→fc788ca1c/93e43bd44→bd70054e8/935a3cd61→e5a3e85d5/
+    e6053171e→0020accb6/b639ffccf→17dbdce59/57fe0efee→22b650a76)
+    + 3 带解重放(fd380a64f→4b624cd4b/69661c091→e81dafab2/
+    9d949a699→b69ddfe2c)。终态树门:`diff 57fe0efee..22b650a76`
+    除 master 侧文件外仅 terminal/mod.rs 结构体字段序残差
+    (025 字段组前→后;同名同型同初始化,named-field 构造无语义);
+    行为门:rebased 态 ui::terminal 46 绿 + p022 6 + p025 10 复跑。
+    auto-term 侧:实现链 87d94c9→43d73eb 已在 main,无代码合并;
+    复审后仅 docs 后裔(7772514),main 已知良好(本会话全量复跑)。
+  - **ledger_refreshed**:.autoos/specs.json 六节投影 P025-1(执行
+    报告)/P025-2(goals:P003-2+P017-2+P018-2)/P025-3(architecture:
+    SD-01/02/03)/P025-4(designs)/P025-5(tests)/P025-6(reviews:
+    复审与合并收据);file 指向本归档路径;round-trip + 回读校验
+    OK,diff 外科 78 行纯新增(136→142 items)。
+  - **archived**:`docs/plans/archived/025-scroll-render-and-shell-
+    profiles.md`(git mv),status: archived,completion_kind:
+    delivered。
+  - **cleaned**:(待 worktree 清理后回填)
 
 ## 10. 待澄清事项
 
