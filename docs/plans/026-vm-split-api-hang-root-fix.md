@@ -372,3 +372,17 @@ app.at Tick(每 50ms,fire_timer 主线程同步执行 handler)
    参数位索引位型垃圾(直线同款正常——app.at 以先落 var 再 push
    规避)。两缺陷与 i64 数值语义链六处修复(已落地)同族,nanbox
    I64 半成品债务面,probe i64_probe2..33 在档。
+
+### [needs_fix 修复 2026-09-21 晚,用户实机反馈]
+
+用户观察:AutoTerm 空闲期持续 ~0.1MB/s 磁盘活动(其它 app 为 0)。
+归因(实机测量):**热路径成功日志**——[UI_EVENT]/[VM_HANDLER_CALL]/
+[VM_EXEC]/[VM_HANDLER_OK] 四类无条件 eprintln,挂起根修后 tick
+0.7/s→20/s 被放大 ~30 倍(106 行/s ≈ **5.4KB/s 持续写盘**,读侧为零;
+另 1/5 为演示实例开启的 AUTO_VM_API_BUDGET 行,env 已门控非默认)。
+修复:auto-lang 门控四发射点(renderer.rs/dynamic.rs×2/vm_bridge.rs)
+入 `AUTO_VM_TRACE=1`(is_vm_hot_trace,OnceLock;沿用 AUTO_VM_TRACE_OPS
+惯例);失败路径与超阈 warn 恒出。复验:默认启动稳态 stderr **0 B/s**、
+进程写 IO 0-0.1KB/s,echo 回显链路活,Responding=True。
+AC-01 的 tick 速率折算口径自此需显式 `AUTO_VM_TRACE=1`。
+auto-lang plan-026-dev 提交在案;status 保持 execution_done。
