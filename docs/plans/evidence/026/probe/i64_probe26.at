@@ -1,0 +1,6 @@
+fn main() {
+    var ss List<str> = ["aa", "bb", "cc"]
+    var labels List<str> = []
+    labels.push(ss[2])
+    print("PUSH-plain done")
+}

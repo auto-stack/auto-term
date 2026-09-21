@@ -1,0 +1,12 @@
+﻿t=5s RESP=True CPU=10.6s
+t=10s RESP=True CPU=12.6s
+t=15s RESP=True CPU=14.5s
+t=20s RESP=True CPU=16.9s
+t=25s RESP=True CPU=18.8s
+t=30s RESP=True CPU=21.3s
+t=35s RESP=True CPU=23.8s
+t=40s RESP=True CPU=25.4s
+t=46s RESP=True CPU=28.1s
+t=51s RESP=True CPU=30.2s
+t=56s RESP=True CPU=32.5s
+t=61s RESP=True CPU=34.5s

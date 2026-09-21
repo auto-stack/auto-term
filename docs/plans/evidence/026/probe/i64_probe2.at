@@ -1,0 +1,29 @@
+// VM i64 缺陷面分解:a) i64 var 算术 b) i64 比较 c) List<int>[i64] d) i64 var 字面初始化
+fn main() {
+    var ns List<int> = [10, 20, 30, 40, 50, 60]
+    var i i64 = 0
+    print("d lit=" + i.str())
+    var ntabs i64 = 3
+    var count int = 0
+    loop {
+        if i >= ntabs {
+            break
+        }
+        count = count + 1
+        i = i + 1
+    }
+    print("a/b loop count=" + count.str())
+    var b1 i64 = 2
+    var t i64 = ns[b1]
+    print("c index=" + t.str())
+    var sum i64 = 0
+    var j i64 = 0
+    loop {
+        if j >= 3 {
+            break
+        }
+        sum = sum + ns[j]
+        j = j + 1
+    }
+    print("mix sum=" + sum.str())
+}

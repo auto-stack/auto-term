@@ -1,0 +1,13 @@
+fn main() {
+    var z i64 = 0
+    var i i64 = 0
+    loop {
+        if i >= 3 {
+            break
+        }
+        z = z + 1
+        print("iter i=" + i.str() + " z=" + z.str())
+        i = i + 1
+    }
+    print("final z=" + z.str() + " i=" + i.str())
+}

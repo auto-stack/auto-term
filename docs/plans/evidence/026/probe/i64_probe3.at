@@ -1,0 +1,19 @@
+fn main() {
+    var ns List<int> = [10, 20, 30, 40, 50, 60]
+    var b1 i64 = 2
+    var t i64 = ns[b1]
+    if t == 30 {
+        print("EQ30 ok")
+    } else {
+        print("NE30")
+    }
+    var t2 int = ns[b1]
+    if t2 == 30 {
+        print("EQ30-intvar ok")
+    }
+    var b2 int = 2
+    var t3 i64 = ns[b2]
+    if t3 == 30 {
+        print("EQ30-intidx ok")
+    }
+}

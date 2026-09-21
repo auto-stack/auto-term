@@ -1,0 +1,10 @@
+fn main() {
+    var i i64 = 0
+    loop {
+        if i >= 3 {
+            break
+        }
+        i = i + 1
+    }
+    print("done-noprint")
+}

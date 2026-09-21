@@ -1,0 +1,8 @@
+fn main() {
+    var j i64 = 0
+    var one i64 = 1
+    j = j + one
+    if j == 1 {
+        print("I2 i64rhs OK")
+    }
+}

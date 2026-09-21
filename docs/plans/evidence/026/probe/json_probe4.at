@@ -1,0 +1,39 @@
+use auto.json
+
+fn main() {
+    var s str = "{\"ver\":7,\"win_w\":802,\"tabs\":[{\"id\":1,\"active\":1,\"title\":\"shell 1\"},{\"id\":2,\"active\":0,\"title\":\"t2\"}],\"panes\":[{\"p\":1,\"c\":100,\"l\":[\"line1\",\"l2\"]}]}";
+    var v = json.parse(s)
+    var ver int = v.ver
+    var ww int = v.win_w
+    print("ver=" + ver.str() + " win_w=" + ww.str())
+    var tabs = v.tabs
+    var n int = tabs.len()
+    print("tabs.len=" + n.str())
+    var i int = 0
+    loop {
+        if i >= n { break }
+        var t = tabs.get(i)
+        var tid int = t.id
+        var act int = t.active
+        var ttl str = t.title
+        print("tab[" + i.str() + "] id=" + tid.str() + " act=" + act.str() + " title=" + ttl)
+        i = i + 1
+    }
+    var panes = v.panes
+    var pn int = panes.len()
+    print("panes.len=" + pn.str())
+    if pn > 0 {
+        var p0 = panes.get(0)
+        var pc int = p0.c
+        var lines = p0.l
+        var ln int = lines.len()
+        print("pane0 c=" + pc.str() + " lines=" + ln.str())
+        var j int = 0
+        loop {
+            if j >= ln { break }
+            var l str = lines.get(j)
+            print("line[" + j.str() + "]=" + l)
+            j = j + 1
+        }
+    }
+}

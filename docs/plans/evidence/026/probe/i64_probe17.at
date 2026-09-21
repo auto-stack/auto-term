@@ -1,0 +1,12 @@
+fn main() {
+    var j i64 = 0
+    loop {
+        if j >= 1 {
+            break
+        }
+        j = j + 1
+    }
+    if j == 1 {
+        print("LOOP1 OK")
+    }
+}

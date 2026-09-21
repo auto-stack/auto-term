@@ -1,0 +1,7 @@
+fn main() {
+    var j i64 = 0
+    j = 5
+    if j == 5 {
+        print("A1 const-asn OK")
+    }
+}

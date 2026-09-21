@@ -1,0 +1,14 @@
+fn main() {
+    var i i64 = 0
+    var one i64 = 1
+    var k i64 = 1 + i
+    if k == 1 {
+        print("ADD1 OK")
+    }
+    var ss List<str> = ["aa", "bb"]
+    var w str = ss[k]
+    print("IDX " + w)
+    var n2 i64 = 1 + i
+    var w2 str = ss[n2]
+    print("IDX2 " + w2)
+}

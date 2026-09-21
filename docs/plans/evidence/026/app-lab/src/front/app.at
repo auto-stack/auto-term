@@ -1,0 +1,882 @@
+// app src/front/app.at — AutoTerm 标准 AutoUI 前端(PLAN-013 T5;
+// 014 直键入收口;017 at-app→app 置换;PLAN-019 可见多终端 UI;
+// PLAN-020 rev2 矩形投影 N 槽视图)
+//
+// PLAN-020(T-02,§9 rev2 勘定):布局消费从槽位 if 枚举升级为**矩形
+// 投影静态 N 槽**——back 对活动 Tab 可见子树 BFS 出 pane 槽(1..6,
+// ‰)与 divider 槽(7..11);本视图每槽一个 absolute 浮层(px 类几何,
+// 模型持内容区 px = 窗口 client − Tab 条高),terminal 按槽动态键绑定
+// (014 可用空间反推在 px 容器内闭合);分隔条 = mouse-area 薄条
+// (onmousedown 记分支)+ 拖拽中全幅捕获层(coords "1000x1000" 归一
+// ‰,onmousemove 直喂 back mux_resize_branch,onmouseup 落定)——
+// 磁吸/钳位在 back 单一真相源。捷径表仍单槽挂载(slot1;019 窗口
+// 全局语义去重惯例)。handler 全内联(019 惯例,widget 内 fn 无 UI 先例)。
+//
+// 几何常量:tabH = Tab 条行高(逻辑 px;实机标定,resize 免疫——
+// 逻辑 px 不随 DPI 缩放)。
+
+use back.api
+
+widget App {
+    msg { Init, Tick, KeyIn, Menu, TabActivate(int), TabClose(int), NewTab, NewTabProfile(int), ProfileMenu, Split(int), Zoom, CloseFocusPane, SchemeToggle, Shortcut(int), Press(int), Drag(float, float), Drop }
+
+    model {
+        var cols int = 100
+        var rows int = 30
+        // Tab 条数据(tick 刷新;活动 Tab 标签带 "● " 前缀)
+        var tab_ids List<int> = []
+        var tab_labels List<str> = []
+        // scheme(0=classic-dark 1=light;按钮/快捷键循环)
+        var scheme int = 0
+        // ── 矩形投影槽面(PLAN-020;tick 从 rect-* getters 刷新)──
+        // 窗口 client 逻辑 px 与内容区高(Tab 条高恒定扣除)
+        var clientW int = 802
+        var clientH int = 450
+        var tabH int = 40
+        // PLAN-024:底部状态栏高(窗框圆角承载层——pane 全方角,左右下
+        // 圆角由状态栏 rounded-b-2xl 承担,分屏拓扑无关;编辑器同款)
+        var statusH int = 24
+        // pane 槽 1..6:存在/键/px 矩形/网格/行快照/光标
+        var slot1 int = 0
+        var slot2 int = 0
+        var slot3 int = 0
+        var slot4 int = 0
+        var slot5 int = 0
+        var slot6 int = 0
+        var key1 str = "pane-1"
+        var key2 str = ""
+        var key3 str = ""
+        var key4 str = ""
+        var key5 str = ""
+        var key6 str = ""
+        var x1 int = 0
+        var x2 int = 0
+        var x3 int = 0
+        var x4 int = 0
+        var x5 int = 0
+        var x6 int = 0
+        var y1 int = 0
+        var y2 int = 0
+        var y3 int = 0
+        var y4 int = 0
+        var y5 int = 0
+        var y6 int = 0
+        var w1 int = 802
+        var w2 int = 0
+        var w3 int = 0
+        var w4 int = 0
+        var w5 int = 0
+        var w6 int = 0
+        var h1 int = 450
+        var h2 int = 0
+        var h3 int = 0
+        var h4 int = 0
+        var h5 int = 0
+        var h6 int = 0
+        var lines1 List<str> = []
+        var lines2 List<str> = []
+        var lines3 List<str> = []
+        var lines4 List<str> = []
+        var lines5 List<str> = []
+        var lines6 List<str> = []
+        var g1c int = 100
+        var g1r int = 30
+        var g2c int = 100
+        var g2r int = 30
+        var g3c int = 100
+        var g3r int = 30
+        var g4c int = 100
+        var g4r int = 30
+        var g5c int = 100
+        var g5r int = 30
+        var g6c int = 100
+        var g6r int = 30
+        var cr1 int = 0
+        var cc1 int = 0
+        var cr2 int = 0
+        var cc2 int = 0
+        var cr3 int = 0
+        var cc3 int = 0
+        var cr4 int = 0
+        var cc4 int = 0
+        var cr5 int = 0
+        var cc5 int = 0
+        var cr6 int = 0
+        var cc6 int = 0
+        // divider 槽 1..5(对应 back 槽 7..11):分支/轴/px 矩形
+        var dv1 int = 0
+        var dv2 int = 0
+        var dv3 int = 0
+        var dv4 int = 0
+        var dv5 int = 0
+        var dA1 int = 0
+        var dA2 int = 0
+        var dA3 int = 0
+        var dA4 int = 0
+        var dA5 int = 0
+        var dX1 int = 0
+        var dX2 int = 0
+        var dX3 int = 0
+        var dX4 int = 0
+        var dX5 int = 0
+        var dY1 int = 0
+        var dY2 int = 0
+        var dY3 int = 0
+        var dY4 int = 0
+        var dY5 int = 0
+        var dW1 int = 0
+        var dW2 int = 0
+        var dW3 int = 0
+        var dW4 int = 0
+        var dW5 int = 0
+        var dH1 int = 0
+        var dH2 int = 0
+        var dH3 int = 0
+        var dH4 int = 0
+        var dH5 int = 0
+        // 拖拽态(Press 记分支,Drop 清)。dragW/H = 捕获层几何(常驻渲染,
+        // 空闲 0x0 不挡点击;拖拽=全幅)——消除"按压后下一帧才出现捕获层"
+        // 的帧差竞速(PLAN-022 T-05 实测:快速拖拽丢移动+丢 Drop,
+        // dragging 卡死 1 → 全屏捕获层吃掉一切输入)。
+        var dragging int = 0
+        var dragBranch int = 0
+        var dragW int = 0
+        var dragH int = 0
+        // 投影版本门(F1):变化才拉完整 rect-*,稳态请求数回落 019 水位
+        var lastVer int = 0 - 1
+        // ── PLAN-025 T-08:profile 菜单面(Init 一次装载;右键 + 开)──
+        var profile_names List<str> = []
+        var profile_menu int = 0
+    }
+
+    timer {
+        // PLAN-025 修正:50ms 节拍(分离轨 api.*=HTTP,16ms 同步往返
+        // 占死 VM 前端 UI 线程=无响应+内存爬升,用户实录);快滚覆盖
+        // 由预取 N=24 承担(模型:50ms 泵 lead ≤15 行 < 24,零空白)。
+        Tick (every_ms: 50)
+    }
+
+    on {
+        .Init -> {
+            api.term_apply_resize()
+            api.get_lines()
+            var n int = api.mux_tab_count()
+            var ids List<int> = []
+            var labels List<str> = []
+            var i int = 0
+            loop {
+                if i >= n {
+                    break
+                }
+                ids.push(api.mux_tab_id_at(i))
+                var lbl str = api.mux_tab_title_at(i)
+                if api.mux_tab_is_active_at(i) == 1 {
+                    lbl = "● " + lbl
+                }
+                labels.push(lbl)
+                i = i + 1
+            }
+            .tab_ids = ids
+            .tab_labels = labels
+            .clientW = api.mux_window_width()
+            .clientH = api.mux_window_height()
+            .slot1 = api.mux_rect_kind(1)
+            var p1 int = api.mux_rect_pane(1)
+            .key1 = api.mux_rect_key(1)
+            .x1 = api.mux_rect_x(1) * .clientW / 1000
+            .y1 = api.mux_rect_y(1) * (.clientH - .tabH - .statusH) / 1000
+            .w1 = api.mux_rect_w(1) * .clientW / 1000
+            .h1 = api.mux_rect_h(1) * (.clientH - .tabH - .statusH) / 1000
+            .g1c = api.mux_pane_cols(p1)
+            .g1r = api.mux_pane_rows(p1)
+            .lines1 = api.mux_pane_lines(p1)
+            .cr1 = api.mux_pane_cursor_row(p1)
+            .cc1 = api.mux_pane_cursor_col(p1)
+            .slot2 = api.mux_rect_kind(2)
+            .key2 = api.mux_rect_key(2)
+            .x2 = api.mux_rect_x(2) * .clientW / 1000
+            .y2 = api.mux_rect_y(2) * (.clientH - .tabH - .statusH) / 1000
+            .w2 = api.mux_rect_w(2) * .clientW / 1000
+            .h2 = api.mux_rect_h(2) * (.clientH - .tabH - .statusH) / 1000
+            .slot3 = api.mux_rect_kind(3)
+            .key3 = api.mux_rect_key(3)
+            .slot4 = api.mux_rect_kind(4)
+            .key4 = api.mux_rect_key(4)
+            .slot5 = api.mux_rect_kind(5)
+            .key5 = api.mux_rect_key(5)
+            .slot6 = api.mux_rect_kind(6)
+            .key6 = api.mux_rect_key(6)
+            .lastVer = api.mux_layout_version()
+            .cols = api.term_cols()
+            .rows = api.term_rows()
+            // PLAN-025 T-08:profile 名单一次装载(空配置 = 空菜单,
+            // 右键 + 仍可用——default 建_TAB回落缺省 shell)。
+            .profile_names = api.term_profile_names()
+        }
+        .Tick -> {
+            api.term_apply_resize()
+            api.get_lines()
+            var n int = api.mux_tab_count()
+            var ids List<int> = []
+            var labels List<str> = []
+            var i int = 0
+            loop {
+                if i >= n {
+                    break
+                }
+                ids.push(api.mux_tab_id_at(i))
+                var lbl str = api.mux_tab_title_at(i)
+                if api.mux_tab_is_active_at(i) == 1 {
+                    lbl = "● " + lbl
+                }
+                labels.push(lbl)
+                i = i + 1
+            }
+            .tab_ids = ids
+            .tab_labels = labels
+            // ── F1 版本门:结构未变且窗口尺寸未变则跳过完整 rect 拉取
+            // (稳态 ~019 水位);窗口 resize 不改版本号,须单独触发 ──
+            var ver int = api.mux_layout_version()
+            var nw int = api.mux_window_width()
+            var nh int = api.mux_window_height()
+            var cw int = .clientW
+            var ch int = .clientH - .tabH - .statusH
+            var geomChanged int = 0
+            if ver != .lastVer {
+                geomChanged = 1
+            }
+            if nw != .clientW {
+                geomChanged = 1
+            }
+            if nh != .clientH {
+                geomChanged = 1
+            }
+            if geomChanged == 1 {
+                .clientW = nw
+                .clientH = nh
+                cw = nw
+                ch = nh - .tabH
+            }
+            // ── pane 槽 1..6:存在/键/px 矩形/网格/行快照/光标 ──
+            if geomChanged == 1 {
+            .slot1 = api.mux_rect_kind(1)
+            var p1 int = api.mux_rect_pane(1)
+            .key1 = api.mux_rect_key(1)
+            .x1 = api.mux_rect_x(1) * cw / 1000
+            .y1 = api.mux_rect_y(1) * ch / 1000
+            .w1 = api.mux_rect_w(1) * cw / 1000
+            .h1 = api.mux_rect_h(1) * ch / 1000
+            .g1c = api.mux_pane_cols(p1)
+            .g1r = api.mux_pane_rows(p1)
+            .lines1 = api.mux_pane_lines(p1)
+            .cr1 = api.mux_pane_cursor_row(p1)
+            .cc1 = api.mux_pane_cursor_col(p1)
+            .slot2 = api.mux_rect_kind(2)
+            var p2 int = api.mux_rect_pane(2)
+            .key2 = api.mux_rect_key(2)
+            .x2 = api.mux_rect_x(2) * cw / 1000
+            .y2 = api.mux_rect_y(2) * ch / 1000
+            .w2 = api.mux_rect_w(2) * cw / 1000
+            .h2 = api.mux_rect_h(2) * ch / 1000
+            .g2c = api.mux_pane_cols(p2)
+            .g2r = api.mux_pane_rows(p2)
+            .lines2 = api.mux_pane_lines(p2)
+            .cr2 = api.mux_pane_cursor_row(p2)
+            .cc2 = api.mux_pane_cursor_col(p2)
+            .slot3 = api.mux_rect_kind(3)
+            var p3 int = api.mux_rect_pane(3)
+            .key3 = api.mux_rect_key(3)
+            .x3 = api.mux_rect_x(3) * cw / 1000
+            .y3 = api.mux_rect_y(3) * ch / 1000
+            .w3 = api.mux_rect_w(3) * cw / 1000
+            .h3 = api.mux_rect_h(3) * ch / 1000
+            .g3c = api.mux_pane_cols(p3)
+            .g3r = api.mux_pane_rows(p3)
+            .lines3 = api.mux_pane_lines(p3)
+            .cr3 = api.mux_pane_cursor_row(p3)
+            .cc3 = api.mux_pane_cursor_col(p3)
+            .slot4 = api.mux_rect_kind(4)
+            var p4 int = api.mux_rect_pane(4)
+            .key4 = api.mux_rect_key(4)
+            .x4 = api.mux_rect_x(4) * cw / 1000
+            .y4 = api.mux_rect_y(4) * ch / 1000
+            .w4 = api.mux_rect_w(4) * cw / 1000
+            .h4 = api.mux_rect_h(4) * ch / 1000
+            .g4c = api.mux_pane_cols(p4)
+            .g4r = api.mux_pane_rows(p4)
+            .lines4 = api.mux_pane_lines(p4)
+            .cr4 = api.mux_pane_cursor_row(p4)
+            .cc4 = api.mux_pane_cursor_col(p4)
+            .slot5 = api.mux_rect_kind(5)
+            var p5 int = api.mux_rect_pane(5)
+            .key5 = api.mux_rect_key(5)
+            .x5 = api.mux_rect_x(5) * cw / 1000
+            .y5 = api.mux_rect_y(5) * ch / 1000
+            .w5 = api.mux_rect_w(5) * cw / 1000
+            .h5 = api.mux_rect_h(5) * ch / 1000
+            .g5c = api.mux_pane_cols(p5)
+            .g5r = api.mux_pane_rows(p5)
+            .lines5 = api.mux_pane_lines(p5)
+            .cr5 = api.mux_pane_cursor_row(p5)
+            .cc5 = api.mux_pane_cursor_col(p5)
+            .slot6 = api.mux_rect_kind(6)
+            var p6 int = api.mux_rect_pane(6)
+            .key6 = api.mux_rect_key(6)
+            .x6 = api.mux_rect_x(6) * cw / 1000
+            .y6 = api.mux_rect_y(6) * ch / 1000
+            .w6 = api.mux_rect_w(6) * cw / 1000
+            .h6 = api.mux_rect_h(6) * ch / 1000
+            .g6c = api.mux_pane_cols(p6)
+            .g6r = api.mux_pane_rows(p6)
+            .lines6 = api.mux_pane_lines(p6)
+            .cr6 = api.mux_pane_cursor_row(p6)
+            .cc6 = api.mux_pane_cursor_col(p6)
+            // ── divider 槽(back 槽 7..11)──
+            .dv1 = api.mux_rect_branch(7)
+            .dA1 = api.mux_rect_axis(7)
+            .dX1 = api.mux_rect_x(7) * cw / 1000
+            .dY1 = api.mux_rect_y(7) * ch / 1000
+            .dW1 = api.mux_rect_w(7) * cw / 1000
+            .dH1 = api.mux_rect_h(7) * ch / 1000
+            .dv2 = api.mux_rect_branch(8)
+            .dA2 = api.mux_rect_axis(8)
+            .dX2 = api.mux_rect_x(8) * cw / 1000
+            .dY2 = api.mux_rect_y(8) * ch / 1000
+            .dW2 = api.mux_rect_w(8) * cw / 1000
+            .dH2 = api.mux_rect_h(8) * ch / 1000
+            .dv3 = api.mux_rect_branch(9)
+            .dA3 = api.mux_rect_axis(9)
+            .dX3 = api.mux_rect_x(9) * cw / 1000
+            .dY3 = api.mux_rect_y(9) * ch / 1000
+            .dW3 = api.mux_rect_w(9) * cw / 1000
+            .dH3 = api.mux_rect_h(9) * ch / 1000
+            .dv4 = api.mux_rect_branch(10)
+            .dA4 = api.mux_rect_axis(10)
+            .dX4 = api.mux_rect_x(10) * cw / 1000
+            .dY4 = api.mux_rect_y(10) * ch / 1000
+            .dW4 = api.mux_rect_w(10) * cw / 1000
+            .dH4 = api.mux_rect_h(10) * ch / 1000
+            .dv5 = api.mux_rect_branch(11)
+            .dA5 = api.mux_rect_axis(11)
+            .dX5 = api.mux_rect_x(11) * cw / 1000
+            .dY5 = api.mux_rect_y(11) * ch / 1000
+            .dW5 = api.mux_rect_w(11) * cw / 1000
+            .dH5 = api.mux_rect_h(11) * ch / 1000
+            .lastVer = ver
+            }
+            // 行快照/光标每拍刷新(活输出);网格/矩形仅在几何变化时更新
+            var q1 int = api.mux_rect_pane(1)
+            if .slot1 == 1 {
+                .lines1 = api.mux_pane_lines(q1)
+                .cr1 = api.mux_pane_cursor_row(q1)
+                .cc1 = api.mux_pane_cursor_col(q1)
+                .g1c = api.mux_pane_cols(q1)
+                .g1r = api.mux_pane_rows(q1)
+            }
+            var q2 int = api.mux_rect_pane(2)
+            if .slot2 == 1 {
+                .lines2 = api.mux_pane_lines(q2)
+                .cr2 = api.mux_pane_cursor_row(q2)
+                .cc2 = api.mux_pane_cursor_col(q2)
+                .g2c = api.mux_pane_cols(q2)
+                .g2r = api.mux_pane_rows(q2)
+            }
+            var q3 int = api.mux_rect_pane(3)
+            if .slot3 == 1 {
+                .lines3 = api.mux_pane_lines(q3)
+                .cr3 = api.mux_pane_cursor_row(q3)
+                .cc3 = api.mux_pane_cursor_col(q3)
+                .g3c = api.mux_pane_cols(q3)
+                .g3r = api.mux_pane_rows(q3)
+            }
+            var q4 int = api.mux_rect_pane(4)
+            if .slot4 == 1 {
+                .lines4 = api.mux_pane_lines(q4)
+                .cr4 = api.mux_pane_cursor_row(q4)
+                .cc4 = api.mux_pane_cursor_col(q4)
+                .g4c = api.mux_pane_cols(q4)
+                .g4r = api.mux_pane_rows(q4)
+            }
+            var q5 int = api.mux_rect_pane(5)
+            if .slot5 == 1 {
+                .lines5 = api.mux_pane_lines(q5)
+                .cr5 = api.mux_pane_cursor_row(q5)
+                .cc5 = api.mux_pane_cursor_col(q5)
+                .g5c = api.mux_pane_cols(q5)
+                .g5r = api.mux_pane_rows(q5)
+            }
+            var q6 int = api.mux_rect_pane(6)
+            if .slot6 == 1 {
+                .lines6 = api.mux_pane_lines(q6)
+                .cr6 = api.mux_pane_cursor_row(q6)
+                .cc6 = api.mux_pane_cursor_col(q6)
+                .g6c = api.mux_pane_cols(q6)
+                .g6r = api.mux_pane_rows(q6)
+            }
+            .cols = api.term_cols()
+            .rows = api.term_rows()
+        }
+        .KeyIn -> {
+            api.term_pump_input()
+            var p1 int = api.mux_rect_pane(1)
+            .lines1 = api.mux_pane_lines(p1)
+            .cr1 = api.mux_pane_cursor_row(p1)
+            .cc1 = api.mux_pane_cursor_col(p1)
+            var p2 int = api.mux_rect_pane(2)
+            .lines2 = api.mux_pane_lines(p2)
+            .cr2 = api.mux_pane_cursor_row(p2)
+            .cc2 = api.mux_pane_cursor_col(p2)
+            var p3 int = api.mux_rect_pane(3)
+            .lines3 = api.mux_pane_lines(p3)
+            .cr3 = api.mux_pane_cursor_row(p3)
+            .cc3 = api.mux_pane_cursor_col(p3)
+            var p4 int = api.mux_rect_pane(4)
+            .lines4 = api.mux_pane_lines(p4)
+            .cr4 = api.mux_pane_cursor_row(p4)
+            .cc4 = api.mux_pane_cursor_col(p4)
+            var p5 int = api.mux_rect_pane(5)
+            .lines5 = api.mux_pane_lines(p5)
+            .cr5 = api.mux_pane_cursor_row(p5)
+            .cc5 = api.mux_pane_cursor_col(p5)
+            var p6 int = api.mux_rect_pane(6)
+            .lines6 = api.mux_pane_lines(p6)
+            .cr6 = api.mux_pane_cursor_row(p6)
+            .cc6 = api.mux_pane_cursor_col(p6)
+        }
+        // PLAN-015:右键菜单 Interrupt 项(载荷 3)→ term_interrupt()。
+        .Menu -> {
+            var item int = api.term_menu_take()
+            if item == 3 {
+                api.term_interrupt()
+            }
+        }
+        .TabActivate(i) -> {
+            var tid int = api.mux_tab_id_at(i)
+            api.mux_enqueue(5, tid)
+        }
+        .TabClose(i) -> {
+            var tid int = api.mux_tab_id_at(i)
+            api.mux_enqueue(6, tid)
+        }
+        .NewTab -> {
+            api.mux_enqueue(1, 0)
+        }
+        // PLAN-025 T-08:profile 菜单选型建_TAB(槽位 1 起编码入队;
+        // 建后收菜单)。
+        .NewTabProfile(i) -> {
+            api.mux_enqueue(1, i + 1)
+            .profile_menu = 0
+        }
+        // 右键 + 开/收 profile 菜单(与 Tab 条右键关闭同形态)。
+        .ProfileMenu -> {
+            if .profile_menu == 1 {
+                .profile_menu = 0
+            } else {
+                .profile_menu = 1
+            }
+        }
+        // 分屏(ax 0=纵向堆叠 col 1=横向并排 row;深度不限,MAX_PANES 帽)。
+        // 注:参数名不可叫 axis——与模型字段同名时 a2r 处理器体把它
+        // 译成 self.axis(载荷被遮蔽,实测点按钮分出 axis=-1 的屏)。
+        .Split(ax) -> {
+            api.mux_enqueue(2, ax)
+        }
+        .Zoom -> {
+            var fid int = api.mux_focus_id()
+            api.mux_enqueue(4, fid)
+        }
+        // 手动测试面:关焦点 Pane(=Ctrl+Shift+W 等价;关末 Pane 转关 Tab)
+        .CloseFocusPane -> {
+            var fid int = api.mux_focus_id()
+            api.mux_enqueue(3, fid)
+        }
+        .SchemeToggle -> {
+            if .scheme == 1 {
+                .scheme = 0
+            } else {
+                .scheme = 1
+            }
+        }
+        // WT 风格快捷键分派(§5 D5 表;019 窗口全局语义):
+        // 1 新Tab / 2 关Pane / 3 横分 / 4 纵分 / 5 zoom /
+        // 6·7 前 Tab(C-S-Tab、C-S-←)/ 8 后 Tab(C-S-→)/ 9 scheme。
+        .Shortcut(n) -> {
+            if n == 1 {
+                api.mux_enqueue(1, 0)
+            }
+            if n == 2 {
+                var fid int = api.mux_focus_id()
+                api.mux_enqueue(3, fid)
+            }
+            if n == 3 {
+                api.mux_enqueue(2, 1)
+            }
+            if n == 4 {
+                api.mux_enqueue(2, 0)
+            }
+            if n == 5 {
+                var fid int = api.mux_focus_id()
+                api.mux_enqueue(4, fid)
+            }
+            if n == 6 {
+                var cnt int = api.mux_tab_count()
+                var cur int = 0
+                var i int = 0
+                loop {
+                    if i >= cnt {
+                        break
+                    }
+                    if api.mux_tab_is_active_at(i) == 1 {
+                        cur = i
+                    }
+                    i = i + 1
+                }
+                var prv int = cur - 1
+                if prv < 0 {
+                    prv = cnt - 1
+                }
+                var ptid int = api.mux_tab_id_at(prv)
+                api.mux_enqueue(5, ptid)
+            }
+            if n == 7 {
+                var cnt2 int = api.mux_tab_count()
+                var cur2 int = 0
+                var i2 int = 0
+                loop {
+                    if i2 >= cnt2 {
+                        break
+                    }
+                    if api.mux_tab_is_active_at(i2) == 1 {
+                        cur2 = i2
+                    }
+                    i2 = i2 + 1
+                }
+                var prv2 int = cur2 - 1
+                if prv2 < 0 {
+                    prv2 = cnt2 - 1
+                }
+                var ptid2 int = api.mux_tab_id_at(prv2)
+                api.mux_enqueue(5, ptid2)
+            }
+            if n == 8 {
+                var cnt3 int = api.mux_tab_count()
+                var cur3 int = 0
+                var i3 int = 0
+                loop {
+                    if i3 >= cnt3 {
+                        break
+                    }
+                    if api.mux_tab_is_active_at(i3) == 1 {
+                        cur3 = i3
+                    }
+                    i3 = i3 + 1
+                }
+                var nxt int = cur3 + 1
+                if nxt >= cnt3 {
+                    nxt = 0
+                }
+                var ntid int = api.mux_tab_id_at(nxt)
+                api.mux_enqueue(5, ntid)
+            }
+            if n == 9 {
+                if .scheme == 1 {
+                    .scheme = 0
+                } else {
+                    .scheme = 1
+                }
+            }
+            // 10-13 方向切 pane(Alt+WASD;PLAN-022 T-06 用户指令)。
+            if n == 10 {
+                api.mux_focus_dir(0)
+            }
+            if n == 11 {
+                api.mux_focus_dir(1)
+            }
+            if n == 12 {
+                api.mux_focus_dir(2)
+            }
+            if n == 13 {
+                api.mux_focus_dir(3)
+            }
+        }
+        // 分隔条交互(PLAN-020 D3/D4):k = back 槽号 7..11;按住查分支
+        // 挂捕获层;捕获层 onmousemove(coords "1000x1000")把内容区 ‰
+        // 坐标直喂 back mux_resize_branch(轴判/换算/磁吸/钳位全在 back
+        // 落定);onmouseup 落定撤层。to_int 为 499 M3 在库先例。
+        .Press(k) -> {
+            var b int = api.mux_rect_branch(k)
+            .dragBranch = b
+            .dragging = 1
+            .dragW = .clientW
+            .dragH = .clientH - .tabH - .statusH
+        }
+        .Drag(x, y) -> {
+            api.mux_resize_branch(.dragBranch, x.to_int(), y.to_int())
+        }
+        .Drop -> {
+            .dragging = 0
+            .dragBranch = 0
+            .dragW = 0
+            .dragH = 0
+        }
+    }
+
+    view {
+        col {
+            style: "w-full h-screen bg-background"
+            row {
+                style: "w-full"
+                for i, label in .tab_labels {
+                    button (text: label) {
+                        onclick: .TabActivate(i)
+                        oncontextmenu: .TabClose(i)
+                    }
+                }
+                button (text: "+") {
+                    onclick: .NewTab
+                    oncontextmenu: .ProfileMenu
+                }
+                // PLAN-025 T-08:profile 子菜单(右键 + 展开;选中建_TAB,
+                // ✕ 收起;空配置不渲染)。
+                if .profile_menu == 1 {
+                    for j, pname in .profile_names {
+                        button (text: pname) {
+                            onclick: .NewTabProfile(j)
+                        }
+                    }
+                    button (text: "✕") {
+                        onclick: .ProfileMenu
+                    }
+                }
+                button (text: "横分") {
+                    onclick: .Split(1)
+                }
+                button (text: "竖分") {
+                    onclick: .Split(0)
+                }
+                button (text: "关Pane") {
+                    onclick: .CloseFocusPane
+                }
+                button (text: "Zoom") {
+                    onclick: .Zoom
+                }
+                button (text: "◐") {
+                    onclick: .SchemeToggle
+                }
+            }
+            // 内容区 = 分隔条/槽位的坐标系原点(overlay 锚)
+            div {
+                style: "relative w-full flex-1"
+                div {
+                    style: "w-full h-full bg-background"
+                }
+                if .slot1 == 1 {
+                    div {
+                        style: f"absolute z-10 top-[${.y1}px] left-[${.x1}px] w-[${.w1}px] h-[${.h1}px]"
+                        terminal {
+                            key: .key1
+                            cols: .g1c
+                            rows: .g1r
+                            lines: .lines1
+                            cursor_row: .cr1
+                            cursor_col: .cc1
+                            scheme: .scheme
+                            oninput: .KeyIn
+                            onmenu: .Menu
+                            onkeydown.ctrl.shift.t: .Shortcut(1)
+                            onkeydown.ctrl.shift.w: .Shortcut(2)
+                            onkeydown.ctrl.shift.e: .Shortcut(3)
+                            onkeydown.ctrl.shift.o: .Shortcut(4)
+                            onkeydown.ctrl.shift.z: .Shortcut(5)
+                            onkeydown.ctrl.shift.tab: .Shortcut(6)
+                            onkeydown.ctrl.shift.left: .Shortcut(7)
+                            onkeydown.ctrl.shift.right: .Shortcut(8)
+                            onkeydown.ctrl.shift.k: .Shortcut(9)
+                            onkeydown.alt.w: .Shortcut(10)
+                            onkeydown.alt.s: .Shortcut(11)
+                            onkeydown.alt.a: .Shortcut(12)
+                            onkeydown.alt.d: .Shortcut(13)
+                        }
+                    }
+                }
+                if .slot2 == 1 {
+                    div {
+                        style: f"absolute z-10 top-[${.y2}px] left-[${.x2}px] w-[${.w2}px] h-[${.h2}px]"
+                        terminal {
+                            key: .key2
+                            cols: .g2c
+                            rows: .g2r
+                            lines: .lines2
+                            cursor_row: .cr2
+                            cursor_col: .cc2
+                            scheme: .scheme
+                            oninput: .KeyIn
+                            onmenu: .Menu
+                            onkeydown.alt.w: .Shortcut(10)
+                            onkeydown.alt.s: .Shortcut(11)
+                            onkeydown.alt.a: .Shortcut(12)
+                            onkeydown.alt.d: .Shortcut(13)
+                        }
+                    }
+                }
+                if .slot3 == 1 {
+                    div {
+                        style: f"absolute z-10 top-[${.y3}px] left-[${.x3}px] w-[${.w3}px] h-[${.h3}px]"
+                        terminal {
+                            key: .key3
+                            cols: .g3c
+                            rows: .g3r
+                            lines: .lines3
+                            cursor_row: .cr3
+                            cursor_col: .cc3
+                            scheme: .scheme
+                            oninput: .KeyIn
+                            onmenu: .Menu
+                            onkeydown.alt.w: .Shortcut(10)
+                            onkeydown.alt.s: .Shortcut(11)
+                            onkeydown.alt.a: .Shortcut(12)
+                            onkeydown.alt.d: .Shortcut(13)
+                        }
+                    }
+                }
+                if .slot4 == 1 {
+                    div {
+                        style: f"absolute z-10 top-[${.y4}px] left-[${.x4}px] w-[${.w4}px] h-[${.h4}px]"
+                        terminal {
+                            key: .key4
+                            cols: .g4c
+                            rows: .g4r
+                            lines: .lines4
+                            cursor_row: .cr4
+                            cursor_col: .cc4
+                            scheme: .scheme
+                            oninput: .KeyIn
+                            onmenu: .Menu
+                            onkeydown.alt.w: .Shortcut(10)
+                            onkeydown.alt.s: .Shortcut(11)
+                            onkeydown.alt.a: .Shortcut(12)
+                            onkeydown.alt.d: .Shortcut(13)
+                        }
+                    }
+                }
+                if .slot5 == 1 {
+                    div {
+                        style: f"absolute z-10 top-[${.y5}px] left-[${.x5}px] w-[${.w5}px] h-[${.h5}px]"
+                        terminal {
+                            key: .key5
+                            cols: .g5c
+                            rows: .g5r
+                            lines: .lines5
+                            cursor_row: .cr5
+                            cursor_col: .cc5
+                            scheme: .scheme
+                            oninput: .KeyIn
+                            onmenu: .Menu
+                            onkeydown.alt.w: .Shortcut(10)
+                            onkeydown.alt.s: .Shortcut(11)
+                            onkeydown.alt.a: .Shortcut(12)
+                            onkeydown.alt.d: .Shortcut(13)
+                        }
+                    }
+                }
+                if .slot6 == 1 {
+                    div {
+                        style: f"absolute z-10 top-[${.y6}px] left-[${.x6}px] w-[${.w6}px] h-[${.h6}px]"
+                        terminal {
+                            key: .key6
+                            cols: .g6c
+                            rows: .g6r
+                            lines: .lines6
+                            cursor_row: .cr6
+                            cursor_col: .cc6
+                            scheme: .scheme
+                            oninput: .KeyIn
+                            onmenu: .Menu
+                            onkeydown.alt.w: .Shortcut(10)
+                            onkeydown.alt.s: .Shortcut(11)
+                            onkeydown.alt.a: .Shortcut(12)
+                            onkeydown.alt.d: .Shortcut(13)
+                        }
+                    }
+                }
+                // ── 分隔条薄条(轴 1=竖条 8px 宽;轴 0=横条 8px 高;
+                // 定尺寸 div 承载视觉,mouse-area Fill 子件承载命中)──
+                if .dv1 != 0 {
+                    if .dA1 == 1 {
+                        div {
+                            style: f"absolute z-20 top-[${.dY1}px] left-[${.dX1}px] w-[8px] h-[${.dH1}px] bg-[#8899aa]"
+                            mouse-area (style: "w-full h-full", onmousedown: .Press(7), onmouseup: .Drop) {}
+                        }
+                    } else {
+                        div {
+                            style: f"absolute z-20 top-[${.dY1}px] left-[${.dX1}px] w-[${.dW1}px] h-[8px] bg-[#8899aa]"
+                            mouse-area (style: "w-full h-full", onmousedown: .Press(7), onmouseup: .Drop) {}
+                        }
+                    }
+                }
+                if .dv2 != 0 {
+                    if .dA2 == 1 {
+                        div {
+                            style: f"absolute z-20 top-[${.dY2}px] left-[${.dX2}px] w-[8px] h-[${.dH2}px] bg-[#8899aa]"
+                            mouse-area (style: "w-full h-full", onmousedown: .Press(8), onmouseup: .Drop) {}
+                        }
+                    } else {
+                        div {
+                            style: f"absolute z-20 top-[${.dY2}px] left-[${.dX2}px] w-[${.dW2}px] h-[8px] bg-[#8899aa]"
+                            mouse-area (style: "w-full h-full", onmousedown: .Press(8), onmouseup: .Drop) {}
+                        }
+                    }
+                }
+                if .dv3 != 0 {
+                    if .dA3 == 1 {
+                        div {
+                            style: f"absolute z-20 top-[${.dY3}px] left-[${.dX3}px] w-[8px] h-[${.dH3}px] bg-[#8899aa]"
+                            mouse-area (style: "w-full h-full", onmousedown: .Press(9), onmouseup: .Drop) {}
+                        }
+                    } else {
+                        div {
+                            style: f"absolute z-20 top-[${.dY3}px] left-[${.dX3}px] w-[${.dW3}px] h-[8px] bg-[#8899aa]"
+                            mouse-area (style: "w-full h-full", onmousedown: .Press(9), onmouseup: .Drop) {}
+                        }
+                    }
+                }
+                if .dv4 != 0 {
+                    if .dA4 == 1 {
+                        div {
+                            style: f"absolute z-20 top-[${.dY4}px] left-[${.dX4}px] w-[8px] h-[${.dH4}px] bg-[#8899aa]"
+                            mouse-area (style: "w-full h-full", onmousedown: .Press(10), onmouseup: .Drop) {}
+                        }
+                    } else {
+                        div {
+                            style: f"absolute z-20 top-[${.dY4}px] left-[${.dX4}px] w-[${.dW4}px] h-[8px] bg-[#8899aa]"
+                            mouse-area (style: "w-full h-full", onmousedown: .Press(10), onmouseup: .Drop) {}
+                        }
+                    }
+                }
+                if .dv5 != 0 {
+                    if .dA5 == 1 {
+                        div {
+                            style: f"absolute z-20 top-[${.dY5}px] left-[${.dX5}px] w-[8px] h-[${.dH5}px] bg-[#8899aa]"
+                            mouse-area (style: "w-full h-full", onmousedown: .Press(11), onmouseup: .Drop) {}
+                        }
+                    } else {
+                        div {
+                            style: f"absolute z-20 top-[${.dY5}px] left-[${.dX5}px] w-[${.dW5}px] h-[8px] bg-[#8899aa]"
+                            mouse-area (style: "w-full h-full", onmousedown: .Press(11), onmouseup: .Drop) {}
+                        }
+                    }
+                }
+                mouse-area (coords: "1000x1000", style: f"absolute z-30 top-0 left-0 w-[${.dragW}px] h-[${.dragH}px]", onmousemove: .Drag, onmouseup: .Drop) {}
+            }
+            // ── 底部状态栏(PLAN-024):窗框圆角承载层——pane 槽全方角,
+            // 左右下圆角由本栏 rounded-b-2xl 承担(与虚拟窗框 WIN_RADIUS
+            // 同径),分屏拓扑无关;编辑器状态栏同款。内容 = 焦点 pane
+            // 计数 + 引擎网格几何。
+            row {
+                style: "w-full h-[24px] rounded-b-[15px] bg-[#e9e4d8] px-3 items-center justify-between"
+                text "◉ AutoTerm mux" { style: "text-xs" }
+                text f"${.cols}×${.rows}" { style: "text-xs" }
+            }
+        }
+    }
+}

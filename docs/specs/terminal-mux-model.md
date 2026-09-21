@@ -213,6 +213,35 @@ profile 消费(PLAN-025 SD-03):profile 集合为 **back registry 单源**
 activate-tab;GET:snapshot/cols/rows/focus-key)为 Phase 4 Control
 API 铺地基;**无** socket/CLI/权限分级,不是 Control API。
 
+## Tick/Init 数据面聚合契约(PLAN-026 T-01/T-02,双端点)
+
+split 形态(VM/rust 前端 ↔ back HTTP)的每拍数据面 = **双端点一次拉全**,
+替代逐槽 getter 轮询(025 期实测稳态 22 次/拍、全量臂 +68 次 → **≤4 次/拍**;
+split 形态 VM api.* = 主线程同步忙等,批量化 = 挂起根修,Plan 026):
+
+- `POST /api/mux/tick-nums` → `[]int` **数值面**(db.at `mux_tick_nums`;
+  rects_ready 一次触发,epoch 失效重算至多一次/拍):
+  `[0]ver [1]win_w [2]win_h [3]cols [4]rows [5]ntabs [6]nrects(恒11)
+  [7]npanes`;rect 段 11 槽 × 9(`base=8+(k-1)*9` → +0k +1t +2p +3b
+  +4a +5x +6y +7w +8h;**divider 槽不足 5 垫空全零记录**——前端定长
+  偏移读,实测 Index 69 越界收口);pane 段 npanes × 7(`base=107` →
+  +0s(槽号) +1p +2c +3r +4cr +5cc +6nl)。
+- `POST /api/mux/tick-snapshot` → `[]str` **字符串面**(db.at
+  `mux_tick_snapshot`):`[0]fkey`;tab label 预拼 ×ntabs(活动 "● "
+  前缀已含);rect key ×11(垫空 "");pane 行段(每 pane nl 行**原样**,
+  与 nums pane 段同序——行内容含 "|" 安全,零解析消费)。
+- **指纹门控(020 F1 语义迁移)**:ver+win_w+win_h 三键嵌入响应,前端
+  存量比对——不等才应用布局面(rect/tab 面/pane 网格);行快照/光标
+  每拍应用。判变材料从"3 次探测请求"移入响应内字段(探测请求消灭)。
+- **消费原语纪律**(a2r rust-ui handler 面无 split/to_int/get 转译;
+  026 tmp-probe 实证):前端 handler 消费 = `[i]` 索引 / `.len()` /
+  `.push` / int 算术与比较;数值面元素经 ui_gen 的 List<int> 索引
+  as i32 窄化(auto-lang 侧)与 i32 模型语境对齐。
+- **副作用端点独立保留**:`term_apply_resize`/`get_lines`(泵驱动)
+  不入快照;每拍 = 4 次 HTTP(apply_resize + get_lines + 两读端点)。
+- **不入快照**(Tick/Init 零消费):tick_gate、backlog 族、exited、
+  mux_layout(断言面)、slot_*/zoom_active 兼容保留面。
+
 ## face 记录与并存面
 
 - ffi:16→19(+spawn_ex;+set_palette per-handle / palette_color

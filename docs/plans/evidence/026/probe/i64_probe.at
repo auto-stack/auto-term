@@ -1,0 +1,28 @@
+// rev6 探针:VM 侧 i64 var / List<i64> 索引语义(handler 同款算术)
+fn main() {
+    var ns List<i64> = [1, 2, 3, 107, 200, 5, 6, 1]
+    var ntabs i64 = ns[5]
+    var i i64 = 0
+    loop {
+        if i >= ntabs {
+            break
+        }
+        print("tab " + i.str())
+        i = i + 1
+    }
+    var b1 i64 = 8
+    var t i64 = ns[b1 - 8]
+    print("t=" + t.str())
+    var acc List<str> = []
+    var ss List<str> = ["aa", "bb"]
+    var q i64 = 0
+    var nl i64 = 2
+    loop {
+        if q >= nl {
+            break
+        }
+        acc.push(ss[q] + "")
+        q = q + 1
+    }
+    print("acc.len=" + acc.len().str())
+}

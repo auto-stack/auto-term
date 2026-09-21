@@ -1,0 +1,14 @@
+fn main() {
+    var ss List<str> = ["aa", "bb", "cc"]
+    var ntabs i64 = 2
+    var i i64 = 0
+    var one i64 = 1
+    loop {
+        if i >= ntabs {
+            break
+        }
+        var w str = ss[1 + i]
+        i = i + one
+    }
+    print("NOLIDX done")
+}

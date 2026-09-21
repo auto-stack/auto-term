@@ -1,0 +1,7 @@
+fn main() {
+    var ss List<str> = ["aa", "bb", "cc"]
+    var labels List<str> = []
+    var k i64 = 1
+    labels.push(ss[k] + "")
+    print("PUSHCAT done")
+}

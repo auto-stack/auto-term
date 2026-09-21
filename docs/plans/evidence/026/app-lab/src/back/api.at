@@ -1,0 +1,404 @@
+// app src/back/api.at — #[api] 契约面(PLAN-013 T5;017 at-app→app 置换)
+//
+// 全标量/[]str 面:rust merged(db 吸收委托)、vue split(a2r axum
+// handlers 调 db.rs)、VM/desktop merged(api fn 字节码直调 db)同源。
+// 实现体在 db.at(api.at 仅为契约 + VM 直跑的委托体)。
+// PLAN-018 D7:/api/mux/* 结构操作契约面(为 Phase 4 Control API 铺
+// 地基但**不是** Control API——无 socket/CLI/权限分级)。端点名与
+// db.at 实现同名(merged_db_delegate 同名吸收惯例)。
+
+use db
+
+/// 每拍驱动(几何存 db 侧全局,首调 spawn)。
+#[api(method = "POST", path = "/api/term/tick")]
+pub fn get_lines() []str {
+    return db.get_lines()
+}
+
+/// 泵节拍门(PLAN-025 T-04:满拍 ~48ms 或滚动待排即开;1/0)。
+#[api(method = "POST", path = "/api/term/tick-gate")]
+pub fn tick_gate() int {
+    return db.tick_gate()
+}
+
+/// 宿主 → 子进程一行输入。
+#[api(method = "POST", path = "/api/term/send")]
+pub fn term_send(line str) {
+    db.term_send(line)
+}
+
+/// Ctrl+C 中断。
+#[api(method = "POST", path = "/api/term/interrupt")]
+pub fn term_interrupt() int {
+    return db.term_interrupt()
+}
+
+/// 菜单动作载荷(terminal 右键菜单;PLAN-015):0=Copy 1=Paste
+/// 2=SelectAll 3=Interrupt;-1=无载荷。载荷 3 由前端转 term_interrupt
+/// (vue 形态 terminal 只读,此路由恒 -1——菜单在窗口进程)。
+#[api(method = "POST", path = "/api/term/menu-take")]
+pub fn term_menu_take() int {
+    return db.term_menu_take()
+}
+
+/// 直键入泵:terminal 组件键盘队列 → 引擎裸写(014;载荷不经 HTTP,
+/// vue 形态此路由恒 0——队列在窗口进程)。
+#[api(method = "POST", path = "/api/term/pump")]
+pub fn term_pump_input() int {
+    return db.term_pump_input()
+}
+
+/// 几何随动:应用 widget 的待定 resize(引擎 resize + 几何同步);
+/// 1=已应用 0=无请求。
+#[api(method = "POST", path = "/api/term/apply-resize")]
+pub fn term_apply_resize() int {
+    return db.term_apply_resize()
+}
+
+/// 当前视口几何(apply_resize/ spawn 后同步)。
+#[api(method = "GET", path = "/api/term/cols")]
+pub fn term_cols() int {
+    return db.term_cols()
+}
+
+#[api(method = "GET", path = "/api/term/rows")]
+pub fn term_rows() int {
+    return db.term_rows()
+}
+
+/// 光标格(引擎 feed 采样;未采样为 0)。
+#[api(method = "GET", path = "/api/term/cursor-row")]
+pub fn term_cursor_row() int {
+    return db.term_cursor_row()
+}
+
+#[api(method = "GET", path = "/api/term/cursor-col")]
+pub fn term_cursor_col() int {
+    return db.term_cursor_col()
+}
+
+/// 014 积压采样(tick 驱动;返回本次新报警次数,>0 = 刚发生一次越线)。
+#[api(method = "POST", path = "/api/term/backlog-sample")]
+pub fn term_backlog_sample() int {
+    return db.term_backlog_sample()
+}
+
+/// 014 累计报警次数(进程生命周期内)。
+#[api(method = "GET", path = "/api/term/backlog-alerts-total")]
+pub fn term_backlog_alerts_total() int {
+    return db.term_backlog_alerts_total()
+}
+
+/// 014 当前积压 MB(告警线 2MB;反压上限 8MB)。
+#[api(method = "GET", path = "/api/term/backlog-pending-mb")]
+pub fn term_backlog_pending_mb() int {
+    return db.term_backlog_pending_mb()
+}
+
+/// 014 reader 反压暂停中(1 = 积压超上限已暂停读取,0 = 正常)。
+#[api(method = "GET", path = "/api/term/backlog-paused")]
+pub fn term_backlog_paused() int {
+    return db.term_backlog_paused()
+}
+
+/// 014 累计丢帧块数(环形缓冲逐出;0 = 未丢)。
+#[api(method = "GET", path = "/api/term/backlog-dropped")]
+pub fn term_backlog_dropped() int {
+    return db.term_backlog_dropped()
+}
+
+/// 子进程退出态。
+#[api(method = "GET", path = "/api/term/exited")]
+pub fn term_exited() bool {
+    return db.term_exited()
+}
+
+// ── PLAN-018 D7:MuxCore 结构操作(/api/mux/*;Action 单入口的契约面)──
+
+/// 分屏:活动焦点 Pane 叶位替换为分支(axis 0=纵向 1=横向;深度不限)。
+/// 返回新 Pane id(0 = 失败;-2 = 超过 MAX_PANES 槽位帽,PLAN-020)。
+#[api(method = "POST", path = "/api/mux/split")]
+pub fn mux_split(axis int) int {
+    return db.mux_split(axis)
+}
+
+/// 关 Pane(兄弟收编父位;末 Pane = 关其 Tab,PLAN-019 D1)。
+/// 1=已关(含转关 Tab)0=末 Tab 拒绝 -1=未找到。
+#[api(method = "POST", path = "/api/mux/close-pane")]
+pub fn mux_close_pane(pane_id int) int {
+    return db.mux_close_pane(pane_id)
+}
+
+/// 焦点切换。1=成功 -1=未找到。
+#[api(method = "POST", path = "/api/mux/focus")]
+pub fn mux_focus(pane_id int) int {
+    return db.mux_focus(pane_id)
+}
+
+/// 方向聚焦导航(0 上 1 下 2 左 3 右;Alt+WASD 消费)。
+#[api(method = "POST", path = "/api/mux/focus-dir")]
+pub fn mux_focus_dir(d int) int {
+    return db.mux_focus_dir(d)
+}
+
+/// 缩放开关。1=缩放中 0=取消 -1=未找到。
+#[api(method = "POST", path = "/api/mux/zoom")]
+pub fn mux_zoom(pane_id int) int {
+    return db.mux_zoom(pane_id)
+}
+
+/// 新 Tab(自动激活;profile 名空 = default_profile,未命中回落缺省
+/// shell)。返回 tab id。
+#[api(method = "POST", path = "/api/mux/new-tab")]
+pub fn mux_new_tab(profile str) int {
+    return db.mux_new_tab(profile)
+}
+
+/// profile 表("name|commandline|cwd" 记录数组;PLAN-025 契约面,
+/// VM/desktop 臂同契约后补)。
+#[api(method = "GET", path = "/api/term/profiles")]
+pub fn term_profiles() []str {
+    return db.term_profiles()
+}
+
+/// profile 名字表(声明序;前端菜单面)。
+#[api(method = "GET", path = "/api/term/profile-names")]
+pub fn term_profile_names() []str {
+    return db.term_profile_names()
+}
+
+/// 关 Tab。1=已关 0=末 Tab 拒绝 -1=未找到。
+#[api(method = "POST", path = "/api/mux/close-tab")]
+pub fn mux_close_tab(tab_id int) int {
+    return db.mux_close_tab(tab_id)
+}
+
+/// 激活 Tab。1=成功 -1=未找到。
+#[api(method = "POST", path = "/api/mux/activate-tab")]
+pub fn mux_activate_tab(tab_id int) int {
+    return db.mux_activate_tab(tab_id)
+}
+
+/// 结构快照(JSON 串;结构断言/观测面)。
+#[api(method = "GET", path = "/api/mux/snapshot")]
+pub fn mux_snapshot() str {
+    return db.mux_snapshot()
+}
+
+/// 焦点 Pane 视口宽(db 同步值)。
+#[api(method = "GET", path = "/api/mux/cols")]
+pub fn mux_cols() int {
+    return db.mux_cols()
+}
+
+/// 焦点 Pane 视口高(db 同步值)。
+#[api(method = "GET", path = "/api/mux/rows")]
+pub fn mux_rows() int {
+    return db.mux_rows()
+}
+
+/// 焦点 Pane 模型 key(pane-<id>;"" = 无)。
+#[api(method = "GET", path = "/api/mux/focus-key")]
+pub fn mux_focus_key() str {
+    return db.mux_focus_key()
+}
+
+// ── PLAN-019 D2:可见多终端观测/消费面(/api/mux/* 扩建)──────────
+// 标量 getter 族 = rust/vm 前端 tick 消费面(全标量/[]str 契约惯例);
+// 记录面 mux_tabs/mux_layout = vue/HTTP 消费与断言面。
+
+/// Tab 表记录面("id|active|title" 记录数组;vue/HTTP 断言面)。
+#[api(method = "GET", path = "/api/mux/tabs")]
+pub fn mux_tabs() []str {
+    return db.mux_tabs()
+}
+
+/// Tab 数。
+#[api(method = "GET", path = "/api/mux/tab-count")]
+pub fn mux_tab_count() int {
+    return db.mux_tab_count()
+}
+
+/// 第 i 个 Tab 的 id(0 = 越界)。
+#[api(method = "GET", path = "/api/mux/tab-id-at")]
+pub fn mux_tab_id_at(i int) int {
+    return db.mux_tab_id_at(i)
+}
+
+/// 第 i 个 Tab 是否活动(1/0)。
+#[api(method = "GET", path = "/api/mux/tab-is-active-at")]
+pub fn mux_tab_is_active_at(i int) int {
+    return db.mux_tab_is_active_at(i)
+}
+
+/// 第 i 个 Tab 标题(V1 = 序号 + shell 名,静态派生)。
+#[api(method = "GET", path = "/api/mux/tab-title-at")]
+pub fn mux_tab_title_at(i int) str {
+    return db.mux_tab_title_at(i)
+}
+
+/// 每 Pane 行快照(现喂现取;styled 旁路同拍共馈)。
+#[api(method = "POST", path = "/api/mux/pane-lines")]
+pub fn mux_pane_lines(pane_id int) []str {
+    return db.mux_pane_lines(pane_id)
+}
+
+/// 每 Pane 视口几何(pane 表同步值)。
+#[api(method = "GET", path = "/api/mux/pane-cols")]
+pub fn mux_pane_cols(pane_id int) int {
+    return db.mux_pane_cols(pane_id)
+}
+
+#[api(method = "GET", path = "/api/mux/pane-rows")]
+pub fn mux_pane_rows(pane_id int) int {
+    return db.mux_pane_rows(pane_id)
+}
+
+/// 每 Pane 光标格(引擎 feed 采样;未采样为 0)。
+#[api(method = "GET", path = "/api/mux/pane-cursor-row")]
+pub fn mux_pane_cursor_row(pane_id int) int {
+    return db.mux_pane_cursor_row(pane_id)
+}
+
+#[api(method = "GET", path = "/api/mux/pane-cursor-col")]
+pub fn mux_pane_cursor_col(pane_id int) int {
+    return db.mux_pane_cursor_col(pane_id)
+}
+
+/// 当前 Tab 可见 Pane 数(zoom 投影后;T-B ≤2)。
+#[api(method = "GET", path = "/api/mux/visible-pane-count")]
+pub fn mux_visible_pane_count() int {
+    return db.mux_visible_pane_count()
+}
+
+/// 当前 Tab 根分支轴(0=纵向 1=横向;-1 = 无分屏)。
+#[api(method = "GET", path = "/api/mux/split-axis")]
+pub fn mux_split_axis() int {
+    return db.mux_split_axis()
+}
+
+/// 布局槽位投影:slot(1/2) → 可见 Pane id(0 = 该槽无 Pane)。
+#[api(method = "GET", path = "/api/mux/slot-pane-id")]
+pub fn mux_slot_pane_id(slot int) int {
+    return db.mux_slot_pane_id(slot)
+}
+
+/// 布局槽位 → pane 模型 key(视图 terminal 槽动态 key 绑定面)。
+#[api(method = "GET", path = "/api/mux/slot-pane-key")]
+pub fn mux_slot_pane_key(slot int) str {
+    return db.mux_slot_pane_key(slot)
+}
+
+/// 焦点 Pane id(0 = 无;zoom 目标)。
+#[api(method = "GET", path = "/api/mux/focus-id")]
+pub fn mux_focus_id() int {
+    return db.mux_focus_id()
+}
+
+/// 当前 Tab 是否 zoom 中(1/0)。
+#[api(method = "GET", path = "/api/mux/zoom-active")]
+pub fn mux_zoom_active() int {
+    return db.mux_zoom_active()
+}
+
+/// 布局投影 DTO(当前 Tab;JSON 串;断言面)。
+#[api(method = "GET", path = "/api/mux/layout")]
+pub fn mux_layout() str {
+    return db.mux_layout()
+}
+
+/// 用户动作入队(UI 线程安全;引擎操作由 tick 排水执行)。
+#[api(method = "POST", path = "/api/mux/enqueue")]
+pub fn mux_enqueue(code int, arg int) int {
+    return db.mux_enqueue(code, arg)
+}
+
+// ── PLAN-020 D1/D2:矩形投影消费面(/api/mux/rect-*;前端 tick 消费 +
+// curl 断言)────────────────────────────────────────────────────
+// 槽序契约:1..6 = pane 槽(BFS 发现序),7..11 = divider 槽。
+// 全部带参 GET 在 vm 形态有 api 委托合成缺口(019 §10.6 在案)——
+// 故带参读一律 POST(mux_pane_lines 先例),vm/rust/vue 三轨同源。
+
+/// 第 k 槽类型(0=空 1=pane 2=divider)。
+#[api(method = "POST", path = "/api/mux/rect-kind")]
+pub fn mux_rect_kind(k int) int {
+    return db.mux_rect_kind(k)
+}
+
+/// 第 k 槽 pane id(pane 槽;0 = 非 pane 槽)。
+#[api(method = "POST", path = "/api/mux/rect-pane")]
+pub fn mux_rect_pane(k int) int {
+    return db.mux_rect_pane(k)
+}
+
+/// 第 k 槽 pane 模型 key(pane 槽;"" = 非 pane 槽)。
+#[api(method = "POST", path = "/api/mux/rect-key")]
+pub fn mux_rect_key(k int) str {
+    return db.mux_rect_key(k)
+}
+
+/// 第 k 槽分支 id(divider 槽;0 = 非 divider 槽;拖拽目标)。
+#[api(method = "POST", path = "/api/mux/rect-branch")]
+pub fn mux_rect_branch(k int) int {
+    return db.mux_rect_branch(k)
+}
+
+/// 第 k 槽轴(1=横排竖条 0=纵叠横条;-1 = 非 divider 槽)。
+#[api(method = "POST", path = "/api/mux/rect-axis")]
+pub fn mux_rect_axis(k int) int {
+    return db.mux_rect_axis(k)
+}
+
+/// 第 k 槽矩形 x(‰)。
+#[api(method = "POST", path = "/api/mux/rect-x")]
+pub fn mux_rect_x(k int) int {
+    return db.mux_rect_x(k)
+}
+
+/// 第 k 槽矩形 y(‰)。
+#[api(method = "POST", path = "/api/mux/rect-y")]
+pub fn mux_rect_y(k int) int {
+    return db.mux_rect_y(k)
+}
+
+/// 第 k 槽矩形 w(‰;divider 竖条 = 0,前端固定 6px 厚)。
+#[api(method = "POST", path = "/api/mux/rect-w")]
+pub fn mux_rect_w(k int) int {
+    return db.mux_rect_w(k)
+}
+
+/// 第 k 槽矩形 h(‰;divider 横条 = 0,同上)。
+#[api(method = "POST", path = "/api/mux/rect-h")]
+pub fn mux_rect_h(k int) int {
+    return db.mux_rect_h(k)
+}
+
+/// 投影版本号(无参 GET;前端每拍轮询,变化才拉 rect-*,F1 门控)。
+#[api(method = "GET", path = "/api/mux/layout-version")]
+pub fn mux_layout_version() int {
+    return db.mux_layout_version()
+}
+
+/// 窗口客户区逻辑 px(T-00b;无参 GET,vm 形态安全)。
+#[api(method = "GET", path = "/api/mux/window-width")]
+pub fn mux_window_width() int {
+    return db.mux_window_width()
+}
+
+#[api(method = "GET", path = "/api/mux/window-height")]
+pub fn mux_window_height() int {
+    return db.mux_window_height()
+}
+
+/// 键盘调比例兼容面(D5;pane → 父分支,磁吸+钳位一致语义)。
+#[api(method = "POST", path = "/api/mux/resize-pane")]
+pub fn mux_resize_pane(pane_id int, ratio int) int {
+    return db.mux_resize_pane(pane_id, ratio)
+}
+
+/// 分支级调比例(拖拽写入口;磁吸+钳位在 back 落定)。
+/// (px,py) = 指针内容区 ‰ 坐标(to_int 取整)。返回落定比例。
+#[api(method = "POST", path = "/api/mux/resize-branch")]
+pub fn mux_resize_branch(branch_id int, px int, py int) int {
+    return db.mux_resize_branch(branch_id, px, py)
+}

@@ -1,0 +1,41 @@
+// T-01 rev3 探针:[]str 管道记录 + split/to_int idiom(VM 端可靠性)
+fn main() {
+    var recs List<str> = ["V|7|802|450", "T|1|1|shell 1", "P|1|1|100|30|2|3|2", "line one", "has | pipe", "N|1|11|1"]
+    var n int = recs.len()
+    var i int = 0
+    var skip int = 0
+    loop {
+        if i >= n { break }
+        var rec str = recs.get(i)
+        if skip > 0 {
+            print("RAW[" + i.str() + "]=" + rec)
+            skip = skip - 1
+            i = i + 1
+            continue
+        }
+        var parts = rec.split("|")
+        var tag str = parts.get(0)
+        if tag == "V" {
+            var ver int = parts.get(1).to_int()
+            var ww int = parts.get(2).to_int()
+            print("V ver=" + ver.str() + " win_w=" + ww.str())
+        }
+        if tag == "T" {
+            var tid int = parts.get(1).to_int()
+            var act int = parts.get(2).to_int()
+            var ttl str = parts.get(3)
+            print("T id=" + tid.str() + " act=" + act.str() + " title=" + ttl)
+        }
+        if tag == "P" {
+            var s int = parts.get(1).to_int()
+            var nl int = parts.get(7).to_int()
+            print("P slot=" + s.str() + " nl=" + nl.str())
+            skip = nl
+        }
+        if tag == "N" {
+            var ntabs int = parts.get(1).to_int()
+            print("N ntabs=" + ntabs.str())
+        }
+        i = i + 1
+    }
+}

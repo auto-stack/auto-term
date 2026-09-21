@@ -1,0 +1,24 @@
+fn main() {
+    var j i64 = 0
+    loop {
+        if j >= 3 {
+            break
+        }
+        j = j + 1
+    }
+    if j == 3 {
+        print("L1-only-inc OK")
+    }
+    var z2 i64 = 0
+    var k i64 = 0
+    loop {
+        if k >= 3 {
+            break
+        }
+        z2 = 1
+        k = k + 1
+    }
+    if z2 == 1 {
+        print("L2-const-asn OK")
+    }
+}

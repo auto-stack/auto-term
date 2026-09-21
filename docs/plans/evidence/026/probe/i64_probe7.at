@@ -1,0 +1,11 @@
+fn main() {
+    var i i64 = 0
+    loop {
+        if i >= 3 {
+            break
+        }
+        print("iter " + i.str())
+        i = i + 1
+    }
+    print("done")
+}

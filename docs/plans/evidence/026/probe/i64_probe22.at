@@ -1,0 +1,17 @@
+fn main() {
+    var ss List<str> = ["aa", "bb", "cc", "dd"]
+    var ntabs i64 = 2
+    var labels List<str> = []
+    var i i64 = 0
+    var one i64 = 1
+    loop {
+        if i >= ntabs {
+            break
+        }
+        labels.push(ss[1 + i] + "")
+        i = i + one
+    }
+    if labels.len() == 2 {
+        print("LBL-OK")
+    }
+}

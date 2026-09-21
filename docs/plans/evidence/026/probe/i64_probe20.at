@@ -1,0 +1,8 @@
+fn main() {
+    var j i64 = 0
+    var t i64 = j + 1
+    j = t
+    if j == 1 {
+        print("I1 indirect OK")
+    }
+}

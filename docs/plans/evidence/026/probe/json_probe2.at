@@ -1,0 +1,41 @@
+use auto.json
+
+fn main() {
+    var s str = "{\"ver\":7,\"win_w\":802,\"tabs\":[{\"id\":1,\"active\":1,\"title\":\"shell 1\"},{\"id\":2,\"active\":0,\"title\":\"a\\\"b\"}],\"panes\":[{\"p\":1,\"c\":100,\"r\":30,\"l\":[\"line1\",\"say \\\"hi\\\"\"]}]}";
+    var v = json.parse(s)
+    var ver int = v.get("ver").as_int()
+    var ww int = v.get("win_w").as_int()
+    print("ver=" + ver.str() + " win_w=" + ww.str())
+    var tabs = v.get("tabs").as_array()
+    var n int = tabs.len()
+    print("tabs.len=" + n.str())
+    var i int = 0
+    loop {
+        if i >= n { break }
+        var t = tabs.get(i)
+        var tid int = t.get("id").as_int()
+        var act int = t.get("active").as_int()
+        var ttl str = t.get("title").as_string()
+        print("tab[" + i.str() + "] id=" + tid.str() + " act=" + act.str() + " title=" + ttl)
+        i = i + 1
+    }
+    var panes = v.get("panes").as_array()
+    var pn int = panes.len()
+    print("panes.len=" + pn.str())
+    if pn > 0 {
+        var p0 = panes.get(0)
+        var pc int = p0.get("c").as_int()
+        var lines = p0.get("l").as_array()
+        var ln int = lines.len()
+        print("pane0 c=" + pc.str() + " lines=" + ln.str())
+        var j int = 0
+        loop {
+            if j >= ln { break }
+            var l str = lines.get(j).as_string()
+            print("line[" + j.str() + "]=" + l)
+            j = j + 1
+        }
+    }
+    var missing int = v.get("nope").as_int()
+    print("missing=" + missing.str())
+}

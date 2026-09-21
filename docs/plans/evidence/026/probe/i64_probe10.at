@@ -1,0 +1,30 @@
+fn main() {
+    var z int = 0
+    var i int = 0
+    loop {
+        if i >= 3 {
+            break
+        }
+        z = z + 1
+        i = i + 1
+    }
+    if z == 3 {
+        print("INT-LOOP-OK")
+    } else {
+        print("INT-LOOP-BAD")
+    }
+    var z2 i64 = 0
+    var j i64 = 0
+    loop {
+        if j >= 3 {
+            break
+        }
+        z2 = z2 + 1
+        j = j + 1
+    }
+    if z2 == 3 {
+        print("I64-LOOP-OK")
+    } else {
+        print("I64-LOOP-BAD")
+    }
+}

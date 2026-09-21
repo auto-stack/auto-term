@@ -1,0 +1,13 @@
+fn main() {
+    var j i64 = 0
+    j = j + 1
+    if j == 1 {
+        print("S1 asn-inc OK")
+    }
+    var k i64 = 0
+    k = k + 1
+    k = k + 1
+    if k == 2 {
+        print("S2 double OK")
+    }
+}

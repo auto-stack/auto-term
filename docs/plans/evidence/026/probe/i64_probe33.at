@@ -1,0 +1,18 @@
+fn main() {
+    var ss List<str> = ["aa", "bb", "cc"]
+    var labels List<str> = []
+    var ntabs i64 = 2
+    var i i64 = 0
+    var one i64 = 1
+    loop {
+        if i >= ntabs {
+            break
+        }
+        var lw str = ss[1 + i] + ""
+        labels.push(lw)
+        i = i + one
+    }
+    if labels.len() == 2 {
+        print("AVOID OK")
+    }
+}

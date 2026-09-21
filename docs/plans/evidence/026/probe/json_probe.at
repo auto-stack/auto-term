@@ -1,0 +1,46 @@
+// T-03 前置探针:验证 VM JsonValue 方法链(get/as_int/as_string/as_array/get_at)
+// 在 app.at 语境可用 —— 027-file-manager 无方法链实锤先例(json.len 缺陷回避)
+use auto.json
+
+fn main() {
+    var s str = "{\"ver\":7,\"win_w\":802,\"tabs\":[{\"id\":1,\"active\":1,\"title\":\"shell 1\"},{\"id\":2,\"active\":0,\"title\":\"a\\\"b\"}],\"rects\":[{\"k\":1,\"t\":1,\"p\":1,\"key\":\"pane-1\",\"b\":0,\"a\":-1,\"x\":0,\"y\":0,\"w\":1000,\"h\":1000}],\"panes\":[{\"p\":1,\"c\":100,\"r\":30,\"cr\":2,\"cc\":3,\"l\":[\"line1\",\"say \\\"hi\\\"\"]}]}";
+    var v = json.parse(s)
+    var ver int = v.get("ver").as_int()
+    var ww int = v.get("win_w").as_int()
+    print("ver=${ver} win_w=${ww}")
+    var tabs = v.get("tabs").as_array()
+    var n int = tabs.len()
+    print("tabs.len=${n}")
+    var i int = 0
+    loop {
+        if i >= n { break }
+        var t = tabs.get(i)
+        var tid int = t.get("id").as_int()
+        var act int = t.get("active").as_int()
+        var ttl str = t.get("title").as_string()
+        print("tab[${i}] id=${tid} act=${act} title=${ttl}")
+        i = i + 1
+    }
+    var rects = v.get("rects").as_array()
+    var r0 = rects.get(0)
+    var rk int = r0.get("k").as_int()
+    var rkey str = r0.get("key").as_string()
+    var ra int = r0.get("a").as_int()
+    print("rect0 k=${rk} key=${rkey} a=${ra}")
+    var panes = v.get("panes").as_array()
+    var p0 = panes.get(0)
+    var pc int = p0.get("c").as_int()
+    var lines = p0.get("l").as_array()
+    var ln int = lines.len()
+    print("pane0 c=${pc} lines=${ln}")
+    var j int = 0
+    loop {
+        if j >= ln { break }
+        var l str = lines.get(j).as_string()
+        print("line[${j}]=${l}")
+        j = j + 1
+    }
+    // 缺键/null 兜底
+    var missing int = v.get("nope").as_int()
+    print("missing=${missing}")
+}

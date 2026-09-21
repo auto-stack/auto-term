@@ -1,0 +1,29 @@
+fn main() {
+    var b1 i64 = 2
+    if b1 == 2 {
+        print("P1 b1=2 ok")
+    }
+    var ns List<int> = [10, 20, 30]
+    var v i64 = ns[b1]
+    if v == 30 {
+        print("P2 ns[b1]=30 ok")
+    }
+    var x i64 = 40
+    var y i64 = 0
+    y = x + 2
+    if y == 42 {
+        print("P3 add ok")
+    }
+    var z i64 = 0
+    var i i64 = 0
+    loop {
+        if i >= 3 {
+            break
+        }
+        z = z + 1
+        i = i + 1
+    }
+    if z == 3 {
+        print("P4 loop ok")
+    }
+}

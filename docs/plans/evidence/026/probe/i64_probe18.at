@@ -1,0 +1,7 @@
+fn main() {
+    var j i64 = 0
+    var w i64 = j + 1
+    if w == 1 {
+        print("D1 decl-inc OK")
+    }
+}

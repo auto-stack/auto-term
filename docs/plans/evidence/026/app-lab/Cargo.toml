@@ -1,0 +1,20 @@
+[workspace]
+members = [
+    "app",
+    "app-back"
+]
+resolver = "2"
+
+[workspace.dependencies]
+auto-lang = { path = "D:/autostack/auto-lang/crates/auto-lang" }
+# PLAN-668 R-24：a2r_std（sys 原生面/StringBuilder 等）随 auto-lang 同源
+# （仓库内 crates/a2r-std）——后端生成物 `a2r_std::sys::*` 调用需此 dep。
+a2r-std = { path = "D:/autostack/auto-lang/crates/a2r-std" }
+serde_json = "1"
+ureq = { version = "2", features = ["json"] }
+tokio = { version = "1", features = ["rt"] }
+# Plan 413 §5.2:放宽到 "0.14" 让未来补丁版自动流入
+iced = { version = "0.14", features = ["tokio", "advanced"] }
+axum = "0.7"
+serde = { version = "1", features = ["derive"] }
+tower-http = { version = "0.5", features = ["cors"] }

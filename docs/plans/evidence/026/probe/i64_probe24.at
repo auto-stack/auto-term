@@ -1,0 +1,16 @@
+fn main() {
+    var ss List<str> = ["aa", "bb", "cc"]
+    var ntabs i64 = 2
+    var i i64 = 0
+    var one i64 = 1
+    loop {
+        if i >= ntabs {
+            break
+        }
+        var k i64 = 1 + i
+        if k == 1 {
+            print("INLOOP ADD OK")
+        }
+        i = i + one
+    }
+}

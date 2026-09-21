@@ -1,0 +1,4 @@
+fn main() {
+    var i i64 = 5
+    print("v=" + i.str())
+}

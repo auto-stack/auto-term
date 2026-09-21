@@ -1,0 +1,15 @@
+fn main() {
+    var ss List<str> = ["aa", "bb", "cc"]
+    var labels List<str> = []
+    var ntabs i64 = 2
+    var i i64 = 0
+    var one i64 = 1
+    loop {
+        if i >= ntabs {
+            break
+        }
+        labels.push(ss[1 + i] + "")
+        i = i + one
+    }
+    print("FINAL done")
+}

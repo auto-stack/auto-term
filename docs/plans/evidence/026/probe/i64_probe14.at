@@ -1,0 +1,4 @@
+fn main() {
+    print("ONLY")
+    return 0
+}
