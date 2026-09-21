@@ -1,6 +1,6 @@
 ---
 plan_id: PLAN-025
-status: executing
+status: execution_done
 feature_name: 滚动闪屏根修(绝对行键行缓存+滚动位移渲染) + 默认 shell 配置文件与 profiles
 author: [agent]
 created_at: 2026-09-20T00:00:00Z
@@ -284,7 +284,11 @@ commandline = 'cmd.exe'
   §10.5 DEBT 闭合。
 - **T-05** A 部门禁:022/023 回归 + 三轨零回归 + 实机滚动录屏与
   用户验收。依赖:T-03(及 T-04 若执行)。关联:AC-01/02/03。
-  [进行中 2026-09-20]已毕:auto-lang terminal 系回归 47 绿(p022/
+  [终局 2026-09-21 · 用户收工指令]A 部 rust 轨经用户四轮实机复测
+  逐步收敛(闪屏→无;抖动→修;快拖半屏→修;TIME_WAIT 挂起→修),
+  最终全绿确认随 review 门;**VM 轨滚动验收剥离至新计划**(合并态
+  VM 前端宿主挂起未解,战况见 §10.10——非 025 终端代码域);已毕:
+  auto-lang terminal 系回归 47 绿(p022/
   p023/虚拟滚动/terminal::);rust 轨 boot 冒烟绿(P25 增量重建
   生效无 panic);全量套件基线对照毕(失败集差分 ≤4 项且单测重跑
   全绿 = 抖动/环境项,非 025 回归,详见 §10.7)。
@@ -380,7 +384,10 @@ commandline = 'cmd.exe'
 - **T-10** B 部门禁:实机配方三则 + vue 轨 + oracle 零 diff 门 +
   specs 落盘(SD-01/02/03)。依赖:T-07/T-08/T-09。关联:
   AC-04/05/06/07。
-  [进行中 2026-09-20]已毕:specs 落盘(docs/specs/terminal-scroll-
+  [终局 2026-09-21 · 用户收工指令]specs 落盘三份在案;oracle 与
+  autoterm-core 零 diff 门过;vue back HTTP 剧本 8/8;CLI 冒烟过;
+  实机配方三则与 vue 轨冒烟随 review 门(VM 面已剥离)。已毕:specs
+  落盘(docs/specs/terminal-scroll-
   render.md 新增;app-unified-entry.md/terminal-mux-model.md 增补);
   oracle 与 autoterm-core `git diff` 零文件(AC-07);vue back HTTP
   剧本 T-07 8/8;CLI 冒烟(exit 1 + cwd prompt)。待办:rust 轨
@@ -405,6 +412,16 @@ commandline = 'cmd.exe'
   cwd prompt、rust 轨 boot `[P25-ROWS]` 增量重建、terminal 系回归
   47 绿、oracle/autoterm-core 零 diff · blockers: 无 · next: T-05/
   T-10 用户实机门(滚动录屏肉眼验收 + 配方三则 + vue 轨冒烟)。
+
+- 2026-09-21 · stage: work · PLAN-025 · rev1 · **execution_done ·
+  用户收工指令** · code: auto-lang plan-025-dev(HEAD 984d637 对应
+  lang 侧 935a3cd61/e6053171e/e753639c5/9d949a699/b639ffccf/57fe0efee
+  链)/ auto-term main(至 984d637)· tasks: 全 10 项终局(T-05/T-10
+  按 user 裁定闭合:rust 面随 review 门,VM 面剥离新计划)·
+  evidence: evidence/025/(判决/剧本/回归)+ 计划内四轮实机记录 ·
+  blockers: 无(VM 前端宿主挂起另立计划,§10.10 战况已固化)·
+  next: review → merge;合并时注意:master 侧需本分支的
+  terminal_canvas_height 门控回流(9d949a699),merge 自带。
 
 ## 10. 待澄清事项
 
