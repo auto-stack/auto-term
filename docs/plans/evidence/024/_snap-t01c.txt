@@ -1,0 +1,41 @@
+AURA Snapshot v2 (rendered)
+widget: "App"
+
+tree:
+col #vnode_14695981039346656037 {
+  style: "w-full h-screen bg-background"
+  row #vnode_12642422519345821663 {
+    style: "w-full"
+    button #vnode_4305065243889594349 "● shell 1"
+    button #vnode_4305047651703549498 "+" {
+      onclick: .NewTab
+    }
+    button #vnode_4305030059517504647 "横分" {
+      onclick: .Split(1)
+    }
+    button #vnode_4305012467331459796 "竖分" {
+      onclick: .Split(0)
+    }
+    button #vnode_4304994875145414945 "关Pane" {
+      onclick: .CloseFocusPane
+    }
+    button #vnode_4304977282959370094 "Zoom" {
+      onclick: .Zoom
+    }
+    button #vnode_4304959690773325243 "◐" {
+      onclick: .SchemeToggle
+    }
+  }
+  container #vnode_12642404927159776812 {
+    style: "relative w-full flex-1"
+    col #vnode_4289760042030763204 {
+      style: "w-full h-full bg-background"
+      container #vnode_12781790891868631308 {
+      }
+      container #vnode_12781808484054676159 {
+        text #vnode_15915714998360029837 "terminal key=pane-1 cols=80 rows=22 lines=22"
+      }
+    }
+  }
+}
+

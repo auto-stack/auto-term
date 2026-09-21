@@ -1,0 +1,22 @@
+== R1 p022原样式(left-0/left-300)
+   ["r1A=[Captured, Ignored]a1", "r1B=[Captured, Captured]b1", "r2A=[Captured, Ignored]a1", "r2B=[Captured, Captured]b1", "r3A=[Captured, Ignored]a1", "r3B=[Captured, Captured]b1"]
+== R2 双零偏移(叠原点)
+   ["r1A=[Captured, Captured]a1", "r1B=[Ignored, Ignored]b1", "r2A=[Captured, Captured]a1", "r2B=[Ignored, Ignored]b1", "r3A=[Captured, Captured]a1", "r3B=[Ignored, Ignored]b1"]
+== R3 载具树形状(左300+右300+分隔条8px+0x0捕获层)
+   ["r1L=[Captured, Ignored]", "r1R=[Captured, Captured]", "r1DIV=[Captured, Ignored]", "r2L=[Captured, Ignored]", "r2R=[Captured, Captured]", "r2DIV=[Captured, Ignored]"]
+   msgs: [2, 7, 8, 2, 7, 8]
+== V1 镜像p022(空base+opaque双层)
+   statuses: ["r1A=[Captured, Ignored]", "r1B=[Captured, Captured]", "r2A=[Captured, Ignored]", "r2B=[Captured, Captured]", "r3A=[Captured, Ignored]", "r3B=[Captured, Captured]"]
+   msgs:     [2, 2, 2]
+== V2 无opaque(空base+裸双层)
+   statuses: ["r1A=[Captured, Captured]", "r1B=[Captured, Captured]", "r2A=[Captured, Captured]", "r2B=[Captured, Captured]", "r3A=[Captured, Captured]", "r3B=[Captured, Captured]"]
+   msgs:     [1, 2, 1, 2, 1, 2]
+== V3 无空base(opaque双层)
+   statuses: ["r1A=[Captured, Ignored]", "r1B=[Ignored, Ignored]", "r2A=[Captured, Ignored]", "r2B=[Ignored, Ignored]", "r3A=[Captured, Ignored]", "r3B=[Ignored, Ignored]"]
+   msgs:     []
+== V4 极简(裸双按钮)
+   statuses: ["r1A=[Captured, Captured]", "r1B=[Ignored, Ignored]", "r2A=[Captured, Captured]", "r2B=[Ignored, Ignored]", "r3A=[Captured, Captured]", "r3B=[Ignored, Ignored]"]
+   msgs:     [2, 2, 2]
+== V5 同层连击AAA(V1结构)
+   statuses: ["r1A=[Captured, Ignored]", "r2A=[Captured, Ignored]", "r3A=[Captured, Ignored]"]
+   msgs:     []

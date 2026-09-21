@@ -1,0 +1,1468 @@
+[P22-SEED] 1280x800 thread_now=Some("main")
+[term-dll] 加载引擎: D:\autostack\auto-term\target\debug\autoterm_core.dll
+AutoUI MCP: listening on http://127.0.0.1:9247
+[P22-FEED] key=pane-1 lines=30 cols=100 rows=30 first="                                        "
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=30 cols=100 rows=30 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=135 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=135 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=135 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=135 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=135 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=135 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=135 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=135 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=135 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=135 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=135 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=135 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=135 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=135 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=135 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=135 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=135 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=135 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=135 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=135 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=135 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=135 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=135 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=135 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=135 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=135 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=135 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=135 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=135 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=135 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=135 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=135 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=135 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=135 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=135 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=135 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=135 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=135 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=135 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=135 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=135 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=135 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=135 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=135 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=135 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=135 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=135 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=135 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=135 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=135 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=135 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=135 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=135 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=135 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=135 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=135 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=135 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=135 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=135 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=135 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=135 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=135 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=135 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=135 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=135 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=135 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=135 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=135 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=135 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=135 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=135 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=135 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=135 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=135 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=135 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=135 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=135 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=135 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=135 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=135 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=135 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=135 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=135 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=135 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=135 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=135 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=135 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=135 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=135 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[TERM_PRESS] cursor=Levitating(Point { x: 160.5, y: 18.0 }) pos=None bounds=(0.0, 40.0, 1273.625, 760.0) key=pane-1
+[P22-FEED] key=pane-1 lines=47 cols=135 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=135 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=135 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=135 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=135 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=30 cols=100 rows=30 first="                                        "
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=30 cols=100 rows=30 first="                                        "
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[TERM_PRESS] cursor=Levitating(Point { x: 317.0, y: 430.5 }) pos=None bounds=(640.0, 40.0, 636.125, 760.0) key=pane-2
+[TERM_PRESS] cursor=Available(Point { x: 317.0, y: 430.5 }) pos=Some((317.0, 430.5)) bounds=(0.0, 40.0, 636.125, 760.0) key=pane-1
+[P22-FOCUS] key=pane-1 shift=(40.0, 0.0, 636.125, 760.0)
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-KEY] key=pane-1 vt="e"
+[P22-KEY] key=pane-1 vt="c"
+[P22-KEY] key=pane-1 vt="h"
+[P22-KEY] key=pane-1 vt="o"
+[P22-KEY] key=pane-1 vt=" "
+[P22-KEY] key=pane-1 vt="L"
+[P22-KEY] key=pane-1 vt="E"
+[P22-KEY] key=pane-1 vt="F"
+[P22-KEY] key=pane-1 vt="T"
+[P22-KEY] key=pane-1 vt="-"
+[P22-KEY] key=pane-1 vt="O"
+[P22-KEY] key=pane-1 vt="K"
+[P22-KEY] key=pane-1 vt="\r"
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[TERM_PRESS] cursor=Available(Point { x: 963.0, y: 430.5 }) pos=Some((963.0, 430.5)) bounds=(640.0, 40.0, 636.125, 760.0) key=pane-2
+[P22-FOCUS] key=pane-2 shift=(40.0, 640.0, 636.125, 760.0)
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-KEY] key=pane-2 vt="e"
+[P22-KEY] key=pane-2 vt="c"
+[P22-KEY] key=pane-2 vt="h"
+[P22-KEY] key=pane-2 vt="o"
+[P22-KEY] key=pane-2 vt=" "
+[P22-KEY] key=pane-2 vt="R"
+[P22-KEY] key=pane-2 vt="I"
+[P22-KEY] key=pane-2 vt="G"
+[P22-KEY] key=pane-2 vt="H"
+[P22-KEY] key=pane-2 vt="T"
+[P22-KEY] key=pane-2 vt="-"
+[P22-KEY] key=pane-2 vt="O"
+[P22-KEY] key=pane-2 vt="K"
+[P22-KEY] key=pane-2 vt="\r"
+[P22-KEY] key=pane-2 vt="f"
+[P22-KEY] key=pane-2 vt="o"
+[P22-KEY] key=pane-2 vt="r"
+[P22-KEY] key=pane-2 vt=" "
+[P22-KEY] key=pane-2 vt="/"
+[P22-KEY] key=pane-2 vt="l"
+[P22-KEY] key=pane-2 vt=" "
+[P22-KEY] key=pane-2 vt="%"
+[P22-KEY] key=pane-2 vt="i"
+[P22-KEY] key=pane-2 vt=" "
+[P22-KEY] key=pane-2 vt="i"
+[P22-KEY] key=pane-2 vt="n"
+[P22-KEY] key=pane-2 vt=" "
+[P22-KEY] key=pane-2 vt="1"
+[P22-KEY] key=pane-2 vt=","
+[P22-KEY] key=pane-2 vt="1"
+[P22-KEY] key=pane-2 vt=","
+[P22-KEY] key=pane-2 vt="6"
+[P22-KEY] key=pane-2 vt="0"
+[P22-KEY] key=pane-2 vt=" "
+[P22-KEY] key=pane-2 vt="d"
+[P22-KEY] key=pane-2 vt="o"
+[P22-KEY] key=pane-2 vt=" "
+[P22-KEY] key=pane-2 vt="@"
+[P22-KEY] key=pane-2 vt="e"
+[P22-KEY] key=pane-2 vt="c"
+[P22-KEY] key=pane-2 vt="h"
+[P22-KEY] key=pane-2 vt="o"
+[P22-KEY] key=pane-2 vt=" "
+[P22-KEY] key=pane-2 vt="H"
+[P22-KEY] key=pane-2 vt="I"
+[P22-KEY] key=pane-2 vt="S"
+[P22-KEY] key=pane-2 vt="T"
+[P22-KEY] key=pane-2 vt="-"
+[P22-KEY] key=pane-2 vt="%"
+[P22-KEY] key=pane-2 vt="i"
+[P22-KEY] key=pane-2 vt="\r"
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(1280.0)) h=Some(Fixed(760.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(1280.0)) h=Some(Fixed(760.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(1280.0)) h=Some(Fixed(760.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(1280.0)) h=Some(Fixed(760.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(1280.0)) h=Some(Fixed(760.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(1280.0)) h=Some(Fixed(760.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(1280.0)) h=Some(Fixed(760.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(1280.0)) h=Some(Fixed(760.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(1280.0)) h=Some(Fixed(760.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(1280.0)) h=Some(Fixed(760.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(1280.0)) h=Some(Fixed(760.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(1280.0)) h=Some(Fixed(760.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(1280.0)) h=Some(Fixed(760.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(1280.0)) h=Some(Fixed(760.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(1280.0)) h=Some(Fixed(760.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(1280.0)) h=Some(Fixed(760.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(1280.0)) h=Some(Fixed(760.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(1280.0)) h=Some(Fixed(760.0))
+[P22-FEED] key=pane-1 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=67 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(1280.0)) h=Some(Fixed(760.0))
+[P22-FEED] key=pane-1 lines=47 cols=74 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=60 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(1280.0)) h=Some(Fixed(760.0))
+[P22-FEED] key=pane-1 lines=47 cols=75 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=59 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(1280.0)) h=Some(Fixed(760.0))
+[P22-FEED] key=pane-1 lines=47 cols=75 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=59 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(1280.0)) h=Some(Fixed(760.0))
+[P22-FEED] key=pane-1 lines=47 cols=82 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=52 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(1280.0)) h=Some(Fixed(760.0))
+[P22-FEED] key=pane-1 lines=47 cols=82 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=52 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(1280.0)) h=Some(Fixed(760.0))
+[P22-FEED] key=pane-1 lines=47 cols=83 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=50 rows=47 first="(c) Microsoft Corporation. All rights re"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(1280.0)) h=Some(Fixed(760.0))
+[P22-FEED] key=pane-1 lines=47 cols=83 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=50 rows=47 first="(c) Microsoft Corporation. All rights re"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-WHEEL] key=pane-2 view_y=0 delta=1
+[P22-FEED] key=pane-1 lines=47 cols=83 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=50 rows=47 first="(c) Microsoft Corporation. All rights re"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=83 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=50 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=83 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=50 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=83 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=50 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=83 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=50 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=83 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=50 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=83 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=50 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=83 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=50 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=83 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=50 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=83 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=50 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=83 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=50 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=83 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=50 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=83 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=50 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=83 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=50 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=83 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=50 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=83 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=50 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=83 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=50 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=83 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=50 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
+[P22-FEED] key=pane-1 lines=47 cols=83 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[P22-FEED] key=pane-2 lines=47 cols=50 rows=47 first="Microsoft Windows [Version 10.0.26200.94"
+[MA_BUILD] press=true release=true dbl=false rclick=false move=false w=Some(Full) h=Some(Full)
+[MA_BUILD] press=false release=true dbl=false rclick=false move=true w=Some(Fixed(0.0)) h=Some(Fixed(0.0))
