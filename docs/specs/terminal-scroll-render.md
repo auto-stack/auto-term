@@ -67,15 +67,15 @@ rust 轨 iced terminal widget(`auto-lang ui/terminal/iced/widget.rs`)的
 - 禁止为预取改动 `crates/autoterm-core`(AC-07:引擎 FFI 面零 diff;
   瞬态 scroll 采样走既有 `scroll`/`row_text`/`row_style` 导出)。
 
-### 6. 泵节拍门(即时泵,T-04)
+### 6. 泵周期与快滚覆盖(终态)
 
-- 悬置条款(2026-09-20 一轮)曾豁免;同日二轮实机(快拖半屏空白)
-  触发启用。
-- 计时器 16ms;`db.tick_gate()`:满拍间隔 ≥3 拍(~48ms,与旧 50ms
-  Tick 等阶)或**任一可见 Pane 滚动增量待排**(`term_scroll_pending`,
-  peek 探针 `engine_scroll_pending_for` → `terminal_scroll_delta_pending`,
-  不排空)即开满拍(get_lines 全量泵)。
-- 预取 N 随之 8 → 24(16ms 泵周期内极端滚轮 ~11 行 + 触控板像素滚 +
-  余量);滚动期泵最密 60Hz,静止回落 ~20Hz。
-- 语义:视图先行量在超出预取覆盖**之前**即被满拍追平——快滚/快拖
-  空白带清零(模型断言:p025 门控场景两档速率 0 行 0 帧)。
+- **计时器恒 50ms**(三代修正:16ms 节拍门在分离轨 VM/vue 上每拍
+  一次 HTTP 同步往返,占死前端 UI 线程 = 无响应 + 内存爬升,用户
+  2026-09-20 实录——即时泵只对进程内直调的 rust 轨零成本,分轨不可用)。
+- **快滚/快拖覆盖由预取 N=24 独担**:50ms 泵周期内常规 3 行、快速
+  (10ms/notch)≤15 行,均 < 24 → 空白带清零(模型断言:p025 两档
+  速率 0 行 0 帧);滚动条瞬移(一次数百行)余 ≤1 泵拍瞬态空白,
+  属泵架构物理下限。
+- 备用旋钮(在册面,默认不用):`terminal_scroll_delta_pending` 探针
+  (peek)/`engine_scroll_pending_for`/`db.tick_gate()`——进程内轨
+  (rust)若需亚 50ms 追平可复用;预取 N 为 term.rs/shim 常量。
