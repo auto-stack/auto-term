@@ -2,7 +2,7 @@
 
 ```yaml
 plan_id: PLAN-026
-status: execution_done
+status: reviewed
 feature_name: VM 前端挂起根修(split api.* 同步忙等)
 author: [investigation session]
 created_at: 2026-09-21T15:05:00+08:00
@@ -414,3 +414,52 @@ term.at/term.vm.at 已同步(部署件契约)。
 20 拍/s ≈1.4MB/min)= **既有 per-tick 债,非 026 引入**(026 挂起
 根修使每拍真正执行,泄漏随之提速显形)。heap 剖析定位与修复**另档
 §10.8**;本观测工具([VM-MEM],env 门控)随库留存。
+
+## [review 2026-09-21 深夜]复审(执行会话内进行——非独立上下文,裁决从工件/复跑重建)
+
+stage: review | PLAN-026 | rev 2 | outcome: **pass**(→reviewed) |
+reviewed_commit: auto-term main cbd5469(026 域 6 提交 6db5f8f..cbd5469)+
+auto-lang inv-026 plan-026-dev 3acd962c9(6 提交 4891ea9eb..3acd962c9) |
+base_commit: auto-term f870f24 / auto-lang 22b650a76(=025 后基线) |
+dependency_revisions: ~/.auto/libs/stdlib term.at/term.vm.at 安装副本已
+同步 write_raw 声明(部署件,不在 git) | spec_inputs: terminal-mux-model.md
+(SD-01 增补节)+ auto-lang/vm/architecture.md ADR-22(SD-02)——与实现
+逐项核对一致(布局偏移 base=8+(k-1)*9/107、4 次/拍、env 名、三调用方)
+
+**acceptance_results(复跑/重建)**:
+- AC-01 **pass**:键入链后基线复跑 RESP=True 8/8×40s(rv-resp.txt);
+  tick 56.6/s;修前对照在档(RESP=False + 0.7-3.4/s)。CPU debug 口径
+  ~40%(构成=debug VM 解释执行+渲染恢复;修前渲染饿死不可同比;
+  release 复测建议随 merge)。
+- AC-02 **pass**:budget waits=4-5/拍(轮询上界代理;请求面 = 固定 4
+  端点代码事实:apply_resize/get_lines/tick-nums/tick-snapshot)。
+- AC-03 **pass**:复审新增**冷构建主场景实证**——清 rust-workspace
+  target 触发全编 ~100s(>60s 旧门必吞错场景):120s 门等到 ready
+  (log 4537 行)→ Init 正常完成(4549 行)→ 进程健康
+  (t06/ac03-coldbuild-ready-init.log)。超限 >120s 子场景 = 代码级
+  (3 行直白:kill+Err 中止)+ 三次实机造境均被 Windows 进程语义干扰
+  (bash 假 cargo 不被 CreateProcess 执行/timeout 无控制台/他者端口
+  误 ready),不阻断。
+- AC-04 **pass**:t07 8/8 复跑;auto-term workspace 88/0;auto-lang
+  受影响域 engine 20/0、ui_gen::rust 58/0、terminal 3/0(ui_gen::vue
+  23 失败=既有,主 checkout master 同口径一致,026 零增量);rust 轨
+  boot(exit=124 活跑 60s + back ready + Running Rust)。
+- AC-05 **pass**:budget 输出复跑 + 阈值 5ms warn 93 条实证在档。
+- AC-06 **pass**:判定互链(§0↔NOTES)在档;junction 推 merge 裁定
+  合理(inv-026 为实施树,review 后 merge 清理时摘);inv-026 留存。
+
+**findings(全部非阻断)**:
+- F-01(P3):AUTO_VM_MEM probe 每次 call_fn_by_name 一次
+  std::env::var 查询,未按 is_vm_hot_trace 惯例 OnceLock 缓存(μs 级;
+  建议随 merge 顺手或另档)。
+- F-02(观察):tick 实测 56.6/s 高于 50ms 节拍设计值(20/s)——timer
+  语义/vsync 对齐待查;tick_gate(025 T-04)未在 VM 轨消费。非 AC
+  违反(AC 只求 ≥15)。
+- F-03(既有):start_api_server ready 探测只验端口不验 child 归属
+  (他者 back 顶端口会误 ready)——Plan 354 域既有语义,记档。
+- F-04(已档):§10.7 rust 轨键盘占位、§10.8 rust 层 per-tick 内存债、
+  §10.2 vm+vm split、§10.6 VM 规避形态两处。
+
+evidence: t06/(新增 ac03-coldbuild-ready-init.log、ac01-review-resp.txt、
+review-rerun-summary.txt)+ 既有 t06/probe 全档 | next: **merge**
+(junction 摘除与 inv-026 worktree 清理归 merge 清理段)

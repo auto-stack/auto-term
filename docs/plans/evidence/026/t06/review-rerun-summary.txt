@@ -1,0 +1,5 @@
+== AC-01/02/05 复跑(键入链后基线 cbd5469/3acd962c9)
+RESP: 8/8 True
+ticks_ok=5200 rate=56.6/s
+budget tail: waits=4-5/拍(请求面=4 端点固定) busy 20-28ms
+warns=7(启动期) 稳态零超阈
