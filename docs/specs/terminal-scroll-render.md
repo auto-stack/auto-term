@@ -38,7 +38,7 @@ rust 轨 iced terminal widget(`auto-lang ui/terminal/iced/widget.rs`)的
 - 缓存容量护栏:条目远离可见区即逐出(≤512 条),长滚动会话无界
   增长禁止。
 
-### 3. 预取窗(N=8)
+### 3. 预取窗(N=24)
 
 - 泵经引擎**瞬态 scroll** 采样可见区上/下各 N 行入 `window_store`
   (绝对 id → cells+digest;`terminal_feed_window_for`),终态 offset
@@ -46,8 +46,9 @@ rust 轨 iced terminal widget(`auto-lang ui/terminal/iced/widget.rs`)的
 - 采样钳位 = 引擎同界(`[0, history]`),id 数学与引擎状态零漂移;
   预取行只进 store,**不进** `cells` 槽位面(props 文本/cursor/
   selection/vue 文本面零变)。
-- N 取值依据:泵周期 50ms 内常规滚轮(30ms/notch)最大领先 3 行,
-  N=8 清零空白带;极端连滚余 1-2 行瞬态薄带由泵周期兜底。
+- N 取值依据(T-04 终态,详见 §6):50ms 泵周期内常规滚轮(30ms/
+  notch)领先 ≤3 行、快速(10ms/notch)≤15 行,N=24 独担快滚覆盖
+  清零空白带;初值 N=8(2026-09-20 T-03)因快拖半屏空白实录上调。
 
 ### 4. 视图锚定内容层
 

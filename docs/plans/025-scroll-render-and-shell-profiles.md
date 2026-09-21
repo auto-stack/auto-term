@@ -1,19 +1,22 @@
 ---
 plan_id: PLAN-025
-status: execution_done
+status: reviewed
 feature_name: 滚动闪屏根修(绝对行键行缓存+滚动位移渲染) + 默认 shell 配置文件与 profiles
 author: [agent]
 created_at: 2026-09-20T00:00:00Z
-updated_at: 2026-09-20T00:00:00Z
+updated_at: 2026-09-21T00:00:00Z
 plan_revision: 1
-current_step: 8
+current_step: 10
 total_steps: 10
 supersedes_spec_components: []
 new_spec_components:
   - docs/specs/terminal-scroll-render.md(add,SD-01:滚动行缓存/预取窗/位移渲染契约)
   - docs/specs/app-unified-entry.md(modify,SD-02:配置文件与 profiles 契约)
   - docs/specs/terminal-mux-model.md(modify,SD-03:mux_new_tab profile 参数语义)
-touched_goals: []
+touched_goals:
+  - P003-2
+  - P017-2
+  - P018-2
 ---
 
 # PLAN-025 · 滚动闪屏根修 + 默认 shell 配置文件与 profiles
@@ -282,8 +285,9 @@ commandline = 'cmd.exe'
   零空白;探针/tick_gate 面留作进程内轨备用旋钮)。提交:lang-025
   3f3187885→93e43bd44 + auto-term 65bd133→3b1ed7d;spec §6 终态。
   §10.5 DEBT 闭合。
-- **T-05** A 部门禁:022/023 回归 + 三轨零回归 + 实机滚动录屏与
+- [x] **T-05** A 部门禁:022/023 回归 + 三轨零回归 + 实机滚动录屏与
   用户验收。依赖:T-03(及 T-04 若执行)。关联:AC-01/02/03。
+  [复审闭合 2026-09-21 · review 门代验]详见 §9 复审记录 AC-01/02/03。
   [终局 2026-09-21 · 用户收工指令]A 部 rust 轨经用户四轮实机复测
   逐步收敛(闪屏→无;抖动→修;快拖半屏→修;TIME_WAIT 挂起→修),
   最终全绿确认随 review 门;**VM 轨滚动验收剥离至新计划**(合并态
@@ -381,9 +385,10 @@ commandline = 'cmd.exe'
   spawn_in 投递(引擎零改动)。冒烟:`--profile ghost` → 明确报错
   含搜索路径 **exit 1**;`--profile cmd --dev-exit-after 3 --dev-dump`
   → 转储含 `D:\autostack>` prompt(cwd 经 spawn_in 生效)。
-- **T-10** B 部门禁:实机配方三则 + vue 轨 + oracle 零 diff 门 +
+- [x] **T-10** B 部门禁:实机配方三则 + vue 轨 + oracle 零 diff 门 +
   specs 落盘(SD-01/02/03)。依赖:T-07/T-08/T-09。关联:
   AC-04/05/06/07。
+  [复审闭合 2026-09-21 · review 门代验]详见 §9 复审记录 AC-04..07。
   [终局 2026-09-21 · 用户收工指令]specs 落盘三份在案;oracle 与
   autoterm-core 零 diff 门过;vue back HTTP 剧本 8/8;CLI 冒烟过;
   实机配方三则与 vue 轨冒烟随 review 门(VM 面已剥离)。已毕:specs
@@ -422,6 +427,56 @@ commandline = 'cmd.exe'
   blockers: 无(VM 前端宿主挂起另立计划,§10.10 战况已固化)·
   next: review → merge;合并时注意:master 侧需本分支的
   terminal_canvas_height 门控回流(9d949a699),merge 自带。
+
+- 2026-09-21 · stage: review · PLAN-025 · rev1 · **pass(→reviewed)** ·
+  reviewed_commit: auto-term `43d73eb` / auto-lang plan-025-dev
+  `57fe0efee`(worktree 干净)· base: auto-term `23616cc`(022 归档
+  收尾)/ auto-lang merge-base `e82b95b22` · dependency_revisions:
+  auto-lang master `50dbb68e9`(024 已并入 + 671/672 文档前移)·
+  spec_inputs: docs/specs/ 五件现行,本计划三份 SD 落盘核讫
+  (SD-01 新增 / SD-02、SD-03 增补,内容与实现终态一致;F-01 勘正
+  见下)· acceptance_results(全部复审复跑 2026-09-21 13:0x-13:4x):
+  - **AC-01 PASS**:headless p025 5/5(ui::terminal 域 46 绿内);rust
+    载具 boot 冒烟(本次,AUTO_LANG_CRATE→lang-025 worktree 重生成
+    载具):default profile cmd banner + `[P25-ROWS]` 曲线 首帧
+    30/30 → 内容帧 3 → 稳态 0,11689 行泵流无 panic;四轮实机肉眼
+    验收 = 用户终局裁定在案。VM 面按用户裁定剥离新计划(§10.10)。
+  - **AC-02 PASS**:p022 6/6 复跑绿;virtual_scroll/shortcut 系在
+    ui::terminal 46 绿内;实机面随用户四轮复测。
+  - **AC-03 PASS(user 裁定口径)**:vue back HTTP 剧本 t07 8/8
+    (本次 13:19 复跑)+ 020 t01_model.sh 回归(执行期 71e62d9);
+    VM 冒烟 = 合并态 VM 前端宿主挂起另立计划(用户裁定,§10.10)。
+  - **AC-04 PASS**:t07 [3] default-spawn+cwd 复跑 PASS;降级臂
+    ghost-fallback PASS;autoterm-config 10/10 复跑(缺席/损坏回落)。
+  - **AC-05 PASS**:t07 [1][2][4][5][6] 复跑全 PASS;api.at 契约
+    声明与 SD-03 mux 表行一致;`+` 右键菜单实现面随用户收工闭合。
+  - **AC-06 PASS**:CLI 复跑 ghost → exit 1(报错含配置搜索路径);
+    `--profile cmd --dev-exit-after 4 --dev-dump` → 转储含
+    `D:\autostack>` prompt(cwd 生效);优先级链 help 在案;oracle
+    `at/autoterm.at` + `at-gen/` 零 diff(23616cc..43d73eb)。
+  - **AC-07 PASS**:`git diff 23616cc..43d73eb -- crates/autoterm-core/`
+    零文件;autoterm-core 全测试套件复跑绿(基线不变)。
+  · findings:
+  - **F-01**(minor,复审即勘正):SD-01 spec §3 标题/正文遗留 T-03
+    中间态 N=8,与 §6 终态及代码(`app/term.rs:618 const N: i32=24`)
+    矛盾 → 本复审勘正 §3 为 N=24 终态口径(语义契约不变,无
+    plan_revision 递增必要)。
+  - **F-02**(nonblocking,基线既有非 025):
+    `ui::iced::terminal_pixel_tests::terminal_pixel_preedit_text_
+    reaches_pixels` 批量并行确定性红(隔离 3/3 绿;lang-025 与
+    master `50dbb68e9` 同批同红)→ 像素测组间状态污染,另立小账。
+  - **F-03**(bookkeeping,复审定稿):touched_goals 空 → 补
+    [P003-2, P017-2, P018-2](重建预算/统一入口/mux 模型三 goal 域)。
+  - **F-04**(脏面盘点,非 025):auto-term main 脏 = 022 live 文件
+    删除(已暂存未提交,archived 副本已入库)+ archived/023、024
+    未跟踪(023/024 归档半落地)+ 各计划证据 png/脚本未跟踪;
+    **025 实现零未提交项**(提交链 87d94c9→43d73eb 完整)。
+  · evidence: evidence/025/ 五件在库(判决曲线/剧本+8-8 记录/mux
+  回归/t07 配置)+ 本记录内复跑摘录(t07 8/8、CLI exit1+prompt、
+  boot 冒烟 [P25-ROWS] 曲线、零 diff 门)· next: **merge**(用户
+  已授权 review→merge 链);合并注意:auto-lang plan-025-dev →
+  master(master 已前移,含 024 修复与 671/672 文档提交);auto-term
+  侧实现已在 main 无代码合并;worktree lang-025 清理留痕。
 
 ## 10. 待澄清事项
 
