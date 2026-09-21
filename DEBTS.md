@@ -371,7 +371,20 @@
   海森堡效应);20GB 内存实录(020 T-01)未在本案复现(全程
   WS 13-15MB)——与 #23/#24 家族不同相,已关闭。
 
-## #26 前端进程 per-tick 缓慢内存泄漏(PLAN-026 复审期发现,2026-09-21;另档 §10.8)
+## #26 前端进程 per-tick 缓慢内存泄漏(PLAN-026 复审期发现,2026-09-21;另档 §10.8)——✅已销账(PLAN-027,2026-09-22,worktree 待 merge)
+
+> **销账**:PLAN-027 定罪+根修。**定罪**:泄漏 ∝ 每请求线程创建数——
+> ①L0 审计确证结果通道三缺陷(超时臂条目泄漏/pending 覆盖竞态/Err
+> 永久 Waiting,均非稳态主因);②L1 判别:同后端同 HTTP 下 a2r 编译
+> 前端 +0.09MB/min vs VM 前端 +2.23MB/min(25 倍差,排除 iced/后端/
+> 共享 client 面,候选②③出局);③坍缩实验:双层线程 2→1 恰半减至
+> +1.15MB/min(churn∝线程数实锤)。**根修**(auto-lang plan-027-dev,
+> 提交 0392499d1):内层线程坍缩为 catch_unwind + 发射路径常驻微池
+> (2 worker×64 队 mpsc,队满 spawn 兜底)+ 三缺陷修复;终局池化
+> 验证斜率回落噪声水位,且 tick busy 预算告警归零(修前 100-143ms
+> 连刷)。规范=auto-lang stdlib/design/async-http-result-lifecycle.md;
+> 回归钉=scripts/repro/027-mem-slope.ps1(阈值 0.5MB/min)+ p027 双单测。
+> 证据=docs/plans/027-split-front-tick-memory-leak.md + evidence/027/。
 
 - **现象**:AutoTerm split 形态(VM 前端)空闲期内存线性爬升
   +1.7MB/min(≈1.4KB/拍,任务管理器 355MB+ 用户实录;两实例同斜率
