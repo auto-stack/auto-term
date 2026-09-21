@@ -429,9 +429,15 @@ commandline = 'cmd.exe'
 9. **app-back main.rs 路由表**:`-r vue` 再生成链在前端 TS 失败点中断,
    未重写 main.rs 路由表(手补 2 行过审;生成物不入库,合并期全量
    再生即消)。与 §10.8 同根。
-10. **PLAN-024 合流协调**:024 分支(auto-term-dev,未并 master)有
-   9 个 `fix(term)` 提交触及 ui/terminal(widget +322 行:抖动根修/
-   圆角/几何源),与 025 A 部同文件不同域(025 = 行缓存/内容层,
-   024 = bind 状态机/样式)。master 基线开发成立;合并时
-   observe/bind 区可能文本冲突,按两计划语义调和(025 不动 bind
-   语义,024 不动行缓存)。
+10. **PLAN-024 合流协调**:[已调和 2026-09-21]024 并入 master 后,
+   master 合进 plan-025-dev(lang-025 e753639c5):mod.rs 字段/构造/
+   函数节全取并集(024 bind 回声组+漂移判别+repin 与 025 锚/store
+   共存,语义互补);component.rs 两边同修取 master 版;sidecar 依赖
+   注入取 master `{ 表达式 }` 形态(pac.at 同步改写);widget.rs
+   自动合并过审(024 observe/bind 重写与 025 缓存/视图锚定共存),
+   terminal 域测试 54/54 绿(含 024 用例)。合并暴露两件:
+   ①024 新增 terminal_canvas_height 引用 terminal::iced(跨特性,
+   ui-only back 编译炸)→ 特性门控修(b639ffccf 前一提交);
+   ②共享客户端 10s 超时误杀 back 引导期(等 banner 轮询 ~10s)
+   → 30s(b639ffccf)。合并后 VM 实机全绿就绪(TW 0/EST 2 复用/
+   tick 出 banner)。
