@@ -147,9 +147,10 @@ widget App {
     }
 
     timer {
-        // PLAN-025 T-04 即时泵:16ms 节拍;满拍门(db.tick_gate)保持
-        // ~48ms 等阶,滚动待排即满拍(消灭快拖半屏空白)。
-        Tick (every_ms: 16)
+        // PLAN-025 修正:50ms 节拍(分离轨 api.*=HTTP,16ms 同步往返
+        // 占死 VM 前端 UI 线程=无响应+内存爬升,用户实录);快滚覆盖
+        // 由预取 N=24 承担(模型:50ms 泵 lead ≤15 行 < 24,零空白)。
+        Tick (every_ms: 50)
     }
 
     on {
@@ -210,9 +211,6 @@ widget App {
             .profile_names = api.term_profile_names()
         }
         .Tick -> {
-            // PLAN-025 T-04:泵节拍门——满拍(~48ms)或滚动待排即开。
-            var gate int = api.tick_gate()
-            if gate == 1 {
             api.term_apply_resize()
             api.get_lines()
             var n int = api.mux_tab_count()
@@ -414,7 +412,6 @@ widget App {
             }
             .cols = api.term_cols()
             .rows = api.term_rows()
-            }
         }
         .KeyIn -> {
             api.term_pump_input()
