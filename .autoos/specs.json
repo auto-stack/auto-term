@@ -272,6 +272,13 @@
         "status": "published",
         "created": "2026-09-21",
         "last_modified": "2026-09-21"
+      },
+      {
+        "id": "P026-1",
+        "section": "reports",
+        "title": "VM split 挂起根修 — 执行报告",
+        "content": "判定(025 域非 024:split 形态 VM api.* 主线程 5ms-sleep 同步忙等 × 每拍 22-68 次调用,app-lab 对照推翻「premerge 正常」)→ T-01 判决工件 rev2→rev6(JSON str 被 a2r 前端转译否决、[]str 管道被 handler 原语面否决,终态=双端点 []int 数值面+[]str 字符串面)→ T-02/T-03 落地(tick-nums/tick-snapshot 双 POST 端点 + app.at Init/Tick/KeyIn 三 handler 聚合消费,[i]/.len/.push/算术原语纪律)→ T-04 忙等预算观测护栏(AUTO_VM_API_BUDGET 门控+超阈 warn)→ T-05 冷启 ready 门(60s 吞错→120s 有界重试+超限显式中止)→ 桥接工程(auto-lang VM i64 语义链六修复+ui_gen List<int> 窄化+api_gen []int 模板)。实机:每拍 HTTP 22-68→4 次,busy 115-295ms→20ms,RESP 恒 False→全程 True,tick 0.7-3.4/s→31/s。执行期用户实测三反馈全收:空闲磁盘 5.4KB/s 日志刷屏(AUTO_VM_TRACE 门控归零)、键盘不接收(014 直键入队列/泵 split 跨进程断裂——$event 载荷跨进程通道修复,回显链路绿)、内存慢爬(DEBT #26 在册)。",
+        "file": "docs/plans/archived/026-vm-split-api-hang-root-fix.md"
       }
     ],
     "goals": [
@@ -546,6 +553,13 @@
         "status": "published",
         "created": "2026-09-21",
         "last_modified": "2026-09-21"
+      },
+      {
+        "id": "P026-2",
+        "section": "goals",
+        "title": "VM split 挂起根修 — 目标影响",
+        "content": "touched_goals=[]:本计划为 025 域缺陷根修(挂起判定→根修→实机验收闭环),不映射 goal 体系增量;受益面=P003-2 绘制管线(每拍数据面批量化)与 P018-2 mux 模型(Tick 聚合契约)的运行时健康度,无规范级 goal 语义变更。",
+        "file": "docs/plans/archived/026-vm-split-api-hang-root-fix.md"
       }
     ],
     "architecture": [
@@ -836,6 +850,13 @@
         "status": "published",
         "created": "2026-09-21",
         "last_modified": "2026-09-21"
+      },
+      {
+        "id": "P026-3",
+        "section": "architecture",
+        "title": "Tick/Init 双端点聚合契约(SD-01)+ api.* 忙等预算观测与冷启 ready 门(SD-02/ADR-22)",
+        "content": "SD-01 auto-term docs/specs/terminal-mux-model.md:POST /api/mux/tick-nums([]int 数值面:ver/win/cols/rows/计数 + rect 段 11×9 定长垫空 + pane 段×7;base=8+(k-1)*9/107)+ tick-snapshot([]str:fkey/tab label 预拼/rect key×11 垫空/pane 行段原样);指纹门控 ver+win_w+win_h 三键嵌入响应(020 F1 语义迁移);副作用端点 apply_resize/get_lines 独立保留(每拍 4 次 HTTP)。SD-02 auto-lang docs/specs/auto-lang/vm/architecture.md ADR-22:忙等预算观测(call_fn_by_name Yield 段+RequestBuilder.send 同构段 thread_local 计,AUTO_VM_API_BUDGET=1 门控,AUTO_VM_API_BUDGET_MS 缺省 100 超阈无条件 warn)+ 冷启 ready 门(start_api_server/start_vm_server 120s 有界重试,超限 kill+显式中止;三调用方接线)。",
+        "file": "docs/plans/archived/026-vm-split-api-hang-root-fix.md"
       }
     ],
     "designs": [
@@ -1116,6 +1137,13 @@
         "status": "published",
         "created": "2026-09-21",
         "last_modified": "2026-09-21"
+      },
+      {
+        "id": "P026-4",
+        "section": "designs",
+        "title": "VM split 挂起根修 — 详细设计与桥接工程",
+        "content": "判决工件演进(§5):JSON str(a2r 前端 json.parse/点访问无转译路径,main.rs:296 字面垃圾实证)→[]str 管道记录(handler 无 split/to_int/get 原语,tmp-probe 实证)→双端点终态(a2r 泛型 []int 映射+VM json_to_vm_value number 数组与 handler 原语面的唯一全交集)。桥接工程:auto-lang VM i64 语义链六处修复(GET_ELEM i64 下标/str 串化分支/TYPE_CAST_I64 宽整 sign-extend/算术宽整臂/序比较宽整兜底;probe i64_probe2..33)、ui_gen handler 局部 List<int> 索引 as i32 窄化(含 shadow 清出)、api_gen []int→Vec<i64> 模板、trans/rust.rs 同语义四点。键入载荷跨进程通道:组件队列 drain 作 $event 侧车(dynamic.rs dispatch 期注入)→ aura oninput 带参编码 → engine_write_raw shim(catalog 三表 id 3000)→ POST /api/term/send-keys 裸写焦点 Pane(merged/split 同构)。规避形态两处在档(§10.6:VM i64 自引用字面赋值、loop 内 push(拼接索引))。",
+        "file": "docs/plans/archived/026-vm-split-api-hang-root-fix.md"
       }
     ],
     "tests": [
@@ -1393,6 +1421,13 @@
         "status": "published",
         "created": "2026-09-21",
         "last_modified": "2026-09-21"
+      },
+      {
+        "id": "P026-5",
+        "section": "tests",
+        "title": "VM split 挂起根修 — 测试与验收证据",
+        "content": "实机:60s 采样 RESP=True 12/12(修前恒 False)+ tick 31/s(修前 0.7-3.4/s)+ waits=4/拍;冷构建 ~100s 场景 ready 门等到 ready→Init 正常完成(t06/ac03-coldbuild-ready-init.log);键盘 SendKeys→echo 回显进快照;磁盘默认静默 0 B/s。回归:t07 8/8 复跑、auto-term workspace 88/0、auto-lang engine 20/0 + ui_gen::rust 74/0 + terminal 3/0(vue 域 23 失败=既有与 master 同口径一致零增量;auto-cache test E0063=既有非 026 面)。spec 投影 SD-01/SD-02 与实现逐项核对一致。evidence:docs/plans/evidence/026/(NOTES 调查档+probe 判决探针链+t06 验收档)。",
+        "file": "docs/plans/archived/026-vm-split-api-hang-root-fix.md"
       }
     ],
     "reviews": [
@@ -1700,6 +1735,13 @@
         "status": "published",
         "created": "2026-09-21",
         "last_modified": "2026-09-21"
+      },
+      {
+        "id": "P026-6",
+        "section": "reviews",
+        "title": "VM split 挂起根修 — 复审与合并收据",
+        "content": "review r1 pass(执行会话内声明,工件重建)@ auto-term cbd5469 / auto-lang 3acd962c9(026 域 6+6 提交):AC-01..06 全过;F-01 probe env 未缓存(P3)/F-02 tick 56.6/s 观察/F-03 ready 端口归属既有语义/F-04 §10 已档债(rust 轨键盘占位、rust 层 per-tick 内存债=DEBTS #26、vm+vm split、VM 规避两处)。merge:auto-lang rebase master(PLAN-039 ui_gen 冲突手工融合:handler_int_list_vars 登记+Value json! 化并存,复验 plan039 16/16+ui_gen::rust 74/0+VM 200 OK/20s)→ range-diff 2-7 全等/1=融合差异 → ff-only master=a3032dcc4(他人 DEBTS WIP stash-pop 保全);auto-term main 天然已含(tip cbd5469);junction 推 merge 摘;archived+cleaned 收据见归档计划 §9。",
+        "file": "docs/plans/archived/026-vm-split-api-hang-root-fix.md"
       }
     ]
   }

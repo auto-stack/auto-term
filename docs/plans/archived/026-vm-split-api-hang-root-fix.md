@@ -2,7 +2,7 @@
 
 ```yaml
 plan_id: PLAN-026
-status: reviewed
+status: archived
 feature_name: VM 前端挂起根修(split api.* 同步忙等)
 author: [investigation session]
 created_at: 2026-09-21T15:05:00+08:00
@@ -463,3 +463,25 @@ dependency_revisions: ~/.auto/libs/stdlib term.at/term.vm.at 安装副本已
 evidence: t06/(新增 ac03-coldbuild-ready-init.log、ac01-review-resp.txt、
 review-rerun-summary.txt)+ 既有 t06/probe 全档 | next: **merge**
 (junction 摘除与 inv-026 worktree 清理归 merge 清理段)
+
+## [merge 2026-09-21 深夜]合并收据(PLAN-026:r2)
+
+- `prepared`:reviewed 基线 auto-term cbd5469 / auto-lang 3acd962c9(rev 2,
+  pass,SD-01/SD-02 已入档与实现核对一致);canonical Spec 无需再动
+  (双侧 spec 随实现提交;~/.auto 安装副本 term.at/term.vm.at 同步在案)。
+- `landed`:auto-lang = rebase master(PLAN-039 ui_gen/rust.rs 单点冲突
+  手工融合:026 的 handler_int_list_vars 登记与 039 的 Value json! 化
+  rhs 并存)→ range-diff 提交 2-7 全等、1=融合差异(复验:plan039
+  16/16 + ui_gen::rust 74/0 + vm::engine 20/0 + AutoTerm 双轨 rust 0 错/
+  VM 200 OK/20s)→ ff-only master = **a3032dcc4**(无 merge commit;主
+  checkout 他人 DEBTS WIP stash→pop 保全);auto-term = main 天然已含
+  (实现直提 main,tip cbd5469)。旧→新映射:4891ea9eb→b360e2a88
+  (融合),548bb054b→3a69c7d68,7c1025ab3→db9b48aa5,5419fcdc6→
+  91b1c425f,8338f9ef5→bb708320f,+2 尾提交等价。
+- `ledger_refreshed`:.autoos/specs.json 六节投影 P026-1..6(reports
+  24/goals 24/architecture 25/designs 24/tests 24/reviews 27;回读
+  验证 P026 ids 齐;原子替换)。
+- `archived`:docs/plans/archived/026-vm-split-api-hang-root-fix.md
+  (git mv),status: archived,completion_kind: **delivered**。
+- `cleaned`:(待执行——inv-026 worktree + plan-026-dev 分支 +
+  .wt/auto-down junction + 组目录;wt-guard 门)。
