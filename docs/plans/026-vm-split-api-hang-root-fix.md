@@ -386,3 +386,20 @@ app.at Tick(每 50ms,fire_timer 主线程同步执行 handler)
 进程写 IO 0-0.1KB/s,echo 回显链路活,Responding=True。
 AC-01 的 tick 速率折算口径自此需显式 `AUTO_VM_TRACE=1`。
 auto-lang plan-026-dev 提交在案;status 保持 execution_done。
+
+### [needs_fix 修复 2 2026-09-21 深夜,用户实机反馈]
+
+用户观察:不失响应、磁盘归零后,**键盘输入不接收**。归因(实测链):
+**split 形态键入载荷跨进程断裂**——014 直键入设计 = 组件 VT 队列
+(TerminalCore,前端进程内存)+ 宿主泵同进程排空裸写;split 形态
+引擎在 back 进程,泵排 back 侧空队列(实证:KeyIn 21/21 成功而字符
+零回显;drain_pending_keys_for 的进程边界)。**非 026 回归**——025
+域 split 架构既有断裂,025 期窗口挂起(无响应)掩盖,026 根修挂起
+后首次显形。修复(载荷改随消息跨进程):$event 侧车(dynamic.rs
+dispatch 期队列 drain 注入)→ aura terminal oninput 带参编码 →
+KeyIn(str) handler → POST /api/term/send-keys → engine_write_raw
+(catalog 三表 id 3000)裸写焦点 Pane;merged/split 双形态同构。
+ui_gen rust 轨 \$event 占位保编译(rust 轨键入载荷断裂与 025 同态,
+带参 oninput 生成器另档 §10.7)。实机:SendKeys→回显进快照绿。
+auto-lang plan-026-dev + auto-term 双侧提交在案;~/.auto 安装副本
+term.at/term.vm.at 已同步(部署件契约)。
