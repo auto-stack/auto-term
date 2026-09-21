@@ -12,6 +12,14 @@
 // 磁吸/钳位在 back 单一真相源。捷径表仍单槽挂载(slot1;019 窗口
 // 全局语义去重惯例)。handler 全内联(019 惯例,widget 内 fn 无 UI 先例)。
 //
+// PLAN-026 T-03:Tick/Init/KeyIn 数据面改 tick-snapshot 聚合消费
+//(每拍 HTTP 22-68 次 → 3 次;split 形态 VM api.* = 主线程同步忙等,
+// 批量化 = 挂起根修)。快照 = []str 混合记录(结构管道分隔 + 行原样
+// 跟段;T-01 rev3:JSON str 形态被 a2r 前端转译否决,json.parse/点访问
+// 无 rust-ui 转译路径);split/to_int 三轨内建。指纹门控 = V 记录
+// ver+win_w+win_h vs 前端存量(020 F1 语义,判变材料移入响应)。滚动
+// 动态面 apply_resize/get_lines 副作用端点独立保留(≤3 次/拍)。
+//
 // 几何常量:tabH = Tab 条行高(逻辑 px;实机标定,resize 免疫——
 // 逻辑 px 不随 DPI 缩放)。
 
@@ -160,289 +168,561 @@ widget App {
         .Init -> {
             api.term_apply_resize()
             api.get_lines()
-            var n int = api.mux_tab_count()
-            var ids List<int> = []
+            // PLAN-026 T-03 rev5:双端点聚合(nums 数值面 + snapshot 字符串
+            // 面;修前 38 次调用)。索引协议见 db.at mux_tick_nums/snapshot
+            // 注释;handler 原语纪律 = [i]/.len()/.push/算术/比较(split/
+            // to_int/get 无 a2r handler 转译路径,tmp-probe 实证)。
+            var ns List<int> = api.mux_tick_nums()
+            var ss List<str> = api.mux_tick_snapshot()
+            var one int = 1
+            .clientW = ns[1]
+            .clientH = ns[2]
+            var ch int = ns[2] - .tabH - .statusH
+            .lastVer = ns[0]
+            .cols = ns[3]
+            .rows = ns[4]
+            // tab 面(label 预拼)
+            var ntabs int = ns[5]
             var labels List<str> = []
             var i int = 0
             loop {
-                if i >= n {
+                if i >= ntabs {
                     break
                 }
-                ids.push(api.mux_tab_id_at(i))
-                var lbl str = api.mux_tab_title_at(i)
-                if api.mux_tab_is_active_at(i) == 1 {
-                    lbl = "● " + lbl
-                }
-                labels.push(lbl)
-                i = i + 1
+                var lw str = ss[1 + i] + ""
+                labels.push(lw)
+                i = i + one
             }
-            .tab_ids = ids
             .tab_labels = labels
-            .clientW = api.mux_window_width()
-            .clientH = api.mux_window_height()
-            .slot1 = api.mux_rect_kind(1)
-            var p1 int = api.mux_rect_pane(1)
-            .key1 = api.mux_rect_key(1)
-            .x1 = api.mux_rect_x(1) * .clientW / 1000
-            .y1 = api.mux_rect_y(1) * (.clientH - .tabH - .statusH) / 1000
-            .w1 = api.mux_rect_w(1) * .clientW / 1000
-            .h1 = api.mux_rect_h(1) * (.clientH - .tabH - .statusH) / 1000
-            .g1c = api.mux_pane_cols(p1)
-            .g1r = api.mux_pane_rows(p1)
-            .lines1 = api.mux_pane_lines(p1)
-            .cr1 = api.mux_pane_cursor_row(p1)
-            .cc1 = api.mux_pane_cursor_col(p1)
-            .slot2 = api.mux_rect_kind(2)
-            .key2 = api.mux_rect_key(2)
-            .x2 = api.mux_rect_x(2) * .clientW / 1000
-            .y2 = api.mux_rect_y(2) * (.clientH - .tabH - .statusH) / 1000
-            .w2 = api.mux_rect_w(2) * .clientW / 1000
-            .h2 = api.mux_rect_h(2) * (.clientH - .tabH - .statusH) / 1000
-            .slot3 = api.mux_rect_kind(3)
-            .key3 = api.mux_rect_key(3)
-            .slot4 = api.mux_rect_kind(4)
-            .key4 = api.mux_rect_key(4)
-            .slot5 = api.mux_rect_kind(5)
-            .key5 = api.mux_rect_key(5)
-            .slot6 = api.mux_rect_kind(6)
-            .key6 = api.mux_rect_key(6)
-            .lastVer = api.mux_layout_version()
-            .cols = api.term_cols()
-            .rows = api.term_rows()
+            // rects 全量应用(nums 槽 k 基址 = 8+(k-1)*9;key = ss
+            // [1+ntabs+k-1];px 换算 ‰→px 与旧逐槽 getter 等价)
+            var kbase int = 1 + ntabs
+            // rects 全量应用(直接索引;槽 k 基址 = 8+(k-1)*9;key = ss)
+            .slot1 = ns[9]
+            .key1 = ss[kbase + 0] + ""
+            .x1 = ns[13] * ns[1] / 1000
+            .y1 = ns[14] * ch / 1000
+            .w1 = ns[15] * ns[1] / 1000
+            .h1 = ns[16] * ch / 1000
+            .slot2 = ns[18]
+            .key2 = ss[kbase + 1] + ""
+            .x2 = ns[22] * ns[1] / 1000
+            .y2 = ns[23] * ch / 1000
+            .w2 = ns[24] * ns[1] / 1000
+            .h2 = ns[25] * ch / 1000
+            .slot3 = ns[27]
+            .key3 = ss[kbase + 2] + ""
+            .x3 = ns[31] * ns[1] / 1000
+            .y3 = ns[32] * ch / 1000
+            .w3 = ns[33] * ns[1] / 1000
+            .h3 = ns[34] * ch / 1000
+            .slot4 = ns[36]
+            .key4 = ss[kbase + 3] + ""
+            .x4 = ns[40] * ns[1] / 1000
+            .y4 = ns[41] * ch / 1000
+            .w4 = ns[42] * ns[1] / 1000
+            .h4 = ns[43] * ch / 1000
+            .slot5 = ns[45]
+            .key5 = ss[kbase + 4] + ""
+            .x5 = ns[49] * ns[1] / 1000
+            .y5 = ns[50] * ch / 1000
+            .w5 = ns[51] * ns[1] / 1000
+            .h5 = ns[52] * ch / 1000
+            .slot6 = ns[54]
+            .key6 = ss[kbase + 5] + ""
+            .x6 = ns[58] * ns[1] / 1000
+            .y6 = ns[59] * ch / 1000
+            .w6 = ns[60] * ns[1] / 1000
+            .h6 = ns[61] * ch / 1000
+            .dv1 = ns[65]
+            .dA1 = ns[66]
+            .dX1 = ns[67] * ns[1] / 1000
+            .dY1 = ns[68] * ch / 1000
+            .dW1 = ns[69] * ns[1] / 1000
+            .dH1 = ns[70] * ch / 1000
+            .dv2 = ns[74]
+            .dA2 = ns[75]
+            .dX2 = ns[76] * ns[1] / 1000
+            .dY2 = ns[77] * ch / 1000
+            .dW2 = ns[78] * ns[1] / 1000
+            .dH2 = ns[79] * ch / 1000
+            .dv3 = ns[83]
+            .dA3 = ns[84]
+            .dX3 = ns[85] * ns[1] / 1000
+            .dY3 = ns[86] * ch / 1000
+            .dW3 = ns[87] * ns[1] / 1000
+            .dH3 = ns[88] * ch / 1000
+            .dv4 = ns[92]
+            .dA4 = ns[93]
+            .dX4 = ns[94] * ns[1] / 1000
+            .dY4 = ns[95] * ch / 1000
+            .dW4 = ns[96] * ns[1] / 1000
+            .dH4 = ns[97] * ch / 1000
+            .dv5 = ns[101]
+            .dA5 = ns[102]
+            .dX5 = ns[103] * ns[1] / 1000
+            .dY5 = ns[104] * ch / 1000
+            .dW5 = ns[105] * ns[1] / 1000
+            .dH5 = ns[106] * ch / 1000
+            var npanes int = ns[7]
+            var pbase int = 107
+            var lcur int = kbase + 11
+            i = 0
+            loop {
+                if i >= npanes {
+                    break
+                }
+                var pb int = pbase + i * 7
+                var nl int = ns[pb + 6]
+                if ns[pb] == 1 {
+                    var acc1 List<str> = []
+                    var q int = 0
+                    loop {
+                        if q >= nl {
+                            break
+                        }
+                        var wq1 str = ss[lcur + q] + ""
+                        acc1.push(wq1)
+                        q = q + one
+                    }
+                    .lines1 = acc1
+                    .g1c = ns[pb + 2]
+                    .g1r = ns[pb + 3]
+                    .cr1 = ns[pb + 4]
+                    .cc1 = ns[pb + 5]
+                }
+                if ns[pb] == 2 {
+                    var acc2 List<str> = []
+                    var q int = 0
+                    loop {
+                        if q >= nl {
+                            break
+                        }
+                        var wq2 str = ss[lcur + q] + ""
+                        acc2.push(wq2)
+                        q = q + one
+                    }
+                    .lines2 = acc2
+                    .g2c = ns[pb + 2]
+                    .g2r = ns[pb + 3]
+                    .cr2 = ns[pb + 4]
+                    .cc2 = ns[pb + 5]
+                }
+                if ns[pb] == 3 {
+                    var acc3 List<str> = []
+                    var q int = 0
+                    loop {
+                        if q >= nl {
+                            break
+                        }
+                        var wq3 str = ss[lcur + q] + ""
+                        acc3.push(wq3)
+                        q = q + one
+                    }
+                    .lines3 = acc3
+                    .g3c = ns[pb + 2]
+                    .g3r = ns[pb + 3]
+                    .cr3 = ns[pb + 4]
+                    .cc3 = ns[pb + 5]
+                }
+                if ns[pb] == 4 {
+                    var acc4 List<str> = []
+                    var q int = 0
+                    loop {
+                        if q >= nl {
+                            break
+                        }
+                        var wq4 str = ss[lcur + q] + ""
+                        acc4.push(wq4)
+                        q = q + one
+                    }
+                    .lines4 = acc4
+                    .g4c = ns[pb + 2]
+                    .g4r = ns[pb + 3]
+                    .cr4 = ns[pb + 4]
+                    .cc4 = ns[pb + 5]
+                }
+                if ns[pb] == 5 {
+                    var acc5 List<str> = []
+                    var q int = 0
+                    loop {
+                        if q >= nl {
+                            break
+                        }
+                        var wq5 str = ss[lcur + q] + ""
+                        acc5.push(wq5)
+                        q = q + one
+                    }
+                    .lines5 = acc5
+                    .g5c = ns[pb + 2]
+                    .g5r = ns[pb + 3]
+                    .cr5 = ns[pb + 4]
+                    .cc5 = ns[pb + 5]
+                }
+                if ns[pb] == 6 {
+                    var acc6 List<str> = []
+                    var q int = 0
+                    loop {
+                        if q >= nl {
+                            break
+                        }
+                        var wq6 str = ss[lcur + q] + ""
+                        acc6.push(wq6)
+                        q = q + one
+                    }
+                    .lines6 = acc6
+                    .g6c = ns[pb + 2]
+                    .g6r = ns[pb + 3]
+                    .cr6 = ns[pb + 4]
+                    .cc6 = ns[pb + 5]
+                }
+                lcur = lcur + nl
+                i = i + one
+            }
             // PLAN-025 T-08:profile 名单一次装载(空配置 = 空菜单,
             // 右键 + 仍可用——default 建_TAB回落缺省 shell)。
             .profile_names = api.term_profile_names()
         }
+
         .Tick -> {
             api.term_apply_resize()
             api.get_lines()
-            var n int = api.mux_tab_count()
-            var ids List<int> = []
+            // PLAN-026 T-03 rev5:双端点聚合(修前稳态 22 次/拍,全量臂
+            // +68)。指纹门控(020 F1 语义)= nums ver/win_w/win_h vs 前端
+            // 存量,判变材料在响应内——探测请求消灭。
+            var ns List<int> = api.mux_tick_nums()
+            var geomChanged int = 0
+            if ns[0] != .lastVer {
+                geomChanged = 1
+            }
+            if ns[1] != .clientW {
+                geomChanged = 1
+            }
+            if ns[2] != .clientH {
+                geomChanged = 1
+            }
+            // 行快照/光标每拍(活输出)——字符串面每拍拉
+            var ss List<str> = api.mux_tick_snapshot()
+            var one int = 1
+            var ntabs int = ns[5]
             var labels List<str> = []
             var i int = 0
             loop {
-                if i >= n {
+                if i >= ntabs {
                     break
                 }
-                ids.push(api.mux_tab_id_at(i))
-                var lbl str = api.mux_tab_title_at(i)
-                if api.mux_tab_is_active_at(i) == 1 {
-                    lbl = "● " + lbl
-                }
-                labels.push(lbl)
-                i = i + 1
+                var lw str = ss[1 + i] + ""
+                labels.push(lw)
+                i = i + one
             }
-            .tab_ids = ids
             .tab_labels = labels
-            // ── F1 版本门:结构未变且窗口尺寸未变则跳过完整 rect 拉取
-            // (稳态 ~019 水位);窗口 resize 不改版本号,须单独触发 ──
-            var ver int = api.mux_layout_version()
-            var nw int = api.mux_window_width()
-            var nh int = api.mux_window_height()
-            var cw int = .clientW
-            var ch int = .clientH - .tabH - .statusH
-            var geomChanged int = 0
-            if ver != .lastVer {
-                geomChanged = 1
-            }
-            if nw != .clientW {
-                geomChanged = 1
-            }
-            if nh != .clientH {
-                geomChanged = 1
-            }
+            var kbase int = 1 + ntabs
             if geomChanged == 1 {
-                .clientW = nw
-                .clientH = nh
-                cw = nw
-                ch = nh - .tabH
+                .clientW = ns[1]
+                .clientH = ns[2]
+                var ch int = ns[2] - .tabH - .statusH
+                .lastVer = ns[0]
+                .cols = ns[3]
+                .rows = ns[4]
+                // rects 直接索引(同 Init;ch 已在本块派生)
+                .slot1 = ns[9]
+                .key1 = ss[kbase + 0] + ""
+                .x1 = ns[13] * ns[1] / 1000
+                .y1 = ns[14] * ch / 1000
+                .w1 = ns[15] * ns[1] / 1000
+                .h1 = ns[16] * ch / 1000
+                .slot2 = ns[18]
+                .key2 = ss[kbase + 1] + ""
+                .x2 = ns[22] * ns[1] / 1000
+                .y2 = ns[23] * ch / 1000
+                .w2 = ns[24] * ns[1] / 1000
+                .h2 = ns[25] * ch / 1000
+                .slot3 = ns[27]
+                .key3 = ss[kbase + 2] + ""
+                .x3 = ns[31] * ns[1] / 1000
+                .y3 = ns[32] * ch / 1000
+                .w3 = ns[33] * ns[1] / 1000
+                .h3 = ns[34] * ch / 1000
+                .slot4 = ns[36]
+                .key4 = ss[kbase + 3] + ""
+                .x4 = ns[40] * ns[1] / 1000
+                .y4 = ns[41] * ch / 1000
+                .w4 = ns[42] * ns[1] / 1000
+                .h4 = ns[43] * ch / 1000
+                .slot5 = ns[45]
+                .key5 = ss[kbase + 4] + ""
+                .x5 = ns[49] * ns[1] / 1000
+                .y5 = ns[50] * ch / 1000
+                .w5 = ns[51] * ns[1] / 1000
+                .h5 = ns[52] * ch / 1000
+                .slot6 = ns[54]
+                .key6 = ss[kbase + 5] + ""
+                .x6 = ns[58] * ns[1] / 1000
+                .y6 = ns[59] * ch / 1000
+                .w6 = ns[60] * ns[1] / 1000
+                .h6 = ns[61] * ch / 1000
+                .dv1 = ns[65]
+                .dA1 = ns[66]
+                .dX1 = ns[67] * ns[1] / 1000
+                .dY1 = ns[68] * ch / 1000
+                .dW1 = ns[69] * ns[1] / 1000
+                .dH1 = ns[70] * ch / 1000
+                .dv2 = ns[74]
+                .dA2 = ns[75]
+                .dX2 = ns[76] * ns[1] / 1000
+                .dY2 = ns[77] * ch / 1000
+                .dW2 = ns[78] * ns[1] / 1000
+                .dH2 = ns[79] * ch / 1000
+                .dv3 = ns[83]
+                .dA3 = ns[84]
+                .dX3 = ns[85] * ns[1] / 1000
+                .dY3 = ns[86] * ch / 1000
+                .dW3 = ns[87] * ns[1] / 1000
+                .dH3 = ns[88] * ch / 1000
+                .dv4 = ns[92]
+                .dA4 = ns[93]
+                .dX4 = ns[94] * ns[1] / 1000
+                .dY4 = ns[95] * ch / 1000
+                .dW4 = ns[96] * ns[1] / 1000
+                .dH4 = ns[97] * ch / 1000
+                .dv5 = ns[101]
+                .dA5 = ns[102]
+                .dX5 = ns[103] * ns[1] / 1000
+                .dY5 = ns[104] * ch / 1000
+                .dW5 = ns[105] * ns[1] / 1000
+                .dH5 = ns[106] * ch / 1000
             }
-            // ── pane 槽 1..6:存在/键/px 矩形/网格/行快照/光标 ──
-            if geomChanged == 1 {
-            .slot1 = api.mux_rect_kind(1)
-            var p1 int = api.mux_rect_pane(1)
-            .key1 = api.mux_rect_key(1)
-            .x1 = api.mux_rect_x(1) * cw / 1000
-            .y1 = api.mux_rect_y(1) * ch / 1000
-            .w1 = api.mux_rect_w(1) * cw / 1000
-            .h1 = api.mux_rect_h(1) * ch / 1000
-            .g1c = api.mux_pane_cols(p1)
-            .g1r = api.mux_pane_rows(p1)
-            .lines1 = api.mux_pane_lines(p1)
-            .cr1 = api.mux_pane_cursor_row(p1)
-            .cc1 = api.mux_pane_cursor_col(p1)
-            .slot2 = api.mux_rect_kind(2)
-            var p2 int = api.mux_rect_pane(2)
-            .key2 = api.mux_rect_key(2)
-            .x2 = api.mux_rect_x(2) * cw / 1000
-            .y2 = api.mux_rect_y(2) * ch / 1000
-            .w2 = api.mux_rect_w(2) * cw / 1000
-            .h2 = api.mux_rect_h(2) * ch / 1000
-            .g2c = api.mux_pane_cols(p2)
-            .g2r = api.mux_pane_rows(p2)
-            .lines2 = api.mux_pane_lines(p2)
-            .cr2 = api.mux_pane_cursor_row(p2)
-            .cc2 = api.mux_pane_cursor_col(p2)
-            .slot3 = api.mux_rect_kind(3)
-            var p3 int = api.mux_rect_pane(3)
-            .key3 = api.mux_rect_key(3)
-            .x3 = api.mux_rect_x(3) * cw / 1000
-            .y3 = api.mux_rect_y(3) * ch / 1000
-            .w3 = api.mux_rect_w(3) * cw / 1000
-            .h3 = api.mux_rect_h(3) * ch / 1000
-            .g3c = api.mux_pane_cols(p3)
-            .g3r = api.mux_pane_rows(p3)
-            .lines3 = api.mux_pane_lines(p3)
-            .cr3 = api.mux_pane_cursor_row(p3)
-            .cc3 = api.mux_pane_cursor_col(p3)
-            .slot4 = api.mux_rect_kind(4)
-            var p4 int = api.mux_rect_pane(4)
-            .key4 = api.mux_rect_key(4)
-            .x4 = api.mux_rect_x(4) * cw / 1000
-            .y4 = api.mux_rect_y(4) * ch / 1000
-            .w4 = api.mux_rect_w(4) * cw / 1000
-            .h4 = api.mux_rect_h(4) * ch / 1000
-            .g4c = api.mux_pane_cols(p4)
-            .g4r = api.mux_pane_rows(p4)
-            .lines4 = api.mux_pane_lines(p4)
-            .cr4 = api.mux_pane_cursor_row(p4)
-            .cc4 = api.mux_pane_cursor_col(p4)
-            .slot5 = api.mux_rect_kind(5)
-            var p5 int = api.mux_rect_pane(5)
-            .key5 = api.mux_rect_key(5)
-            .x5 = api.mux_rect_x(5) * cw / 1000
-            .y5 = api.mux_rect_y(5) * ch / 1000
-            .w5 = api.mux_rect_w(5) * cw / 1000
-            .h5 = api.mux_rect_h(5) * ch / 1000
-            .g5c = api.mux_pane_cols(p5)
-            .g5r = api.mux_pane_rows(p5)
-            .lines5 = api.mux_pane_lines(p5)
-            .cr5 = api.mux_pane_cursor_row(p5)
-            .cc5 = api.mux_pane_cursor_col(p5)
-            .slot6 = api.mux_rect_kind(6)
-            var p6 int = api.mux_rect_pane(6)
-            .key6 = api.mux_rect_key(6)
-            .x6 = api.mux_rect_x(6) * cw / 1000
-            .y6 = api.mux_rect_y(6) * ch / 1000
-            .w6 = api.mux_rect_w(6) * cw / 1000
-            .h6 = api.mux_rect_h(6) * ch / 1000
-            .g6c = api.mux_pane_cols(p6)
-            .g6r = api.mux_pane_rows(p6)
-            .lines6 = api.mux_pane_lines(p6)
-            .cr6 = api.mux_pane_cursor_row(p6)
-            .cc6 = api.mux_pane_cursor_col(p6)
-            // ── divider 槽(back 槽 7..11)──
-            .dv1 = api.mux_rect_branch(7)
-            .dA1 = api.mux_rect_axis(7)
-            .dX1 = api.mux_rect_x(7) * cw / 1000
-            .dY1 = api.mux_rect_y(7) * ch / 1000
-            .dW1 = api.mux_rect_w(7) * cw / 1000
-            .dH1 = api.mux_rect_h(7) * ch / 1000
-            .dv2 = api.mux_rect_branch(8)
-            .dA2 = api.mux_rect_axis(8)
-            .dX2 = api.mux_rect_x(8) * cw / 1000
-            .dY2 = api.mux_rect_y(8) * ch / 1000
-            .dW2 = api.mux_rect_w(8) * cw / 1000
-            .dH2 = api.mux_rect_h(8) * ch / 1000
-            .dv3 = api.mux_rect_branch(9)
-            .dA3 = api.mux_rect_axis(9)
-            .dX3 = api.mux_rect_x(9) * cw / 1000
-            .dY3 = api.mux_rect_y(9) * ch / 1000
-            .dW3 = api.mux_rect_w(9) * cw / 1000
-            .dH3 = api.mux_rect_h(9) * ch / 1000
-            .dv4 = api.mux_rect_branch(10)
-            .dA4 = api.mux_rect_axis(10)
-            .dX4 = api.mux_rect_x(10) * cw / 1000
-            .dY4 = api.mux_rect_y(10) * ch / 1000
-            .dW4 = api.mux_rect_w(10) * cw / 1000
-            .dH4 = api.mux_rect_h(10) * ch / 1000
-            .dv5 = api.mux_rect_branch(11)
-            .dA5 = api.mux_rect_axis(11)
-            .dX5 = api.mux_rect_x(11) * cw / 1000
-            .dY5 = api.mux_rect_y(11) * ch / 1000
-            .dW5 = api.mux_rect_w(11) * cw / 1000
-            .dH5 = api.mux_rect_h(11) * ch / 1000
-            .lastVer = ver
+            // ── 行快照/光标/网格每拍(pane 段与行段镜像游标)──
+            var npanes int = ns[7]
+            var pbase int = 107
+            var lcur int = kbase + 11
+            i = 0
+            loop {
+                if i >= npanes {
+                    break
+                }
+                var pb int = pbase + i * 7
+                var nl int = ns[pb + 6]
+                if ns[pb] == 1 {
+                    var acc1 List<str> = []
+                    var q int = 0
+                    loop {
+                        if q >= nl {
+                            break
+                        }
+                        var wq1 str = ss[lcur + q] + ""
+                        acc1.push(wq1)
+                        q = q + one
+                    }
+                    .lines1 = acc1
+                    .g1c = ns[pb + 2]
+                    .g1r = ns[pb + 3]
+                    .cr1 = ns[pb + 4]
+                    .cc1 = ns[pb + 5]
+                }
+                if ns[pb] == 2 {
+                    var acc2 List<str> = []
+                    var q int = 0
+                    loop {
+                        if q >= nl {
+                            break
+                        }
+                        var wq2 str = ss[lcur + q] + ""
+                        acc2.push(wq2)
+                        q = q + one
+                    }
+                    .lines2 = acc2
+                    .g2c = ns[pb + 2]
+                    .g2r = ns[pb + 3]
+                    .cr2 = ns[pb + 4]
+                    .cc2 = ns[pb + 5]
+                }
+                if ns[pb] == 3 {
+                    var acc3 List<str> = []
+                    var q int = 0
+                    loop {
+                        if q >= nl {
+                            break
+                        }
+                        var wq3 str = ss[lcur + q] + ""
+                        acc3.push(wq3)
+                        q = q + one
+                    }
+                    .lines3 = acc3
+                    .g3c = ns[pb + 2]
+                    .g3r = ns[pb + 3]
+                    .cr3 = ns[pb + 4]
+                    .cc3 = ns[pb + 5]
+                }
+                if ns[pb] == 4 {
+                    var acc4 List<str> = []
+                    var q int = 0
+                    loop {
+                        if q >= nl {
+                            break
+                        }
+                        var wq4 str = ss[lcur + q] + ""
+                        acc4.push(wq4)
+                        q = q + one
+                    }
+                    .lines4 = acc4
+                    .g4c = ns[pb + 2]
+                    .g4r = ns[pb + 3]
+                    .cr4 = ns[pb + 4]
+                    .cc4 = ns[pb + 5]
+                }
+                if ns[pb] == 5 {
+                    var acc5 List<str> = []
+                    var q int = 0
+                    loop {
+                        if q >= nl {
+                            break
+                        }
+                        var wq5 str = ss[lcur + q] + ""
+                        acc5.push(wq5)
+                        q = q + one
+                    }
+                    .lines5 = acc5
+                    .g5c = ns[pb + 2]
+                    .g5r = ns[pb + 3]
+                    .cr5 = ns[pb + 4]
+                    .cc5 = ns[pb + 5]
+                }
+                if ns[pb] == 6 {
+                    var acc6 List<str> = []
+                    var q int = 0
+                    loop {
+                        if q >= nl {
+                            break
+                        }
+                        var wq6 str = ss[lcur + q] + ""
+                        acc6.push(wq6)
+                        q = q + one
+                    }
+                    .lines6 = acc6
+                    .g6c = ns[pb + 2]
+                    .g6r = ns[pb + 3]
+                    .cr6 = ns[pb + 4]
+                    .cc6 = ns[pb + 5]
+                }
+                lcur = lcur + nl
+                i = i + one
             }
-            // 行快照/光标每拍刷新(活输出);网格/矩形仅在几何变化时更新
-            var q1 int = api.mux_rect_pane(1)
-            if .slot1 == 1 {
-                .lines1 = api.mux_pane_lines(q1)
-                .cr1 = api.mux_pane_cursor_row(q1)
-                .cc1 = api.mux_pane_cursor_col(q1)
-                .g1c = api.mux_pane_cols(q1)
-                .g1r = api.mux_pane_rows(q1)
-            }
-            var q2 int = api.mux_rect_pane(2)
-            if .slot2 == 1 {
-                .lines2 = api.mux_pane_lines(q2)
-                .cr2 = api.mux_pane_cursor_row(q2)
-                .cc2 = api.mux_pane_cursor_col(q2)
-                .g2c = api.mux_pane_cols(q2)
-                .g2r = api.mux_pane_rows(q2)
-            }
-            var q3 int = api.mux_rect_pane(3)
-            if .slot3 == 1 {
-                .lines3 = api.mux_pane_lines(q3)
-                .cr3 = api.mux_pane_cursor_row(q3)
-                .cc3 = api.mux_pane_cursor_col(q3)
-                .g3c = api.mux_pane_cols(q3)
-                .g3r = api.mux_pane_rows(q3)
-            }
-            var q4 int = api.mux_rect_pane(4)
-            if .slot4 == 1 {
-                .lines4 = api.mux_pane_lines(q4)
-                .cr4 = api.mux_pane_cursor_row(q4)
-                .cc4 = api.mux_pane_cursor_col(q4)
-                .g4c = api.mux_pane_cols(q4)
-                .g4r = api.mux_pane_rows(q4)
-            }
-            var q5 int = api.mux_rect_pane(5)
-            if .slot5 == 1 {
-                .lines5 = api.mux_pane_lines(q5)
-                .cr5 = api.mux_pane_cursor_row(q5)
-                .cc5 = api.mux_pane_cursor_col(q5)
-                .g5c = api.mux_pane_cols(q5)
-                .g5r = api.mux_pane_rows(q5)
-            }
-            var q6 int = api.mux_rect_pane(6)
-            if .slot6 == 1 {
-                .lines6 = api.mux_pane_lines(q6)
-                .cr6 = api.mux_pane_cursor_row(q6)
-                .cc6 = api.mux_pane_cursor_col(q6)
-                .g6c = api.mux_pane_cols(q6)
-                .g6r = api.mux_pane_rows(q6)
-            }
-            .cols = api.term_cols()
-            .rows = api.term_rows()
         }
+
         .KeyIn -> {
+            // PLAN-026 T-03 rev5:键入路径同双端点快照(修前 12 次调用/击;
+            // nums 定位槽/光标,snapshot 取行段)。
             api.term_pump_input()
-            var p1 int = api.mux_rect_pane(1)
-            .lines1 = api.mux_pane_lines(p1)
-            .cr1 = api.mux_pane_cursor_row(p1)
-            .cc1 = api.mux_pane_cursor_col(p1)
-            var p2 int = api.mux_rect_pane(2)
-            .lines2 = api.mux_pane_lines(p2)
-            .cr2 = api.mux_pane_cursor_row(p2)
-            .cc2 = api.mux_pane_cursor_col(p2)
-            var p3 int = api.mux_rect_pane(3)
-            .lines3 = api.mux_pane_lines(p3)
-            .cr3 = api.mux_pane_cursor_row(p3)
-            .cc3 = api.mux_pane_cursor_col(p3)
-            var p4 int = api.mux_rect_pane(4)
-            .lines4 = api.mux_pane_lines(p4)
-            .cr4 = api.mux_pane_cursor_row(p4)
-            .cc4 = api.mux_pane_cursor_col(p4)
-            var p5 int = api.mux_rect_pane(5)
-            .lines5 = api.mux_pane_lines(p5)
-            .cr5 = api.mux_pane_cursor_row(p5)
-            .cc5 = api.mux_pane_cursor_col(p5)
-            var p6 int = api.mux_rect_pane(6)
-            .lines6 = api.mux_pane_lines(p6)
-            .cr6 = api.mux_pane_cursor_row(p6)
-            .cc6 = api.mux_pane_cursor_col(p6)
+            var ns List<int> = api.mux_tick_nums()
+            var ss List<str> = api.mux_tick_snapshot()
+            var one int = 1
+            var ntabs int = ns[5]
+            var npanes int = ns[7]
+            var pbase int = 107
+            var lcur int = 1 + ntabs + 11
+            var i int = 0
+            loop {
+                if i >= npanes {
+                    break
+                }
+                var pb int = pbase + i * 7
+                var nl int = ns[pb + 6]
+                if ns[pb] == 1 {
+                    var acc1 List<str> = []
+                    var q int = 0
+                    loop {
+                        if q >= nl {
+                            break
+                        }
+                        var wq1 str = ss[lcur + q] + ""
+                        acc1.push(wq1)
+                        q = q + one
+                    }
+                    .lines1 = acc1
+                    .cr1 = ns[pb + 4]
+                    .cc1 = ns[pb + 5]
+                }
+                if ns[pb] == 2 {
+                    var acc2 List<str> = []
+                    var q int = 0
+                    loop {
+                        if q >= nl {
+                            break
+                        }
+                        var wq2 str = ss[lcur + q] + ""
+                        acc2.push(wq2)
+                        q = q + one
+                    }
+                    .lines2 = acc2
+                    .cr2 = ns[pb + 4]
+                    .cc2 = ns[pb + 5]
+                }
+                if ns[pb] == 3 {
+                    var acc3 List<str> = []
+                    var q int = 0
+                    loop {
+                        if q >= nl {
+                            break
+                        }
+                        var wq3 str = ss[lcur + q] + ""
+                        acc3.push(wq3)
+                        q = q + one
+                    }
+                    .lines3 = acc3
+                    .cr3 = ns[pb + 4]
+                    .cc3 = ns[pb + 5]
+                }
+                if ns[pb] == 4 {
+                    var acc4 List<str> = []
+                    var q int = 0
+                    loop {
+                        if q >= nl {
+                            break
+                        }
+                        var wq4 str = ss[lcur + q] + ""
+                        acc4.push(wq4)
+                        q = q + one
+                    }
+                    .lines4 = acc4
+                    .cr4 = ns[pb + 4]
+                    .cc4 = ns[pb + 5]
+                }
+                if ns[pb] == 5 {
+                    var acc5 List<str> = []
+                    var q int = 0
+                    loop {
+                        if q >= nl {
+                            break
+                        }
+                        var wq5 str = ss[lcur + q] + ""
+                        acc5.push(wq5)
+                        q = q + one
+                    }
+                    .lines5 = acc5
+                    .cr5 = ns[pb + 4]
+                    .cc5 = ns[pb + 5]
+                }
+                if ns[pb] == 6 {
+                    var acc6 List<str> = []
+                    var q int = 0
+                    loop {
+                        if q >= nl {
+                            break
+                        }
+                        var wq6 str = ss[lcur + q] + ""
+                        acc6.push(wq6)
+                        q = q + one
+                    }
+                    .lines6 = acc6
+                    .cr6 = ns[pb + 4]
+                    .cc6 = ns[pb + 5]
+                }
+                lcur = lcur + nl
+                i = i + one
+            }
         }
+
         // PLAN-015:右键菜单 Interrupt 项(载荷 3)→ term_interrupt()。
         .Menu -> {
             var item int = api.term_menu_take()

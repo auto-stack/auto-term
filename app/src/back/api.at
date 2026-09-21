@@ -185,6 +185,21 @@ pub fn mux_snapshot() str {
     return db.mux_snapshot()
 }
 
+/// Tick/Init 数值面聚合(PLAN-026 T-02:每拍 HTTP 22-68 次 → ≤4;[]int
+/// 布局见 db.at mux_tick_nums 注释——指纹 ver/win_w/win_h + rect/pane
+/// 网格光标全数值面。POST 惯例:与 /api/term/tick 每拍驱动面同族)。
+#[api(method = "POST", path = "/api/mux/tick-nums")]
+pub fn mux_tick_nums() []int {
+    return db.mux_tick_nums()
+}
+
+/// Tick/Init 字符串面聚合(与 tick-nums 同拍成对;[]str:fkey + tab
+/// label 预拼 + rect key + pane 行段原样——零解析消费)。
+#[api(method = "POST", path = "/api/mux/tick-snapshot")]
+pub fn mux_tick_snapshot() []str {
+    return db.mux_tick_snapshot()
+}
+
 /// 焦点 Pane 视口宽(db 同步值)。
 #[api(method = "GET", path = "/api/mux/cols")]
 pub fn mux_cols() int {

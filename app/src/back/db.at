@@ -1356,6 +1356,188 @@ pub fn mux_snapshot() str {
     return out
 }
 
+// ── PLAN-026 T-02:Tick/Init 数据面聚合快照(批量化根修)──────────────
+// 判决工件 = 本计划 §5 "T-01 判决工件"(rev2→rev5 演进,见该节)。每拍
+// HTTP 22-68 次 → 4 次(apply_resize/get_lines 副作用端点独立保留 +
+// 下列两读端点)。契约 = 双端点镜像布局:
+//   mux_tick_nums()  []int 数值面   mux_tick_snapshot() []str 字符串面
+// 形态裁剪实证链:JSON str 被 a2r 前端否决(json.parse 无 rust-ui 转译
+// 路径);[]str 管道记录被否决(handler 无 split/to_int/get——tmp-probe
+// ui-probe 实证,可用原语仅 [i]/.len()/.push/比较/算术);[]int+[]str
+// 双端点 = 三轨(a2r 泛型类型映射 + VM json_to_vm_value number 数组)
+// 与 handler 原语面的唯一全交集。指纹 = nums[0..3](ver/win_w/win_h)
+// vs 前端存量(020 F1 门控语义,判变材料移入响应)。
+// 槽 chrome 常量(Tab 条 40 + 状态栏 24 = 64 逻辑 px)与前端模型
+// tabH/statusH 同步契约,改动须双侧。
+
+/// Tick/Init 数值面聚合(nums;rects_ready 一次触发,epoch 失效重算
+/// 至多一次/拍)。布局(定长头 + 定长 rect 段 + 变长 pane 段):
+///   [0]ver [1]win_w [2]win_h [3]cols [4]rows
+///   [5]ntabs [6]nrects(恒 11) [7]npanes
+///   rect 段 11 条 × 9:base=8+(k-1)*9 → +0k +1t +2p +3b +4a +5x +6y +7w +8h
+///     (pane 槽 b=0/a=-1;divider 槽 p=0;x/y/w/h = ‰)
+///   pane 段 npanes 条 × 7:base=8+99+i*7 → +0s(槽号) +1p +2c +3r +4cr +5cc +6nl
+///     (s/p/c/r/cr/cc 网格光标;nl = 行数,对应 snapshot 行段游标)
+pub fn mux_tick_nums() List<int> {
+    rects_ready()
+    var out List<int> = []
+    var npanes int = 0
+    var si int = 1
+    loop {
+        if si > MAX_PANES {
+            break
+        }
+        var skind int = rect_at(rect_kind, si)
+        var spid int = rect_at(rect_pane, si)
+        if skind == 1 {
+            if pane_index(spid) >= 0 {
+                npanes = npanes + 1
+            }
+        }
+        si = si + 1
+    }
+    out.push(layout_epoch)
+    out.push(window_width())
+    out.push(window_height())
+    out.push(cols)
+    out.push(rows)
+    out.push(tab_ids.len())
+    out.push(11)
+    out.push(npanes)
+    // rect 氛围(槽 1..11 定长垫空——divider 槽实际数可 < 5,前端按定长
+    // 偏移读,越界 = IndexError;空槽全零记录)。
+    var i int = 0
+    loop {
+        if i >= 11 {
+            break
+        }
+        var kk int = 0
+        var tt int = 0
+        var pp int = 0
+        var bb int = 0
+        var aa int = 0
+        var xx int = 0
+        var yy int = 0
+        var ww int = 0
+        var hh int = 0
+        if i < rect_kind.len() {
+            kk = i + 1
+            tt = rect_kind.get(i)
+            pp = rect_pane.get(i)
+            bb = rect_branch.get(i)
+            aa = rect_axis.get(i)
+            xx = rect_x.get(i)
+            yy = rect_y.get(i)
+            ww = rect_w.get(i)
+            hh = rect_h.get(i)
+        }
+        out.push(kk)
+        out.push(tt)
+        out.push(pp)
+        out.push(bb)
+        out.push(aa)
+        out.push(xx)
+        out.push(yy)
+        out.push(ww)
+        out.push(hh)
+        i = i + 1
+    }
+    // pane 段(可见槽序;engine_rows_for 同拍共馈语义保持 = mux_pane_lines
+    // 逐槽调用;cursor 先落 var——engine 面不内联约束)。
+    i = 1
+    loop {
+        if i > MAX_PANES {
+            break
+        }
+        var kind int = rect_at(rect_kind, i)
+        var pid int = rect_at(rect_pane, i)
+        if kind == 1 {
+            var pi int = pane_index(pid)
+            if pi >= 0 {
+                var ph int = pane_handles.get(pi)
+                var pk str = pane_keys.get(pi)
+                var crv int = engine_cursor_row(ph)
+                var ccv int = engine_cursor_col(ph)
+                var ls List<str> = engine_rows_for(ph, pk)
+                out.push(i)
+                out.push(pid)
+                out.push(pane_cols.get(pi))
+                out.push(pane_rows.get(pi))
+                out.push(crv)
+                out.push(ccv)
+                out.push(ls.len())
+            }
+        }
+        i = i + 1
+    }
+    return out
+}
+
+/// Tick/Init 字符串面聚合(snapshot;与 mux_tick_nums 同拍成对调用,
+/// 布局镜像:nums pane 段顺序 = 本函数行段顺序)。布局:
+///   [0] fkey(焦点 pane key)
+///   [1 .. 1+ntabs) tab label 预拼(活动前缀 "● " 已含)
+///   [1+ntabs .. 1+ntabs+11) rect key(空槽/divider 槽 "")
+///   其后:pane 行段(每 pane nl 行原样,顺序与 nums pane 段一致;
+///   行内容含 "|" 安全——零解析,原样投喂)
+pub fn mux_tick_snapshot() List<str> {
+    rects_ready()
+    var out List<str> = []
+    out.push(mux_focus_key_inner())
+    var i int = 0
+    var n int = tab_ids.len()
+    loop {
+        if i >= n {
+            break
+        }
+        var lbl str = mux_tab_title_at(i)
+        if tab_ids.get(i) == ws_active_tab {
+            lbl = "● " + lbl
+        }
+        out.push(lbl)
+        i = i + 1
+    }
+    i = 0
+    loop {
+        if i >= 11 {
+            break
+        }
+        var kk str = ""
+        if i < rect_key.len() {
+            kk = rect_key.get(i)
+        }
+        out.push(kk)
+        i = i + 1
+    }
+    i = 1
+    loop {
+        if i > MAX_PANES {
+            break
+        }
+        var kind int = rect_at(rect_kind, i)
+        var pid int = rect_at(rect_pane, i)
+        if kind == 1 {
+            var pi int = pane_index(pid)
+            if pi >= 0 {
+                var ph int = pane_handles.get(pi)
+                var pk str = pane_keys.get(pi)
+                var ls List<str> = engine_rows_for(ph, pk)
+                var m int = ls.len()
+                var j int = 0
+                loop {
+                    if j >= m {
+                        break
+                    }
+                    out.push(ls.get(j))
+                    j = j + 1
+                }
+            }
+        }
+        i = i + 1
+    }
+    return out
+}
+
 // ══════════════════════════════════════════════════════════════════
 // tick 驱动 + term_* 焦点 Pane 门面(PLAN-018 D7)
 // ══════════════════════════════════════════════════════════════════
