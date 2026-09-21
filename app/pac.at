@@ -46,5 +46,5 @@ rust_sidecar {
     modules: ["term:term.rs"]
     // PLAN-025:autoterm-config 经 path 注入(sidecar 注入器 path: 形态;
     // rel 相对生成 crate 目录 = app/rust-workspace/<member>)。
-    deps: ["libloading:0.8", "autoterm-config:{ path = '../../../crates/autoterm-config' }"]
+    deps: ["libloading:0.8", "autoterm-config:path:../../../crates/autoterm-config"]
 }

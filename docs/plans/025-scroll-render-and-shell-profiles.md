@@ -318,6 +318,17 @@ commandline = 'cmd.exe'
   平稳 6MB;前端余 ~2MB/min 疑 VM 解释器字符串 arena 只增(VM 级
   既有行为,另立债,非 025 域)。挂起机制未最终定因(疑泄漏+线程
   churn 被 16ms 拍放大;50ms+泄漏修后待用户复证)。
+  [合并后 VM 前端挂起 · 未解 2026-09-21]024 并入后 VM 前端(split)
+  启动即烧 CPU(~1 核)且窗口未响应;解释器 tick 正常、终端 widget
+  近乎空转(P024_TRACE 观察 11 帧/滚轮 0/P25 重排 2——挂点在 VM 宿主
+  主循环,非 025/024 终端代码);rust 轨(同合并代码)boot 冒烟正常;
+  纯 025/纯 024 二进制各自正常,仅合并态复现。排查战场事故三件已清:
+  陈旧 auto.exe(11:40 后未重建,旧注入器毒化 app-back 清单为带引号
+  非法 TOML)+ 两支失控二分 runner(异名躲过 taskkill,持续杀 17401
+  监听/重发起构建)+ master 侧 terminal_canvas_height 未门控(本分支
+  已修 9d949a699,master 待回流)。合并态后端已痊愈(tick 2.9ms/
+  banner/ready,vm28)。下一步:栈转储定位宿主循环热点(或按合并
+  delta 二分前端二进制,严格单实例异名管理)。
   [VM 轨开通 2026-09-20 · lang-025 69661c091 + auto-term 0066b7d]
   vm shim 同款修复链接线(锚/防抖标记/预取/探针;config_* 空集
   stub=§10.2 非目标);VM 轨现行架构实证 = vm front + rust back
