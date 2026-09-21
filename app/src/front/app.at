@@ -36,6 +36,9 @@ widget App {
         var tab_labels List<str> = []
         // scheme(0=classic-dark 1=light;按钮/快捷键循环)
         var scheme int = 0
+        // 状态栏底色随 scheme(fix-statusbar-style:dark=深灰,light 保留
+        // 024 桌面轨窗框米色;原静态 #e9e4d8 在深色模式下过亮,用户裁定)
+        var status_bg str = "#282d34"
         // ── 矩形投影槽面(PLAN-020;tick 从 rect-* getters 刷新)──
         // 窗口 client 逻辑 px 与内容区高(Tab 条高恒定扣除)
         var clientW int = 802
@@ -843,6 +846,12 @@ widget App {
             } else {
                 .scheme = 1
             }
+            // 状态栏底色跟随(fix-statusbar-style)
+            if .scheme == 0 {
+                .status_bg = "#282d34"
+            } else {
+                .status_bg = "#e9e4d8"
+            }
         }
         // WT 风格快捷键分派(§5 D5 表;019 窗口全局语义):
         // 1 新Tab / 2 关Pane / 3 横分 / 4 纵分 / 5 zoom /
@@ -1220,7 +1229,7 @@ widget App {
             // 同径),分屏拓扑无关;编辑器状态栏同款。内容 = 焦点 pane
             // 计数 + 引擎网格几何。
             row {
-                style: "w-full h-[24px] rounded-b-[15px] bg-[#e9e4d8] px-3 items-center justify-between"
+                style: f"w-full h-[24px] rounded-b-[15px] bg-[${.status_bg}] px-3 items-center justify-between"
                 text "◉ AutoTerm mux" { style: "text-xs" }
                 text f"${.cols}×${.rows}" { style: "text-xs" }
             }
