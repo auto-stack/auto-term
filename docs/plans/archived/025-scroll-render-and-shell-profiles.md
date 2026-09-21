@@ -507,7 +507,13 @@ commandline = 'cmd.exe'
   - **archived**:`docs/plans/archived/025-scroll-render-and-shell-
     profiles.md`(git mv),status: archived,completion_kind:
     delivered。
-  - **cleaned**:(待 worktree 清理后回填)
+  - **cleaned**:worktree `D:/autostack/.wt/lang-025/auto-lang` 移除
+    (wt-guard clean 三查:无 reparse point/工作树干净/HEAD=master
+    22b650a76)→ 分支 plan-025-dev 删除(22b650a76)→ 注册 prune
+    (列表零残留)→ 源树随 git worktree remove 除净,残余 target/
+    等构建产物 rm -rf 清零。组目录 `.wt/lang-025/` 保留:内含
+    **另一仓 worktree(auto-down,gitdir auto-down5)**,非本计划
+    域,不越权移除(留待其归属流程)。
 
 ## 10. 待澄清事项
 
