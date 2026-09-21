@@ -301,6 +301,14 @@ commandline = 'cmd.exe'
   T-04 悬置条款触发)。修:T-04 即时泵启用(泵节拍门 16ms + N=24,
   lang-025 3f3187885 + auto-term 65bd133);p025 9/9、载具重建
   boot 冒烟绿(门生成生效 tick_interval_ms=16)。
+  [VM 挂起+内存爬升根修 2026-09-21 · lang-025 935a3cd61]用户勘正
+  两点成立:auto.http.* native 异步非阻塞(Plan 349 yield/retry 设计,
+  "同步阻塞 UI"表述作废);泄漏 = ASYNC_RESULTS 表消费(get_mut+take)
+  不删键、req_id 单调 → split 形态通用无界增长(本应用每 tick 数十次
+  api 调用故显眼)——五处消费点改 map.remove 语义。修后实测:后端
+  平稳 6MB;前端余 ~2MB/min 疑 VM 解释器字符串 arena 只增(VM 级
+  既有行为,另立债,非 025 域)。挂起机制未最终定因(疑泄漏+线程
+  churn 被 16ms 拍放大;50ms+泄漏修后待用户复证)。
   [VM 轨开通 2026-09-20 · lang-025 69661c091 + auto-term 0066b7d]
   vm shim 同款修复链接线(锚/防抖标记/预取/探针;config_* 空集
   stub=§10.2 非目标);VM 轨现行架构实证 = vm front + rust back
