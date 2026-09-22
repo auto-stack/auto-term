@@ -289,6 +289,16 @@
           "PLAN-027"
         ],
         "file": "docs/plans/archived/027-split-front-tick-memory-leak.md"
+      },
+      {
+        "id": "P028-1",
+        "section": "reports",
+        "title": "分体轨 resize 断链根修(client-size 推送+探针跨界桥+history 回流) — 变更摘要",
+        "content": "三症状同根(几何真值到不了 mux 后端:spawn 100×30 冻结/死带/滚动条消失)三段桥修毕。机制 rev2(as-built):①SD-01 读序=分体存值(>0)优先→theme 回落,存值=renderer 变化才发布 vm.window_inner_*(storage host),back 经 AUTO_VM_STORAGE_FILE 钉扎共享文件新鲜拉取(端点取消:str→int 无 a2r handler 路径+storage CWD 哈希跨进程断链双实证);②SD-02 桥端点 POST /api/mux/pane-resize-request(key,geom \"CxR\" 串,.at 零解析)→engine_pend_resize_geom→terminal_pend_resize 惰性建核落 pending,既有 apply 泵零改消费;③SD-03 nums 尾段 history(107+7n+i)为验证面,运行时供给=rust 直达回流(back 变化才发布 vm.term_hist/off.<key>,widget ≤150ms 节流读取落 core)。实机:拉窗双向≤2 泵拍随动(84x25→121x47→93x32)、死带直方图 0、0 尺寸护栏实测、文本渲染修复。新 shims 3002/3003。",
+        "related": [
+          "PLAN-028"
+        ],
+        "file": "docs/plans/archived/028-split-resize-chain-revival.md"
       }
     ],
     "goals": [
@@ -580,6 +590,16 @@
           "PLAN-027"
         ],
         "file": "docs/plans/archived/027-split-front-tick-memory-leak.md"
+      },
+      {
+        "id": "P028-2",
+        "section": "goals",
+        "title": "分体轨 resize 断链根修 — 目标",
+        "content": "G1 拉窗跟随(≤2 泵拍,014 一帧滞后语义不变)✓;G2 死带消除(内容区无 bg-background 露底)✓;G3 滚动条回归(history 回流,022 bind/贴底不回退)✓[F-02 滚离预取窗供给缺口另档];G4 桌面轨零回退(024 口径)✓[代码零触及+域测绿,桌面宿主实机复跑荐 merge 门]。非目标:CJK 渲染(缺陷②)/状态栏(③已修)/内存泄漏(027 承接)。",
+        "related": [
+          "PLAN-028"
+        ],
+        "file": "docs/plans/archived/028-split-resize-chain-revival.md"
       }
     ],
     "architecture": [
@@ -887,6 +907,16 @@
           "PLAN-027"
         ],
         "file": "docs/plans/archived/027-split-front-tick-memory-leak.md"
+      },
+      {
+        "id": "P028-3",
+        "section": "architecture",
+        "title": "分体轨 resize 断链根修 — 三段桥架构",
+        "content": "前端真值(渲染器/014 探针)→storage 发布(变化才发布,防每帧字符串风暴)→前端 .at 变化才推(探针;client-size 由 back 拉取)→back 存值+per-key pending 写入→既有每拍 apply 泵(焦点定向)→引擎随动→tick-nums 尾段 history 回流→前端 core→虚拟画布/滚动条。落表权限扩面:ui::terminal 新增 terminal_pend_resize(后端进程惰性 (0,0) 占位建核)。退化护栏三层(探针 cols≥2/桥端 014 同款拒收/back stored>0 才收)。",
+        "related": [
+          "PLAN-028"
+        ],
+        "file": "docs/plans/archived/028-split-resize-chain-revival.md"
       }
     ],
     "designs": [
@@ -1184,6 +1214,16 @@
           "PLAN-027"
         ],
         "file": "docs/plans/archived/027-split-front-tick-memory-leak.md"
+      },
+      {
+        "id": "P028-4",
+        "section": "designs",
+        "title": "分体轨 resize 断链根修 — as-built 设计与 F-01 绕行",
+        "content": "SD-01 窗口尺寸面读序(term.rs 存值层)/SD-02 几何桥端点(geom 串形态)/SD-03 tick-nums 尾段,as-built 定稿见计划 §2。F-01(重大发现):VM 轨视图模板编译器对 terminal 新 prop 名触发 FN_PROLOG 毒化(名字级/值无关/3-3 复现,handler_App_Init 被丢→前端空面;rust 轨 ui_gen 同 prop 正常)——.at history prop 通路禁用,rust 直达通道替代;编译器根修另立计划。新原语:terminal_pend_resize/storage_host_read_fresh(穿透 load-once 首读冻结)/engine_pend_resize_geom/engine_history(shims 3002/3003,29xx 满续 3000 带)。a2r 侧车约定:fn 参数位 str=&str。",
+        "related": [
+          "PLAN-028"
+        ],
+        "file": "docs/plans/archived/028-split-resize-chain-revival.md"
       }
     ],
     "tests": [
@@ -1478,6 +1518,16 @@
           "PLAN-027"
         ],
         "file": "docs/plans/archived/027-split-front-tick-memory-leak.md"
+      },
+      {
+        "id": "P028-5",
+        "section": "tests",
+        "title": "分体轨 resize 断链根修 — 测试与复审门",
+        "content": "单测 4 新增:pend 桥写惰性建核往返/geom 解析护栏(014 退化拒收)/storage 新鲜读穿透/探针发布随宽度变化且同宽稳定(iced-layout-tests 门控)。回归:virtual_scroll 9/9+p025+ui-iced check。复审门(lang@rebased tip):tf 3723/3723+tv 3870/3870+tt 4092/4092+日常档 3 红=基线预存(musk p053,基线 worktree 复跑归因+无 ui-iced 全绿=feature 交互预存)。term:workspace 绿除 parity_gate 5 红=at-gen 失修(F-06,基线同断)。实机:nums len=115 断言+随动采样+死带直方图 0+0 尺寸护栏。",
+        "related": [
+          "PLAN-028"
+        ],
+        "file": "docs/plans/archived/028-split-resize-chain-revival.md"
       }
     ],
     "reviews": [
@@ -1802,6 +1852,16 @@
           "PLAN-027"
         ],
         "file": "docs/plans/archived/027-split-front-tick-memory-leak.md"
+      },
+      {
+        "id": "P028-6",
+        "section": "reviews",
+        "title": "分体轨 resize 断链根修 — 复审与合并收据",
+        "content": "review r1 pass(执行会话内,独立性受限声明+工件重建)@ lang plan-028-dev c78578025/term 716ecf0;AC-01..06 全过(AC-04 代码零触及+rust 轨 boot 绿,桌面宿主复跑荐 merge 门)。merge:用户裁定 027 先落;028 rebase 四跳(lang master 被 687/027/685/040 连续推进:5530f2788→42f382764→fa83e13aa→c78578025→00e56202d,各跳 range-diff 全等+共栖测试绿[027 stdlib/040 renderer 182 行])→ ff-only lang master=00e56202d / term main=6ff3bad。发现:F-02 预取窗跨进程缺口/F-05 桌面宿主复跑+后台窗 resize 事件门控/F-06 at-gen 失修/F-07 rust 轨 lock 漂移(已知好 lock 拷贝即愈)。",
+        "related": [
+          "PLAN-028"
+        ],
+        "file": "docs/plans/archived/028-split-resize-chain-revival.md"
       }
     ]
   }
