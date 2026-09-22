@@ -220,6 +220,7 @@ B=断流(VM 轨起后台 kill app-back);C=空载基线(修前 VM 轨,
   - **acceptance_results**: AC-01 **pass**(L0 三缺陷审计链/L1 A-C 判别 25 倍差/坍缩半减,六件套证据重读可独立复核);AC-02 **pass**(复审复跑回归钉:+0.46MB/min < 阈 0.5,exit 0;work 期尾段 +0.078——复审值偏高系采样期桌面活动噪声,阈值内);AC-03 **pass**(同次执行,脚本退出码 0);AC-04 **pass**(双仓 DEBTS #26 划销措辞核验 + spec 落册文件核验;账本投影留 merge);AC-05 **pass**(复审实例 AUTO_VM_API_BUDGET 观测 2141 样本:启动期瞬态 warn[back 预热]后稳态 busy_ms 20-23 零告警、waits=4/拍;修前连刷)。
   - **findings**: 复审环境注记——主检出 app 的 rust-workspace target 被 027/028 双 auto-lang 检出交替构建,boot 就绪门多次撞 120s(构建串行化所致,非代码);front-back 端口就绪后配对即健康。无阻断项。
   - **evidence**: docs/plans/evidence/027/ 六件套 + review-err.log(预算观测)+ 斜率钉复跑输出(exit 0);`blockers`: 无;`next`: **merge**(用户已裁定:027 先落,028 随后 rebase 跟进)。
+- 2026-09-22 merge 收据(`PLAN-027:r1`,五检查点全闭合,`completion_kind: delivered`):**prepared**(reviewed 基线 + SD-01 规范文件在分支 0367dac67)→ **landed**(lang:plan-027-dev rebase master `db9bffed3` 零冲突,0392499d1→69420195f/0367dac67→7001ada7d,range-diff 全等=安全重写证明,p027 双测绿,ff-only master=`7001ada7d`,他人 DEBTS WIP stash-pop 保全还原;term:rebase main[028 簿记前进] 19435fb→167baac range-diff 全等 → ff-only main=`167baac`)→ **ledger_refreshed**(auto-term .autoos/specs.json 六节投影 P027-1..6,回读验证;lang 侧不投——防与 lang 自身 plan-027 历史撞号,规范文件自证)→ **archived**(docs/plans/archived/027-split-front-tick-memory-leak.md,status: archived)→ **cleaned**(wt-guard 三件 clean,worktree×3+branch×2+组目录 lang-027 全删,git 注册表零残留)。
 
 ## 10. 待澄清事项
 
