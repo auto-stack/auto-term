@@ -453,6 +453,51 @@ pub fn engine_pump_for(handle: i64, key: &str) -> i64 {
     pump_inner(handle, keys)
 }
 
+/// PLAN-028 T-05 rev2:history/offset rust 直达回流(发布端)——分体轨
+/// back 每快照拍采样引擎回滚行数与 display_offset,**变化才**发布
+/// `vm.term_hist.<key>` / `vm.term_off.<key>`(共享 storage 文件,
+/// write-through;稳态零写入)。前端 widget 节流读取落 core(读端在
+/// auto-lang ui::terminal::iced::widget)——分体下前端 core 的
+/// history/offset/anchor 唯一供给面(022 虚拟画布窗口位移的标定源;
+/// 桌面轨由泵回写,本面不触)。样本来自 DLL `autoterm_engine_history`
+/// /`autoterm_engine_scroll_offset`(nums 尾段同源)。
+fn publish_history_for(handle: i64, key: &str) {
+    static LAST: std::sync::OnceLock<
+        std::sync::Mutex<std::collections::HashMap<String, (i64, i64)>>,
+    > = std::sync::OnceLock::new();
+    let h = ptr_of(handle);
+    if h.is_null() {
+        return;
+    }
+    let (hist, off) = unsafe {
+        let hist: libloading::Symbol<unsafe extern "C" fn(*mut core::ffi::c_void) -> c_int> =
+            match lib().get(b"autoterm_engine_history\0") {
+                Ok(s) => s,
+                Err(_) => return,
+            };
+        let off: libloading::Symbol<unsafe extern "C" fn(*mut core::ffi::c_void) -> c_int> =
+            match lib().get(b"autoterm_engine_scroll_offset\0") {
+                Ok(s) => s,
+                Err(_) => return,
+            };
+        (hist(h).max(0) as i64, off(h).max(0) as i64)
+    };
+    let mut last = LAST.get_or_init(|| std::sync::Mutex::new(std::collections::HashMap::new()))
+        .lock()
+        .unwrap();
+    if last.get(key).copied() != Some((hist, off)) {
+        last.insert(key.to_string(), (hist, off));
+        auto_lang::vm::ffi::stdlib::storage_host_publish(
+            &format!("vm.term_hist.{key}"),
+            hist.to_string(),
+        );
+        auto_lang::vm::ffi::stdlib::storage_host_publish(
+            &format!("vm.term_off.{key}"),
+            off.to_string(),
+        );
+    }
+}
+
 fn pump_inner(handle: i64, keys: Vec<String>) -> i64 {
     let n = keys.len() as i64;
     if n == 0 {
@@ -566,7 +611,7 @@ fn stored_client_size(key: &str) -> Option<i64> {
 /// 零解析),此处解析后落 per-key 待定几何,既有 apply_resize_for 泵
 /// 消费。014 护栏同款:退化尺寸(cols<2/rows<1)拒收(不 clamp 上来),
 /// 同值 no-op;返回 1=已落位 0=忽略。
-pub fn engine_pend_resize_geom(key: String, geom: String) -> i64 {
+pub fn engine_pend_resize_geom(key: &str, geom: &str) -> i64 {
     let Some((cols_s, rows_s)) = geom.split_once('x') else {
         return 0;
     };
@@ -613,6 +658,7 @@ pub fn engine_feed_snapshot(handle: i64) {
 /// PLAN-018 D3 定向变体:样式旁路只投喂 `key` 对应的 terminal(缺 key
 /// = 不上屏,快照文本面照常)。
 pub fn engine_rows_for(handle: i64, key: &str) -> Vec<String> {
+    publish_history_for(handle, key);
     feed_snapshot_inner(handle, FeedTarget::Key(key));
     snapshots().get(&handle).cloned().unwrap_or_default()
 }

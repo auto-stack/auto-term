@@ -111,15 +111,11 @@ widget App {
         var cc5 int = 0
         var cr6 int = 0
         var cc6 int = 0
-        // PLAN-028 T-05:回滚历史(nums 尾段 107+7n+i 每拍回读;喂 terminal
-        // history prop → 虚拟画布/滚动条)+ 014 探针存量("colsxrows";变化
-        // 才推 back pane-resize-request,稳态零增请求)
-        var hist1 int = 0
-        var hist2 int = 0
-        var hist3 int = 0
-        var hist4 int = 0
-        var hist5 int = 0
-        var hist6 int = 0
+        // PLAN-028 T-05:014 探针存量("colsxrows";变化才推 back
+        // pane-resize-request,稳态零增请求)。history 回流走 rust 直达
+        // 通道(back 泵发布 vm.term_hist.<key>,前端 widget 节流读取落
+        // core)——terminal 新 view prop 触发 VM 模板编译器 FN_PROLOG 毒化
+        // (实证 3/3,名字级触发),.at 通道禁用,取证在档。
         var probe1 str = ""
         var probe2 str = ""
         var probe3 str = ""
@@ -322,7 +318,6 @@ widget App {
                     .g2r = ns[pb + 3]
                     .cr2 = ns[pb + 4]
                     .cc2 = ns[pb + 5]
-                    .hist2 = ns[hb]
                 }
                 if ns[pb] == 3 {
                     var acc3 List<str> = []
@@ -340,7 +335,6 @@ widget App {
                     .g3r = ns[pb + 3]
                     .cr3 = ns[pb + 4]
                     .cc3 = ns[pb + 5]
-                    .hist3 = ns[hb]
                 }
                 if ns[pb] == 4 {
                     var acc4 List<str> = []
@@ -358,7 +352,6 @@ widget App {
                     .g4r = ns[pb + 3]
                     .cr4 = ns[pb + 4]
                     .cc4 = ns[pb + 5]
-                    .hist4 = ns[hb]
                 }
                 if ns[pb] == 5 {
                     var acc5 List<str> = []
@@ -376,7 +369,6 @@ widget App {
                     .g5r = ns[pb + 3]
                     .cr5 = ns[pb + 4]
                     .cc5 = ns[pb + 5]
-                    .hist5 = ns[hb]
                 }
                 if ns[pb] == 6 {
                     var acc6 List<str> = []
@@ -394,7 +386,6 @@ widget App {
                     .g6r = ns[pb + 3]
                     .cr6 = ns[pb + 4]
                     .cc6 = ns[pb + 5]
-                    .hist6 = ns[hb]
                 }
                 lcur = lcur + nl
                 i = i + one
@@ -567,8 +558,6 @@ widget App {
                 .dH5 = ns[106] * ch / 1000
             }
             // ── 行快照/光标/网格每拍(pane 段与行段镜像游标)──
-            // history 尾段(PLAN-028):偏移 107+7n+i,n = ns[7],i = 可见
-            // 槽序——hb 与 pane 段同游标,零额外请求。
             var npanes int = ns[7]
             var pbase int = 107
             var lcur int = kbase + 11
@@ -578,7 +567,6 @@ widget App {
                     break
                 }
                 var pb int = pbase + i * 7
-                var hb int = pbase + npanes * 7 + i
                 var nl int = ns[pb + 6]
                 if ns[pb] == 1 {
                     var acc1 List<str> = []
@@ -596,7 +584,6 @@ widget App {
                     .g1r = ns[pb + 3]
                     .cr1 = ns[pb + 4]
                     .cc1 = ns[pb + 5]
-                    .hist1 = ns[hb]
                 }
                 if ns[pb] == 2 {
                     var acc2 List<str> = []
@@ -1040,7 +1027,6 @@ widget App {
                             lines: .lines1
                             cursor_row: .cr1
                             cursor_col: .cc1
-                            history: .hist1
                             scheme: .scheme
                             oninput: .KeyIn($event)($event)
                             onmenu: .Menu
@@ -1070,7 +1056,6 @@ widget App {
                             lines: .lines2
                             cursor_row: .cr2
                             cursor_col: .cc2
-                            history: .hist2
                             scheme: .scheme
                             oninput: .KeyIn($event)($event)
                             onmenu: .Menu
@@ -1091,7 +1076,6 @@ widget App {
                             lines: .lines3
                             cursor_row: .cr3
                             cursor_col: .cc3
-                            history: .hist3
                             scheme: .scheme
                             oninput: .KeyIn($event)($event)
                             onmenu: .Menu
@@ -1112,7 +1096,6 @@ widget App {
                             lines: .lines4
                             cursor_row: .cr4
                             cursor_col: .cc4
-                            history: .hist4
                             scheme: .scheme
                             oninput: .KeyIn($event)($event)
                             onmenu: .Menu
@@ -1133,7 +1116,6 @@ widget App {
                             lines: .lines5
                             cursor_row: .cr5
                             cursor_col: .cc5
-                            history: .hist5
                             scheme: .scheme
                             oninput: .KeyIn($event)($event)
                             onmenu: .Menu
@@ -1154,7 +1136,6 @@ widget App {
                             lines: .lines6
                             cursor_row: .cr6
                             cursor_col: .cc6
-                            history: .hist6
                             scheme: .scheme
                             oninput: .KeyIn($event)($event)
                             onmenu: .Menu
