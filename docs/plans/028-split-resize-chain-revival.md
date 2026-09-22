@@ -1,6 +1,6 @@
 ---
 plan_id: PLAN-028
-status: executing
+status: reviewed
 feature_name: 分体轨 resize 断链根修(client-size 推送 + 探针跨界桥 + history 回流)
 author: [zcode]
 created_at: 2026-09-22T00:00:00Z
@@ -8,9 +8,10 @@ updated_at: 2026-09-22T00:00:00Z
 plan_revision: 1
 current_step: 7
 total_steps: 7
-supersedes_spec_components: []
+supersedes_spec_components:
+  - docs/specs/terminal-mux-model.md   # auto-term(SD-01 窗口尺寸面读序 / SD-02 几何随动链桥写 / SD-03 tick-nums 尾段,三处 modify 同文件)
 new_spec_components: []
-touched_goals: []
+touched_goals: []   # terminal-mux-model.md 无 goal 注册表;本计划不改任何 goal 语义(空值经复审确认)
 ---
 
 # PLAN-028 — 分体轨 resize 断链根修
@@ -72,9 +73,9 @@ renderer __window_resized ─┐
 
 | delta_id | 类型 | 目标 | before/after | rationale | acceptance |
 |---|---|---|---|---|---|
-| SD-01 | modify | docs/specs/terminal-mux-model.md(窗口尺寸面 T-00b/024 SD-01 段) | before:`mux_window_width\|height` 读序 = per-app override → theme 全局回落;after:增加**分体存值(>0)优先**层,存值由前端经 `POST /api/mux/client-size` 推送(变化才推,≤0 忽略),回落链保持 | 分体轨几何源唯一修法;桌面轨 native 内部 override 不受扰 | AC-01/02/04 |
-| SD-02 | modify | docs/specs/terminal-mux-model.md(几何随动链段,153-157 邻域) | before:014 探针→进程内 pending_resize→apply 泵;after:分体轨探针输出经前端桥 `POST /api/mux/pane-resize-request(key,cols,rows)` 写 per-key pending,泵消费语义不变;进程内轨(桌面)零变化 | 断链修补点;后端无 cell_w,cols/rows 必须前端推送 | AC-01/03 |
-| SD-03 | modify | docs/specs/terminal-mux-model.md(tick-nums 面布局段) | before:pane 段 npanes×7(base=107)即尾;after:**尾部追加** npanes×1 history 字段(偏移 `107+7n+i`),前端消费 → `terminal_set_history`;免 rebase 不动既有偏移 | 滚动条比例数据源;terminal-scroll-render.md 语义零变化(泵回读面多一条分体通路) | AC-03 |
+| SD-01 | modify | docs/specs/terminal-mux-model.md(窗口尺寸面 T-00b/024 SD-01 段,~145-153) | before:`mux_window_width\|height` 读序 = per-app override → theme 全局回落(三轨同);after:**分体/merged rust 轨**读序 = 存值(>0)优先 → theme 全局回落——存值 = 前端渲染器**变化才发布**的 `vm.window_inner_width/height`(storage host:进程内直读 + 共享文件 write-through),rust 侧车经 `AUTO_VM_STORAGE_FILE` 钉扎的共享文件按拍新鲜拉取(`storage_host_read_fresh`);**VM/desktop 轨 shim 读序(override → theme)零变化**。客户端尺寸 HTTP 端点不引入(机制适配①,§9) | 分体轨几何源唯一修法;桌面轨 override 在 native 内部不受扰 | AC-01/02/04 |
+| SD-02 | modify | docs/specs/terminal-mux-model.md(V1 语义节几何随动链段,~109 邻域) | before:014 探针→进程内 pending_resize→apply 泵;after:分体轨探针输出经前端桥 `POST /api/mux/pane-resize-request(key str, geom str)`(geom = "CxR" 探针发布形态原样,.at 侧零解析)**变化才调** → back rust 原语 `engine_pend_resize_geom` 解析(014 护栏拒收退化)落 per-key pending(惰性建核 `terminal_pend_resize`),既有 `term_apply_resize` 泵消费语义不变;进程内轨(桌面)零变化。端点形态适配②见 §9 | 断链修补点;后端无 cell_w,cols/rows 必须前端推送 | AC-01/03 |
+| SD-03 | modify | docs/specs/terminal-mux-model.md(Tick/Init 数据面聚合契约节 tick-nums 布局段,~222-230) | before:pane 段 npanes×7(base=107)即尾;after:**尾部追加** npanes×1 history 字段(偏移 `107+7n+i`,数据源 `engine_history` = DLL `autoterm_engine_history` 同源)——验证/观测面;前端虚拟画布与滚动条的运行时供给 = **rust 直达回流通道**(back `engine_rows_for` 快照拍变化才发布 `vm.term_hist.<key>`/`vm.term_off.<key>`,前端 widget ≤150ms 节流读取落 core:history+offset+anchor——分体下泵回写不可达的唯一供给面);`.at` history view prop 通路因 VM 模板编译器 prop 毒化(F-01)禁用另立;免 rebase 不动既有偏移 | 滚动条比例数据源;terminal-scroll-render.md 语义零变化(泵回写面对等扩展一条分体供给通路) | AC-03 |
 
 ## 3. 技术栈
 
@@ -162,6 +163,12 @@ Rust(auto-lang 渲染器/VM shim/iced;auto-term axum 侧车)+ auto-lang .at(mux 
 - 2026-09-22 work 收尾(work 会话;plan_revision 1)handoff:`stage: work`,`outcome: pass(带在册发现 F-01..F-04 与复审项)`;`code_commit`: auto-lang `plan-028-dev` @ `5530f2788`(基 master dcbda3f71),auto-term `plan-028-dev` @ `716ecf0`(基 main 116e9b6);`task_ids`: T-01..T-07;`evidence`: 实机截图/直方图/采样在 `docs/plans/evidence/028/`(auto-term 仓),单测 4 新增全绿,virtual_scroll 9/9,日常档 820 绿(3 红 = 基线预存,基线 worktree 复跑归因);`blockers`: 无工作阻塞(D-4 落地顺序 = merge 期用户裁定;AC-04 024 实机复跑荐于复审执行);`next`: review(auto-plan-review)。
   - **机制适配三则**(证据驱动,验收面不变):① SD-01 client-size 端点取消 → 读序存值层落 term.rs(共享 storage 文件 pull,boot 钉 `AUTO_VM_STORAGE_FILE`;前端 handler str→int 无转译路径 + storage CWD 哈希跨进程断链两项实证);② SD-02 端点形态 (key,cols,rows) → (key,geom "CxR" 串)(同上 str→int 限制,解析在 rust 侧);③ SD-03 nums 尾段照建,前端消费由 history view prop 改 rust 直达通道(F-01 毒化阻断 .at 通路)。
   - **实机全链**(026 launch 范式 + 存值文件钉扎):发布臂(probe 84x25 随窗)→ 前端桥(变化才推)→ back 桥写 → apply 泵(grid 84x25→121x47→93x32 双向随动)→ nums 反馈(ver/win 指纹门控复能);history 回流(nums 尾段 3333/3859 + rust 直达)修复分体轨文本渲染(026 期窗体即黑面,基线对照在档);死带零残留(直方图 0 命中);0 尺寸护栏实测(最小化 → 发布 0 → 拒收 → 回落)。
+- 2026-09-22 复审(review 会话,**与执行同会话——独立性受限已声明,判定自工件重建,不采信执行期总结**;plan_revision 1):`stage: review`,`outcome: pass`;
+  - **reviewed_commit**: auto-lang `plan-028-dev` @ `5530f2788`(diff base master `dcbda3f71`)/ auto-term `plan-028-dev` @ `716ecf0`(diff base main `116e9b6`);依赖位 auto-down `fba6563`(detached 挂件);两 worktree 复审时零脏区;主检出零代码 WIP。
+  - **spec_inputs**: docs/specs/terminal-mux-model.md(窗口尺寸面 ~145-153 / V1 语义几何随动 ~109 / Tick 数据面 ~222-230);规范增量三行已定稿为 as-built 形态(机制适配①②③回写,验收语义与 draft 一致,plan_revision 不增——路线空间本属 T-01 裁定授权);frontmatter 元数据定稿(supersedes = terminal-mux-model.md 三处 modify;new = 无;touched_goals 空——该 spec 无 goal 注册,经查证)。
+  - **acceptance_results**: AC-01 **pass**(拉窗随动:work 期双收敛 + 复审基线新 boot 复验 win=1087x764/grid=115x43 ≤2 泵拍;后台窗 resize 事件被并行会话桌面门控一例,环境性,F-05);AC-02 **pass**(1100×800 直方图内容区 bg-background=0,右/底缘带纯终端底色);AC-03 **pass**(规定验证面 virtual_scroll 9/9 + p025 绿;实机滚动画布生效 + 文本渲染修复;F-02 滚离供给缺口在册,不属本 AC 文义);AC-04 **pass**(代码级:2998/2999 与 theme 读路径 diff 零触及,grep 实证;相邻轨实机:rust 轨 boot 绿[3m16s 编译 0 错 + back ready 17401 + Iced 起跑 + 干净退出,lock 热修复归因依赖漂移];桌面宿主实机复跑未执行 → F-05 复审/merge 门建议项);AC-05 **pass**(0 尺寸护栏机验;Tick 结构 4 端点不变 + 推送变化才发,稳态零增);AC-06 **pass**(lang:tf 3723/3723 + tv 3870/3870 + tt 4092/4092 + 日常档 ui-iced 3 红全部归因基线预存[musk p053 家族,基线 detached worktree 复跑同红;无 ui-iced 组合下全绿→feature 交互预存现象];term:workspace 测试绿除 parity_gate 5 红 = at-gen 产物缺失/构建断裂,F-06 归因基线同断[shell.rs 自 009 未随 014 字段演进];a2r 侧车冷构建两次实证,codegen 未改,无手工漂移)。
+  - **findings**: F-01(VM 模板编译器 terminal 新 prop 毒化——建议另立计划)/ F-02(分体滚离预取窗空白——DEBT 候选)/ F-03(storage 读语义观察)/ F-04(musk p053 三红基线预存——DEBTS 收编建议)/ F-05(桌面宿主实机复跑 + 后台窗 resize 事件门控观察——merge 门建议)/ F-06(at-gen 复刻产物自 014 起对 master 构建断裂,parity_gate 新鲜 worktree 必失败——DEBT 候选)/ F-07(rust 轨生成 crate 冷构建 Cargo.lock 依赖漂移[wgpu-hal×windows 双版本],已知好 lock 拷贝即愈——环境性,回归剧本应入库 lock 或记录再生成配方)。
+  - **evidence**: docs/plans/evidence/028/(auto-term 仓,worktree 内;含 boot 脚本×2、拉窗/采样脚本、截图 base 对照/死带/终态、采样输出);复审门命令与结果摘录于上(可重放:`cargo tf|tv|tt`、`cargo t`、`cargo test --workspace`(term)、boot-split.ps1 + tick-nums-sample.py);`blockers`: 无;`next`: **merge**(auto-plan-merge;D-4 落地顺序先经用户裁定:027 与 fix-statusbar-style 的 rebase 面在册)。
 
 ## 10. 待澄清事项
 
