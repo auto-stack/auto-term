@@ -528,12 +528,79 @@ pub fn engine_cursor_col(handle: i64) -> i64 {
 /// 的全局(theme::window_width/height;VM shim auto.term.window_width/
 /// window_height 同规约同源)。分屏矩形投影的前端 px 类几何标定源;
 /// 与引擎句柄零耦合。
+///
+/// PLAN-028 T-04(SD-01 读序):分体存值(>0)优先——前端渲染器进程经
+/// storage 发布(vm.window_inner_width/height,T-02 发布臂),后端按拍
+/// 经共享 storage 文件新鲜读取(AUTO_VM_STORAGE_FILE 钉扎为 boot 协议;
+/// 缺省 CWD 哈希路径跨进程不同 ⇒ 读不到即自然回落)。回落链 =
+/// theme::window_width/height(024 desktop override 在 native 内部,
+/// 本层不触及)。≤0/缺键/非数一律回落。
 pub fn window_width() -> i64 {
+    if let Some(v) = stored_client_size("vm.window_inner_width") {
+        return v;
+    }
     auto_lang::ui::style::theme::window_width() as i64
 }
 
 pub fn window_height() -> i64 {
+    if let Some(v) = stored_client_size("vm.window_inner_height") {
+        return v;
+    }
     auto_lang::ui::style::theme::window_height() as i64
+}
+
+/// PLAN-028:storage 新鲜读取 + 整数化(>0 才算存值;分体轨前端发布
+/// 形态 = 十进制字符串)。
+fn stored_client_size(key: &str) -> Option<i64> {
+    let raw = auto_lang::vm::ffi::stdlib::storage_host_read_fresh(key)?;
+    let v = raw.trim().parse::<i64>().ok()?;
+    if v > 0 {
+        Some(v)
+    } else {
+        None
+    }
+}
+
+/// PLAN-028 T-03:engine_pend_resize_geom(key, geom)——分体轨桥写入口。
+/// geom = 前端 014 探针 storage 发布形态("colsxrows")原样跨界(.at 侧
+/// 零解析),此处解析后落 per-key 待定几何,既有 apply_resize_for 泵
+/// 消费。014 护栏同款:退化尺寸(cols<2/rows<1)拒收(不 clamp 上来),
+/// 同值 no-op;返回 1=已落位 0=忽略。
+pub fn engine_pend_resize_geom(key: String, geom: String) -> i64 {
+    let Some((cols_s, rows_s)) = geom.split_once('x') else {
+        return 0;
+    };
+    let (Ok(cols), Ok(rows)) = (cols_s.trim().parse::<u16>(), rows_s.trim().parse::<u16>())
+    else {
+        return 0;
+    };
+    if cols < auto_lang::ui::terminal::MIN_RESIZE_COLS
+        || rows < 1
+        || cols > auto_lang::ui::terminal::MAX_RESIZE_COLS
+        || rows > auto_lang::ui::terminal::MAX_RESIZE_ROWS
+    {
+        return 0;
+    }
+    if auto_lang::ui::terminal::terminal_pend_resize(&key, cols, rows) {
+        1
+    } else {
+        0
+    }
+}
+
+/// PLAN-028 T-04/SD-03:engine_history(handle)——引擎回滚历史行数
+/// (nums 尾段数据源;DLL autoterm_engine_history 同源,VM shim
+/// auto.term.engine_history 同规约)。
+pub fn engine_history(handle: i64) -> i64 {
+    let h = ptr_of(handle);
+    if h.is_null() {
+        return 0;
+    }
+    unsafe {
+        let hist: libloading::Symbol<unsafe extern "C" fn(*mut core::ffi::c_void) -> c_int> =
+            lib().get(b"autoterm_engine_history\0").unwrap();
+        hist(h).max(0) as i64
+    }
 }
 
 /// 收割引擎输出并刷新 glue 侧快照(feed + 损伤行全量重采 + 光标采样 +

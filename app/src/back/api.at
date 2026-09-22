@@ -206,6 +206,14 @@ pub fn mux_tick_snapshot() []str {
     return db.mux_tick_snapshot()
 }
 
+/// 分体轨几何桥(PLAN-028 T-04/SD-02):前端 014 探针输出跨界写入。
+/// key = pane key;geom = "colsxrows"(探针 storage 发布形态原样,.at
+/// 侧零解析);变化才调(稳态零增请求)。退化/非法由 rust 原语拒收。
+#[api(method = "POST", path = "/api/mux/pane-resize-request")]
+pub fn mux_pane_resize_request(key str, geom str) int {
+    return db.mux_pane_resize_request(key, geom)
+}
+
 /// 焦点 Pane 视口宽(db 同步值)。
 #[api(method = "GET", path = "/api/mux/cols")]
 pub fn mux_cols() int {

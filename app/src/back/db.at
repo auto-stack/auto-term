@@ -29,7 +29,7 @@
 //   - engine_rows 的 List 返回必须落显式类型 var(否则 .len() 得 None);
 //   - 裸调用不得内联于 if 条件位(597 §9 挂起缺陷)——先赋值再比较。
 
-use auto.term: engine_spawn_ex, engine_free, engine_write_line, engine_write_raw, engine_rows_for, engine_pump_for, engine_apply_resize_for, engine_viewport_cols, engine_viewport_rows, engine_cursor_row, engine_cursor_col, engine_backlog_pending_mb, engine_backlog_paused, engine_backlog_take_alerts, engine_backlog_dropped, engine_interrupt, engine_is_exited, engine_menu_take, window_width, window_height, config_profiles, config_default_profile, config_profiles_full, config_spawn_program, config_spawn_argv, config_spawn_cwd, engine_scroll_pending_for
+use auto.term: engine_spawn_ex, engine_free, engine_write_line, engine_write_raw, engine_rows_for, engine_pump_for, engine_apply_resize_for, engine_viewport_cols, engine_viewport_rows, engine_cursor_row, engine_cursor_col, engine_backlog_pending_mb, engine_backlog_paused, engine_backlog_take_alerts, engine_backlog_dropped, engine_interrupt, engine_is_exited, engine_menu_take, window_width, window_height, config_profiles, config_default_profile, config_profiles_full, config_spawn_program, config_spawn_argv, config_spawn_cwd, engine_scroll_pending_for, engine_pend_resize_geom, engine_history
 
 // ══════════════════════════════════════════════════════════════════
 // MuxCore 模型表(PLAN-018 D6;Workspace/Tab/LayoutTree/Pane)
@@ -1444,6 +1444,7 @@ pub fn mux_tick_nums() List<int> {
     }
     // pane 段(可见槽序;engine_rows_for 同拍共馈语义保持 = mux_pane_lines
     // 逐槽调用;cursor 先落 var——engine 面不内联约束)。
+    var hist_h List<int> = []
     i = 1
     loop {
         if i > MAX_PANES {
@@ -1466,9 +1467,22 @@ pub fn mux_tick_nums() List<int> {
                 out.push(crv)
                 out.push(ccv)
                 out.push(ls.len())
+                hist_h.push(ph)
             }
         }
         i = i + 1
+    }
+    // history 尾段(PLAN-028 T-04/SD-03:免 rebase **尾部追加**,偏移
+    // 107+7n+i,n = 可见 pane 数,i = 可见槽序;既有偏移零位移)。前端
+    // 消费 → terminal history prop → 虚拟画布含历史 → iced scrollable
+    // 恢复出条(022 bind/贴底语义不回退,scroll-render spec 零变化)。
+    var hi int = 0
+    loop {
+        if hi >= hist_h.len() {
+            break
+        }
+        out.push(engine_history(hist_h.get(hi)))
+        hi = hi + 1
     }
     return out
 }
@@ -1725,6 +1739,15 @@ pub fn term_apply_resize() int {
         rows = engine_viewport_rows(h)
     }
     return applied
+}
+
+/// 分体轨几何桥(PLAN-028 T-04/SD-02):前端把 014 探针输出(key +
+/// "colsxrows" 串,变化才调)跨界送入,落 per-key 待定几何;既有
+/// term_apply_resize 泵(每拍,焦点定向)零改消费——只补"注册表写入端"。
+/// 退化尺寸/非法串/同值由 rust 原语拒收(014 护栏同款,.at 侧零解析)。
+/// 返回 1=已落位 0=忽略。
+pub fn mux_pane_resize_request(key str, geom str) int {
+    return engine_pend_resize_geom(key, geom)
 }
 
 /// 当前视口几何(db 侧;apply_resize 已同步,spawn 时落初值)。
