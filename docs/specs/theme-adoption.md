@@ -29,7 +29,10 @@
 
 - VT 16 色 ANSI 输出、光标、选中反白：终端内容身份。
 - mux 分屏拓扑/Pane 几何/resize 随动：业务面（cargo workspace 原门
-  49 passed/0 failed 守护）。
+  测试级 49 passed/0 failed；cargo 进程退出 139 = engine_ffi_integration
+  收尾段 0xc0000005——测试全绿后 DLL 卸载路径崩，base 3573a07 对拍
+  逐位同败同值[PLAN-061 review R-01 修正注记]，预存
+  owner=autoterm FFI 套件拆解路径）。
 
 ## 主题腿实录（app/tests/test_061_theme.py，5/5）
 
