@@ -25,6 +25,11 @@
 
 use back.api
 
+// auto-os/PLAN-061 T-03：官方主题包主题名导入（031 合同消费面——pac `dep
+// themes` 声明使包可解析，本 use 把包内 pub 主题收进收集链；无此行 themes
+// 树不注册，design.theme/follow 宿主候选都会在 C-11 未注册拒绝）。
+use themes.themes: Auto
+
 widget App {
     msg { Init, Tick, KeyIn(str), Menu, TabActivate(int), TabClose(int), NewTab, NewTabProfile(int), ProfileMenu, Split(int), Zoom, CloseFocusPane, SchemeToggle, Shortcut(int), Press(int), Drag(float, float), Drop }
 
@@ -34,11 +39,14 @@ widget App {
         // Tab 条数据(tick 刷新;活动 Tab 标签带 "● " 前缀)
         var tab_ids List<int> = []
         var tab_labels List<str> = []
-        // scheme(0=classic-dark 1=light;按钮/快捷键循环)
+        // scheme(0=classic-dark 1=light;按钮/快捷键循环)——PLAN-061 T-03 起
+        // 由 dark_mode 派生（Init/SchemeToggle 同步），终端组件契约 prop
+        // 形态不变；PTY/VT ANSI 调色 = 内容域豁免不映射。
         var scheme int = 0
-        // 状态栏底色随 scheme(fix-statusbar-style:dark=深灰,light 保留
-        // 024 桌面轨窗框米色;原静态 #e9e4d8 在深色模式下过亮,用户裁定)
-        var status_bg str = "#282d34"
+        // PLAN-061 T-03：dark_mode 主题 mode 位（Plan 458 契约变量名，勿改）
+        // ——design mode 派生源；种子链（AUTO_UI_THEME > os-config > 系统主题）
+        // 在启动/翻转时回写；◐ scheme 开关统一翻本位。现暗色默认保恒。
+        var dark_mode bool = true
         // ── 矩形投影槽面(PLAN-020;tick 从 rect-* getters 刷新)──
         // 窗口 client 逻辑 px 与内容区高(Tab 条高恒定扣除)
         var clientW int = 802
@@ -180,6 +188,15 @@ widget App {
 
     on {
         .Init -> {
+            // PLAN-061 T-03：scheme 由主题 mode 位派生（种子链回写
+            // dark_mode 后本同步令终端 classic-dark/light 与壳一致；
+            // 活体外写翻转发火在下一 Tick 前的 Init 不重跑——该活体臂
+            // 终端调色滞后沿 OS056-REAPPLY-NOTE 处置，重开追最新）。
+            if .dark_mode {
+                .scheme = 0
+            } else {
+                .scheme = 1
+            }
             api.term_apply_resize()
             api.get_lines()
             // PLAN-026 T-03 rev5:双端点聚合(nums 数值面 + snapshot 字符串
@@ -841,16 +858,16 @@ widget App {
             api.mux_enqueue(3, fid)
         }
         .SchemeToggle -> {
-            if .scheme == 1 {
-                .scheme = 0
-            } else {
+            // PLAN-061 T-03：◐ 业务开关统一翻主题 mode 位（dark_mode =
+            // Plan 458 契约变量名，勿改）；scheme 由本位派生，终端
+            // classic-dark/light 调色语义不变；状态栏改随主题 token
+            // （原 fix-statusbar-style #282d34/#e9e4d8 硬编码退役）。
+            if .dark_mode {
+                .dark_mode = false
                 .scheme = 1
-            }
-            // 状态栏底色跟随(fix-statusbar-style)
-            if .scheme == 0 {
-                .status_bg = "#282d34"
             } else {
-                .status_bg = "#e9e4d8"
+                .dark_mode = true
+                .scheme = 0
             }
         }
         // WT 风格快捷键分派(§5 D5 表;019 窗口全局语义):
@@ -935,10 +952,14 @@ widget App {
                 api.mux_enqueue(5, ntid)
             }
             if n == 9 {
-                if .scheme == 1 {
-                    .scheme = 0
-                } else {
+                // PLAN-061 T-03：快捷键 scheme 翻转与 ◐ 按钮同律——统一翻
+                // dark_mode 位，scheme 派生同步。
+                if .dark_mode {
+                    .dark_mode = false
                     .scheme = 1
+                } else {
+                    .dark_mode = true
+                    .scheme = 0
                 }
             }
             // 10-13 方向切 pane(Alt+WASD;PLAN-022 T-06 用户指令)。
@@ -975,6 +996,17 @@ widget App {
             .dragW = 0
             .dragH = 0
         }
+    }
+
+    // auto-os/PLAN-061 T-03：主题设计默认（独立默认腿）。theme="Auto" 经 pac
+    // `dep themes`（vendor/themes 固定快照）注册的官方树解析；mode 由
+    // dark_mode 位驱动。桌面内宿主策略完整快照（family+mode）按 031
+    // full-host 语义整体接管本默认（follow——pac theme 键已退役），独立/
+    // 无宿主环境回落本默认+种子链。公共壳（Tab 条/状态栏/窗底）随主题
+    // role；PTY/VT 调色 = terminal 组件内容域豁免。
+    design {
+        theme: "Auto"
+        mode: if .dark_mode { "dark" } else { "light" }
     }
 
     view {
@@ -1036,7 +1068,7 @@ widget App {
                             lines: .lines1
                             cursor_row: .cr1
                             cursor_col: .cc1
-                            scheme: .scheme
+                            scheme: if .dark_mode { 0 } else { 1 }
                             oninput: .KeyIn($event)($event)
                             onmenu: .Menu
                             onkeydown.ctrl.shift.t: .Shortcut(1)
@@ -1065,7 +1097,7 @@ widget App {
                             lines: .lines2
                             cursor_row: .cr2
                             cursor_col: .cc2
-                            scheme: .scheme
+                            scheme: if .dark_mode { 0 } else { 1 }
                             oninput: .KeyIn($event)($event)
                             onmenu: .Menu
                             onkeydown.alt.w: .Shortcut(10)
@@ -1085,7 +1117,7 @@ widget App {
                             lines: .lines3
                             cursor_row: .cr3
                             cursor_col: .cc3
-                            scheme: .scheme
+                            scheme: if .dark_mode { 0 } else { 1 }
                             oninput: .KeyIn($event)($event)
                             onmenu: .Menu
                             onkeydown.alt.w: .Shortcut(10)
@@ -1105,7 +1137,7 @@ widget App {
                             lines: .lines4
                             cursor_row: .cr4
                             cursor_col: .cc4
-                            scheme: .scheme
+                            scheme: if .dark_mode { 0 } else { 1 }
                             oninput: .KeyIn($event)($event)
                             onmenu: .Menu
                             onkeydown.alt.w: .Shortcut(10)
@@ -1125,7 +1157,7 @@ widget App {
                             lines: .lines5
                             cursor_row: .cr5
                             cursor_col: .cc5
-                            scheme: .scheme
+                            scheme: if .dark_mode { 0 } else { 1 }
                             oninput: .KeyIn($event)($event)
                             onmenu: .Menu
                             onkeydown.alt.w: .Shortcut(10)
@@ -1145,7 +1177,7 @@ widget App {
                             lines: .lines6
                             cursor_row: .cr6
                             cursor_col: .cc6
-                            scheme: .scheme
+                            scheme: if .dark_mode { 0 } else { 1 }
                             oninput: .KeyIn($event)($event)
                             onmenu: .Menu
                             onkeydown.alt.w: .Shortcut(10)
@@ -1229,7 +1261,9 @@ widget App {
             // 同径),分屏拓扑无关;编辑器状态栏同款。内容 = 焦点 pane
             // 计数 + 引擎网格几何。
             row {
-                style: f"w-full h-[24px] rounded-b-[15px] bg-[${.status_bg}] px-3 items-center justify-between"
+                // PLAN-061 T-03：状态栏底色随主题 role（bg-card token），
+                // 原 fix-statusbar-style 硬编码退役；窗框圆角承载不变。
+                style: "w-full h-[24px] rounded-b-[15px] bg-card px-3 items-center justify-between"
                 text "◉ AutoTerm mux" { style: "text-xs" }
                 text f"${.cols}×${.rows}" { style: "text-xs" }
             }

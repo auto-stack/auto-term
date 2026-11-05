@@ -27,7 +27,18 @@ title_zh: "终端"
 icon: "terminal"
 category: "system"
 api: "rust"
-theme: "dark"
+// auto-os/PLAN-061 T-03：原显式 `theme: "dark"` 标量键退役 = **follow 宿主**
+// （宿主策略完整快照 > 本 design 默认 > legacy 回退；显式值会以 pac 优先级
+// 压过宿主跟随，两族×明暗需求下不声明）。原 dark 默认改由 app.at design
+// 派生腿承接（dark_mode 位默认 true，保现暗色默认；◐ scheme 业务开关翻
+// dark_mode 位，终端 classic-dark/light 调色语义不变）。PTY/VT ANSI 调色
+// = terminal 原生组件内容域豁免不映射。主合同反链见 README。
+// `vendor/themes` 为 UI 管理渠道发布的**固定版本快照**（themes 0.2.0，内容
+// digest 9fa07742dc68aa5377ae06cb2d966386002063f184c515b6c5dddf8a6bef838e，
+// per-file sha256 与源包逐文件校验同律；不可二次编辑、非第二权威源）。
+dep themes {
+    path: "vendor/themes"
+}
 // 014:rust 轨生成应用的可执行产物名(缺省 = 包名 auto_term)。
 exe_name: "auto-term"
 // 014:整窗即终端——window 给开窗初值(≈100×30 格);之后由几何随动

@@ -117,3 +117,14 @@ cargo test -p autoterm-core --test ash_integration
 - Auto 化(DEBTS #8,用户裁定必须项):Rust 版功能已齐全,#7 调查
   已关账(TermGrid 须以 auto-lang 内原生组件落地,rust-mode 示例
   存在存量编译问题,见 `docs/designs/002-autoize-feasibility.md`)。
+
+## 主题接入(auto-os/PLAN-061)
+
+本 app 经 auto-os/PLAN-061 接入 AutoUI 官方主题包:`app/vendor/themes` 固定
+快照(themes 0.2.0)+ pac `dep themes` + app.at design Auto/明暗派生
+(`dark_mode` 契约位,默认 true 保现暗色默认);原 pac 显式 `theme: "dark"`
+标量键退役 = follow 宿主。公共壳(Tab 条/状态栏/窗底)随主题 role;PTY/VT
+ANSI 调色 = terminal 原生组件内容域豁免不映射;◐ scheme 开关统一翻
+`dark_mode` 位(终端 classic-dark/light 调色语义不变)。主题主合同:auto-os
+`docs/plans/`(PLAN-061,061-external-workspaces-theme-adoption);宿主策略
+规范:auto-os `docs/specs/shell/host-theme-policy-and-delivery.md`。
